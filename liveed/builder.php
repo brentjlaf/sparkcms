@@ -27,44 +27,36 @@ if (is_dir($blocksDir)) {
         if (substr($f, -4) === '.php') $blocks[] = $f;
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit <?php echo htmlspecialchars($page['title']); ?></title>
-    <link rel="stylesheet" href="<?php echo $scriptBase; ?>/liveed/builder.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-</head>
-<body>
-<header class="builder-header">
-    <span class="title">Editing: <?php echo htmlspecialchars($page['title']); ?></span>
-    <button id="saveBtn" class="btn btn-primary">Save</button>
-</header>
-<div class="builder">
-    <aside class="block-palette">
-        <h2>Blocks</h2>
-        <div class="palette-items">
-        <?php foreach ($blocks as $b): ?>
-            <div class="block-item" draggable="true" data-file="<?php echo htmlspecialchars($b); ?>">
-                <?php echo htmlspecialchars(basename($b, '.php')); ?>
-            </div>
-        <?php endforeach; ?>
-        </div>
-    </aside>
-    <main class="canvas-container">
-        <div id="canvas" class="canvas">
-            <?php echo $page['content'] ?: '<div class="canvas-placeholder">Drag blocks here</div>'; ?>
-        </div>
-    </main>
-    <div id="settingsPanel" class="settings-panel">
-        <div class="settings-content"></div>
-    </div>
-</div>
-<script>
-window.builderPageId = <?php echo json_encode($page['id']); ?>;
-window.builderBase = <?php echo json_encode($scriptBase); ?>;
-</script>
-<script type="module" src="<?php echo $scriptBase; ?>/liveed/builder.js"></script>
-</body>
-</html>
+
+// Load settings and menus for the theme template
+$settingsFile = __DIR__ . '/../CMS/data/settings.json';
+$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+$menusFile = __DIR__ . '/../CMS/data/menus.json';
+$menus = file_exists($menusFile) ? json_decode(file_get_contents($menusFile), true) : [];
+
+// Render the theme page template with a canvas placeholder
+$templateFile = realpath(__DIR__ . '/../theme/templates/pages/page.php');
+ob_start();
+include $templateFile;
+$themeHtml = ob_get_clean();
+$canvasContent = $page['content'] ?: '<div class="canvas-placeholder">Drag blocks here</div>';
+$themeHtml = preg_replace('/<mwPageArea[^>]*><\\/mwPageArea>/', '<div id="canvas" class="canvas">' . $canvasContent . '</div>', $themeHtml);
+
+$headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\">" .
+    "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
+$themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
+
+$paletteItems = '';
+foreach ($blocks as $b) {
+    $paletteItems .= '<div class="block-item" draggable="true" data-file="' . htmlspecialchars($b) . '">' . htmlspecialchars(basename($b, '.php')) . '</div>';
+}
+$builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span><button id="saveBtn" class="btn btn-primary">Save</button></header>';
+$builderStart = '<div class="builder"><aside class="block-palette"><h2>Blocks</h2><div class="palette-items">' . $paletteItems . '</div></aside><main class="canvas-container">';
+$builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-content"></div></div></div>' .
+    '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>' .
+    '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
+
+$themeHtml = preg_replace('/<body([^>]*)>/', '<body$1>' . $builderHeader . $builderStart, $themeHtml, 1);
+$themeHtml = preg_replace('/<\/body>/', $builderEnd . '</body>', $themeHtml, 1);
+
+echo $themeHtml;
