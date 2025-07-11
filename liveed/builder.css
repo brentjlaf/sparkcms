@@ -76,14 +76,27 @@
   padding: 24px;
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
+.canvas:hover {
+  border-color: #667eea;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
+}
 .canvas.drag-over {
   border-color: #3182ce;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.sortable-ghost {
+  opacity: 0.5;
 }
 .canvas-placeholder {
   color: #a0aec0;
   text-align: center;
   padding: 40px 0;
+}
+.canvas-placeholder::before {
+  content: "\1F3A8";
+  font-size: 48px;
+  display: block;
+  margin-bottom: 20px;
 }
 .block-wrapper {
   position: relative;
@@ -624,4 +637,14 @@
   outline: none;
   border-color: #3182ce;
   box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
+
+@media (max-width: 480px) {
+  .canvas-container {
+    padding: 15px;
+  }
+  .canvas {
+    min-height: 400px;
+    padding: 20px;
+  }
 }
