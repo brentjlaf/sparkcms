@@ -8,10 +8,6 @@
   justify-content: space-between;
   align-items: center;
   height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  padding: 0 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 .builder-header .title {
   font-size: 18px;
@@ -47,13 +43,6 @@
   color: #4a5568;
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 8px;
-}
-.palette-search {
-  padding: 6px 8px;
-  margin-bottom: 12px;
-  border: 1px solid #cbd5e0;
-  border-radius: 4px;
-  width: 100%;
 }
 .palette-items {
   flex: 1;
