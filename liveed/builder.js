@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCanvasPlaceholder();
 
   document.addEventListener('canvasUpdated', updateCanvasPlaceholder);
+  document.addEventListener('canvasUpdated', savePage);
 
   canvas.addEventListener('click', (e) => {
     const block = e.target.closest('.block-wrapper');
@@ -151,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ok) {
           block.remove();
           updateCanvasPlaceholder();
+          savePage();
         }
       });
     }
