@@ -9,7 +9,7 @@ export function ensureBlockState(block) {
   const id = block.dataset.blockId;
   if (!stateMap.has(id)) {
     const data = {};
-    const reserved = ['blockId', 'template', 'original', 'active'];
+    const reserved = ['blockId', 'template', 'original', 'active', 'ts'];
     Object.keys(block.dataset).forEach((k) => {
       if (!reserved.includes(k)) {
         data[k] = block.dataset[k];
