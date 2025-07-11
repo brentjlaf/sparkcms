@@ -1,3 +1,4 @@
+<!-- Template: basic.image-gallery -->
 <templateSetting caption="Gallery Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Image 1 URL</dt>

@@ -1,3 +1,4 @@
+<!-- Template: basic.image -->
 <templateSetting caption="Image Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Source</dt>

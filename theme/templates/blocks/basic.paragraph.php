@@ -1,3 +1,4 @@
+<!-- Template: basic.paragraph -->
 <templateSetting caption="Paragraph Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Text</dt>

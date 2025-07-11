@@ -1,3 +1,4 @@
+<!-- Template: basic.card -->
 <templateSetting caption="Card Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Image URL</dt>

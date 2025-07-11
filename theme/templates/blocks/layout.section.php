@@ -1,3 +1,4 @@
+<!-- Template: layout.section -->
 <templateSetting caption="Section Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Width</dt>

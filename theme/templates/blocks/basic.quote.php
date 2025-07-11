@@ -1,3 +1,4 @@
+<!-- Template: basic.quote -->
 <templateSetting caption="Quote Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Quote</dt>
