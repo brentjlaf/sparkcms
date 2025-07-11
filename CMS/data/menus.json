@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "name": "Main Menu",
+        "items": [
+            { "label": "Home", "link": "/home" },
+            {
+                "label": "About Us",
+                "link": "/about-us",
+                "children": [
+                    { "label": "Our Team", "link": "/about-us#team" },
+                    { "label": "Our History", "link": "/about-us#history" }
+                ]
+            },
+            { "label": "Services", "link": "/services" },
+            { "label": "Blogs", "link": "/blogs" },
+            { "label": "Contact Us", "link": "/contact-us" }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Footer Menu",
+        "items": [
+            { "label": "Home", "link": "/home" },
+            { "label": "About Us", "link": "/about-us" },
+            { "label": "Contact", "link": "/contact-us" }
+        ]
+    }
+]

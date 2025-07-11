@@ -1,0 +1,47 @@
+[
+    {
+        "id": 1,
+        "username": "admin",
+        "password": "$2y$12$bZQja9BxSl9mw6MRCs0Um.vXqOfr67DAVqDJ3gs2yu8J1FOx1/Sdm",
+        "role": "admin",
+        "status": "active",
+        "created_at": 0,
+        "last_login": null
+    },
+    {
+        "id": 2,
+        "username": "Alice",
+        "password": "$2y$12$bZQja9BxSl9mw6MRCs0Um.vXqOfr67DAVqDJ3gs2yu8J1FOx1/Sdm",
+        "role": "editor",
+        "status": "active",
+        "created_at": 0,
+        "last_login": null
+    },
+    {
+        "id": 3,
+        "username": "Bob",
+        "password": "$2y$12$bZQja9BxSl9mw6MRCs0Um.vXqOfr67DAVqDJ3gs2yu8J1FOx1/Sdm",
+        "role": "editor",
+        "status": "active",
+        "created_at": 0,
+        "last_login": null
+    },
+    {
+        "id": 4,
+        "username": "Charlie",
+        "password": "$2y$12$bZQja9BxSl9mw6MRCs0Um.vXqOfr67DAVqDJ3gs2yu8J1FOx1/Sdm",
+        "role": "editor",
+        "status": "active",
+        "created_at": 0,
+        "last_login": null
+    },
+    {
+        "id": 5,
+        "username": "Dave",
+        "password": "$2y$12$bZQja9BxSl9mw6MRCs0Um.vXqOfr67DAVqDJ3gs2yu8J1FOx1/Sdm",
+        "role": "editor",
+        "status": "active",
+        "created_at": 0,
+        "last_login": null
+    }
+]
