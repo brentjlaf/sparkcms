@@ -167,6 +167,14 @@ function handleDrop(e) {
           wrapper.className = 'block-wrapper';
           wrapper.dataset.template = file;
           wrapper.dataset.original = html;
+          const base = file.replace(/\.php$/, '');
+          const parts = base.split('.');
+          const group = parts.shift();
+          const raw = parts.join(' ') || group;
+          const label = raw
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+          wrapper.setAttribute('data-tpl-tooltip', label);
           wrapper.innerHTML = html;
           if (applyStoredSettings) applyStoredSettings(wrapper);
           addBlockControls(wrapper);
