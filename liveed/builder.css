@@ -577,3 +577,42 @@
 .btn-danger:hover {
   background: #c53030;
 }
+.settings-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.settings-content .sparkDialog {
+  margin-bottom: 16px;
+}
+
+.settings-content dt {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.settings-content dd {
+  margin: 0;
+}
+
+.settings-content input[type="text"],
+.settings-content input[type="number"],
+.settings-content textarea,
+.settings-content select {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.settings-content input[type="text"]:focus,
+.settings-content input[type="number"]:focus,
+.settings-content textarea:focus,
+.settings-content select:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
