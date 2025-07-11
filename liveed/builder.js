@@ -51,7 +51,7 @@ function renderPalette(palette, files = []) {
     });
 }
 
-function savePage() {
+function savePage(showAlert = true) {
   const canvas = document.getElementById('canvas');
   const html = canvas.innerHTML;
   const fd = new FormData();
@@ -60,9 +60,11 @@ function savePage() {
   fetch(window.builderBase + '/liveed/save-content.php', {
     method: 'POST',
     body: fd,
-  }).then((r) => r.text()).then(() => {
-    alert('Saved');
-  });
+  })
+    .then((r) => r.text())
+    .then(() => {
+      if (showAlert) alert('Saved');
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -88,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyStoredSettings,
   });
 
-  initUndoRedo({ canvas });
+  initUndoRedo({ canvas, onChange: () => savePage(false) });
   initWysiwyg(canvas, true);
 
   canvas.querySelectorAll('.block-wrapper').forEach(addBlockControls);
