@@ -87,10 +87,14 @@
   color: #fff;
   padding: 4px 6px;
   border-radius: 6px;
-  display: flex;
+  display: none;
   gap: 8px;
   font-size: 14px;
   transition: background 0.2s ease;
+}
+.block-wrapper:hover .block-controls,
+.block-wrapper.selected .block-controls {
+  display: flex;
 }
 .block-controls .control {
   cursor: pointer;
