@@ -166,6 +166,17 @@ $(function(){
         return parseFloat((bytes/Math.pow(k,i)).toFixed(2))+' '+sizes[i];
     }
 
+    function updateSizeEstimate(){
+        if(!cropper){ $('#sizeEstimate').text(''); return; }
+        const canvas = cropper.getCroppedCanvas();
+        const format = $('#saveFormat').val() || 'jpeg';
+        const mime = 'image/' + (format === 'jpg' ? 'jpeg' : format);
+        const quality = format === 'jpeg' ? 0.9 : 1;
+        canvas.toBlob(function(blob){
+            $('#sizeEstimate').text('Estimated: '+formatFileSize(blob.size));
+        }, mime, quality);
+    }
+
     function uploadFiles(files){
         if(!currentFolder || !files.length) return;
         const fd = new FormData();
@@ -294,6 +305,7 @@ $(function(){
         $('#crop-preset').val('NaN');
         cropper.setAspectRatio(NaN);
         cropper.zoomTo(1);
+        updateSizeEstimate();
     }
 
     function saveEditedImage(){
@@ -364,13 +376,18 @@ $(function(){
     });
     $('#scaleSlider').on('input', function(){
         const val = parseFloat(this.value);
-        if(cropper) cropper.zoomTo(val);
+        if(cropper){
+            cropper.zoomTo(val);
+            updateSizeEstimate();
+        }
     });
     $('#crop-preset').change(function(){
         if(!cropper) return;
         const ratio = parseFloat(this.value);
         cropper.setAspectRatio(isNaN(ratio) ? NaN : ratio);
+        updateSizeEstimate();
     });
+    $('#saveFormat').change(updateSizeEstimate);
 
     $('#sort-by').change(function(){ sortBy = this.value; renderImages(); });
     $('#sort-order').change(function(){ sortOrder = this.value; renderImages(); });

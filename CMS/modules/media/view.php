@@ -177,6 +177,7 @@
                                     <div class="form-group">
                                         <label class="form-label" for="scaleSlider">Scale</label>
                                         <input type="range" class="form-input" id="scaleSlider" min="0.5" max="3" step="0.1" value="1">
+                                        <div id="sizeEstimate" class="size-estimate"></div>
                                     </div>
                                     <div class="control-group">
                                         <label for="crop-preset">Crop Presets:</label>
