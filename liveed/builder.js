@@ -54,26 +54,7 @@ function renderPalette(palette, files = []) {
     });
 }
 
-function showModal(message) {
-  const modal = document.createElement('div');
-  modal.className = 'modal active';
-  modal.innerHTML =
-    '<div class="modal-content">' +
-    '<p>' + message + '</p>' +
-    '<div class="modal-footer">' +
-    '<button class="btn btn-primary ok">OK</button>' +
-    '</div></div>';
-  const container = document.querySelector('.builder') || document.body;
-  container.appendChild(modal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.remove();
-  });
-  modal.querySelector('.ok').addEventListener('click', () => {
-    modal.remove();
-  });
-}
-
-function savePage(showAlert = true) {
+function savePage() {
   const canvas = document.getElementById('canvas');
   const statusEl = document.getElementById('saveStatus');
   const html = canvas.innerHTML;
@@ -98,7 +79,6 @@ function savePage(showAlert = true) {
         statusEl.textContent = 'Saved';
         statusEl.classList.remove('saving');
       }
-      if (showAlert) showModal('Saved');
       setTimeout(() => {
         if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
       }, 2000);
@@ -146,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyStoredSettings,
   });
 
-  initUndoRedo({ canvas, onChange: () => savePage(false) });
+  initUndoRedo({ canvas, onChange: savePage });
   initWysiwyg(canvas, true);
 
   canvas.querySelectorAll('.block-wrapper').forEach(addBlockControls);
