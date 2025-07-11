@@ -409,3 +409,50 @@
   background-size: 30px 30px;
   background-position: 0 0, 15px 15px;
 }
+
+
+
+.palette-search {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.palette-search:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.palette-search::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.palette-search:hover {
+  border-color: #b0b8c1;
+}
+
+/* Optional: Add a search icon */
+.palette-search-container {
+  position: relative;
+}
+
+.palette-search-container::before {
+  content: "🔍";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+}
+
+.palette-search-container .palette-search {
+  padding-left: 40px;
+}
