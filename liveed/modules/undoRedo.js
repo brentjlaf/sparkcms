@@ -1,6 +1,7 @@
 export function initUndoRedo(options = {}) {
   const canvas = options.canvas;
   const restore = options.restore;
+  const onChange = options.onChange;
   if (!canvas) return;
   let history = [];
   let index = -1;
@@ -14,6 +15,7 @@ export function initUndoRedo(options = {}) {
     history = history.slice(0, index + 1);
     history.push(html);
     index = history.length - 1;
+    if (typeof onChange === 'function') onChange(html);
   };
 
   const scheduleRecord = () => {
@@ -30,6 +32,7 @@ export function initUndoRedo(options = {}) {
     canvas.innerHTML = html;
     if (restore) restore();
     recording = true;
+    if (typeof onChange === 'function') onChange(html);
   };
 
   const undo = () => {
