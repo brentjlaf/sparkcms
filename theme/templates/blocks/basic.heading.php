@@ -1,3 +1,4 @@
+<!-- File: basic.heading.php -->
 <!-- Template: basic.heading -->
 <templateSetting caption="Heading Settings" order="1">
     <dl class="sparkDialog _tpl-box">

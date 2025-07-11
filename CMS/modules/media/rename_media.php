@@ -1,4 +1,5 @@
 <?php
+// File: rename_media.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_login();
 

@@ -1,3 +1,4 @@
+<!-- File: basic.button.php -->
 <!-- Template: basic.button -->
 <templateSetting caption="Button Settings" order="1">
     <dl class="sparkDialog _tpl-box">

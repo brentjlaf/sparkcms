@@ -1,3 +1,4 @@
+// File: settings.js
 $(function(){
     function loadSettings(){
         $.getJSON('modules/settings/list_settings.php', function(data){

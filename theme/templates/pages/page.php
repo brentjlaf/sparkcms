@@ -1,4 +1,5 @@
 <?php
+// File: page.php
 // Template: page
 // Variables provided by index.php: $settings, $menus, $page, $scriptBase, $themeBase
 $siteName = $settings['site_name'] ?? 'My Site';

@@ -1,4 +1,5 @@
 <?php
+// File: index.php
 require_once __DIR__ . '/includes/auth.php';
 // Load pages from JSON
 $pagesFile = __DIR__ . '/data/pages.json';

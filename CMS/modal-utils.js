@@ -1,3 +1,4 @@
+// File: modal-utils.js
 function openModal(id){
     $('#'+id).addClass('active');
 }

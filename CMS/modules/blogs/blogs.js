@@ -1,3 +1,4 @@
+// File: blogs.js
 $(document).ready(function(){
     let posts = [
         {

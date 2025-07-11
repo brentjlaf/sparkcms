@@ -1,4 +1,5 @@
 <?php
+// File: generate.php
 // Generate sitemap.xml listing all published pages
 
 $pagesFile = __DIR__ . '/../../data/pages.json';

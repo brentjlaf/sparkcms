@@ -1,3 +1,4 @@
+<!-- File: basic.card.php -->
 <!-- Template: basic.card -->
 <templateSetting caption="Card Settings" order="1">
     <dl class="sparkDialog _tpl-box">

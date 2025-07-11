@@ -1,3 +1,4 @@
+<!-- File: basic.divider.php -->
 <!-- Template: basic.divider -->
 <templateSetting caption="Divider Settings" order="1">
     <dl class="sparkDialog _tpl-box">

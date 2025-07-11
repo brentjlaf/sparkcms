@@ -1,4 +1,5 @@
 <?php
+// File: 404.php
 http_response_code(404);
 $settingsFile = __DIR__ . '/CMS/data/settings.json';
 $menusFile = __DIR__ . '/CMS/data/menus.json';

@@ -1,3 +1,4 @@
+// File: dashboard.js
 $(function(){
     function loadStats(){
         $.getJSON('modules/dashboard/dashboard_data.php', function(data){

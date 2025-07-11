@@ -1,3 +1,4 @@
+// File: state.js
 const stateMap = new Map();
 let nextId = 1;
 

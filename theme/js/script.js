@@ -1,3 +1,4 @@
+// File: script.js
 document.addEventListener('DOMContentLoaded', function () {
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.getElementById('main-nav');

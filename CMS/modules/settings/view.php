@@ -1,3 +1,4 @@
+<!-- File: view.php -->
                 <form id="settingsForm">
                     <div class="content-section" id="settings">
                         <div class="form-card" id="settingsFormCard" style="margin-top:20px;">

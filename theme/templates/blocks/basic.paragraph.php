@@ -1,3 +1,4 @@
+<!-- File: basic.paragraph.php -->
 <!-- Template: basic.paragraph -->
 <templateSetting caption="Paragraph Settings" order="1">
     <dl class="sparkDialog _tpl-box">

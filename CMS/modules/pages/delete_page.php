@@ -1,4 +1,5 @@
 <?php
+// File: delete_page.php
 $pagesFile = __DIR__ . '/../../data/pages.json';
 if (!file_exists($pagesFile)) {
     exit('No pages');
