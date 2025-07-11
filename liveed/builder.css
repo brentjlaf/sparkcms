@@ -13,18 +13,18 @@
   font-size: 18px;
   font-weight: 600;
 }
-.builder-header .btn {
+.builder-header .builder-btn {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
-.btn.btn-primary {
+.builder-btn {
   background: #3182ce;
   color: #fff;
 }
-.btn.btn-primary:hover {
+.builder-btn:hover {
   background: #2b6cb0;
 }
 .block-palette {
