@@ -44,6 +44,9 @@ export function initDragDrop(options = {}) {
     canvas.addEventListener('dragend', handleDragEnd, true);
   }
   setupDropArea(canvas);
+  if (canvas) {
+    canvas.querySelectorAll('.drop-area').forEach(setupDropArea);
+  }
 }
 
 function paletteDragStart(e) {
