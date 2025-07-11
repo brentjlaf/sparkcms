@@ -83,7 +83,8 @@ export function confirmDelete(message) {
       '<button class="btn btn-secondary cancel">Cancel</button>' +
       '<button class="btn btn-danger ok">Delete</button>' +
       '</div></div>';
-    document.body.appendChild(modal);
+    const container = document.querySelector('.builder') || document.body;
+    container.appendChild(modal);
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.remove();

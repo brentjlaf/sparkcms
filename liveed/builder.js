@@ -62,7 +62,8 @@ function showModal(message) {
     '<div class="modal-footer">' +
     '<button class="btn btn-primary ok">OK</button>' +
     '</div></div>';
-  document.body.appendChild(modal);
+  const container = document.querySelector('.builder') || document.body;
+  container.appendChild(modal);
   modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.remove();
   });
