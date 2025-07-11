@@ -74,17 +74,40 @@ function showModal(message) {
 
 function savePage(showAlert = true) {
   const canvas = document.getElementById('canvas');
+  const statusEl = document.getElementById('saveStatus');
   const html = canvas.innerHTML;
   const fd = new FormData();
   fd.append('id', window.builderPageId);
   fd.append('content', html);
+  if (statusEl) {
+    statusEl.textContent = 'Saving...';
+    statusEl.classList.add('saving');
+    statusEl.classList.remove('error');
+  }
   fetch(window.builderBase + '/liveed/save-content.php', {
     method: 'POST',
     body: fd,
   })
-    .then((r) => r.text())
+    .then((r) => {
+      if (!r.ok) throw new Error('Save failed');
+      return r.text();
+    })
     .then(() => {
+      if (statusEl) {
+        statusEl.textContent = 'Saved';
+        statusEl.classList.remove('saving');
+      }
       if (showAlert) showModal('Saved');
+      setTimeout(() => {
+        if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
+      }, 2000);
+    })
+    .catch(() => {
+      if (statusEl) {
+        statusEl.textContent = 'Error saving';
+        statusEl.classList.add('error');
+        statusEl.classList.remove('saving');
+      }
     });
 }
 
