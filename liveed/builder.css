@@ -48,6 +48,13 @@
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 8px;
 }
+.palette-search {
+  padding: 6px 8px;
+  margin-bottom: 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  width: 100%;
+}
 .palette-items {
   flex: 1;
   overflow-y: auto;

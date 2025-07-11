@@ -3,6 +3,8 @@ import { initSettings, openSettings, applyStoredSettings, confirmDelete } from '
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 
+let allBlockFiles = [];
+
 function renderPalette(palette, files = []) {
   const container = palette.querySelector('.palette-items');
   if (!container) return;
@@ -75,11 +77,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initSettings({ canvas, settingsPanel, savePage });
 
+  const searchInput = palette.querySelector('.palette-search');
+
   fetch(window.builderBase + '/liveed/list-blocks.php')
     .then((r) => r.json())
     .then((data) => {
-      renderPalette(palette, data.blocks || []);
+      allBlockFiles = data.blocks || [];
+      renderPalette(palette, allBlockFiles);
     });
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      const filtered = allBlockFiles.filter((f) => f.toLowerCase().includes(term));
+      renderPalette(palette, filtered);
+    });
+  }
 
   initDragDrop({
     palette,
