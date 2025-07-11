@@ -193,3 +193,20 @@
 .wysiwyg-toolbar button:hover {
   background: #edf2f7;
 }
+
+/* Palette accordion styles */
+.palette-group {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+.palette-group summary {
+  cursor: pointer;
+  padding: 8px 12px;
+  background: #f7fafc;
+  font-weight: 600;
+}
+.palette-group .group-items {
+  padding: 8px 12px;
+}
