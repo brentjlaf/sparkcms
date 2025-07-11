@@ -126,19 +126,48 @@
 .settings-panel {
   position: fixed;
   top: 0;
-  right: -300px;
-  width: 300px;
+  right: -360px;
+  width: 360px;
   height: 100vh;
   background: #fff;
   border-left: 1px solid #e2e8f0;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: right 0.3s ease;
   padding: 20px;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 .settings-panel.open {
   right: 0;
+}
+.settings-panel .settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -20px -20px 20px -20px;
+  padding: 12px 20px;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+.settings-panel .settings-header .title {
+  font-weight: 600;
+  font-size: 16px;
+}
+.settings-panel .settings-header .close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: #4a5568;
+}
+.settings-panel .settings-header .close-btn:hover {
+  color: #2d3748;
+}
+.settings-panel .btn {
+  margin-right: 8px;
 }
 .wysiwyg-toolbar {
   background: #fff;
