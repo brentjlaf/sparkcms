@@ -1759,16 +1759,22 @@ hr {
   pointer-events: none;
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
+  right: auto;
   width: auto;
   height: auto;
   padding: 3px 10px;
   color: #ffffff;
   font-size: 10px;
   font-family: sans-serif;
-  border-radius: 0 0 0 5px;
+  border-radius: 0 5px 0 0;
   background-color: #007BFF;
   transition: ease 0.2s;
+}
+
+.liveEdBlock.mwPageBlock > .blockContents:hover:before {
+  opacity: 1;
+  visibility: visible;
 }
 
 .liveEdBlock.mwPageBlock.Content > .blockContents:before {
@@ -1828,20 +1834,26 @@ hr {
   pointer-events: none;
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
+  right: auto;
   width: auto;
   height: auto;
   padding: 3px 10px;
   color: #ffffff;
   font-size: 10px;
   font-family: sans-serif;
-  border-radius: 0 0 0 5px;
+  border-radius: 0 5px 0 0;
   background-color: #007BFF;
   transition: ease 0.2s;
 }
 
+[data-tpl-tooltip]:hover:before {
+  opacity: 1;
+  visibility: visible;
+}
+
 .liveEdBlock.mwPageBlock > .blockContents > .row[data-tpl-tooltip]:before {
-  right: 15px;
+  left: 15px;
 }
 
 .liveEdBlock.mwPageBlock.Spacer > .blockContents > .mwSpacer:before {
@@ -1851,16 +1863,22 @@ hr {
   pointer-events: none;
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
+  right: auto;
   width: auto;
   height: auto;
   padding: 3px 10px;
   color: #ffffff;
   font-size: 10px;
   font-family: sans-serif;
-  border-radius: 0 0 0 5px;
+  border-radius: 0 5px 0 0;
   background-color: #007BFF;
   transition: ease 0.2s;
+}
+
+.liveEdBlock.mwPageBlock.Spacer > .blockContents > .mwSpacer:hover:before {
+  opacity: 1;
+  visibility: visible;
 }
 .liveEdBlock.mwPageBlock.Spacer > .blockContents > .mwSpacer.small:before {
   content: "Spacer Widget - small (30px)";
