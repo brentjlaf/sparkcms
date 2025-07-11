@@ -106,4 +106,20 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   if (saveBtn) saveBtn.addEventListener('click', savePage);
+
+  document.addEventListener('mouseover', (e) => {
+    const handle = e.target.closest('.control.drag');
+    if (handle) {
+      const block = handle.closest('.block-wrapper');
+      if (block) block.style.transform = 'scale(1.02)';
+    }
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const handle = e.target.closest('.control.drag');
+    if (handle) {
+      const block = handle.closest('.block-wrapper');
+      if (block) block.style.transform = '';
+    }
+  });
 });

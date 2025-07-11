@@ -15,6 +15,9 @@ const placeholder = document.createElement('div');
 placeholder.className = 'block-placeholder';
 placeholder.innerHTML = '<span class="drop-text">Drop block here</span>';
 
+const insertionIndicator = document.createElement('div');
+insertionIndicator.className = 'insertion-indicator';
+
 export function initDragDrop(options = {}) {
   palette = options.palette;
   canvas = options.canvas;
@@ -42,6 +45,15 @@ function paletteDragStart(e) {
     fromPalette = true;
     e.dataTransfer.setData('text/plain', item.dataset.file || '');
     e.dataTransfer.effectAllowed = 'copy';
+    item.classList.add('dragging');
+
+    const dragImage = item.cloneNode(true);
+    dragImage.classList.add('drag-ghost');
+    dragImage.style.position = 'absolute';
+    dragImage.style.top = '-1000px';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, dragImage.offsetWidth / 2, dragImage.offsetHeight / 2);
+    setTimeout(() => document.body.removeChild(dragImage), 0);
   }
 }
 
@@ -53,6 +65,14 @@ function canvasDragStart(e) {
     dragSource.classList.add('dragging');
     e.dataTransfer.setData('text/plain', 'reorder');
     e.dataTransfer.effectAllowed = 'move';
+
+    const dragImage = dragSource.cloneNode(true);
+    dragImage.classList.add('drag-ghost');
+    dragImage.style.position = 'absolute';
+    dragImage.style.top = '-1000px';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, dragImage.offsetWidth / 2, dragImage.offsetHeight / 2);
+    setTimeout(() => document.body.removeChild(dragImage), 0);
   } else if (e.target.closest('.block-wrapper')) {
     e.preventDefault();
   }
@@ -110,6 +130,7 @@ function handleDragLeave(e) {
   if (area && (!e.relatedTarget || !area.contains(e.relatedTarget))) {
     area.classList.remove('drag-over');
     placeholder.remove();
+    insertionIndicator.remove();
     if (currentDropArea === area) currentDropArea = null;
   }
 }
@@ -124,6 +145,10 @@ function handleDragOver(e) {
     area.appendChild(placeholder);
   } else {
     area.insertBefore(placeholder, after);
+  }
+  insertionIndicator.remove();
+  if (placeholder.parentNode) {
+    placeholder.parentNode.insertBefore(insertionIndicator, placeholder);
   }
 }
 
@@ -156,6 +181,7 @@ function handleDrop(e) {
     else area.insertBefore(dragSource, after);
   }
   placeholder.remove();
+  insertionIndicator.remove();
   area.classList.remove('drag-over');
   dragSource = null;
   fromPalette = false;
@@ -164,6 +190,7 @@ function handleDrop(e) {
 
 function handleDragEnd() {
   placeholder.remove();
+  insertionIndicator.remove();
   if (dragSource) dragSource.classList.remove('dragging');
   dragSource = null;
   currentDropArea = null;
