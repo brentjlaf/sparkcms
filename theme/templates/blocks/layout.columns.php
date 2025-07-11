@@ -11,7 +11,7 @@
     </dl>
 </templateSetting>
 
-<div class="row" data-tpl-tooltip="Columns">
+<div class="row drop-area" data-tpl-tooltip="Columns">
     <toggle rel="custom_cols" value="2">
         <div class="col"><div class="drop-area"></div></div>
         <div class="col"><div class="drop-area"></div></div>

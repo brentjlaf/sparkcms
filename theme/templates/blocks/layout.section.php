@@ -10,12 +10,8 @@
     </dl>
 </templateSetting>
 <toggle rel="custom_type" value="container">
-    <section class="container" data-tpl-tooltip="Section">
-        <div class="drop-area"></div>
-    </section>
+    <section class="container drop-area" data-tpl-tooltip="Section"></section>
 </toggle>
 <toggle rel="custom_type" value="container-fluid">
-    <section class="container-fluid" data-tpl-tooltip="Section">
-        <div class="drop-area"></div>
-    </section>
+    <section class="container-fluid drop-area" data-tpl-tooltip="Section"></section>
 </toggle>
