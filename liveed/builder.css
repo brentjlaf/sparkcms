@@ -223,6 +223,49 @@
 .settings-panel .btn {
   margin-right: 8px;
 }
+
+/* Settings form styles */
+.settings-panel .settings-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-panel .settings-content dl {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f7fafc;
+}
+
+.settings-panel .settings-content dt {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.settings-panel .settings-content dd {
+  margin: 0 0 12px 0;
+}
+
+.settings-panel .settings-content input[type="text"],
+.settings-panel .settings-content input[type="number"],
+.settings-panel .settings-content textarea,
+.settings-panel .settings-content select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.settings-panel .settings-content textarea {
+  min-height: 80px;
+  resize: vertical;
+}
 .wysiwyg-toolbar {
   background: #fff;
   border: 1px solid #ddd;
