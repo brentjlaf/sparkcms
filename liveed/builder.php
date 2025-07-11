@@ -51,12 +51,12 @@ foreach ($blocks as $b) {
     $paletteItems .= '<div class="block-item" draggable="true" data-file="' . htmlspecialchars($b) . '">' . htmlspecialchars(basename($b, '.php')) . '</div>';
 }
 $builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span><button id="saveBtn" class="btn btn-primary">Save</button></header>';
-$builderStart = '<div class="builder"><aside class="block-palette"><h2>Blocks</h2><div class="palette-items">' . $paletteItems . '</div></aside><main class="canvas-container">';
+$builderStart = '<div class="builder"><aside class="block-palette">' . $builderHeader . '<h2>Blocks</h2><div class="palette-items">' . $paletteItems . '</div></aside><main class="canvas-container">';
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-content"></div></div></div>' .
     '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>' .
     '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
 
-$themeHtml = preg_replace('/<body([^>]*)>/', '<body$1>' . $builderHeader . $builderStart, $themeHtml, 1);
+$themeHtml = preg_replace('/<body([^>]*)>/', '<body$1>' . $builderStart, $themeHtml, 1);
 $themeHtml = preg_replace('/<\/body>/', $builderEnd . '</body>', $themeHtml, 1);
 
 echo $themeHtml;
