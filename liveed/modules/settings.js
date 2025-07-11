@@ -5,6 +5,17 @@ let settingsPanel;
 let settingsContent;
 let savePageFn;
 
+function getTemplateSettingElement(block) {
+  return (
+    block.querySelector('templateSetting') ||
+    (() => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = block.dataset.original || block.innerHTML;
+      return wrap.querySelector('templateSetting');
+    })()
+  );
+}
+
 export function initSettings(options = {}) {
   canvas = options.canvas;
   settingsPanel = options.settingsPanel;
@@ -90,7 +101,7 @@ export function confirmDelete(message) {
 }
 
 function getSettingsForm(template, block) {
-  const templateSetting = block.querySelector('templateSetting');
+  const templateSetting = getTemplateSettingElement(block);
   let form = '';
   if (templateSetting) {
     form += templateSetting.innerHTML;
@@ -103,7 +114,7 @@ function getSettingsForm(template, block) {
 }
 
 function initTemplateSettingValues(block) {
-  const templateSetting = block.querySelector('templateSetting');
+  const templateSetting = getTemplateSettingElement(block);
   if (!templateSetting || !settingsPanel) return;
   const inputs = settingsPanel.querySelectorAll('input[name], textarea[name], select[name]');
   inputs.forEach((input) => {
@@ -120,12 +131,7 @@ function renderBlock(block) {
   const settings = getSettings(block);
   const original = block.dataset.original || block.innerHTML;
   let html = original;
-  const templateSetting =
-    block.querySelector('templateSetting') || (function () {
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = original;
-      return wrapper.querySelector('templateSetting');
-    })();
+  const templateSetting = getTemplateSettingElement(block);
   if (!templateSetting) return;
   const inputs = templateSetting.querySelectorAll('input[name], textarea[name], select[name]');
   inputs.forEach((input) => {
@@ -134,6 +140,7 @@ function renderBlock(block) {
     settings[name] = value;
     html = html.split('{' + name + '}').join(value);
   });
+  html = html.replace(/<templateSetting[^>]*>[\s\S]*?<\/templateSetting>/i, '');
   block.innerHTML = html;
   inputs.forEach((input) => {
     const name = input.name;

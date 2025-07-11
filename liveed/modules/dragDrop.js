@@ -82,6 +82,8 @@ export function addBlockControls(block) {
   if (!block.dataset.original) {
     block.dataset.original = block.innerHTML;
   }
+  const ts = block.querySelector('templateSetting');
+  if (ts) ts.remove();
   const areas = block.querySelectorAll('.drop-area');
   areas.forEach(setupDropArea);
   if (areas.length === 0) {
