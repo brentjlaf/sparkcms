@@ -70,18 +70,7 @@ function renderFooterMenu($items){
 		<div id="app" class="page-template default-page">
 
                         <!-- Header -->
-                        <header id="header-area" class="site-header">
-                                <div class="container header-inner">
-                                        <a href="<?php echo $scriptBase; ?>/" class="logo"><img src="<?php echo htmlspecialchars($logo); ?>" alt="Logo"></a>
-                                        <nav class="main-nav" id="main-nav">
-                                                <ul>
-                                                        <?php renderMenu($mainMenu); ?>
-                                                </ul>
-                                        </nav>
-                                        <a href="/contact" class="cta-btn">Contact Us</a>
-                                        <button class="nav-toggle" aria-label="Toggle Menu"><i class="fa-solid fa-bars"></i></button>
-                                </div>
-                        </header>
+                        <!-- Header moved to block palette -->
 
                         <!-- Main -->
                         <main id="main-area">
