@@ -173,12 +173,14 @@ function handleDrop(e) {
           if (after == null) area.appendChild(wrapper);
           else area.insertBefore(wrapper, after);
           if (openSettings) openSettings(wrapper);
+          document.dispatchEvent(new Event('canvasUpdated'));
         });
     }
   } else if (dragSource) {
     dragSource.classList.remove('dragging');
     if (after == null) area.appendChild(dragSource);
     else area.insertBefore(dragSource, after);
+    document.dispatchEvent(new Event('canvasUpdated'));
   }
   placeholder.remove();
   insertionIndicator.remove();

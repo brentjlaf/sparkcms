@@ -95,6 +95,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   canvas.querySelectorAll('.block-wrapper').forEach(addBlockControls);
 
+  function updateCanvasPlaceholder() {
+    const placeholder = canvas.querySelector('.canvas-placeholder');
+    if (!placeholder) return;
+    const hasBlocks = canvas.querySelector('.block-wrapper');
+    placeholder.style.display = hasBlocks ? 'none' : '';
+  }
+
+  updateCanvasPlaceholder();
+
+  document.addEventListener('canvasUpdated', updateCanvasPlaceholder);
+
   canvas.addEventListener('click', (e) => {
     const block = e.target.closest('.block-wrapper');
     if (!block) return;
@@ -102,7 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
       openSettings(block);
     } else if (e.target.closest('.block-controls .delete')) {
       confirmDelete('Delete this block?').then((ok) => {
-        if (ok) block.remove();
+        if (ok) {
+          block.remove();
+          updateCanvasPlaceholder();
+        }
       });
     }
   });
