@@ -102,8 +102,8 @@
   font-size: 14px;
   transition: background 0.2s ease;
 }
-.block-wrapper:hover .block-controls,
-.block-wrapper.selected .block-controls {
+.block-wrapper:hover > .block-controls,
+.block-wrapper.selected > .block-controls {
   display: flex;
 }
 .block-controls .control {
