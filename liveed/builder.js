@@ -116,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('canvas');
   const palette = document.querySelector('.block-palette');
   const settingsPanel = document.getElementById('settingsPanel');
-  const saveBtn = document.getElementById('saveBtn');
 
   initSettings({ canvas, settingsPanel, savePage });
 
@@ -177,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  if (saveBtn) saveBtn.addEventListener('click', savePage);
 
   document.addEventListener('mouseover', (e) => {
     const handle = e.target.closest('.control.drag');

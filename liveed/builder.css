@@ -15,20 +15,6 @@
   font-size: 18px;
   font-weight: 600;
 }
-.builder-header .builder-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.builder-btn {
-  background: #3182ce;
-  color: #fff;
-}
-.builder-btn:hover {
-  background: #2b6cb0;
-}
 .save-status {
   margin-left: 10px;
   font-size: 14px;
