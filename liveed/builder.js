@@ -54,6 +54,7 @@ function renderPalette(palette, files = []) {
     });
 }
 
+let saveTimer;
 function savePage() {
   const canvas = document.getElementById('canvas');
   const statusEl = document.getElementById('saveStatus');
@@ -92,12 +93,17 @@ function savePage() {
     });
 }
 
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(savePage, 200);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('canvas');
   const palette = document.querySelector('.block-palette');
   const settingsPanel = document.getElementById('settingsPanel');
 
-  initSettings({ canvas, settingsPanel, savePage });
+  initSettings({ canvas, settingsPanel, savePage: scheduleSave });
 
   const searchInput = palette.querySelector('.palette-search');
 
@@ -125,8 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
     applyStoredSettings,
   });
 
-  initUndoRedo({ canvas, onChange: savePage });
+  initUndoRedo({ canvas, onChange: scheduleSave });
   initWysiwyg(canvas, true);
+
+  canvas.addEventListener('input', scheduleSave);
+  canvas.addEventListener('change', scheduleSave);
 
   canvas.querySelectorAll('.block-wrapper').forEach(addBlockControls);
 
@@ -140,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCanvasPlaceholder();
 
   document.addEventListener('canvasUpdated', updateCanvasPlaceholder);
-  document.addEventListener('canvasUpdated', savePage);
+  document.addEventListener('canvasUpdated', scheduleSave);
 
   canvas.addEventListener('click', (e) => {
     const block = e.target.closest('.block-wrapper');
@@ -152,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ok) {
           block.remove();
           updateCanvasPlaceholder();
-          savePage();
+          scheduleSave();
         }
       });
     }
