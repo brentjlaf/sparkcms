@@ -1,0 +1,9 @@
+<templateSetting caption="Video Settings" order="1">
+    <dl class="sparkDialog _tpl-box">
+        <dt>Embed URL</dt>
+        <dd><input type="text" name="custom_src" value="https://www.youtube.com/embed/dQw4w9WgXcQ"></dd>
+    </dl>
+</templateSetting>
+<div class="video-block" data-tpl-tooltip="Video">
+    <iframe src="{custom_src}" frameborder="0" allowfullscreen></iframe>
+</div>
