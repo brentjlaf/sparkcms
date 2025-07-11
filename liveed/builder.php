@@ -40,7 +40,7 @@ $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
 $builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span><button id="saveBtn" class="btn btn-primary">Save</button></header>';
-$builderStart = '<div class="builder"><aside class="block-palette"><h2>Blocks</h2><div class="palette-items"></div></aside><main class="canvas-container">';
+$builderStart = '<div class="builder"><aside class="block-palette"><h2>Blocks</h2><input type="text" class="palette-search" placeholder="Search blocks"><div class="palette-items"></div></aside><main class="canvas-container">';
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div></div>' .
     '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>' .
     '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
