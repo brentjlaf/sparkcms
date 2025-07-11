@@ -150,6 +150,9 @@
 }
 .drop-area {
   position: relative;
+  height: auto;
+  background: #efefef;
+  padding: 40px 0;
 }
 
 .drop-area.drag-over {
@@ -277,7 +280,6 @@
   border-style: solid;
   background: linear-gradient(135deg, #ebf8ff 0%, #bee3f8 100%);
   box-shadow: 0 8px 25px rgba(49, 130, 206, 0.15);
-  transform: scale(1.01);
 }
 
 .block-wrapper {
