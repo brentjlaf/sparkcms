@@ -1,40 +1,56 @@
 .builder {
   display: flex;
   min-height: 100vh;
-  font-family: Arial, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 .builder-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #667eea;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
-  padding: 10px 20px;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.builder-header .title {
+  font-size: 18px;
+  font-weight: 600;
 }
 .builder-header .btn {
-  padding: 6px 12px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 .btn.btn-primary {
   background: #3182ce;
   color: #fff;
 }
+.btn.btn-primary:hover {
+  background: #2b6cb0;
+}
 .block-palette {
-  width: 220px;
-  background: #f5f5f5;
-  border-right: 1px solid #ddd;
-  padding: 10px;
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  padding: 12px;
   overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
 }
 .block-item {
   background: #fff;
-  border: 1px solid #ddd;
-  padding: 6px;
-  margin-bottom: 6px;
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  margin-bottom: 8px;
   cursor: grab;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+.block-item:hover {
+  background: #f7fafc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .canvas-container {
   flex: 1;
@@ -45,7 +61,14 @@
   min-height: 600px;
   background: #fff;
   border: 2px dashed #cbd5e0;
-  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.canvas.drag-over {
+  border-color: #3182ce;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 .canvas-placeholder {
   color: #a0aec0;
@@ -58,18 +81,23 @@
 }
 .block-controls {
   position: absolute;
-  top: -30px;
+  top: -32px;
   right: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   color: #fff;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
   display: flex;
-  gap: 6px;
+  gap: 8px;
   font-size: 14px;
+  transition: background 0.2s ease;
 }
 .block-controls .control {
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+.block-controls .control:hover {
+  color: #ffd700;
 }
 .block-placeholder {
   border: 2px dashed #667eea;
@@ -87,10 +115,11 @@
   width: 300px;
   height: 100vh;
   background: #fff;
-  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+  border-left: 1px solid #e2e8f0;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
   overflow-y: auto;
   transition: right 0.3s ease;
-  padding: 10px;
+  padding: 20px;
   z-index: 1000;
 }
 .settings-panel.open {
@@ -109,4 +138,10 @@
   border: none;
   cursor: pointer;
   margin: 0 2px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+.wysiwyg-toolbar button:hover {
+  background: #edf2f7;
 }
