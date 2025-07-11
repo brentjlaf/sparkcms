@@ -53,6 +53,24 @@ function renderPalette(palette, files = []) {
     });
 }
 
+function showModal(message) {
+  const modal = document.createElement('div');
+  modal.className = 'modal active';
+  modal.innerHTML =
+    '<div class="modal-content">' +
+    '<p>' + message + '</p>' +
+    '<div class="modal-footer">' +
+    '<button class="btn btn-primary ok">OK</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+  modal.querySelector('.ok').addEventListener('click', () => {
+    modal.remove();
+  });
+}
+
 function savePage(showAlert = true) {
   const canvas = document.getElementById('canvas');
   const html = canvas.innerHTML;
@@ -65,7 +83,7 @@ function savePage(showAlert = true) {
   })
     .then((r) => r.text())
     .then(() => {
-      if (showAlert) alert('Saved');
+      if (showAlert) showModal('Saved');
     });
 }
 
