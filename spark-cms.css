@@ -47,60 +47,6 @@ body {
     padding: 80px 20px 60px;
 }
 
-/* Canvas area used in the page editor */
-.canvas-container {
-    flex: 1;
-    padding: 30px;
-    overflow: auto;
-}
-
-.canvas {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    min-height: 600px;
-    padding: 40px;
-    position: relative;
-    border: 2px dashed #e2e8f0;
-    transition: all 0.3s ease;
-}
-
-.canvas:hover {
-    border-color: #667eea;
-    box-shadow: 0 6px 30px rgba(0,0,0,0.12);
-}
-
-.canvas.drag-over {
-    border-color: #3182ce;
-}
-
-.sortable-ghost {
-    opacity: 0.5;
-}
-
-.canvas-placeholder {
-    text-align: center;
-    color: #a0aec0;
-    font-size: 18px;
-    margin-top: 150px;
-}
-
-.canvas-placeholder::before {
-    content: "\1F3A8";
-    font-size: 48px;
-    display: block;
-    margin-bottom: 20px;
-}
-
-@media (max-width: 480px) {
-    .canvas-container {
-        padding: 15px;
-    }
-    .canvas {
-        min-height: 400px;
-        padding: 20px;
-    }
-}
 
 /* Footer */
 .footer {
@@ -114,44 +60,4 @@ body {
     margin-bottom: 0;
 }
 
-/* Drop area styling used during drag and drop */
-.drop-area {
-    position: relative;
-    height: auto;
-    background: #efefef;
-    padding: 40px 0;
-    border: 2px dashed transparent;
-    box-sizing: border-box;
-    transition: background 0.2s, border-color 0.2s;
-}
-
-.drop-area:hover {
-    background: #f7fafc;
-    border-color: #3182ce;
-    cursor: pointer;
-}
-
-.drop-area.drag-over {
-    background: #ebf4ff;
-}
-
-.drop-area.drag-over::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    border: 3px dashed #3182ce;
-    border-radius: 8px;
-    background: rgba(49, 130, 206, 0.1);
-    pointer-events: none;
-    animation: dropZonePulse 0.8s infinite;
-    box-shadow: 0 0 8px rgba(66, 153, 225, 0.6);
-}
-
-@keyframes dropZonePulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(66, 153, 225, 0.5); }
-    50% { box-shadow: 0 0 0 10px rgba(66, 153, 225, 0); }
-}
 
