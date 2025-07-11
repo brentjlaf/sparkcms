@@ -291,6 +291,8 @@ $(function(){
         flipX = 1;
         flipY = 1;
         $('#scaleSlider').val(1);
+        $('#crop-preset').val('NaN');
+        cropper.setAspectRatio(NaN);
         cropper.zoomTo(1);
     }
 
@@ -363,6 +365,11 @@ $(function(){
     $('#scaleSlider').on('input', function(){
         const val = parseFloat(this.value);
         if(cropper) cropper.zoomTo(val);
+    });
+    $('#crop-preset').change(function(){
+        if(!cropper) return;
+        const ratio = parseFloat(this.value);
+        cropper.setAspectRatio(isNaN(ratio) ? NaN : ratio);
     });
 
     $('#sort-by').change(function(){ sortBy = this.value; renderImages(); });

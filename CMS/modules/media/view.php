@@ -178,6 +178,18 @@
                                         <label class="form-label" for="scaleSlider">Scale</label>
                                         <input type="range" class="form-input" id="scaleSlider" min="0.5" max="3" step="0.1" value="1">
                                     </div>
+                                    <div class="control-group">
+                                        <label for="crop-preset">Crop Presets:</label>
+                                        <select id="crop-preset">
+                                            <option value="NaN">Freeform</option>
+                                            <option value="1">1:1 (Square)</option>
+                                            <option value="1.7777">16:9 (Wide)</option>
+                                            <option value="1.3333">4:3 (Standard)</option>
+                                            <option value="0.6667">2:3 (3x5)</option>
+                                            <option value="0.75">3:4 (4x6)</option>
+                                            <option value="0.7143">5:7</option>
+                                        </select>
+                                    </div>
                                     <div class="form-group">
                                         <label class="form-label" for="saveFormat">Format</label>
                                         <select class="form-select" id="saveFormat">
