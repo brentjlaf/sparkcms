@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var nav = document.getElementById('main-nav');
   if (toggle && nav) {
     toggle.addEventListener('click', function () {
-      nav.classList.toggle('open');
+      nav.classList.toggle('active');
     });
   }
 });
