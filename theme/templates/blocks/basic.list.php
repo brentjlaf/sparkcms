@@ -1,3 +1,4 @@
+<!-- Template: basic.list -->
 <templateSetting caption="List Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Type</dt>

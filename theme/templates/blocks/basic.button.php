@@ -1,3 +1,4 @@
+<!-- Template: basic.button -->
 <templateSetting caption="Button Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Text</dt>

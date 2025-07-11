@@ -1,3 +1,4 @@
+<!-- Template: basic.divider -->
 <templateSetting caption="Divider Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Style</dt>

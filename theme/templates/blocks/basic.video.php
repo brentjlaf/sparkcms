@@ -1,3 +1,4 @@
+<!-- Template: basic.video -->
 <templateSetting caption="Video Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Embed URL</dt>

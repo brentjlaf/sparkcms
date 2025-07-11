@@ -1,3 +1,4 @@
+<!-- Template: basic.spacer -->
 <templateSetting caption="Spacer Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Height (px)</dt>

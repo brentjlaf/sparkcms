@@ -1,4 +1,5 @@
 <?php
+// Template: search
 // Variables provided by index.php: $settings, $menus, $page, $scriptBase, $themeBase
 $siteName = $settings['site_name'] ?? 'My Site';
 if (!empty($settings['logo'])) {
