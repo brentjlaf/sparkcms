@@ -1039,7 +1039,7 @@
 #imageEditModal .crop-container{flex:1;text-align:center}
 #imageEditModal .modal-content{
     min-width:600px;
-    max-width:none;
+    max-width: 1000px;
     max-height:60vh;
 }
 #imageInfoModal .modal-content{max-width:900px;}
