@@ -32,25 +32,40 @@
   background: #2b6cb0;
 }
 .block-palette {
-  width: 240px;
-  background: #ffffff;
+  width: 260px;
+  background: #f8fafc;
   border-right: 1px solid #e2e8f0;
-  padding: 12px;
+  padding: 16px;
   overflow-y: auto;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+.block-palette h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+.palette-items {
+  flex: 1;
+  overflow-y: auto;
 }
 .block-item {
   background: #fff;
   border: 1px solid #e2e8f0;
-  padding: 8px 12px;
+  padding: 10px 12px;
   margin-bottom: 8px;
   cursor: grab;
   border-radius: 6px;
   transition: background 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 .block-item:hover {
-  background: #f7fafc;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: #edf2f7;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 .canvas-container {
   flex: 1;
@@ -87,10 +102,14 @@
   color: #fff;
   padding: 4px 6px;
   border-radius: 6px;
-  display: flex;
+  display: none;
   gap: 8px;
   font-size: 14px;
   transition: background 0.2s ease;
+}
+.block-wrapper:hover .block-controls,
+.block-wrapper.selected .block-controls {
+  display: flex;
 }
 .block-controls .control {
   cursor: pointer;
@@ -111,19 +130,48 @@
 .settings-panel {
   position: fixed;
   top: 0;
-  right: -300px;
-  width: 300px;
+  right: -360px;
+  width: 360px;
   height: 100vh;
   background: #fff;
   border-left: 1px solid #e2e8f0;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   transition: right 0.3s ease;
   padding: 20px;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 .settings-panel.open {
   right: 0;
+}
+.settings-panel .settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -20px -20px 20px -20px;
+  padding: 12px 20px;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+.settings-panel .settings-header .title {
+  font-weight: 600;
+  font-size: 16px;
+}
+.settings-panel .settings-header .close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: #4a5568;
+}
+.settings-panel .settings-header .close-btn:hover {
+  color: #2d3748;
+}
+.settings-panel .btn {
+  margin-right: 8px;
 }
 .wysiwyg-toolbar {
   background: #fff;
