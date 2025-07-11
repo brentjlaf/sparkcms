@@ -10,5 +10,6 @@
         </nav>
         <a href="/contact" class="cta-btn">Contact Us</a>
         <button class="nav-toggle" aria-label="Toggle Menu"><i class="fa-solid fa-bars"></i></button>
+        <div class="drop-area"></div>
     </div>
 </header>
