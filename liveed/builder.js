@@ -44,6 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!block) return;
     if (e.target.closest('.block-controls .edit')) {
       openSettings(block);
+    } else if (e.target.closest('.block-controls .move-up')) {
+      const prev = block.previousElementSibling;
+      if (prev) block.parentNode.insertBefore(block, prev);
+    } else if (e.target.closest('.block-controls .move-down')) {
+      const next = block.nextElementSibling;
+      if (next) block.parentNode.insertBefore(next, block);
     } else if (e.target.closest('.block-controls .delete')) {
       confirmDelete('Delete this block?').then((ok) => {
         if (ok) block.remove();
