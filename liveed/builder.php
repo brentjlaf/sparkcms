@@ -20,13 +20,6 @@ if (substr($scriptBase, -7) === '/liveed') {
     $scriptBase = substr($scriptBase, 0, -7);
 }
 $themeBase = $scriptBase . '/theme';
-$blocksDir = __DIR__ . '/../theme/templates/blocks';
-$blocks = [];
-if (is_dir($blocksDir)) {
-    foreach (scandir($blocksDir) as $f) {
-        if (substr($f, -4) === '.php') $blocks[] = $f;
-    }
-}
 
 // Load settings and menus for the theme template
 $settingsFile = __DIR__ . '/../CMS/data/settings.json';
@@ -46,12 +39,8 @@ $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\
     "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
-$paletteItems = '';
-foreach ($blocks as $b) {
-    $paletteItems .= '<div class="block-item" draggable="true" data-file="' . htmlspecialchars($b) . '">' . htmlspecialchars(basename($b, '.php')) . '</div>';
-}
 $builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span><button id="saveBtn" class="btn btn-primary">Save</button></header>';
-$builderStart = '<div class="builder"><aside class="block-palette"><h2>Blocks</h2><div class="palette-items">' . $paletteItems . '</div></aside><main class="canvas-container">';
+$builderStart = '<div class="builder"><aside class="block-palette"><h2>Blocks</h2><div class="palette-items"></div></aside><main class="canvas-container">';
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div></div>' .
     '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>' .
     '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';

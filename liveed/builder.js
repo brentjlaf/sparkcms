@@ -3,6 +3,55 @@ import { initSettings, openSettings, applyStoredSettings, confirmDelete } from '
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 
+function renderPalette(palette, files = []) {
+  const container = palette.querySelector('.palette-items');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const groups = {};
+  files.forEach((f) => {
+    if (!f.endsWith('.php')) return;
+    const base = f.replace(/\.php$/, '');
+    const parts = base.split('.');
+    const group = parts.shift();
+    const label = parts.join(' ') || group;
+    if (!groups[group]) groups[group] = [];
+    groups[group].push({ file: f, label });
+  });
+
+  Object.keys(groups)
+    .sort()
+    .forEach((g) => {
+      const details = document.createElement('details');
+      details.className = 'palette-group';
+      details.open = true;
+
+      const summary = document.createElement('summary');
+      summary.textContent = g.charAt(0).toUpperCase() + g.slice(1);
+      details.appendChild(summary);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'group-items';
+
+      groups[g]
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .forEach((it) => {
+          const item = document.createElement('div');
+          item.className = 'block-item';
+          item.setAttribute('draggable', 'true');
+          item.dataset.file = it.file;
+          const label = it.label
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+          item.textContent = label;
+          wrap.appendChild(item);
+        });
+
+      details.appendChild(wrap);
+      container.appendChild(details);
+    });
+}
+
 function savePage() {
   const canvas = document.getElementById('canvas');
   const html = canvas.innerHTML;
@@ -24,6 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveBtn = document.getElementById('saveBtn');
 
   initSettings({ canvas, settingsPanel, savePage });
+
+  fetch(window.builderBase + '/liveed/list-blocks.php')
+    .then((r) => r.json())
+    .then((data) => {
+      renderPalette(palette, data.blocks || []);
+    });
 
   initDragDrop({
     palette,
