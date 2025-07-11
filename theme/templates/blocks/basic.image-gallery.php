@@ -1,3 +1,4 @@
+<!-- File: basic.image-gallery.php -->
 <!-- Template: basic.image-gallery -->
 <templateSetting caption="Gallery Settings" order="1">
     <dl class="sparkDialog _tpl-box">

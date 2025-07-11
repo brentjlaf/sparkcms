@@ -1,3 +1,4 @@
+// File: wysiwyg.js
 export function initWysiwyg(canvas, loggedIn) {
   if (!loggedIn) return;
 

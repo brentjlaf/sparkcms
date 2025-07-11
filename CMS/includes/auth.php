@@ -1,4 +1,5 @@
 <?php
+// File: auth.php
 session_start();
 
 // Path to users.json

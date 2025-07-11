@@ -1,3 +1,4 @@
+// File: builder.js
 import { initDragDrop, addBlockControls } from './modules/dragDrop.js';
 import { initSettings, openSettings, applyStoredSettings, confirmDelete } from './modules/settings.js';
 import { initUndoRedo } from './modules/undoRedo.js';

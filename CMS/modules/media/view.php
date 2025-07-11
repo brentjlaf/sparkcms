@@ -1,3 +1,4 @@
+<!-- File: view.php -->
                 <div class="content-section" id="media">
                     <div class="media-container">
                         <div class="stats-grid">

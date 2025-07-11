@@ -1,3 +1,4 @@
+<!-- File: layout.columns.php -->
 <!-- Template: layout.columns -->
 <templateSetting caption="Settings" order="1">
     <dl class="sparkDialog _tpl-box">

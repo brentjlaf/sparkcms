@@ -1,4 +1,5 @@
 <?php
+// File: load-block.php
 require_once __DIR__ . '/../CMS/includes/auth.php';
 require_login();
 

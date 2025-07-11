@@ -1,3 +1,4 @@
+// File: undoRedo.js
 export function initUndoRedo(options = {}) {
   const canvas = options.canvas;
   const restore = options.restore;

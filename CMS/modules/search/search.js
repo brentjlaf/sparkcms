@@ -1,3 +1,4 @@
+// File: search.js
 $(function(){
     const query = $('#search').data('query');
     if(query){

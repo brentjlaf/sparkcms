@@ -1,3 +1,4 @@
+<!-- File: view.php -->
                 <div class="content-section" id="menus">
                     <div class="table-card">
                         <div class="table-header">

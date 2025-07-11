@@ -1,3 +1,4 @@
+// File: settings.js
 import { ensureBlockState, getSetting, setSetting, getSettings } from './state.js';
 import { addBlockControls } from './dragDrop.js';
 

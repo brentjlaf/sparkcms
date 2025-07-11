@@ -1,3 +1,4 @@
+// File: pages.js
 $(function(){
         $('#pageTabs').tabs();
 

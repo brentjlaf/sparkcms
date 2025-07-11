@@ -1,3 +1,4 @@
+<!-- File: view.php -->
                 <div class="content-section active" id="dashboard">
                     <div class="stats-grid">
                         <div class="stat-card">

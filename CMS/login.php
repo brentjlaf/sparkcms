@@ -1,4 +1,5 @@
 <?php
+// File: login.php
 require_once __DIR__ . '/includes/auth.php';
 
 $settingsFile = __DIR__ . '/data/settings.json';

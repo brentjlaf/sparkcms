@@ -1,3 +1,4 @@
+// File: users.js
 $(function(){
     function loadUsers(){
         $.getJSON('modules/users/list_users.php', function(data){

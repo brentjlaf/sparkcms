@@ -1,3 +1,4 @@
+// File: dragDrop.js
 import { ensureBlockState } from './state.js';
 
 let palette;

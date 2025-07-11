@@ -1,4 +1,5 @@
 <?php
+// File: index.php
 // Determine the requested path for clean URLs.
 // When the CMS is installed in a subdirectory we need to strip that base
 // directory from the request URI so that routing works correctly.

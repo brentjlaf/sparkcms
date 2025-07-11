@@ -1,4 +1,5 @@
 <?php
+// File: 404.php
 // Template: errors/404
 // Variables provided by index.php: $settings, $menus, $page, $scriptBase, $themeBase
 $siteName = $settings['site_name'] ?? 'My Site';

@@ -1,3 +1,4 @@
+// File: mediaPicker.js
 let basePath = '';
 let mediaPickerModal;
 let pickerFolderList;
