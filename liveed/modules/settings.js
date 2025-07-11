@@ -1,4 +1,5 @@
 import { ensureBlockState, getSetting, setSetting, getSettings } from './state.js';
+import { addBlockControls } from './dragDrop.js';
 
 let canvas;
 let settingsPanel;
@@ -172,4 +173,5 @@ function applySettings(template, block) {
     setSetting(block, name, value);
   });
   renderBlock(block);
+  addBlockControls(block);
 }

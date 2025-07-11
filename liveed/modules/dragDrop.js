@@ -80,6 +80,7 @@ function canvasDragStart(e) {
 
 export function addBlockControls(block) {
   ensureBlockState(block);
+  if (applyStoredSettings) applyStoredSettings(block);
   if (!loggedIn) {
     const existing = block.querySelector('.block-controls');
     if (existing) existing.remove();
@@ -109,7 +110,6 @@ export function addBlockControls(block) {
   if (areas.length === 0) {
     setupDropArea(block);
   }
-  if (applyStoredSettings) applyStoredSettings(block);
 }
 
 export function setupDropArea(area) {
@@ -168,8 +168,8 @@ function handleDrop(e) {
           wrapper.dataset.template = file;
           wrapper.dataset.original = html;
           wrapper.innerHTML = html;
-          addBlockControls(wrapper);
           if (applyStoredSettings) applyStoredSettings(wrapper);
+          addBlockControls(wrapper);
           if (after == null) area.appendChild(wrapper);
           else area.insertBefore(wrapper, after);
           if (openSettings) openSettings(wrapper);
