@@ -11,7 +11,17 @@ function getTemplateSettingElement(block) {
     block.querySelector('templateSetting') ||
     (() => {
       const wrap = document.createElement('div');
-      wrap.innerHTML = block.dataset.original || block.innerHTML;
+      const settings = getSettings(block) || {};
+      const encoded = block.dataset.ts || settings.ts;
+      if (encoded) {
+        try {
+          wrap.innerHTML = atob(encoded);
+        } catch (e) {
+          wrap.innerHTML = '';
+        }
+      } else {
+        wrap.innerHTML = block.dataset.original || block.innerHTML;
+      }
       return wrap.querySelector('templateSetting');
     })()
   );

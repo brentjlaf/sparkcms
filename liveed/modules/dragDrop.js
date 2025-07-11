@@ -11,6 +11,13 @@ let dragSource = null;
 let fromPalette = false;
 let currentDropArea = null;
 
+function extractTemplateSetting(html) {
+  const match = html.match(/<templateSetting[^>]*>[\s\S]*?<\/templateSetting>/i);
+  const ts = match ? match[0] : '';
+  const cleaned = match ? html.replace(match[0], '') : html;
+  return { ts, cleaned };
+}
+
 const placeholder = document.createElement('div');
 placeholder.className = 'block-placeholder';
 placeholder.innerHTML = '<span class="drop-text">Drop block here</span>';
@@ -101,10 +108,21 @@ export function addBlockControls(block) {
   const dragHandle = block.querySelector('.block-controls .drag');
   if (dragHandle) dragHandle.setAttribute('draggable', 'true');
   if (!block.dataset.original) {
-    block.dataset.original = block.innerHTML;
+    let html = block.innerHTML;
+    const { ts, cleaned } = extractTemplateSetting(html);
+    block.dataset.original = cleaned;
+    if (ts) {
+      block.dataset.ts = btoa(ts);
+    }
+  } else {
+    const { ts, cleaned } = extractTemplateSetting(block.dataset.original);
+    block.dataset.original = cleaned;
+    if (ts && !block.dataset.ts) {
+      block.dataset.ts = btoa(ts);
+    }
   }
-  const ts = block.querySelector('templateSetting');
-  if (ts) ts.remove();
+  const tsEl = block.querySelector('templateSetting');
+  if (tsEl) tsEl.remove();
   const areas = block.querySelectorAll('.drop-area');
   areas.forEach(setupDropArea);
   if (areas.length === 0) {
@@ -166,7 +184,11 @@ function handleDrop(e) {
           const wrapper = document.createElement('div');
           wrapper.className = 'block-wrapper';
           wrapper.dataset.template = file;
-          wrapper.dataset.original = html;
+          const { ts, cleaned } = extractTemplateSetting(html);
+          wrapper.dataset.original = cleaned;
+          if (ts) {
+            wrapper.dataset.ts = btoa(ts);
+          }
           const base = file.replace(/\.php$/, '');
           const parts = base.split('.');
           const group = parts.shift();
@@ -175,7 +197,7 @@ function handleDrop(e) {
             .replace(/[-_]/g, ' ')
             .replace(/\b\w/g, (c) => c.toUpperCase());
           wrapper.setAttribute('data-tpl-tooltip', label);
-          wrapper.innerHTML = html;
+          wrapper.innerHTML = cleaned;
           if (applyStoredSettings) applyStoredSettings(wrapper);
           addBlockControls(wrapper);
           if (after == null) area.appendChild(wrapper);
