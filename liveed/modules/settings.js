@@ -20,7 +20,7 @@ export function initSettings(options = {}) {
         settingsPanel.block = null;
         canvas.querySelectorAll('.block-wrapper').forEach((b) => b.classList.remove('selected'));
         savePageFn();
-      } else if (e.target.id === 'cancel-settings') {
+      } else if (e.target.id === 'cancel-settings' || e.target.classList.contains('close-btn')) {
         settingsPanel.classList.remove('open');
         settingsPanel.block = null;
         canvas.querySelectorAll('.block-wrapper').forEach((b) => b.classList.remove('selected'));
