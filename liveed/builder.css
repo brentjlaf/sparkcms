@@ -1,1 +1,112 @@
-
+.builder {
+  display: flex;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+.builder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #667eea;
+  color: #fff;
+  padding: 10px 20px;
+}
+.builder-header .btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn.btn-primary {
+  background: #3182ce;
+  color: #fff;
+}
+.block-palette {
+  width: 220px;
+  background: #f5f5f5;
+  border-right: 1px solid #ddd;
+  padding: 10px;
+  overflow-y: auto;
+}
+.block-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 6px;
+  margin-bottom: 6px;
+  cursor: grab;
+  border-radius: 4px;
+}
+.canvas-container {
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+}
+.canvas {
+  min-height: 600px;
+  background: #fff;
+  border: 2px dashed #cbd5e0;
+  padding: 20px;
+}
+.canvas-placeholder {
+  color: #a0aec0;
+  text-align: center;
+  padding: 40px 0;
+}
+.block-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+.block-controls {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: flex;
+  gap: 6px;
+  font-size: 14px;
+}
+.block-controls .control {
+  cursor: pointer;
+}
+.block-placeholder {
+  border: 2px dashed #667eea;
+  padding: 20px;
+  background: #f0f4ff;
+  text-align: center;
+}
+.drop-area.drag-over {
+  background: #ebf4ff;
+}
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: -300px;
+  width: 300px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  transition: right 0.3s ease;
+  padding: 10px;
+  z-index: 1000;
+}
+.settings-panel.open {
+  right: 0;
+}
+.wysiwyg-toolbar {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+.wysiwyg-toolbar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 0 2px;
+}
