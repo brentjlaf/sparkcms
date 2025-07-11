@@ -158,6 +158,15 @@
   height: auto;
   background: #efefef;
   padding: 40px 0;
+  border: 2px dashed transparent;
+  box-sizing: border-box;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.drop-area:hover {
+  background: #f7fafc;
+  border-color: #3182ce;
+  cursor: pointer;
 }
 
 .drop-area.drag-over {
