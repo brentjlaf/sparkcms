@@ -11,6 +11,39 @@ let allBlockFiles = [];
 let favorites = [];
 let gridActive = false;
 
+function animateAccordion(details) {
+  const items = details.querySelector('.group-items');
+  if (!items) return;
+  if (!details.open) {
+    items.style.height = '0px';
+  }
+  details.addEventListener('toggle', () => {
+    const startHeight = items.scrollHeight;
+    if (details.open) {
+      items.style.height = '0px';
+      items.offsetHeight; // force reflow
+      items.style.transition = 'height 0.3s ease';
+      items.style.height = startHeight + 'px';
+      const onEnd = () => {
+        items.style.transition = '';
+        items.style.height = 'auto';
+        items.removeEventListener('transitionend', onEnd);
+      };
+      items.addEventListener('transitionend', onEnd);
+    } else {
+      items.style.height = items.scrollHeight + 'px';
+      items.offsetHeight;
+      items.style.transition = 'height 0.3s ease';
+      items.style.height = '0px';
+      const onEnd = () => {
+        items.style.transition = '';
+        items.removeEventListener('transitionend', onEnd);
+      };
+      items.addEventListener('transitionend', onEnd);
+    }
+  });
+}
+
 function snapBlockToGrid(block) {
   const grid = 20;
   const cs = window.getComputedStyle(block);
@@ -86,6 +119,7 @@ function renderPalette(palette, files = []) {
 
       details.appendChild(wrap);
       container.appendChild(details);
+      animateAccordion(details);
     });
 }
 
