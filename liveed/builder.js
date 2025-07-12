@@ -54,6 +54,27 @@ function renderPalette(palette, files = []) {
     });
 }
 
+function checkLinks(html) {
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  const urls = [];
+  temp.querySelectorAll('a[href]').forEach((a) => urls.push(a.getAttribute('href')));
+  temp.querySelectorAll('img[src]').forEach((img) => urls.push(img.getAttribute('src')));
+  const unique = Array.from(new Set(urls.filter((u) => u)));
+  const checks = unique.map((u) => {
+    let full;
+    try {
+      full = new URL(u, window.location.href).href;
+    } catch (e) {
+      return Promise.resolve(u);
+    }
+    return fetch(full, { method: 'HEAD' })
+      .then((r) => (r.ok ? null : u))
+      .catch(() => u);
+  });
+  return Promise.all(checks).then((r) => r.filter(Boolean));
+}
+
 let saveTimer;
 function savePage() {
   const canvas = document.getElementById('canvas');
@@ -67,6 +88,7 @@ function savePage() {
     statusEl.classList.add('saving');
     statusEl.classList.remove('error');
   }
+  const linkCheck = checkLinks(html);
   fetch(window.builderBase + '/liveed/save-content.php', {
     method: 'POST',
     body: fd,
@@ -80,8 +102,18 @@ function savePage() {
         statusEl.textContent = 'Saved';
         statusEl.classList.remove('saving');
       }
+      linkCheck.then((broken) => {
+        if (statusEl) {
+          if (broken.length) {
+            statusEl.textContent = `Saved - Warning: ${broken.length} broken link(s)`;
+            statusEl.classList.add('warn');
+          } else {
+            statusEl.classList.remove('warn');
+          }
+        }
+      });
       setTimeout(() => {
-        if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
+        if (statusEl && statusEl.textContent.startsWith('Saved')) statusEl.textContent = '';
       }, 2000);
     })
     .catch(() => {

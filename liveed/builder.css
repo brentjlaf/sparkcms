@@ -26,6 +26,9 @@
 .save-status.error {
   color: #e53e3e;
 }
+.save-status.warn {
+  color: #dd6b20;
+}
 .block-palette {
   width: 260px;
   background: #f8fafc;
