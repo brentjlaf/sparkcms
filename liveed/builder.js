@@ -135,6 +135,70 @@ document.addEventListener('DOMContentLoaded', () => {
   const settingsPanel = document.getElementById('settingsPanel');
   const previewContainer = document.querySelector('.canvas-container');
   const previewButtons = document.querySelectorAll('.preview-toolbar button');
+  const dragHandle = palette.querySelector('.drag-handle');
+  const collapseBtn = palette.querySelector('.collapse-btn');
+
+  function savePaletteState() {
+    const state = {
+      floating: palette.classList.contains('floating'),
+      collapsed: palette.classList.contains('collapsed'),
+      left: palette.style.left,
+      top: palette.style.top,
+    };
+    localStorage.setItem('paletteState', JSON.stringify(state));
+  }
+
+  function applyPaletteState() {
+    const state = JSON.parse(localStorage.getItem('paletteState') || '{}');
+    if (state.floating) {
+      palette.classList.add('floating');
+      if (state.left) palette.style.left = state.left;
+      if (state.top) palette.style.top = state.top;
+    }
+    if (state.collapsed) {
+      palette.classList.add('collapsed');
+      if (collapseBtn)
+        collapseBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+    }
+  }
+
+  applyPaletteState();
+
+  if (dragHandle) {
+    dragHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const rect = palette.getBoundingClientRect();
+      palette.classList.add('floating');
+      palette.style.width = rect.width + 'px';
+      palette.style.left = rect.left + 'px';
+      palette.style.top = rect.top + 'px';
+      const startX = e.clientX;
+      const startY = e.clientY;
+      function onMove(ev) {
+        palette.style.left = rect.left + ev.clientX - startX + 'px';
+        palette.style.top = rect.top + ev.clientY - startY + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        savePaletteState();
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  if (collapseBtn) {
+    collapseBtn.addEventListener('click', () => {
+      palette.classList.toggle('collapsed');
+      if (palette.classList.contains('collapsed')) {
+        collapseBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+      } else {
+        collapseBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+      }
+      savePaletteState();
+    });
+  }
 
   function updatePreview(size) {
     if (!previewContainer) return;

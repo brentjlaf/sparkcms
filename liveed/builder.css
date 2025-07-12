@@ -20,6 +20,24 @@
   align-items: center;
   gap: 8px;
 }
+.drag-handle {
+  cursor: move;
+  color: #4a5568;
+  font-size: 18px;
+}
+.drag-handle:hover {
+  color: #2d3748;
+}
+.collapse-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #4a5568;
+}
+.collapse-btn:hover {
+  color: #2d3748;
+}
 .save-status {
   margin-left: 10px;
   font-size: 14px;
@@ -40,6 +58,31 @@
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+}
+.block-palette.floating {
+  position: absolute;
+  z-index: 1000;
+  top: 20px;
+  left: 20px;
+  height: auto;
+ }
+.block-palette.collapsed {
+  width: 40px;
+  padding: 8px;
+ }
+.block-palette.collapsed .history-toolbar,
+.block-palette.collapsed .preview-toolbar,
+.block-palette.collapsed h2,
+.block-palette.collapsed .palette-search,
+.block-palette.collapsed .palette-items,
+.block-palette.collapsed .manual-save-btn,
+.block-palette.collapsed #saveStatus {
+  display: none;
+}
+.block-palette.collapsed .title {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 14px;
 }
 .history-toolbar {
   display: flex;

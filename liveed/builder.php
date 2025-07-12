@@ -44,7 +44,10 @@ $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
 $builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span>'
-    . '<div class="header-actions"><button type="button" class="manual-save-btn btn btn-primary">Save</button>'
+    . '<div class="header-actions">'
+    . '<span class="drag-handle" title="Drag palette"><i class="fa-solid fa-up-down-left-right"></i></span>'
+    . '<button type="button" class="collapse-btn" title="Collapse palette"><i class="fa-solid fa-chevron-left"></i></button>'
+    . '<button type="button" class="manual-save-btn btn btn-primary">Save</button>'
     . '<span id="saveStatus" class="save-status"></span></div></header>';
 $historyToolbar = '<div class="history-toolbar">'
     . '<button type="button" class="undo-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>'
