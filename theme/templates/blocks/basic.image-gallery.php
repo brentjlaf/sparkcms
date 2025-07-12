@@ -3,15 +3,24 @@
 <templateSetting caption="Gallery Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Image 1 URL</dt>
-        <dd><input type="text" name="custom_img1" value="https://via.placeholder.com/300"></dd>
+        <dd>
+            <input type="text" name="custom_img1" id="custom_img1" value="https://via.placeholder.com/300">
+            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_img1')">Browse</button>
+        </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
         <dt>Image 2 URL</dt>
-        <dd><input type="text" name="custom_img2" value="https://via.placeholder.com/300"></dd>
+        <dd>
+            <input type="text" name="custom_img2" id="custom_img2" value="https://via.placeholder.com/300">
+            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_img2')">Browse</button>
+        </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
         <dt>Image 3 URL</dt>
-        <dd><input type="text" name="custom_img3" value="https://via.placeholder.com/300"></dd>
+        <dd>
+            <input type="text" name="custom_img3" id="custom_img3" value="https://via.placeholder.com/300">
+            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_img3')">Browse</button>
+        </dd>
     </dl>
 </templateSetting>
 <div class="image-gallery" data-tpl-tooltip="Image Gallery">
