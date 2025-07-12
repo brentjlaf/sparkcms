@@ -16,15 +16,19 @@ $(function(){
             const list = $('#folderList').empty();
             const media = res.media || [];
             (res.folders || []).forEach(f => {
-                const folderMedia = media.filter(m => m.folder === f);
+                const name = typeof f === 'string' ? f : f.name;
+                const thumb = f.thumbnail ? f.thumbnail : null;
+                const folderMedia = media.filter(m => m.folder === name);
                 const count = folderMedia.length;
                 const totalBytes = folderMedia.reduce((s,m)=>s+parseInt(m.size||0),0);
                 const lastMod = folderMedia.reduce((m,i)=>i.modified_at && i.modified_at>m?i.modified_at:m,0);
                 const meta = count+' files • '+formatFileSize(totalBytes)+' • Last edited '+(lastMod?new Date(lastMod*1000).toLocaleDateString():'');
-                const item = $('<div class="folder-item" data-folder="'+f+'">\
-                    <div class="folder-info"><h3>'+f+'</h3><p class="folder-meta">'+meta+'</p></div>\
-                </div>');
-                item.click(function(){ selectFolder(f); });
+                const item = $('<div class="folder-item" data-folder="'+name+'"></div>');
+                if(thumb){
+                    item.append('<img class="folder-thumb" src="'+thumb+'" alt="">');
+                }
+                item.append('<div class="folder-info"><h3>'+name+'</h3><p class="folder-meta">'+meta+'</p></div>');
+                item.click(function(){ selectFolder(name); });
                 list.append(item);
             });
 

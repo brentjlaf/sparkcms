@@ -112,10 +112,22 @@ function loadPickerFolders() {
     .then((data) => {
       if (!pickerFolderList) return;
       pickerFolderList.innerHTML = '';
+      const cmsBase = basePath + '/CMS';
       (data.folders || []).forEach((f) => {
+        const name = typeof f === 'string' ? f : f.name;
+        const thumb = f.thumbnail ? cmsBase + '/' + f.thumbnail : null;
         const li = document.createElement('li');
-        li.textContent = f;
-        li.dataset.folder = f;
+        li.dataset.folder = name;
+        li.className = 'picker-folder-item';
+        if (thumb) {
+          const img = document.createElement('img');
+          img.src = thumb;
+          img.alt = name;
+          li.appendChild(img);
+        }
+        const span = document.createElement('span');
+        span.textContent = name;
+        li.appendChild(span);
         pickerFolderList.appendChild(li);
       });
     });

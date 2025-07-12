@@ -22,7 +22,26 @@ $results = array_filter($media, function($item) use ($query, $folder) {
 $root = dirname(__DIR__,2);
 $default = $root.'/uploads/general';
 if(!is_dir($default)) mkdir($default, 0777, true);
-$folders = array_map('basename', array_filter(glob($root.'/uploads/*'), 'is_dir'));
+$folderDirs = array_filter(glob($root.'/uploads/*'), 'is_dir');
+$folders = [];
+foreach ($folderDirs as $dir) {
+    $name = basename($dir);
+    $thumb = null;
+    foreach ($media as $m) {
+        if (($m['folder'] ?? '') === $name && ($m['type'] ?? '') === 'images') {
+            $thumb = $m['thumbnail'] ?: $m['file'];
+            break;
+        }
+    }
+    if (!$thumb) {
+        $candidates = glob($dir . '/thumbs/*.{jpg,jpeg,png,gif,webp}', GLOB_BRACE);
+        if (!$candidates) $candidates = glob($dir.'/*.{jpg,jpeg,png,gif,webp}', GLOB_BRACE);
+        if ($candidates) {
+            $thumb = str_replace($root.'/', '', $candidates[0]);
+        }
+    }
+    $folders[] = ['name' => $name, 'thumbnail' => $thumb];
+}
 
 foreach ($results as &$item) {
     $path = $root . '/' . $item['file'];
