@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const rect = palette.getBoundingClientRect();
       if (rect.left < SNAP_THRESHOLD) {
         palette.style.left = '0px';
+        palette.style.top = '0px';
       }
       localStorage.setItem(
         'palettePosition',
