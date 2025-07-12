@@ -15,13 +15,13 @@
     </dl>
     <dl class="sparkDialog _tpl-box">
         <dt>Alignment</dt>
-        <dd>
-            <label><input type="checkbox" name="custom_align_left" value=" _text-left"> Left</label>
-            <label><input type="checkbox" name="custom_align_center" value=" _text-center"> Center</label>
-            <label><input type="checkbox" name="custom_align_right" value=" _text-right"> Right</label>
+        <dd class="align-options">
+            <label><input type="radio" name="custom_align" value=" _text-left" checked> Left</label>
+            <label><input type="radio" name="custom_align" value=" _text-center"> Center</label>
+            <label><input type="radio" name="custom_align" value=" _text-right"> Right</label>
         </dd>
     </dl>
 </templateSetting>
-<div class="{custom_align_left}{custom_align_center}{custom_align_right}">
+<div class="{custom_align}">
     <a href="{custom_link}" class="btn btn-primary"{custom_new_window} data-tpl-tooltip="Button" data-editable>{custom_text}</a>
 </div>
