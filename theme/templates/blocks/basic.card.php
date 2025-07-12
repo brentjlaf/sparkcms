@@ -4,7 +4,7 @@
     <dl class="sparkDialog _tpl-box">
         <dt>Image URL</dt>
         <dd>
-            <input type="text" name="custom_img" id="custom_img" value="https://via.placeholder.com/600x400">
+            <input type="text" name="custom_img" id="custom_img" value="">
             <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_img')">Browse</button>
         </dd>
     </dl>
