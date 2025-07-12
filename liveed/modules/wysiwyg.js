@@ -24,11 +24,22 @@ export function initWysiwyg(canvas, loggedIn) {
 
   let currentEditable = null;
 
-  function positionToolbar(el) {
-    const rect = el.getBoundingClientRect();
+  function positionToolbar() {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (!currentEditable || !currentEditable.contains(range.commonAncestorContainer)) {
+      return;
+    }
+    const rect = range.getBoundingClientRect();
     rteToolbar.style.position = 'absolute';
-    rteToolbar.style.top = window.scrollY + rect.top - rteToolbar.offsetHeight - 5 + 'px';
-    rteToolbar.style.left = window.scrollX + rect.left + 'px';
+    let top = window.scrollY + rect.top - rteToolbar.offsetHeight - 5;
+    if (top < 0) {
+      top = window.scrollY + rect.bottom + 5;
+    }
+    const left = window.scrollX + rect.left + rect.width / 2 - rteToolbar.offsetWidth / 2;
+    rteToolbar.style.top = top + 'px';
+    rteToolbar.style.left = Math.max(0, left) + 'px';
     rteToolbar.style.display = 'block';
   }
 
@@ -40,8 +51,16 @@ export function initWysiwyg(canvas, loggedIn) {
     const el = e.target.closest('[contenteditable]');
     if (el) {
       currentEditable = el;
-      positionToolbar(el);
+      positionToolbar();
     }
+  });
+
+  canvas.addEventListener('mouseup', () => {
+    if (currentEditable) positionToolbar();
+  });
+
+  canvas.addEventListener('keyup', () => {
+    if (currentEditable) positionToolbar();
   });
 
   document.addEventListener('click', (e) => {
