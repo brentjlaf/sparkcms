@@ -684,3 +684,23 @@ section.container-fluid {
     margin: 0;
     color: #555;
 }
+
+/* CTA Banner */
+.cta-banner {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    text-align: center;
+    padding: 2rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.cta-banner h2 {
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}
+.cta-banner p {
+    margin-bottom: 1rem;
+}
+.cta-banner .btn {
+    margin-top: 0.5rem;
+}
