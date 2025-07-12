@@ -51,7 +51,6 @@ function renderPalette(palette, files = []) {
     .forEach((g) => {
       const details = document.createElement('details');
       details.className = 'palette-group';
-      details.open = true;
 
       const summary = document.createElement('summary');
       summary.textContent = g.charAt(0).toUpperCase() + g.slice(1);
