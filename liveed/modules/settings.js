@@ -38,11 +38,13 @@ export function initSettings(options = {}) {
       if (e.target.id === 'apply-settings') {
         const block = settingsPanel.block;
         const template = settingsPanel.template;
-        if (block) applySettings(template, block);
-        settingsPanel.classList.remove('open');
-        settingsPanel.block = null;
-        canvas.querySelectorAll('.block-wrapper').forEach((b) => b.classList.remove('selected'));
-        savePageFn();
+        if (block && validateSettings()) {
+          applySettings(template, block);
+          settingsPanel.classList.remove('open');
+          settingsPanel.block = null;
+          canvas.querySelectorAll('.block-wrapper').forEach((b) => b.classList.remove('selected'));
+          savePageFn();
+        }
       } else if (e.target.id === 'cancel-settings' || e.target.classList.contains('close-btn')) {
         settingsPanel.classList.remove('open');
         settingsPanel.block = null;
@@ -137,6 +139,21 @@ function initTemplateSettingValues(block) {
       input.value = val;
     }
   });
+}
+
+function validateSettings() {
+  if (!settingsPanel) return true;
+  let valid = true;
+  const inputs = settingsPanel.querySelectorAll('input[name], textarea[name], select[name]');
+  inputs.forEach((input) => {
+    input.classList.remove('invalid');
+    if (!input.checkValidity()) {
+      input.classList.add('invalid');
+      input.reportValidity();
+      valid = false;
+    }
+  });
+  return valid;
 }
 
 function renderBlock(block) {
