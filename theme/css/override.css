@@ -684,3 +684,25 @@ section.container-fluid {
     margin: 0;
     color: #555;
 }
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    padding: 6rem 0;
+    color: #fff;
+    text-align: center;
+}
+.hero-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+}
+.hero-section .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+}
