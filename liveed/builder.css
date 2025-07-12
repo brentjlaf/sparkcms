@@ -740,16 +740,16 @@
   box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
 }
 
-.canvas-container.preview-desktop .canvas {
+.canvas-container.preview-desktop .page-template.default-page {
   width: 100%;
 }
 
-.canvas-container.preview-tablet .canvas {
+.canvas-container.preview-tablet .page-template.default-page {
   width: 768px;
   margin: auto;
 }
 
-.canvas-container.preview-phone .canvas {
+.canvas-container.preview-phone .page-template.default-page {
   width: 375px;
   margin: auto;
 }
