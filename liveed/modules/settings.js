@@ -56,7 +56,13 @@ export function initSettings(options = {}) {
       const input = e.target.closest('input[name], textarea[name], select[name]');
       const block = settingsPanel.block;
       if (input && block) {
-        setSetting(block, input.name, input.value);
+        let val;
+        if (input.type === 'checkbox') {
+          val = input.checked ? (input.value || 'on') : '';
+        } else {
+          val = input.value;
+        }
+        setSetting(block, input.name, val);
         renderBlock(block);
       }
     });
@@ -135,7 +141,9 @@ function initTemplateSettingValues(block) {
   inputs.forEach((input) => {
     const name = input.name;
     const val = getSetting(block, name);
-    if (val !== undefined) {
+    if (input.type === 'checkbox') {
+      input.checked = !!val;
+    } else if (val !== undefined) {
       input.value = val;
     }
   });
@@ -166,7 +174,14 @@ function renderBlock(block) {
   const inputs = templateSetting.querySelectorAll('input[name], textarea[name], select[name]');
   inputs.forEach((input) => {
     const name = input.name;
-    const value = settings[name] !== undefined ? settings[name] : input.value || '';
+    let value;
+    if (settings[name] !== undefined) {
+      value = settings[name];
+    } else if (input.type === 'checkbox') {
+      value = input.checked ? (input.value || 'on') : '';
+    } else {
+      value = input.value || '';
+    }
     settings[name] = value;
     html = html.split('{' + name + '}').join(value);
   });
@@ -207,7 +222,7 @@ function applySettings(template, block) {
   const inputs = settingsPanel.querySelectorAll('input[name], textarea[name], select[name]');
   inputs.forEach((input) => {
     const name = input.name;
-    const value = input.value;
+    const value = input.type === 'checkbox' ? (input.checked ? (input.value || 'on') : '') : input.value;
     setSetting(block, name, value);
   });
   renderBlock(block);
