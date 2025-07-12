@@ -10,14 +10,53 @@
             </select>
         </dd>
     </dl>
+    <dl class="sparkDialog _tpl-box">
+        <dt>Background Color</dt>
+        <dd>
+            <div class="color-picker">
+                <label>
+                    <input type="radio" name="custom_bg_color" value="var(--primary)">
+                    <span class="color-swatch" style="background-color: var(--primary);"></span>
+                </label>
+                <label>
+                    <input type="radio" name="custom_bg_color" value="var(--secondary)">
+                    <span class="color-swatch" style="background-color: var(--secondary);"></span>
+                </label>
+                <label>
+                    <input type="radio" name="custom_bg_color" value="var(--third)">
+                    <span class="color-swatch" style="background-color: var(--third);"></span>
+                </label>
+                <label>
+                    <input type="radio" name="custom_bg_color" value="var(--fourth)">
+                    <span class="color-swatch" style="background-color: var(--fourth);"></span>
+                </label>
+                <label>
+                    <input type="radio" name="custom_bg_color" value="var(--white)" checked>
+                    <span class="color-swatch" style="background-color: var(--white);"></span>
+                </label>
+                <label>
+                    <input type="radio" name="custom_bg_color" value="var(--black)">
+                    <span class="color-swatch" style="background-color: var(--black);"></span>
+                </label>
+                <label>
+                    <input type="radio" name="custom_bg_color" value="var(--light)">
+                    <span class="color-swatch" style="background-color: var(--light);"></span>
+                </label>
+                <label>
+                    <input type="radio" name="custom_bg_color" value="var(--gray)">
+                    <span class="color-swatch" style="background-color: var(--gray);"></span>
+                </label>
+            </div>
+        </dd>
+    </dl>
 </templateSetting>
 <toggle rel="custom_type" value="container">
-    <section class="container" data-tpl-tooltip="Section">
-        <div class="drop-area"></div></section>
+    <section class="container" style="background-color:{custom_bg_color};" data-tpl-tooltip="Section">
+        <div class="drop-area"></div>
+    </section>
 </toggle>
 <toggle rel="custom_type" value="container-fluid">
-    <section class="container-fluid" data-tpl-tooltip="Section">
+    <section class="container-fluid" style="background-color:{custom_bg_color};" data-tpl-tooltip="Section">
         <div class="drop-area"></div>
-        
-        </section>
+    </section>
 </toggle>
