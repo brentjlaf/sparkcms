@@ -578,6 +578,15 @@ hr[class^="divider"] {
     display: block;
     width: 100%;
 }
+.spacer-small {
+    height: 20px;
+}
+.spacer-medium {
+    height: 40px;
+}
+.spacer-large {
+    height: 60px;
+}
 
 /* Columns Block */
 .row {
