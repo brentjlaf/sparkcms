@@ -684,3 +684,39 @@ section.container-fluid {
     margin: 0;
     color: #555;
 }
+
+/* FAQ Accordion Block */
+.faq-accordion {
+    max-width: 800px;
+    margin: 0 auto 1.5rem;
+}
+.faq-accordion details {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+.faq-accordion summary {
+    padding: 0.75rem 1rem;
+    background-color: #f7fafc;
+    cursor: pointer;
+    font-weight: 600;
+    position: relative;
+    list-style: none;
+}
+.faq-accordion summary::-webkit-details-marker {
+    display: none;
+}
+.faq-accordion summary::after {
+    content: '+';
+    position: absolute;
+    right: 1rem;
+    transition: transform 0.2s ease;
+}
+.faq-accordion details[open] summary::after {
+    content: '-';
+}
+.faq-accordion p {
+    padding: 0 1rem 1rem;
+    margin: 0;
+}
