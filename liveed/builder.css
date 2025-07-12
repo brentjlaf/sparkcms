@@ -60,6 +60,11 @@
   border: none;
   cursor: pointer;
 }
+.palette-dock-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
 
 .builder .canvas-container {
   margin-left: 260px;
