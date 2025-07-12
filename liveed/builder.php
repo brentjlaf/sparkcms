@@ -81,7 +81,9 @@ $mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
     . '<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>';
 
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
-    . $mediaPickerHtml . '</div>'
+    . $mediaPickerHtml
+    . '<button id="viewModeToggle" class="view-toggle" title="View Mode"><i class="fa-solid fa-eye"></i></button>'
+    . '</div>'
     . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>'
     . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
 

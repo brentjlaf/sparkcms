@@ -189,6 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewContainer = document.querySelector('.canvas-container');
   const previewButtons = document.querySelectorAll('.preview-toolbar button');
   const gridToggle = document.getElementById('gridToggle');
+  const viewToggle = document.getElementById('viewModeToggle');
+  const builder = document.querySelector('.builder');
 
   function setGridActive(on) {
     gridActive = on;
@@ -202,6 +204,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (gridToggle) {
     gridToggle.addEventListener('click', () => setGridActive(!gridActive));
+  }
+
+  if (viewToggle && builder) {
+    viewToggle.addEventListener('click', () => {
+      const active = builder.classList.toggle('view-mode');
+      viewToggle.innerHTML = active
+        ? '<i class="fa-solid fa-pen-to-square"></i>'
+        : '<i class="fa-solid fa-eye"></i>';
+      viewToggle.title = active ? 'Edit Mode' : 'View Mode';
+      if (active) {
+        setGridActive(false);
+        if (settingsPanel) {
+          settingsPanel.classList.remove('open');
+          settingsPanel.block = null;
+        }
+      }
+    });
   }
 
   function updatePreview(size) {
