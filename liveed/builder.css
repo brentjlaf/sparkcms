@@ -31,6 +31,11 @@
 .save-status.error {
   color: #e53e3e;
 }
+.a11y-status {
+  margin-left: 10px;
+  font-size: 14px;
+  color: #e53e3e;
+}
 .block-palette {
   width: 260px;
   background: #f8fafc;
@@ -421,6 +426,24 @@
   opacity: 0.5;
   transform: rotate(2deg) scale(0.98);
   z-index: 1000;
+}
+.block-wrapper.accessibility-warning {
+  border-color: #e53e3e;
+}
+.block-wrapper.accessibility-warning::after {
+  content: '⚠';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  background: #e53e3e;
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
 }
 
 .block-controls {

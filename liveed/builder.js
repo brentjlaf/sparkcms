@@ -5,6 +5,7 @@ import { ensureBlockState, getSettings, setSetting } from './modules/state.js';
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
+import { initAccessibility } from './modules/accessibility.js';
 
 let allBlockFiles = [];
 let favorites = [];
@@ -227,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   initWysiwyg(canvas, true);
   initMediaPicker({ basePath: window.builderBase });
+  initAccessibility({ canvas });
   window.openMediaPicker = openMediaPicker;
 
   canvas.addEventListener('input', scheduleSave);
