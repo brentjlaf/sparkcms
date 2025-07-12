@@ -83,6 +83,12 @@ function renderFooterMenu($items){
                                                         <?php renderMenu($mainMenu); ?>
                                                 </ul>
                                         </nav>
+                                        <form class="search-box" action="<?php echo $scriptBase; ?>/search" method="get">
+                                                <input type="text" name="q" class="search-input" placeholder="Search..." />
+                                                <button type="submit" class="search-icon" aria-label="Search">
+                                                        <i class="fa-solid fa-search"></i>
+                                                </button>
+                                        </form>
                                         <a href="<?php echo $scriptBase; ?>/contact-us" class="cta-btn">Contact Us</a>
                                         <button class="nav-toggle" aria-label="Toggle Menu"><i class="fa-solid fa-bars"></i></button>
                                 </div>
