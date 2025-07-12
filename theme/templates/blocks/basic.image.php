@@ -3,7 +3,10 @@
 <templateSetting caption="Image Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Source</dt>
-        <dd><input type="text" name="custom_src" value="https://via.placeholder.com/600x400"></dd>
+        <dd>
+            <input type="text" name="custom_src" id="custom_src" value="https://via.placeholder.com/600x400">
+            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_src')">Browse</button>
+        </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
         <dt>Alt Text</dt>
