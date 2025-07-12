@@ -28,8 +28,19 @@
         <dt>Open in New Window</dt>
         <dd><label><input type="checkbox" name="custom_btn_new" value=' target="_blank"'> New window</label></dd>
     </dl>
+    <dl class="sparkDialog _tpl-box">
+        <dt>Size</dt>
+        <dd>
+            <select name="custom_size">
+                <option value="side">Side</option>
+                <option value="small">Small</option>
+                <option value="medium" selected="selected">Medium</option>
+                <option value="large">Large</option>
+            </select>
+        </dd>
+    </dl>
 </templateSetting>
-<section class="hero-section" style="background-image:url('{custom_bg}');" data-tpl-tooltip="Hero">
+<section class="hero-section hero-{custom_size}" style="background-image:url('{custom_bg}');" data-tpl-tooltip="Hero">
     <div class="container hero-content">
         <h1 data-editable>{custom_heading}</h1>
         <p data-editable>{custom_subheading}</p>
