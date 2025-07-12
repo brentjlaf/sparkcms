@@ -637,6 +637,14 @@
   box-sizing: border-box;
 }
 
+.settings-panel .invalid {
+  border-color: #e53e3e;
+}
+
+.settings-panel .invalid:focus {
+  box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.2);
+}
+
 .settings-content input[type="text"]:focus,
 .settings-content input[type="number"]:focus,
 .settings-content textarea:focus,
