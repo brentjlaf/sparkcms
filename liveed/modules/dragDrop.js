@@ -207,6 +207,9 @@ function handleDrop(e) {
           addBlockControls(wrapper);
           if (after == null) area.appendChild(wrapper);
           else area.insertBefore(wrapper, after);
+          if (window.isGridSnapActive && window.isGridSnapActive()) {
+            if (window.snapBlockToGrid) window.snapBlockToGrid(wrapper);
+          }
           if (openSettings) openSettings(wrapper);
           document.dispatchEvent(new Event('canvasUpdated'));
         });
@@ -215,6 +218,9 @@ function handleDrop(e) {
     dragSource.classList.remove('dragging');
     if (after == null) area.appendChild(dragSource);
     else area.insertBefore(dragSource, after);
+    if (window.isGridSnapActive && window.isGridSnapActive()) {
+      if (window.snapBlockToGrid) window.snapBlockToGrid(dragSource);
+    }
     document.dispatchEvent(new Event('canvasUpdated'));
   }
   placeholder.remove();
