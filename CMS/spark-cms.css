@@ -1005,6 +1005,7 @@
 .media-sidebar .folder-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:6px;cursor:pointer;transition:0.2s;border:1px solid transparent;}
 .media-sidebar .folder-item:hover{background:#f8fafc;}
 .media-sidebar .folder-item.active{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8;}
+.media-sidebar .folder-item img.folder-thumb{width:40px;height:40px;object-fit:cover;border-radius:4px;}
 .gallery-header{padding:24px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;}
 .gallery-actions{display:flex;gap:8px;align-items:center;}
 .folder-stats{font-size:12px;color:#6b7280;margin-top:8px;}

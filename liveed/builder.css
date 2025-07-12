@@ -787,6 +787,15 @@
   padding: 6px 8px;
   cursor: pointer;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#pickerFolderList li img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 #pickerFolderList li.active {
   background: #3182ce;
