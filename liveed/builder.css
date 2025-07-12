@@ -15,6 +15,11 @@
   font-size: 18px;
   font-weight: 600;
 }
+.builder-header .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .save-status {
   margin-left: 10px;
   font-size: 14px;

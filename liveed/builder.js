@@ -134,8 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const history = initUndoRedo({ canvas, onChange: scheduleSave });
   const undoBtn = palette.querySelector('.undo-btn');
   const redoBtn = palette.querySelector('.redo-btn');
+  const saveBtn = palette.querySelector('.manual-save-btn');
   if (undoBtn) undoBtn.addEventListener('click', () => history.undo());
   if (redoBtn) redoBtn.addEventListener('click', () => history.redo());
+  if (saveBtn)
+    saveBtn.addEventListener('click', () => {
+      clearTimeout(saveTimer);
+      savePage();
+    });
   initWysiwyg(canvas, true);
 
   canvas.addEventListener('input', scheduleSave);
