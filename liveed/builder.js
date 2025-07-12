@@ -131,7 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
     applyStoredSettings,
   });
 
-  initUndoRedo({ canvas, onChange: scheduleSave });
+  const history = initUndoRedo({ canvas, onChange: scheduleSave });
+  const undoBtn = palette.querySelector('.undo-btn');
+  const redoBtn = palette.querySelector('.redo-btn');
+  if (undoBtn) undoBtn.addEventListener('click', () => history.undo());
+  if (redoBtn) redoBtn.addEventListener('click', () => history.redo());
   initWysiwyg(canvas, true);
 
   canvas.addEventListener('input', scheduleSave);
