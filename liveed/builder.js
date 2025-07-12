@@ -5,13 +5,16 @@ import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 
 let allBlockFiles = [];
+let favorites = [];
 
 function renderPalette(palette, files = []) {
   const container = palette.querySelector('.palette-items');
   if (!container) return;
   container.innerHTML = '';
 
+  const favs = favorites;
   const groups = {};
+  if (favs.length) groups.Favorites = [];
   files.forEach((f) => {
     if (!f.endsWith('.php')) return;
     const base = f.replace(/\.php$/, '');
@@ -19,11 +22,15 @@ function renderPalette(palette, files = []) {
     const group = parts.shift();
     const label = parts.join(' ') || group;
     if (!groups[group]) groups[group] = [];
-    groups[group].push({ file: f, label });
+    const info = { file: f, label };
+    groups[group].push(info);
+    if (favs.includes(f)) {
+      groups.Favorites.push(info);
+    }
   });
 
   Object.keys(groups)
-    .sort()
+    .sort((a, b) => (a === 'Favorites' ? -1 : b === 'Favorites' ? 1 : a.localeCompare(b)))
     .forEach((g) => {
       const details = document.createElement('details');
       details.className = 'palette-group';
@@ -46,12 +53,34 @@ function renderPalette(palette, files = []) {
             .replace(/[-_]/g, ' ')
             .replace(/\b\w/g, (c) => c.toUpperCase());
           item.textContent = label;
+          const favBtn = document.createElement('span');
+          favBtn.className = 'fav-toggle';
+          if (favs.includes(it.file)) favBtn.classList.add('active');
+          favBtn.textContent = '★';
+          favBtn.title = favs.includes(it.file) ? 'Unfavorite' : 'Favorite';
+          favBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFavorite(it.file);
+          });
+          item.appendChild(favBtn);
           wrap.appendChild(item);
         });
 
       details.appendChild(wrap);
       container.appendChild(details);
     });
+}
+
+function toggleFavorite(file) {
+  const idx = favorites.indexOf(file);
+  if (idx >= 0) {
+    favorites.splice(idx, 1);
+  } else {
+    favorites.push(file);
+  }
+  localStorage.setItem('favoriteBlocks', JSON.stringify(favorites));
+  const palette = document.querySelector('.block-palette');
+  if (palette) renderPalette(palette, allBlockFiles);
 }
 
 let saveTimer;
@@ -102,6 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('canvas');
   const palette = document.querySelector('.block-palette');
   const settingsPanel = document.getElementById('settingsPanel');
+
+  favorites = JSON.parse(localStorage.getItem('favoriteBlocks') || '[]');
 
   initSettings({ canvas, settingsPanel, savePage: scheduleSave });
 
