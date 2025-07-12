@@ -390,9 +390,29 @@
   padding: 8px 12px;
   background: #f7fafc;
   font-weight: 600;
+  position: relative;
+  user-select: none;
+}
+.palette-group summary::-webkit-details-marker {
+  display: none;
+}
+.palette-group summary::after {
+  content: '▾';
+  position: absolute;
+  right: 8px;
+  transition: transform 0.2s;
+}
+.palette-group[open] summary::after {
+  transform: rotate(180deg);
 }
 .palette-group .group-items {
   padding: 8px 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+}
+.palette-group .block-item {
+  margin-bottom: 0;
 }
 
 /* --- Enhanced styles inspired by demo --- */
@@ -430,7 +450,9 @@
 }
 
 .fav-toggle {
-  margin-left: auto;
+  position: absolute;
+  top: 4px;
+  right: 6px;
   cursor: pointer;
   color: #a0aec0;
 }
@@ -585,6 +607,7 @@
 /* Optional: Add a search icon */
 .palette-search-container {
   position: relative;
+  margin-bottom: 12px;
 }
 
 .palette-search-container::before {
