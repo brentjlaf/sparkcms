@@ -58,7 +58,7 @@ $previewToolbar = '<div class="preview-toolbar">'
     . '<button type="button" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
     . '<button type="button" id="gridToggle" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
     . '</div>';
-$builderStart = '<div class="builder"><aside class="block-palette">'
+$builderStart = '<div class="builder"><button type="button" id="viewModeToggle" class="view-toggle" title="View mode"><i class="fa-solid fa-eye"></i></button><aside class="block-palette">'
     . $builderHeader
     . $historyToolbar
     . $previewToolbar
