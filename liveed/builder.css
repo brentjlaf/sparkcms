@@ -436,14 +436,6 @@
   left: 100%;
 }
 
-.block-item::after {
-  content: '\f0c4';
-  font-family: 'Font Awesome 6 Free';
-  font-weight: 900;
-  color: #a0aec0;
-  margin-left: 8px;
-}
-
 .block-item.dragging {
   opacity: 0.5;
   transform: rotate(3deg) scale(0.95);
