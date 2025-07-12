@@ -363,6 +363,7 @@
   resize: vertical;
 }
 .wysiwyg-toolbar {
+  position: absolute;
   background: #fff;
   border: 1px solid #ddd;
   padding: 4px;
