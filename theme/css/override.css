@@ -706,3 +706,20 @@ section.container-fluid {
     max-width: 800px;
     margin: 0 auto;
 }
+
+/* CTA Banner */
+.cta-banner {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.cta-banner-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.cta-banner .btn {
+    margin-top: 1rem;
+}
