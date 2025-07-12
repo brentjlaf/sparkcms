@@ -902,3 +902,12 @@
 .builder.view-mode .canvas-container {
   margin-left: 0;
 }
+
+/* Alignment radio styles */
+.settings-content .align-options label {
+  margin-right: 10px;
+}
+
+.settings-content .align-options input[type="radio"] {
+  margin-right: 4px;
+}

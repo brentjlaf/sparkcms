@@ -143,6 +143,10 @@ function initTemplateSettingValues(block) {
     const val = getSetting(block, name);
     if (input.type === 'checkbox') {
       input.checked = !!val;
+    } else if (input.type === 'radio') {
+      if (val !== undefined) {
+        input.checked = input.value === val;
+      }
     } else if (val !== undefined) {
       input.value = val;
     }
@@ -172,17 +176,23 @@ function renderBlock(block) {
   const templateSetting = getTemplateSettingElement(block);
   if (!templateSetting) return;
   const inputs = templateSetting.querySelectorAll('input[name], textarea[name], select[name]');
+  const processed = new Set();
   inputs.forEach((input) => {
     const name = input.name;
+    if (processed.has(name)) return;
     let value;
     if (settings[name] !== undefined) {
       value = settings[name];
     } else if (input.type === 'checkbox') {
       value = input.checked ? (input.value || 'on') : '';
+    } else if (input.type === 'radio') {
+      const sel = templateSetting.querySelector('input[name="' + name + '"]:checked');
+      value = sel ? sel.value : '';
     } else {
       value = input.value || '';
     }
     settings[name] = value;
+    processed.add(name);
     html = html.split('{' + name + '}').join(value);
   });
   html = html.replace(/<templateSetting[^>]*>[\s\S]*?<\/templateSetting>/i, '');
@@ -220,9 +230,20 @@ function renderBlock(block) {
 function applySettings(template, block) {
   if (!settingsPanel) return;
   const inputs = settingsPanel.querySelectorAll('input[name], textarea[name], select[name]');
+  const processed = new Set();
   inputs.forEach((input) => {
     const name = input.name;
-    const value = input.type === 'checkbox' ? (input.checked ? (input.value || 'on') : '') : input.value;
+    if (processed.has(name)) return;
+    let value;
+    if (input.type === 'checkbox') {
+      value = input.checked ? (input.value || 'on') : '';
+    } else if (input.type === 'radio') {
+      const sel = settingsPanel.querySelector('input[name="' + name + '"]:checked');
+      value = sel ? sel.value : '';
+    } else {
+      value = input.value;
+    }
+    processed.add(name);
     setSetting(block, name, value);
   });
   renderBlock(block);
