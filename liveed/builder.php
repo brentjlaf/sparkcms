@@ -33,7 +33,10 @@ $templateFile = realpath(__DIR__ . '/../theme/templates/pages/page.php');
 ob_start();
 include $templateFile;
 $themeHtml = ob_get_clean();
-$canvasContent = $page['content'] ?: '<div class="canvas-placeholder">Drag blocks here</div>';
+$placeholderText = !empty($settings['canvas_placeholder'])
+    ? htmlspecialchars($settings['canvas_placeholder'])
+    : 'Drag blocks from the palette to start building your page';
+$canvasContent = $page['content'] ?: '<div class="canvas-placeholder">' . $placeholderText . '</div>';
 $themeHtml = preg_replace('/<mwPageArea[^>]*><\\/mwPageArea>/', '<div id="canvas" class="canvas">' . $canvasContent . '</div>', $themeHtml);
 
 $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\">" .
