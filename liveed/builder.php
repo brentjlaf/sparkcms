@@ -41,7 +41,14 @@ $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
 $builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span><span id="saveStatus" class="save-status"></span></header>';
-$builderStart = '<div class="builder"><aside class="block-palette">' . $builderHeader . '<h2>Blocks</h2><input type="text" class="palette-search" placeholder="Search blocks"><div class="palette-items"></div></aside><main class="canvas-container">';
+$historyToolbar = '<div class="history-toolbar">'
+    . '<button type="button" class="undo-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>'
+    . '<button type="button" class="redo-btn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>'
+    . '</div>';
+$builderStart = '<div class="builder"><aside class="block-palette">'
+    . $builderHeader
+    . $historyToolbar
+    . '<h2>Blocks</h2><input type="text" class="palette-search" placeholder="Search blocks"><div class="palette-items"></div></aside><main class="canvas-container">';
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div></div>' .
     '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>' .
     '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
