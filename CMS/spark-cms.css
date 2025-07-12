@@ -1359,6 +1359,14 @@
     margin-top: 5px;
 }
 
+.color-picker input[type="radio"] {
+    display: none;
+}
+
+.color-picker input[type="radio"]:checked + .color-swatch {
+    outline: 3px solid #667eea;
+}
+
 .color-swatch {
     width: 30px;
     height: 30px;
