@@ -840,3 +840,29 @@
   background: #3182ce;
   color: #fff;
 }
+
+/* View mode */
+.view-toggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1100;
+  background: #3182ce;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.builder.view-mode .block-palette,
+.builder.view-mode .history-toolbar,
+.builder.view-mode .preview-toolbar,
+.builder.view-mode #settingsPanel,
+.builder.view-mode .block-wrapper > .block-controls {
+  display: none !important;
+}
+
+.builder.view-mode .canvas-container {
+  margin-left: 0;
+}

@@ -190,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewButtons = document.querySelectorAll('.preview-toolbar button');
   const gridToggle = document.getElementById('gridToggle');
   const builderEl = document.querySelector('.builder');
+  const viewToggle = document.getElementById('viewModeToggle');
   const toggleBtn = palette.querySelector('.palette-toggle-btn');
   const paletteHeader = palette.querySelector('.builder-header');
 
@@ -265,6 +266,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (gridToggle) {
     gridToggle.addEventListener('click', () => setGridActive(!gridActive));
+  }
+
+  if (viewToggle) {
+    viewToggle.addEventListener('click', () => {
+      const viewing = builderEl.classList.toggle('view-mode');
+      viewToggle.innerHTML = viewing
+        ? '<i class="fa-solid fa-eye-slash"></i>'
+        : '<i class="fa-solid fa-eye"></i>';
+      if (viewing) {
+        if (settingsPanel) settingsPanel.classList.remove('open');
+        setGridActive(false);
+      }
+    });
   }
 
   function updatePreview(size) {
@@ -350,6 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('canvasUpdated', scheduleSave);
 
   canvas.addEventListener('click', (e) => {
+    if (builderEl.classList.contains('view-mode')) return;
     const block = e.target.closest('.block-wrapper');
     if (!block) return;
     if (e.target.closest('.block-controls .edit')) {
