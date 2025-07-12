@@ -151,6 +151,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updatePreview('desktop');
 
+  const builderEl = document.querySelector('.builder');
+  const viewToggleBtn = document.querySelector('.view-toggle-btn');
+  if (viewToggleBtn && builderEl) {
+    viewToggleBtn.addEventListener('click', () => {
+      const viewMode = builderEl.classList.toggle('view-mode');
+      viewToggleBtn.classList.toggle('active', viewMode);
+      if (!viewMode) return;
+      const panel = document.getElementById('settingsPanel');
+      if (panel) panel.classList.remove('open');
+    });
+  }
+
   favorites = JSON.parse(localStorage.getItem('favoriteBlocks') || '[]');
 
   initSettings({ canvas, settingsPanel, savePage: scheduleSave });

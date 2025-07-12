@@ -668,6 +668,20 @@
   margin: auto;
 }
 
+/* View mode hides editing chrome */
+.builder.view-mode .block-palette,
+.builder.view-mode .builder-header,
+.builder.view-mode .history-toolbar,
+.builder.view-mode .preview-toolbar,
+.builder.view-mode #settingsPanel,
+.builder.view-mode .block-controls {
+  display: none !important;
+}
+.builder.view-mode .canvas {
+  border: none;
+  box-shadow: none;
+}
+
 @media (max-width: 480px) {
   .canvas-container {
     padding: 15px;
