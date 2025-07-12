@@ -614,15 +614,7 @@
   margin-bottom: 12px;
 }
 
-.palette-search-container::before {
-  content: "🔍";
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6c757d;
-  pointer-events: none;
-}
+
 
 .palette-search-container .palette-search {
   padding-left: 40px;
