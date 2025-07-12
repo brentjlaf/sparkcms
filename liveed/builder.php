@@ -60,9 +60,28 @@ $builderStart = '<div class="builder"><aside class="block-palette">'
     . $historyToolbar
     . $previewToolbar
     . '<h2>Blocks</h2><input type="text" class="palette-search" placeholder="Search blocks"><div class="palette-items"></div></aside><main class="canvas-container">';
-$builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div></div>' .
-    '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>' .
-    '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
+
+$mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
+    . '<div class="modal-content media-picker">'
+    . '<div class="picker-sidebar"><ul id="pickerFolderList"></ul>'
+    . '<div id="pickerUploadDrop">Drop images here or click to upload</div>'
+    . '<input type="file" id="pickerFileInput" multiple accept="image/*"></div>'
+    . '<div class="picker-main"><div id="pickerImageGrid" class="picker-grid"></div>'
+    . '<div class="modal-footer"><button type="button" class="btn btn-secondary" id="mediaPickerClose">Close</button></div>'
+    . '</div></div></div>'
+    . '<div id="pickerEditModal" class="modal">'
+    . '<div class="modal-content"><div class="crop-container"><img id="pickerEditImage" src="" style="max-width:100%;"></div>'
+    . '<div class="modal-footer"><input type="range" id="pickerScale" min="0.5" max="3" step="0.1" value="1">'
+    . '<button class="btn btn-secondary" id="pickerEditCancel">Cancel</button>'
+    . '<button class="btn btn-primary" id="pickerEditSave">Save</button></div>'
+    . '</div></div>'
+    . '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">'
+    . '<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>';
+
+$builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
+    . $mediaPickerHtml . '</div>'
+    . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>'
+    . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
 
 $themeHtml = preg_replace('/<body([^>]*)>/', '<body$1>' . $builderStart, $themeHtml, 1);
 $themeHtml = preg_replace('/<\/body>/', $builderEnd . '</body>', $themeHtml, 1);
