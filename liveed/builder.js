@@ -101,42 +101,80 @@ function toggleFavorite(file) {
 }
 
 let saveTimer;
+
+function checkLinks(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const warnings = [];
+  const checks = [];
+
+  const check = (url, type) => {
+    if (!url) return;
+    try {
+      const full = new URL(url, window.location.href).href;
+      checks.push(
+        fetch(full, { method: 'HEAD' })
+          .then((r) => {
+            if (!r.ok) warnings.push(`${type} ${url} returned ${r.status}`);
+          })
+          .catch(() => warnings.push(`${type} ${url} unreachable`))
+      );
+    } catch (e) {
+      warnings.push(`${type} ${url} invalid`);
+    }
+  };
+
+  doc.querySelectorAll('a[href]').forEach((el) => check(el.getAttribute('href'), 'Link'));
+  doc.querySelectorAll('img[src]').forEach((el) => check(el.getAttribute('src'), 'Image'));
+
+  return Promise.all(checks).then(() => warnings);
+}
 function savePage() {
   const canvas = document.getElementById('canvas');
   const statusEl = document.getElementById('saveStatus');
   const html = canvas.innerHTML;
-  const fd = new FormData();
-  fd.append('id', window.builderPageId);
-  fd.append('content', html);
+
   if (statusEl) {
-    statusEl.textContent = 'Saving...';
+    statusEl.textContent = 'Checking links...';
     statusEl.classList.add('saving');
     statusEl.classList.remove('error');
   }
-  fetch(window.builderBase + '/liveed/save-content.php', {
-    method: 'POST',
-    body: fd,
-  })
-    .then((r) => {
-      if (!r.ok) throw new Error('Save failed');
-      return r.text();
+
+  checkLinks(html).then((warnings) => {
+    if (warnings.length) {
+      alert('Link issues found:\n' + warnings.join('\n'));
+    }
+
+    const fd = new FormData();
+    fd.append('id', window.builderPageId);
+    fd.append('content', html);
+
+    if (statusEl) statusEl.textContent = 'Saving...';
+
+    fetch(window.builderBase + '/liveed/save-content.php', {
+      method: 'POST',
+      body: fd,
     })
-    .then(() => {
-      if (statusEl) {
-        statusEl.textContent = 'Saved';
-        statusEl.classList.remove('saving');
-      }
-      setTimeout(() => {
-        if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
-      }, 2000);
-    })
-    .catch(() => {
-      if (statusEl) {
-        statusEl.textContent = 'Error saving';
-        statusEl.classList.add('error');
-        statusEl.classList.remove('saving');
-      }
-    });
+      .then((r) => {
+        if (!r.ok) throw new Error('Save failed');
+        return r.text();
+      })
+      .then(() => {
+        if (statusEl) {
+          statusEl.textContent = 'Saved';
+          statusEl.classList.remove('saving');
+        }
+        setTimeout(() => {
+          if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
+        }, 2000);
+      })
+      .catch(() => {
+        if (statusEl) {
+          statusEl.textContent = 'Error saving';
+          statusEl.classList.add('error');
+          statusEl.classList.remove('saving');
+        }
+      });
+  });
 }
 
 function scheduleSave() {
