@@ -229,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let dragging = false;
     let offsetX = 0;
     let offsetY = 0;
+    const SNAP_THRESHOLD = 30; // pixels from left edge to trigger snapping
     const onMove = (e) => {
       if (!dragging) return;
       palette.style.left = e.clientX - offsetX + 'px';
@@ -239,6 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
       dragging = false;
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      const rect = palette.getBoundingClientRect();
+      if (rect.left < SNAP_THRESHOLD) {
+        palette.style.left = '0px';
+      }
       localStorage.setItem(
         'palettePosition',
         JSON.stringify({ left: palette.style.left, top: palette.style.top })
