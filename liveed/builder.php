@@ -62,7 +62,7 @@ $builderStart = '<div class="builder"><button type="button" id="viewModeToggle" 
     . $builderHeader
     . $historyToolbar
     . $previewToolbar
-    . '<h2>Blocks</h2><input type="text" class="palette-search" placeholder="Search blocks"><div class="palette-items"></div></aside><main class="canvas-container">';
+    . '<h2>Blocks</h2><div class="palette-search-container"><input type="text" class="palette-search" placeholder="Search blocks"></div><div class="palette-items"></div></aside><main class="canvas-container">';
 
 $mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
     . '<div class="modal-content media-picker">'
