@@ -102,6 +102,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('canvas');
   const palette = document.querySelector('.block-palette');
   const settingsPanel = document.getElementById('settingsPanel');
+  const previewContainer = document.querySelector('.canvas-container');
+  const previewButtons = document.querySelectorAll('.preview-toolbar button');
+
+  function updatePreview(size) {
+    if (!previewContainer) return;
+    previewContainer.classList.remove('preview-desktop', 'preview-tablet', 'preview-phone');
+    previewContainer.classList.add('preview-' + size);
+    previewButtons.forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.size === size);
+    });
+  }
+
+  previewButtons.forEach((btn) => {
+    btn.addEventListener('click', () => updatePreview(btn.dataset.size));
+  });
+
+  updatePreview('desktop');
 
   initSettings({ canvas, settingsPanel, savePage: scheduleSave });
 
