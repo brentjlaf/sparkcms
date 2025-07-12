@@ -44,6 +44,7 @@ $builderHeader = '<header class="builder-header"><span class="title">Editing: ' 
 $historyToolbar = '<div class="history-toolbar">'
     . '<button type="button" class="undo-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>'
     . '<button type="button" class="redo-btn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>'
+    . '<button type="button" class="grid-btn" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
     . '</div>';
 $builderStart = '<div class="builder"><aside class="block-palette">'
     . $builderHeader

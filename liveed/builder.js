@@ -5,6 +5,10 @@ import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 
 let allBlockFiles = [];
+let gridEnabled = false;
+const gridSize = 20;
+let canvas;
+let gridBtn;
 
 function renderPalette(palette, files = []) {
   const container = palette.querySelector('.palette-items');
@@ -98,8 +102,24 @@ function scheduleSave() {
   saveTimer = setTimeout(savePage, 200);
 }
 
+function snapBlocks() {
+  if (!gridEnabled || !canvas) return;
+  canvas.querySelectorAll('.block-wrapper').forEach((b) => {
+    b.style.marginBottom = gridSize + 'px';
+  });
+}
+
+function toggleGrid() {
+  gridEnabled = !gridEnabled;
+  if (canvas) {
+    canvas.classList.toggle('show-grid', gridEnabled);
+    snapBlocks();
+    if (gridBtn) gridBtn.classList.toggle('active', gridEnabled);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  const canvas = document.getElementById('canvas');
+  canvas = document.getElementById('canvas');
   const palette = document.querySelector('.block-palette');
   const settingsPanel = document.getElementById('settingsPanel');
 
@@ -134,8 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const history = initUndoRedo({ canvas, onChange: scheduleSave });
   const undoBtn = palette.querySelector('.undo-btn');
   const redoBtn = palette.querySelector('.redo-btn');
+  gridBtn = palette.querySelector('.grid-btn');
   if (undoBtn) undoBtn.addEventListener('click', () => history.undo());
   if (redoBtn) redoBtn.addEventListener('click', () => history.redo());
+  if (gridBtn) gridBtn.addEventListener('click', toggleGrid);
   initWysiwyg(canvas, true);
 
   canvas.addEventListener('input', scheduleSave);
@@ -151,9 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   updateCanvasPlaceholder();
+  snapBlocks();
 
   document.addEventListener('canvasUpdated', updateCanvasPlaceholder);
   document.addEventListener('canvasUpdated', scheduleSave);
+  document.addEventListener('canvasUpdated', snapBlocks);
 
   canvas.addEventListener('click', (e) => {
     const block = e.target.closest('.block-wrapper');
@@ -166,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
           block.remove();
           updateCanvasPlaceholder();
           scheduleSave();
+          snapBlocks();
         }
       });
     }
