@@ -9,11 +9,19 @@
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
+        <dt>Image 1 Alt Text</dt>
+        <dd><input type="text" name="custom_alt1" value=""></dd>
+    </dl>
+    <dl class="sparkDialog _tpl-box">
         <dt>Image 2 URL</dt>
         <dd>
             <input type="text" name="custom_img2" id="custom_img2" value="https://via.placeholder.com/300">
             <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_img2')">Browse</button>
         </dd>
+    </dl>
+    <dl class="sparkDialog _tpl-box">
+        <dt>Image 2 Alt Text</dt>
+        <dd><input type="text" name="custom_alt2" value=""></dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
         <dt>Image 3 URL</dt>
@@ -22,9 +30,13 @@
             <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_img3')">Browse</button>
         </dd>
     </dl>
+    <dl class="sparkDialog _tpl-box">
+        <dt>Image 3 Alt Text</dt>
+        <dd><input type="text" name="custom_alt3" value=""></dd>
+    </dl>
 </templateSetting>
 <div class="image-gallery" data-tpl-tooltip="Image Gallery">
-    <img src="{custom_img1}" alt="">
-    <img src="{custom_img2}" alt="">
-    <img src="{custom_img3}" alt="">
+    <img src="{custom_img1}" alt="{custom_alt1}">
+    <img src="{custom_img2}" alt="{custom_alt2}">
+    <img src="{custom_img3}" alt="{custom_alt3}">
 </div>
