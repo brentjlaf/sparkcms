@@ -380,12 +380,22 @@
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   color: #a0aec0;
-  margin-left: auto;
+  margin-left: 8px;
 }
 
 .block-item.dragging {
   opacity: 0.5;
   transform: rotate(3deg) scale(0.95);
+}
+
+.fav-toggle {
+  margin-left: auto;
+  cursor: pointer;
+  color: #a0aec0;
+}
+
+.fav-toggle.active {
+  color: #ffd700;
 }
 
 .canvas.drag-over {
