@@ -3,6 +3,7 @@ import { initDragDrop, addBlockControls } from './modules/dragDrop.js';
 import { initSettings, openSettings, applyStoredSettings, confirmDelete } from './modules/settings.js';
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
+import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
 
 let allBlockFiles = [];
 
@@ -137,6 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (undoBtn) undoBtn.addEventListener('click', () => history.undo());
   if (redoBtn) redoBtn.addEventListener('click', () => history.redo());
   initWysiwyg(canvas, true);
+  initMediaPicker({ basePath: window.builderBase });
+  window.openMediaPicker = openMediaPicker;
 
   canvas.addEventListener('input', scheduleSave);
   canvas.addEventListener('change', scheduleSave);
