@@ -154,7 +154,16 @@ function renderBlock(block) {
     html = html.split('{' + name + '}').join(value);
   });
   html = html.replace(/<templateSetting[^>]*>[\s\S]*?<\/templateSetting>/i, '');
-  block.innerHTML = html;
+  const existingAreas = Array.from(block.querySelectorAll('.drop-area')).map((a) => Array.from(a.childNodes));
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  const newAreas = temp.querySelectorAll('.drop-area');
+  newAreas.forEach((area, i) => {
+    const contents = existingAreas[i];
+    if (contents) contents.forEach((n) => area.appendChild(n));
+  });
+  block.innerHTML = temp.innerHTML;
+  block.querySelectorAll('.drop-area').forEach((a) => (a.dataset.dropArea = 'true'));
   inputs.forEach((input) => {
     const name = input.name;
     const value = settings[name];
