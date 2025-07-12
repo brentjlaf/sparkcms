@@ -707,6 +707,22 @@ section.container-fluid {
     margin: 0 auto;
 }
 
+.hero-section.hero-small {
+    padding: 3rem 0;
+}
+
+.hero-section.hero-medium {
+    padding: 6rem 0;
+}
+
+.hero-section.hero-large {
+    padding: 9rem 0;
+}
+
+.hero-section.hero-side {
+    text-align: left;
+}
+
 /* CTA Banner */
 .cta-banner {
     background: linear-gradient(135deg, #667eea, #764ba2);
