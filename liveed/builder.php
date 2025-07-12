@@ -45,7 +45,8 @@ $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
 $builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span>'
     . '<div class="header-actions"><button type="button" class="manual-save-btn btn btn-primary">Save</button>'
-    . '<span id="saveStatus" class="save-status"></span></div></header>';
+    . '<span id="saveStatus" class="save-status"></span>'
+    . '<span id="a11yStatus" class="a11y-status"></span></div></header>';
 $historyToolbar = '<div class="history-toolbar">'
     . '<button type="button" class="undo-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>'
     . '<button type="button" class="redo-btn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>'
