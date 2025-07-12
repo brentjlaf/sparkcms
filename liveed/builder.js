@@ -193,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
   const toggleBtn = palette.querySelector('.palette-toggle-btn');
+  const dockBtn = palette.querySelector('.palette-dock-btn');
   const paletteHeader = palette.querySelector('.builder-header');
 
   // Restore palette position
@@ -224,6 +225,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (dockBtn) {
+    dockBtn.addEventListener('click', () => {
+      palette.style.left = '0px';
+      palette.style.top = '0px';
+      localStorage.setItem('palettePosition', JSON.stringify({ left: '0px', top: '0px' }));
+    });
+  }
+
   // Dragging
   if (paletteHeader) {
     let dragging = false;
@@ -251,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     };
     paletteHeader.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.palette-toggle-btn')) return;
+      if (e.target.closest('.palette-toggle-btn') || e.target.closest('.palette-dock-btn')) return;
       dragging = true;
       const rect = palette.getBoundingClientRect();
       offsetX = e.clientX - rect.left;

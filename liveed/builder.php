@@ -43,8 +43,9 @@ $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\
     "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
-$builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span>'
+$builderHeader = '<header class="builder-header" title="Drag to reposition"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span>'
     . '<div class="header-actions"><button type="button" class="palette-toggle-btn" title="Collapse Palette"><i class="fa-solid fa-chevron-left"></i></button>'
+    . '<button type="button" class="palette-dock-btn" title="Dock palette"><i class="fa-solid fa-up-down-left-right"></i></button>'
     . '<button type="button" class="manual-save-btn btn btn-primary">Save</button>'
     . '<span id="saveStatus" class="save-status"></span>'
     . '<span id="a11yStatus" class="a11y-status"></span></div></header>';
