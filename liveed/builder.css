@@ -726,6 +726,7 @@
   border-radius: 4px;
   box-sizing: border-box;
 }
+.settings-content .color-swatch {height:32px; width:32px; display:inline-block; border-radius:50%; bordeR:1px solid #ccc;}
 
 .settings-panel .invalid {
   border-color: #e53e3e;
