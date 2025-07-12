@@ -4,7 +4,7 @@
     <dl class="sparkDialog _tpl-box">
         <dt>Source</dt>
         <dd>
-            <input type="text" name="custom_src" id="custom_src" value="https://via.placeholder.com/600x400">
+            <input type="text" name="custom_src" id="custom_src" value="">
             <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_src')">Browse</button>
         </dd>
     </dl>
