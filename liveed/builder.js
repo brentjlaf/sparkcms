@@ -189,6 +189,69 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewContainer = document.querySelector('.canvas-container');
   const previewButtons = document.querySelectorAll('.preview-toolbar button');
   const gridToggle = document.getElementById('gridToggle');
+  const builderEl = document.querySelector('.builder');
+  const toggleBtn = palette.querySelector('.palette-toggle-btn');
+  const paletteHeader = palette.querySelector('.builder-header');
+
+  // Restore palette position
+  const storedPos = localStorage.getItem('palettePosition');
+  if (storedPos) {
+    try {
+      const pos = JSON.parse(storedPos);
+      if (pos.left) palette.style.left = pos.left;
+      if (pos.top) palette.style.top = pos.top;
+    } catch (e) {}
+  }
+
+  // Collapse state
+  const storedCollapsed = localStorage.getItem('paletteCollapsed') === '1';
+  if (storedCollapsed) {
+    palette.classList.add('collapsed');
+    if (builderEl) builderEl.classList.add('palette-collapsed');
+    if (toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const collapsed = palette.classList.toggle('collapsed');
+      if (builderEl) builderEl.classList.toggle('palette-collapsed', collapsed);
+      toggleBtn.innerHTML = collapsed
+        ? '<i class="fa-solid fa-chevron-right"></i>'
+        : '<i class="fa-solid fa-chevron-left"></i>';
+      localStorage.setItem('paletteCollapsed', collapsed ? '1' : '0');
+    });
+  }
+
+  // Dragging
+  if (paletteHeader) {
+    let dragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+    const onMove = (e) => {
+      if (!dragging) return;
+      palette.style.left = e.clientX - offsetX + 'px';
+      palette.style.top = e.clientY - offsetY + 'px';
+    };
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      localStorage.setItem(
+        'palettePosition',
+        JSON.stringify({ left: palette.style.left, top: palette.style.top })
+      );
+    };
+    paletteHeader.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.palette-toggle-btn')) return;
+      dragging = true;
+      const rect = palette.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
 
   function setGridActive(on) {
     gridActive = on;
