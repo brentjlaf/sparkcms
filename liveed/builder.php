@@ -40,7 +40,9 @@ $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\
     "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
-$builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span><span id="saveStatus" class="save-status"></span></header>';
+$builderHeader = '<header class="builder-header"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span>'
+    . '<div class="header-actions"><button type="button" class="manual-save-btn btn btn-primary">Save</button>'
+    . '<span id="saveStatus" class="save-status"></span></div></header>';
 $historyToolbar = '<div class="history-toolbar">'
     . '<button type="button" class="undo-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>'
     . '<button type="button" class="redo-btn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>'
