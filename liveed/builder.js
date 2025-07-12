@@ -1,6 +1,7 @@
 // File: builder.js
 import { initDragDrop, addBlockControls } from './modules/dragDrop.js';
 import { initSettings, openSettings, applyStoredSettings, confirmDelete } from './modules/settings.js';
+import { ensureBlockState, getSettings, setSetting } from './modules/state.js';
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
@@ -217,6 +218,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!block) return;
     if (e.target.closest('.block-controls .edit')) {
       openSettings(block);
+    } else if (e.target.closest('.block-controls .duplicate')) {
+      const clone = block.cloneNode(true);
+      clone.classList.remove('selected');
+      delete clone.dataset.blockId;
+      block.after(clone);
+      ensureBlockState(clone);
+      const settings = getSettings(block);
+      for (const key in settings) {
+        setSetting(clone, key, settings[key]);
+      }
+      addBlockControls(clone);
+      applyStoredSettings(clone);
+      document.dispatchEvent(new Event('canvasUpdated'));
     } else if (e.target.closest('.block-controls .delete')) {
       confirmDelete('Delete this block?').then((ok) => {
         if (ok) {

@@ -104,6 +104,7 @@ export function addBlockControls(block) {
     controls.innerHTML =
       '<span class="control edit" title="Edit"><i class="fa-solid fa-pen"></i></span>' +
       '<span class="control drag" title="Drag"><i class="fa-solid fa-arrows-up-down-left-right"></i></span>' +
+      '<span class="control duplicate" title="Duplicate"><i class="fa-solid fa-clone"></i></span>' +
       '<span class="control delete" title="Delete"><i class="fa-solid fa-trash"></i></span>';
     block.style.position = 'relative';
     block.appendChild(controls);
