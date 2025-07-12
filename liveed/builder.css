@@ -760,3 +760,23 @@
   text-align: center;
   margin-bottom: 10px;
 }
+
+.block-wrapper.a11y-warning {
+  outline: 2px solid #e53e3e;
+  position: relative;
+}
+.block-wrapper.a11y-warning::after {
+  content: '\26A0';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  background: #e53e3e;
+  color: #fff;
+  border-radius: 50%;
+  padding: 2px 5px;
+  font-size: 12px;
+}
+
+.block-item.needs-a11y {
+  box-shadow: 0 0 0 2px #e53e3e;
+}

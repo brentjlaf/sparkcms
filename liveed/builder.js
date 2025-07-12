@@ -5,6 +5,7 @@ import { ensureBlockState, getSettings, setSetting } from './modules/state.js';
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
+import { initAccessibility, checkAccessibility } from './modules/accessibility.js';
 
 let allBlockFiles = [];
 let favorites = [];
@@ -181,6 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
     applyStoredSettings,
   });
 
+  initAccessibility({ canvas, palette });
+
   const history = initUndoRedo({ canvas, onChange: scheduleSave });
   const undoBtn = palette.querySelector('.undo-btn');
   const redoBtn = palette.querySelector('.redo-btn');
@@ -196,8 +199,14 @@ document.addEventListener('DOMContentLoaded', () => {
   initMediaPicker({ basePath: window.builderBase });
   window.openMediaPicker = openMediaPicker;
 
-  canvas.addEventListener('input', scheduleSave);
-  canvas.addEventListener('change', scheduleSave);
+  canvas.addEventListener('input', () => {
+    scheduleSave();
+    checkAccessibility();
+  });
+  canvas.addEventListener('change', () => {
+    scheduleSave();
+    checkAccessibility();
+  });
 
   canvas.querySelectorAll('.block-wrapper').forEach(addBlockControls);
 
@@ -210,8 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateCanvasPlaceholder();
 
+  checkAccessibility();
+
   document.addEventListener('canvasUpdated', updateCanvasPlaceholder);
   document.addEventListener('canvasUpdated', scheduleSave);
+  document.addEventListener('canvasUpdated', checkAccessibility);
 
   canvas.addEventListener('click', (e) => {
     const block = e.target.closest('.block-wrapper');
