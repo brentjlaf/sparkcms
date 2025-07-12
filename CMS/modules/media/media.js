@@ -134,10 +134,19 @@ $(function(){
             $('#emptyFolderState').hide();
             grid.show();
             images.forEach(img=>{
+                const isImage = img.type === 'images';
                 const src = img.thumbnail ? img.thumbnail : img.file;
+                let preview = '';
+                if(isImage){
+                    preview = '<img src="'+src+'" alt="'+img.name+'">';
+                }else{
+                    const ext = img.file.split('.').pop().toLowerCase();
+                    const icons = {pdf:'📄',doc:'📄',docx:'📄',txt:'📄',mp4:'🎥',webm:'🎥',mov:'🎥'};
+                    const icon = icons[ext] || '📄';
+                    preview = '<div class="file-icon">'+icon+'</div>';
+                }
                 const card = $('<div class="image-card" data-id="'+img.id+'">\
-                        <div class="image-preview">\
-                            <img src="'+src+'" alt="'+img.name+'">\
+                        <div class="image-preview">'+preview+'\
                             <div class="image-overlay">\
                                 <div>\
                                     <button class="info-btn" data-id="'+img.id+'">ℹ</button>\
