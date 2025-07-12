@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('canvas');
   const palette = document.querySelector('.block-palette');
   const settingsPanel = document.getElementById('settingsPanel');
+  const viewToggle = document.getElementById('viewToggle');
 
   initSettings({ canvas, settingsPanel, savePage: scheduleSave });
 
@@ -137,6 +138,27 @@ document.addEventListener('DOMContentLoaded', () => {
   if (undoBtn) undoBtn.addEventListener('click', () => history.undo());
   if (redoBtn) redoBtn.addEventListener('click', () => history.redo());
   initWysiwyg(canvas, true);
+
+  if (viewToggle) {
+    viewToggle.addEventListener('click', () => {
+      const builder = document.querySelector('.builder');
+      const isView = builder.classList.toggle('view-mode');
+      if (isView) {
+        viewToggle.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+        viewToggle.title = 'Exit view mode';
+        settingsPanel.classList.remove('open');
+        canvas.querySelectorAll('[data-editable]').forEach((el) => {
+          el.removeAttribute('contenteditable');
+        });
+      } else {
+        viewToggle.innerHTML = '<i class="fa-solid fa-eye"></i>';
+        viewToggle.title = 'View mode';
+        canvas.querySelectorAll('[data-editable]').forEach((el) => {
+          el.setAttribute('contenteditable', 'true');
+        });
+      }
+    });
+  }
 
   canvas.addEventListener('input', scheduleSave);
   canvas.addEventListener('change', scheduleSave);
