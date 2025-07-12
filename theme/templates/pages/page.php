@@ -64,6 +64,7 @@ function renderFooterMenu($items){
                 <link rel="preload" as="style" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
 
                 <!-- Stylesheets -->
+                <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/root.css?v=mw3.2"/>
                 <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
                 <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/override.css?v=mw3.2"/>
 	</head>
