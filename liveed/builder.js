@@ -8,6 +8,20 @@ import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
 
 let allBlockFiles = [];
 let favorites = [];
+let gridActive = false;
+
+function snapBlockToGrid(block) {
+  const grid = 20;
+  const cs = window.getComputedStyle(block);
+  const mt = parseFloat(cs.marginTop) || 0;
+  const mb = parseFloat(cs.marginBottom) || 0;
+  block.style.marginTop = Math.round(mt / grid) * grid + 'px';
+  block.style.marginBottom = Math.round(mb / grid) * grid + 'px';
+}
+
+function snapAllBlocks() {
+  document.querySelectorAll('#canvas .block-wrapper').forEach(snapBlockToGrid);
+}
 
 function renderPalette(palette, files = []) {
   const container = palette.querySelector('.palette-items');
@@ -135,6 +149,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const settingsPanel = document.getElementById('settingsPanel');
   const previewContainer = document.querySelector('.canvas-container');
   const previewButtons = document.querySelectorAll('.preview-toolbar button');
+  const gridToggle = document.getElementById('gridToggle');
+
+  function setGridActive(on) {
+    gridActive = on;
+    if (canvas) {
+      canvas.classList.toggle('grid-overlay', on);
+    }
+    if (on) snapAllBlocks();
+    if (gridToggle) gridToggle.classList.toggle('active', on);
+    localStorage.setItem('gridActive', on ? '1' : '0');
+  }
+
+  if (gridToggle) {
+    gridToggle.addEventListener('click', () => setGridActive(!gridActive));
+  }
 
   function updatePreview(size) {
     if (!previewContainer) return;
@@ -152,6 +181,10 @@ document.addEventListener('DOMContentLoaded', () => {
   updatePreview('desktop');
 
   favorites = JSON.parse(localStorage.getItem('favoriteBlocks') || '[]');
+
+  if (localStorage.getItem('gridActive') === '1') {
+    setGridActive(true);
+  }
 
   initSettings({ canvas, settingsPanel, savePage: scheduleSave });
 
@@ -230,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       addBlockControls(clone);
       applyStoredSettings(clone);
+      if (gridActive) snapBlockToGrid(clone);
       document.dispatchEvent(new Event('canvasUpdated'));
     } else if (e.target.closest('.block-controls .delete')) {
       confirmDelete('Delete this block?').then((ok) => {
@@ -258,4 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (block) block.style.transform = '';
     }
   });
+
+  window.snapBlockToGrid = snapBlockToGrid;
+  window.isGridSnapActive = () => gridActive;
 });

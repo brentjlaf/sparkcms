@@ -54,6 +54,7 @@ $previewToolbar = '<div class="preview-toolbar">'
     . '<button type="button" data-size="desktop" class="active" title="Desktop"><i class="fa-solid fa-desktop"></i></button>'
     . '<button type="button" data-size="tablet" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>'
     . '<button type="button" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
+    . '<button type="button" id="gridToggle" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
     . '</div>';
 $builderStart = '<div class="builder"><aside class="block-palette">'
     . $builderHeader
