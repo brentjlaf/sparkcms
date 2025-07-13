@@ -4,8 +4,7 @@ let mediaPickerModal;
 let pickerFolderList;
 let pickerImageGrid;
 let pickerCloseBtn;
-let pickerFileInput;
-let pickerUploadDrop;
+
 let pickerEditModal;
 let pickerEditImage;
 let pickerScale;
@@ -22,8 +21,6 @@ export function initMediaPicker(options = {}) {
   pickerFolderList = document.getElementById('pickerFolderList');
   pickerImageGrid = document.getElementById('pickerImageGrid');
   pickerCloseBtn = document.getElementById('mediaPickerClose');
-  pickerFileInput = document.getElementById('pickerFileInput');
-  pickerUploadDrop = document.getElementById('pickerUploadDrop');
   pickerEditModal = document.getElementById('pickerEditModal');
   pickerEditImage = document.getElementById('pickerEditImage');
   pickerScale = document.getElementById('pickerScale');
@@ -37,30 +34,6 @@ export function initMediaPicker(options = {}) {
     });
   }
 
-  if (pickerUploadDrop) {
-    pickerUploadDrop.addEventListener('click', () => {
-      if (pickerFileInput) pickerFileInput.click();
-    });
-    pickerUploadDrop.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      pickerUploadDrop.classList.add('drag-over');
-    });
-    pickerUploadDrop.addEventListener('dragleave', () => {
-      pickerUploadDrop.classList.remove('drag-over');
-    });
-    pickerUploadDrop.addEventListener('drop', (e) => {
-      e.preventDefault();
-      pickerUploadDrop.classList.remove('drag-over');
-      uploadFiles(e.dataTransfer.files);
-    });
-  }
-
-  if (pickerFileInput) {
-    pickerFileInput.addEventListener('change', () => {
-      uploadFiles(pickerFileInput.files);
-      pickerFileInput.value = '';
-    });
-  }
 
   if (pickerFolderList) {
     pickerFolderList.addEventListener('click', (e) => {
@@ -172,20 +145,6 @@ function selectPickerFolder(folder) {
     });
 }
 
-function uploadFiles(files) {
-  if (!currentFolder || !files.length) return;
-  const fd = new FormData();
-  Array.from(files).forEach((f) => fd.append('files[]', f));
-  fd.append('folder', currentFolder);
-  fd.append('tags', '');
-  fetch(basePath + '/CMS/modules/media/upload_media.php', {
-    method: 'POST',
-    body: fd,
-  }).then(() => {
-    loadPickerFolders();
-    selectPickerFolder(currentFolder);
-  });
-}
 
 function openEdit(id, src) {
   currentEditId = id;

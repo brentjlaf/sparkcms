@@ -67,9 +67,7 @@ $builderStart = '<div class="builder"><button type="button" id="viewModeToggle" 
 
 $mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
     . '<div class="modal-content media-picker">'
-    . '<div class="picker-sidebar"><ul id="pickerFolderList"></ul>'
-    . '<div id="pickerUploadDrop">Drop images here or click to upload</div>'
-    . '<input type="file" id="pickerFileInput" multiple accept="image/*"></div>'
+    . '<div class="picker-sidebar"><ul id="pickerFolderList"></ul></div>'
     . '<div class="picker-main"><div id="pickerImageGrid" class="picker-grid"></div>'
     . '<div class="modal-footer"><button type="button" class="btn btn-secondary" id="mediaPickerClose">Close</button></div>'
     . '</div></div></div>'
