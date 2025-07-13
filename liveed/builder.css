@@ -797,16 +797,6 @@
   background: #3182ce;
   color: #fff;
 }
-#pickerUploadDrop {
-  border: 2px dashed #cbd5e0;
-  padding: 10px;
-  margin: 10px 0;
-  text-align: center;
-  cursor: pointer;
-}
-#pickerUploadDrop.drag-over {
-  background: #f0f0f0;
-}
 #mediaPickerModal .picker-main {
   flex: 1;
   overflow-y: auto;
