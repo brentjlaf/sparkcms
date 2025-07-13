@@ -745,8 +745,20 @@
   margin: auto;
 }
 
+.canvas-container.preview-tablet .site-header,
+.canvas-container.preview-tablet .site-footer {
+  max-width: 768px;
+  margin: auto;
+}
+
 .canvas-container.preview-phone .page-template.default-page {
   width: 375px;
+  margin: auto;
+}
+
+.canvas-container.preview-phone .site-header,
+.canvas-container.preview-phone .site-footer {
+  max-width: 375px;
   margin: auto;
 }
 
