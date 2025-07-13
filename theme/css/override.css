@@ -996,3 +996,102 @@ section.container-fluid {
     display: block;
 }
 
+/* Column 2 layout custom widths */
+.\32 0_80 > .col:first-child,
+.\32 0_80 > [class*=col-]:first-child {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+.\32 0_80 > .col:last-child,
+.\32 0_80 > [class*=col-]:last-child {
+    flex: 0 0 80%;
+    max-width: 80%;
+}
+
+.\33 0_70 > .col:first-child,
+.\33 0_70 > [class*=col-]:first-child {
+    flex: 0 0 30%;
+    max-width: 30%;
+}
+.\33 0_70 > .col:last-child,
+.\33 0_70 > [class*=col-]:last-child {
+    flex: 0 0 70%;
+    max-width: 70%;
+}
+
+.\34 0_60 > .col:first-child,
+.\34 0_60 > [class*=col-]:first-child {
+    flex: 0 0 40%;
+    max-width: 40%;
+}
+.\34 0_60 > .col:last-child,
+.\34 0_60 > [class*=col-]:last-child {
+    flex: 0 0 60%;
+    max-width: 60%;
+}
+
+.\35 0_50 > .col:first-child,
+.\35 0_50 > [class*=col-]:first-child {
+    flex: 0 0 50%;
+    max-width: 50%;
+}
+.\35 0_50 > .col:last-child,
+.\35 0_50 > [class*=col-]:last-child {
+    flex: 0 0 50%;
+    max-width: 50%;
+}
+
+.\36 0_40 > .col:first-child,
+.\36 0_40 > [class*=col-]:first-child {
+    flex: 0 0 60%;
+    max-width: 60%;
+}
+.\36 0_40 > .col:last-child,
+.\36 0_40 > [class*=col-]:last-child {
+    flex: 0 0 40%;
+    max-width: 40%;
+}
+
+.\37 0_30 > .col:first-child,
+.\37 0_30 > [class*=col-]:first-child {
+    flex: 0 0 70%;
+    max-width: 70%;
+}
+.\37 0_30 > .col:last-child,
+.\37 0_30 > [class*=col-]:last-child {
+    flex: 0 0 30%;
+    max-width: 30%;
+}
+
+.\38 0_20 > .col:first-child,
+.\38 0_20 > [class*=col-]:first-child {
+    flex: 0 0 80%;
+    max-width: 80%;
+}
+.\38 0_20 > .col:last-child,
+.\38 0_20 > [class*=col-]:last-child {
+    flex: 0 0 20%;
+    max-width: 20%;
+}
+
+/* Sidebar layout adjustments */
+.sidebar.is-right .sidebar-side {
+    order: 2;
+}
+
+.sidebar.is-right .sidebar-main {
+    order: 1;
+}
+
+.sidebar.is-left .sidebar-side {
+    order: 1;
+}
+
+.sidebar.is-left .sidebar-main {
+    order: 2;
+}
+
+.sidebar.has-border .sidebar-inner {
+    border: 1px solid #dee2e6;
+}
+
