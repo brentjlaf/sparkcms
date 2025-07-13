@@ -407,7 +407,6 @@
   display: none;
 }
 .palette-group summary::after {
-  content: '▾';
   position: absolute;
   right: 8px;
   transition: transform 0.2s;
