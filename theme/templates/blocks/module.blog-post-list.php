@@ -1,11 +1,28 @@
 <!-- File: module.blog-post-list.php -->
 <!-- Template: module.blog-post-list -->
+<?php
+$postsFile = __DIR__ . '/../../../CMS/data/blog_posts.json';
+$blogCategories = [];
+if (file_exists($postsFile)) {
+    $posts = json_decode(file_get_contents($postsFile), true) ?: [];
+    foreach ($posts as $p) {
+        if (!empty($p['category']) && !in_array($p['category'], $blogCategories)) {
+            $blogCategories[] = $p['category'];
+        }
+    }
+}
+$list_id = uniqid('blog-cat-');
+?>
 <templateSetting caption="Blog List Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Categories (comma separated)</dt>
         <dd>
-            <input type="text" name="custom_categories" value="" list="">
-            <datalist></datalist>
+            <input type="text" name="custom_categories" value="" list="<?= $list_id ?>">
+            <datalist id="<?= $list_id ?>">
+                <?php foreach ($blogCategories as $cat): ?>
+                <option value="<?= htmlspecialchars($cat) ?>"></option>
+                <?php endforeach; ?>
+            </datalist>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
