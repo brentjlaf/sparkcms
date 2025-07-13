@@ -7,4 +7,31 @@ document.addEventListener('DOMContentLoaded', function () {
       nav.classList.toggle('active');
     });
   }
+
+  var accordions = document.querySelectorAll('.accordion');
+  accordions.forEach(function (acc) {
+    var btn = acc.querySelector('.accordion-button');
+    var panel = acc.querySelector('.accordion-panel');
+    if (!btn || !panel) return;
+
+    if (acc.classList.contains('open')) {
+      btn.setAttribute('aria-expanded', 'true');
+      panel.style.display = 'block';
+    } else {
+      btn.setAttribute('aria-expanded', 'false');
+      panel.style.display = 'none';
+    }
+
+    btn.addEventListener('click', function () {
+      if (acc.classList.contains('open')) {
+        acc.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        panel.style.display = 'none';
+      } else {
+        acc.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+        panel.style.display = 'block';
+      }
+    });
+  });
 });
