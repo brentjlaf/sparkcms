@@ -26,14 +26,30 @@
     const count = parseInt(block.dataset.count) || 3;
     const cats = block.dataset.categories.split(',').map(c=>c.trim()).filter(c=>c);
 
-    const datalist = block.querySelector('#<?php echo $listId; ?>');
-    if(datalist){
+    const listId = '<?php echo $listId; ?>';
+    function loadCats(dl){
+        if(!dl) return;
         fetch('CMS/modules/blogs/list_categories.php')
             .then(r=>r.json())
             .then(catsData=>{
-                datalist.innerHTML = catsData.map(c=>`<option value="${c}"></option>`).join('');
+                dl.innerHTML = catsData.map(c=>`<option value="${c}"></option>`).join('');
             });
     }
+
+    loadCats(block.querySelector('#'+listId));
+
+    const observer = new MutationObserver(muts=>{
+        muts.forEach(m=>{
+            m.addedNodes.forEach(n=>{
+                if(n.nodeType===1){
+                    if(n.id===listId) return loadCats(n);
+                    const dl = n.querySelector && n.querySelector('#'+listId);
+                    if(dl) loadCats(dl);
+                }
+            });
+        });
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
     fetch('CMS/modules/blogs/list_posts.php')
         .then(r=>r.json())
         .then(posts=>{
