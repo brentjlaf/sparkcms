@@ -76,7 +76,7 @@ function renderFooterMenu($items){
 
                         <!-- Main -->
                         <main id="main-area">
-                                <mwPageArea rel="siteMain" info="Main Area" sortable="page"></mwPageArea>
+                                <div class="drop-area"></div>
                         </main>
 
                         <!-- Footer -->

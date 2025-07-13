@@ -76,7 +76,7 @@
         </toggle>
         <div class="accordion-panel">
             <div class="accordion-panel-inner">
-                <mwPageArea rel="mainContent" info="Drag and drop widgets or sub-templates here." sortable="page"></mwPageArea>
+                <div class="drop-area"></div>
             </div>
         </div>
     </div>

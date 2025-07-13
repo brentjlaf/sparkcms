@@ -58,14 +58,14 @@
         <div class="sidebar-side {custom_size}">
             <div class="sidebar-side-wrap">
                 <div class="sidebar-inner {custom_side_bg}">
-                    <mwPageArea rel="Column1" info="Side Area" sortable="page"></mwPageArea>
+                    <div class="drop-area"></div>
                 </div>
             </div>
         </div>
         <div class="sidebar-main col">
             <div class="sidebar-main-wrap">
                 <div class="sidebar-inner">
-                    <mwPageArea rel="Column2" info="Main Area" sortable="page"></mwPageArea>
+                    <div class="drop-area"></div>
                 </div>
             </div>
         </div>

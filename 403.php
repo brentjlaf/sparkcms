@@ -16,5 +16,5 @@ $templateFile = __DIR__ . '/theme/templates/pages/errors/403.php';
 ob_start();
 include $templateFile;
 $html = ob_get_clean();
-$html = preg_replace('/<mwPageArea[^>]*><\\/mwPageArea>/', $page['content'], $html);
+$html = preg_replace('/<div class="drop-area"><\\/div>/', $page['content'], $html);
 echo $html;

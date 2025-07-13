@@ -37,7 +37,7 @@ $placeholderText = !empty($settings['canvas_placeholder'])
     ? htmlspecialchars($settings['canvas_placeholder'])
     : 'Drag blocks from the palette to start building your page';
 $canvasContent = $page['content'] ?: '<div class="canvas-placeholder">' . $placeholderText . '</div>';
-$themeHtml = preg_replace('/<mwPageArea[^>]*><\\/mwPageArea>/', '<div id="canvas" class="canvas">' . $canvasContent . '</div>', $themeHtml);
+$themeHtml = preg_replace('/<div class="drop-area"><\\/div>/', '<div id="canvas" class="canvas">' . $canvasContent . '</div>', $themeHtml);
 
 $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\">" .
     "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";

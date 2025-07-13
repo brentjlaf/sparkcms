@@ -27,7 +27,7 @@
 </templateSetting>
 <div class="content-width _content-style" data-tpl-tooltip="Content Width">
     <div class="content-width-wrap {custom_position}" style="max-width: {custom_width}px;">
-        <mwPageArea rel="mainContent" info="{custom_width} Pixel Wide Content Area" sortable="page"></mwPageArea>
+        <div class="drop-area"></div>
     </div>
 </div>
 
