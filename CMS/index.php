@@ -34,7 +34,7 @@ function render_theme_page($templateFile, $page, $scriptBase) {
     ob_start();
     include $templateFile;
     $html = ob_get_clean();
-    $html = preg_replace('/<mwPageArea[^>]*><\/mwPageArea>/', $page['content'], $html);
+    $html = preg_replace('/<div class="drop-area"><\/div>/', $page['content'], $html);
     if (!$logged_in) {
         $html = preg_replace('#<templateSetting[^>]*>.*?</templateSetting>#si', '', $html);
         $html = preg_replace('#<div class="block-controls"[^>]*>.*?</div>#si', '', $html);
