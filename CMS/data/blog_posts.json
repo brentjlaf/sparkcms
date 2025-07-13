@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "title": "Getting Started with Web Development",
+    "slug": "getting-started-web-development",
+    "excerpt": "A comprehensive guide for beginners looking to start their journey in web development.",
+    "content": "<p>Welcome to the world of web development! This guide will help you understand the basics...</p>",
+    "category": "Technology",
+    "author": "John Doe",
+    "status": "published",
+    "publishDate": "2024-01-15T10:00:00",
+    "tags": "web development, beginner, tutorial",
+    "createdAt": "2024-01-15T10:00:00"
+  },
+  {
+    "id": 2,
+    "title": "Advanced JavaScript Techniques",
+    "slug": "advanced-javascript-techniques",
+    "excerpt": "Explore advanced JavaScript concepts and techniques used by professional developers.",
+    "content": "<p>JavaScript has evolved significantly over the years. In this post, we'll explore...</p>",
+    "category": "Programming",
+    "author": "Jane Smith",
+    "status": "draft",
+    "publishDate": "",
+    "tags": "javascript, advanced, programming",
+    "createdAt": "2024-01-20T14:30:00"
+  },
+  {
+    "id": 3,
+    "title": "The Future of AI in Web Design",
+    "slug": "future-ai-web-design",
+    "excerpt": "How artificial intelligence is revolutionizing the way we approach web design and user experience.",
+    "content": "<p>Artificial Intelligence is changing every industry, and web design is no exception...</p>",
+    "category": "Design",
+    "author": "Mike Johnson",
+    "status": "scheduled",
+    "publishDate": "2024-02-01T09:00:00",
+    "tags": "ai, web design, future, ux",
+    "createdAt": "2024-01-25T16:45:00"
+  }
+]

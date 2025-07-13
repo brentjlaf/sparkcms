@@ -874,3 +874,21 @@ section.container-fluid {
         flex-shrink: 0;
     }
 }
+
+/* Blog Post List */
+.blog-post-list .blog-item {
+    margin-bottom: 1.5rem;
+}
+.blog-post-list .blog-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.25rem;
+}
+.blog-post-list .blog-title a {
+    text-decoration: none;
+    color: var(--primary, #333);
+}
+.blog-post-list .blog-excerpt {
+    margin: 0;
+    color: #555;
+    font-size: 0.95rem;
+}
