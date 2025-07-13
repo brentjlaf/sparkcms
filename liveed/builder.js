@@ -382,7 +382,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const history = initUndoRedo({ canvas, onChange: scheduleSave });
   const undoBtn = palette.querySelector('.undo-btn');
   const redoBtn = palette.querySelector('.redo-btn');
+  const historyBtn = palette.querySelector('.page-history-btn');
   const saveBtn = palette.querySelector('.manual-save-btn');
+  const historyPanel = document.getElementById('historyPanel');
   if (undoBtn) undoBtn.addEventListener('click', () => history.undo());
   if (redoBtn) redoBtn.addEventListener('click', () => history.redo());
   if (saveBtn)
@@ -390,6 +392,44 @@ document.addEventListener('DOMContentLoaded', () => {
       clearTimeout(saveTimer);
       savePage();
     });
+  if (historyBtn && historyPanel) {
+    const closeBtn = historyPanel.querySelector('.close-btn');
+    const renderHistory = () => {
+      fetch(
+        window.builderBase +
+          '/liveed/get-history.php?id=' +
+          window.builderPageId
+      )
+        .then((r) => r.json())
+        .then((data) => {
+          const cont = historyPanel.querySelector('.history-content');
+          cont.innerHTML = '';
+          if (data.history && data.history.length) {
+            const ul = document.createElement('ul');
+            data.history.forEach((h) => {
+              const li = document.createElement('li');
+              const d = new Date(h.time * 1000);
+              li.textContent = d.toLocaleString() + ' - ' + h.user;
+              ul.appendChild(li);
+            });
+            cont.appendChild(ul);
+          } else {
+            cont.textContent = 'No history yet.';
+          }
+        });
+    };
+    historyBtn.addEventListener('click', () => {
+      const rect = palette.getBoundingClientRect();
+      historyPanel.style.left = rect.right + 'px';
+      historyPanel.style.top = rect.top + 'px';
+      renderHistory();
+      historyPanel.classList.add('open');
+    });
+    if (closeBtn)
+      closeBtn.addEventListener('click', () => {
+        historyPanel.classList.remove('open');
+      });
+  }
   initWysiwyg(canvas, true);
   initMediaPicker({ basePath: window.builderBase });
   initAccessibility({ canvas });

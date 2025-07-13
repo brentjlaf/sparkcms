@@ -1,5 +1,6 @@
 <?php
 // File: save_page.php
+require_once __DIR__ . '/../../includes/auth.php';
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = [];
 if (file_exists($pagesFile)) {
@@ -56,6 +57,7 @@ if ($id) {
             $p['og_image'] = $og_image;
             $p['access'] = $access;
             $p['last_modified'] = time();
+            $timestamp = $p['last_modified'];
             break;
         }
     }
@@ -65,7 +67,7 @@ if ($id) {
     foreach ($pages as $p) {
         if ($p['id'] >= $id) $id = $p['id'] + 1;
     }
-    $pages[] = [
+$pages[] = [
         'id' => $id,
         'title' => $title,
         'slug' => $slug,
@@ -81,7 +83,16 @@ if ($id) {
         'views' => 0,
         'last_modified' => time()
     ];
+    $timestamp = $pages[array_key_last($pages)]['last_modified'];
 }
+
+$historyFile = __DIR__ . '/../../data/page_history.json';
+$historyData = file_exists($historyFile) ? json_decode(file_get_contents($historyFile), true) : [];
+if (!isset($historyData[$id])) $historyData[$id] = [];
+$user = $_SESSION['user']['username'] ?? 'Unknown';
+$historyData[$id][] = ['time' => $timestamp, 'user' => $user];
+$historyData[$id] = array_slice($historyData[$id], -20);
+file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 
 file_put_contents($pagesFile, json_encode($pages, JSON_PRETTY_PRINT));
 // Regenerate sitemap whenever pages are modified
