@@ -52,6 +52,7 @@ $builderHeader = '<header class="builder-header" title="Drag to reposition"><spa
 $historyToolbar = '<div class="history-toolbar">'
     . '<button type="button" class="undo-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>'
     . '<button type="button" class="redo-btn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>'
+    . '<button type="button" class="page-history-btn" title="Page History"><i class="fa-solid fa-clock-rotate-left"></i></button>'
     . '</div>';
 $previewToolbar = '<div class="preview-toolbar">'
     . '<button type="button" data-size="desktop" class="active" title="Desktop"><i class="fa-solid fa-desktop"></i></button>'
@@ -81,6 +82,7 @@ $mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
     . '<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>';
 
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
+    . '<div id="historyPanel" class="history-panel"><div class="history-header"><span class="title">Page History</span><button type="button" class="close-btn">&times;</button></div><div class="history-content"></div></div>'
     . $mediaPickerHtml . '</div>'
     . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>'
     . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
