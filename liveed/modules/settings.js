@@ -1,6 +1,7 @@
 // File: settings.js
 import { ensureBlockState, getSetting, setSetting, getSettings } from './state.js';
 import { addBlockControls } from './dragDrop.js';
+import { executeScripts } from "./executeScripts.js";
 
 let canvas;
 let settingsPanel;
@@ -205,6 +206,7 @@ function renderBlock(block) {
     if (contents) contents.forEach((n) => area.appendChild(n));
   });
   block.innerHTML = temp.innerHTML;
+  executeScripts(block);
   block.querySelectorAll('.drop-area').forEach((a) => (a.dataset.dropArea = 'true'));
   inputs.forEach((input) => {
     const name = input.name;

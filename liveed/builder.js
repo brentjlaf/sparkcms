@@ -6,6 +6,7 @@ import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
 import { initAccessibility } from './modules/accessibility.js';
+import { executeScripts } from "./modules/executeScripts.js";
 
 let allBlockFiles = [];
 let favorites = [];
@@ -439,6 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
   canvas.addEventListener('change', scheduleSave);
 
   canvas.querySelectorAll('.block-wrapper').forEach(addBlockControls);
+  executeScripts(canvas);
 
   function updateCanvasPlaceholder() {
     const placeholder = canvas.querySelector('.canvas-placeholder');
@@ -470,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       addBlockControls(clone);
       applyStoredSettings(clone);
+      executeScripts(clone);
       if (gridActive) snapBlockToGrid(clone);
       document.dispatchEvent(new Event('canvasUpdated'));
     } else if (e.target.closest('.block-controls .delete')) {
