@@ -39,9 +39,17 @@
             </select>
         </dd>
     </dl>
+    <dl class="sparkDialog _tpl-box">
+        <dt>Alignment</dt>
+        <dd class="align-options">
+            <label><input type="radio" name="custom_align" value=" _text-left"> Left</label>
+            <label><input type="radio" name="custom_align" value=" _text-center" checked> Center</label>
+            <label><input type="radio" name="custom_align" value=" _text-right"> Right</label>
+        </dd>
+    </dl>
 </templateSetting>
 <section class="hero-section hero-{custom_size}" style="background-image:url('{custom_bg}');" data-tpl-tooltip="Hero">
-    <div class="container hero-content">
+    <div class="container hero-content{custom_align}">
         <h1 data-editable>{custom_heading}</h1>
         <p data-editable>{custom_subheading}</p>
         <a href="{custom_btn_link}" class="btn btn-primary"{custom_btn_new} data-editable>{custom_btn_text}</a>
