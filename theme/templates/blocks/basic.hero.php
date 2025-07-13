@@ -4,7 +4,7 @@
     <dl class="sparkDialog _tpl-box">
         <dt>Background Image</dt>
         <dd>
-            <input type="text" name="custom_bg" id="custom_bg" value="https://via.placeholder.com/1920x600">
+            <input type="text" name="custom_bg" id="custom_bg" value="">
             <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_bg')">Browse</button>
         </dd>
     </dl>
