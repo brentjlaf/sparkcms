@@ -136,9 +136,10 @@ function renderFooterMenu($items){
 
 		</div>
 
-		<!-- Vendor Javascript -->
+                <!-- Vendor Javascript -->
 
-		<!-- Javascript -->
+                <!-- Javascript -->
+                <script>window.cmsBase = <?php echo json_encode($scriptBase); ?>;</script>
                 <script src="<?php echo $themeBase; ?>/js/global.js?v=mw3.2"></script>
                 <script src="<?php echo $themeBase; ?>/js/script.js?v=mw3.2"></script>
 

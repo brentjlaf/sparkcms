@@ -1,12 +1,11 @@
 <!-- File: module.blog-post-list.php -->
 <!-- Template: module.blog-post-list -->
 <templateSetting caption="Blog List Settings" order="1">
-    <?php $listId = 'blog-cat-' . uniqid(); ?>
     <dl class="sparkDialog _tpl-box">
         <dt>Categories (comma separated)</dt>
         <dd>
-            <input type="text" name="custom_categories" value="" list="<?php echo $listId; ?>">
-            <datalist id="<?php echo $listId; ?>"></datalist>
+            <input type="text" name="custom_categories" value="" list="">
+            <datalist></datalist>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
@@ -26,15 +25,19 @@
     const count = parseInt(block.dataset.count) || 3;
     const cats = block.dataset.categories.split(',').map(c=>c.trim()).filter(c=>c);
 
-    const datalist = block.querySelector('#<?php echo $listId; ?>');
-    if(datalist){
-        fetch('CMS/modules/blogs/list_categories.php')
+    const input = block.querySelector('input[list]');
+    const datalist = block.querySelector('datalist');
+    if(input && datalist){
+        const listId = 'blog-cat-' + Math.random().toString(36).substr(2,8);
+        datalist.id = listId;
+        input.setAttribute('list', listId);
+        fetch((window.cmsBase || '') + '/CMS/modules/blogs/list_categories.php')
             .then(r=>r.json())
             .then(catsData=>{
                 datalist.innerHTML = catsData.map(c=>`<option value="${c}"></option>`).join('');
             });
     }
-    fetch('CMS/modules/blogs/list_posts.php')
+    fetch((window.cmsBase || '') + '/CMS/modules/blogs/list_posts.php')
         .then(r=>r.json())
         .then(posts=>{
             posts = posts.filter(p => p.status === 'published');
