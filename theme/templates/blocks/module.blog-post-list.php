@@ -1,9 +1,13 @@
 <!-- File: module.blog-post-list.php -->
 <!-- Template: module.blog-post-list -->
 <templateSetting caption="Blog List Settings" order="1">
+    <?php $listId = 'blog-cat-' . uniqid(); ?>
     <dl class="sparkDialog _tpl-box">
         <dt>Categories (comma separated)</dt>
-        <dd><input type="text" name="custom_categories" value=""></dd>
+        <dd>
+            <input type="text" name="custom_categories" value="" list="<?php echo $listId; ?>">
+            <datalist id="<?php echo $listId; ?>"></datalist>
+        </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
         <dt>Number of Posts</dt>
@@ -21,6 +25,15 @@
     const container = block.querySelector('.blog-posts');
     const count = parseInt(block.dataset.count) || 3;
     const cats = block.dataset.categories.split(',').map(c=>c.trim()).filter(c=>c);
+
+    const datalist = block.querySelector('#<?php echo $listId; ?>');
+    if(datalist){
+        fetch('CMS/modules/blogs/list_categories.php')
+            .then(r=>r.json())
+            .then(catsData=>{
+                datalist.innerHTML = catsData.map(c=>`<option value="${c}"></option>`).join('');
+            });
+    }
     fetch('CMS/modules/blogs/list_posts.php')
         .then(r=>r.json())
         .then(posts=>{
