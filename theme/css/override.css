@@ -892,3 +892,107 @@ section.container-fluid {
     color: #555;
     font-size: 0.95rem;
 }
+
+/* Additional Block Styles */
+._tpl-box {
+    margin-bottom: 1rem;
+}
+
+.accordion-wrap {
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+}
+
+.accordion-panel-inner {
+    padding: 0.75rem 1rem;
+}
+
+.align-options label {
+    margin-right: 0.5rem;
+}
+
+.blog-posts {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.btn-secondary {
+    background-color: #e2e8f0;
+    color: #4a5568;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #cbd5e0;
+}
+
+.color-options label {
+    margin-right: 0.5rem;
+}
+
+.color-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.color-swatch {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+}
+
+.content-width {
+    width: 100%;
+}
+
+.content-width-wrap {
+    margin: 0 auto;
+}
+
+.drop-area {
+    min-height: 20px;
+}
+
+.formGroup {
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.mwDialog,
+.sparkDialog {
+    margin-bottom: 1rem;
+}
+
+.paragraph {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.sidebar {
+    width: 100%;
+}
+
+.sidebar-inner {
+    padding: 1rem;
+}
+
+.sidebar-side-wrap,
+.sidebar-main-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-side,
+.sidebar-main {
+    padding: 0;
+}
+
+
+.sidebar-default {
+    display: block;
+}
+
