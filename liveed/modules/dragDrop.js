@@ -1,5 +1,6 @@
 // File: dragDrop.js
 import { ensureBlockState } from './state.js';
+import { executeScripts } from "./executeScripts.js";
 
 let palette;
 let canvas;
@@ -203,6 +204,7 @@ function handleDrop(e) {
             .replace(/\b\w/g, (c) => c.toUpperCase());
           wrapper.setAttribute('data-tpl-tooltip', label);
           wrapper.innerHTML = cleaned;
+          executeScripts(wrapper);
           if (applyStoredSettings) applyStoredSettings(wrapper);
           addBlockControls(wrapper);
           if (after == null) area.appendChild(wrapper);
