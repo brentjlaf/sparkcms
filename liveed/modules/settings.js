@@ -8,6 +8,19 @@ let settingsPanel;
 let settingsContent;
 let savePageFn;
 
+function suggestAltText(block) {
+  const src = getSetting(block, 'custom_src', '').trim();
+  let alt = getSetting(block, 'custom_alt', '').trim();
+  if (!src || alt) return;
+  let name = src.split('/').pop();
+  name = name.split('?')[0];
+  name = name.replace(/\.[^/.]+$/, '');
+  name = name.replace(/[-_]+/g, ' ').trim();
+  if (!name) return;
+  name = name.charAt(0).toUpperCase() + name.slice(1);
+  setSetting(block, 'custom_alt', name);
+}
+
 function getTemplateSettingElement(block) {
   return (
     block.querySelector('templateSetting') ||
@@ -64,6 +77,7 @@ export function initSettings(options = {}) {
           val = input.value;
         }
         setSetting(block, input.name, val);
+        if (input.name === 'custom_src') suggestAltText(block);
         renderBlock(block);
       }
     });
@@ -89,6 +103,7 @@ export function openSettings(block) {
 
 export function applyStoredSettings(block) {
   ensureBlockState(block);
+  suggestAltText(block);
   renderBlock(block);
 }
 
@@ -138,6 +153,7 @@ function getSettingsForm(template, block) {
 function initTemplateSettingValues(block) {
   const templateSetting = getTemplateSettingElement(block);
   if (!templateSetting || !settingsPanel) return;
+  suggestAltText(block);
   const inputs = settingsPanel.querySelectorAll('input[name], textarea[name], select[name]');
   inputs.forEach((input) => {
     const name = input.name;
