@@ -70,17 +70,96 @@ export function initWysiwyg(canvas, loggedIn) {
     }
   });
 
+  function wrapSelection(tagName, attrs = {}) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const wrapper = document.createElement(tagName);
+    Object.entries(attrs).forEach(([k, v]) => wrapper.setAttribute(k, v));
+    range.surroundContents(wrapper);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function setBlock(tagName) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    let block = range.startContainer;
+    while (block && block !== currentEditable && block.nodeType !== 1) {
+      block = block.parentNode;
+    }
+    if (!block || block === currentEditable) {
+      wrapSelection(tagName);
+      return;
+    }
+    const newBlock = document.createElement(tagName);
+    newBlock.innerHTML = block.innerHTML;
+    block.replaceWith(newBlock);
+    const newRange = document.createRange();
+    newRange.selectNodeContents(newBlock);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+  }
+
+  function setAlign(alignment) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    let block = range.startContainer;
+    while (block && block !== currentEditable && block.nodeType !== 1) {
+      block = block.parentNode;
+    }
+    if (block && block.nodeType === 1) {
+      block.style.textAlign = alignment;
+    }
+  }
+
+  function createLink(url) {
+    if (!url) return;
+    wrapSelection('a', { href: url });
+  }
+
   rteToolbar.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-cmd]');
     if (!btn) return;
     const cmd = btn.dataset.cmd;
     const value = btn.dataset.value || null;
-    if (cmd === 'createLink') {
-      const url = prompt('Enter URL:');
-      if (url) document.execCommand(cmd, false, url);
-    } else {
-      document.execCommand(cmd, false, value);
+
+    switch (cmd) {
+      case 'bold':
+        wrapSelection('strong');
+        break;
+      case 'italic':
+        wrapSelection('em');
+        break;
+      case 'underline':
+        wrapSelection('u');
+        break;
+      case 'strikeThrough':
+        wrapSelection('s');
+        break;
+      case 'formatBlock':
+        setBlock(value);
+        break;
+      case 'justifyLeft':
+        setAlign('left');
+        break;
+      case 'justifyCenter':
+        setAlign('center');
+        break;
+      case 'justifyRight':
+        setAlign('right');
+        break;
+      case 'createLink': {
+        const url = prompt('Enter URL:');
+        if (url) createLink(url);
+        break;
+      }
+      default:
+        document.execCommand(cmd, false, value);
     }
+
     if (currentEditable) currentEditable.focus();
   });
 }
