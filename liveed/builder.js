@@ -412,7 +412,10 @@ document.addEventListener('DOMContentLoaded', () => {
           cont.innerHTML = '';
           if (data.history && data.history.length) {
             const ul = document.createElement('ul');
-            data.history.forEach((h) => {
+            const entries = data.history
+              .slice()
+              .sort((a, b) => b.time - a.time);
+            entries.forEach((h) => {
               const li = document.createElement('li');
               const d = new Date(h.time * 1000);
               const action = h.action ? ' - ' + h.action : '';
