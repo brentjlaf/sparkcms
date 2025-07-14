@@ -43,8 +43,10 @@ if ($title === '') {
 
 if ($id) {
     // Update existing
+    $old = null;
     foreach ($pages as &$p) {
         if ($p['id'] == $id) {
+            $old = $p;
             $p['title'] = $title;
             $p['slug'] = $slug;
             $p['content'] = $content;
@@ -61,7 +63,17 @@ if ($id) {
             break;
         }
     }
-    $action = 'updated page';
+    $changes = [];
+    if ($old) {
+        if ($old['template'] !== $template) {
+            $changes[] = 'changed template from ' . $old['template'] . ' to ' . $template;
+        }
+        if ($old['published'] != $published) {
+            $changes[] = $published ? 'published page' : 'unpublished page';
+        }
+    }
+    if (!$changes) $changes[] = 'updated page';
+    $action = implode('; ', $changes);
     unset($p);
 } else {
     $id = 1;
@@ -85,7 +97,7 @@ $pages[] = [
         'last_modified' => time()
     ];
     $timestamp = $pages[array_key_last($pages)]['last_modified'];
-    $action = 'created page';
+    $action = 'created page with template ' . $template;
 }
 
 $historyFile = __DIR__ . '/../../data/page_history.json';

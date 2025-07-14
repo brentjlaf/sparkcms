@@ -8,6 +8,10 @@ if (!file_exists($pagesFile)) {
 }
 $pages = json_decode(file_get_contents($pagesFile), true) ?: [];
 $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+$deletedPage = null;
+foreach ($pages as $p) {
+    if ($p['id'] == $id) { $deletedPage = $p; break; }
+}
 $pages = array_filter($pages, function($p) use ($id) { return $p['id'] != $id; });
 file_put_contents($pagesFile, json_encode(array_values($pages), JSON_PRETTY_PRINT));
 // Update sitemap after a page is deleted
@@ -17,7 +21,11 @@ $historyFile = __DIR__ . '/../../data/page_history.json';
 $historyData = file_exists($historyFile) ? json_decode(file_get_contents($historyFile), true) : [];
 if (!isset($historyData[$id])) $historyData[$id] = [];
 $user = $_SESSION['user']['username'] ?? 'Unknown';
-$historyData[$id][] = ['time' => time(), 'user' => $user, 'action' => 'deleted page'];
+$action = 'deleted page';
+if ($deletedPage && !empty($deletedPage['template'])) {
+    $action .= ' (' . $deletedPage['template'] . ')';
+}
+$historyData[$id][] = ['time' => time(), 'user' => $user, 'action' => $action];
 $historyData[$id] = array_slice($historyData[$id], -20);
 file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 
