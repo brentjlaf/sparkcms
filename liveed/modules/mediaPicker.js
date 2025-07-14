@@ -47,7 +47,11 @@ export function initMediaPicker(options = {}) {
       const img = e.target.closest('img[data-file]');
       if (img) {
         const input = document.getElementById(pickerTargetId);
-        if (input) input.value = img.dataset.file;
+        if (input) {
+          input.value = img.dataset.file;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
         closeMediaPicker();
       }
     });
