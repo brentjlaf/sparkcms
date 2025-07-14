@@ -61,6 +61,7 @@ if ($id) {
             break;
         }
     }
+    $action = 'updated page';
     unset($p);
 } else {
     $id = 1;
@@ -84,13 +85,14 @@ $pages[] = [
         'last_modified' => time()
     ];
     $timestamp = $pages[array_key_last($pages)]['last_modified'];
+    $action = 'created page';
 }
 
 $historyFile = __DIR__ . '/../../data/page_history.json';
 $historyData = file_exists($historyFile) ? json_decode(file_get_contents($historyFile), true) : [];
 if (!isset($historyData[$id])) $historyData[$id] = [];
 $user = $_SESSION['user']['username'] ?? 'Unknown';
-$historyData[$id][] = ['time' => $timestamp, 'user' => $user];
+$historyData[$id][] = ['time' => $timestamp, 'user' => $user, 'action' => $action];
 $historyData[$id] = array_slice($historyData[$id], -20);
 file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 
