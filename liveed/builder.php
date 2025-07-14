@@ -43,28 +43,34 @@ $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\
     "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
-$builderHeader = '<header class="builder-header" title="Drag to reposition"><span class="title">Editing: ' . htmlspecialchars($page['title']) . '</span>'
-    . '<div class="header-actions"><button type="button" class="palette-toggle-btn" title="Collapse Palette"><i class="fa-solid fa-chevron-left"></i></button>'
-    . '<button type="button" class="palette-dock-btn" title="Dock palette"><i class="fa-solid fa-up-down-left-right"></i></button>'
+$builderHeader = '<header class="builder-header" title="Drag to reposition"><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div>'
+    . '<div class="header-actions">'
+    . '<button type="button" class="header-btn palette-toggle-btn" title="Collapse Palette"><i class="fa-solid fa-chevron-left"></i></button>'
+    . '<button type="button" class="header-btn palette-dock-btn" title="Dock palette"><i class="fa-solid fa-up-down-left-right"></i></button>'
     . '<button type="button" class="manual-save-btn btn btn-primary">Save</button>'
     . '<span id="saveStatus" class="save-status"></span>'
-    . '<span id="a11yStatus" class="a11y-status"></span></div></header>';
-$historyToolbar = '<div class="history-toolbar">'
-    . '<button type="button" class="undo-btn" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>'
-    . '<button type="button" class="redo-btn" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>'
-    . '<button type="button" class="page-history-btn" title="Page History"><i class="fa-solid fa-clock-rotate-left"></i></button>'
-    . '</div>';
+    . '</div><div id="a11yStatus" class="a11y-status"></div></header>';
 $previewToolbar = '<div class="preview-toolbar">'
-    . '<button type="button" data-size="desktop" class="active" title="Desktop"><i class="fa-solid fa-desktop"></i></button>'
-    . '<button type="button" data-size="tablet" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>'
-    . '<button type="button" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
-    . '<button type="button" id="gridToggle" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
+    . '<button type="button" class="preview-btn active" data-size="desktop" title="Desktop"><i class="fa-solid fa-desktop"></i></button>'
+    . '<button type="button" class="preview-btn" data-size="tablet" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>'
+    . '<button type="button" class="preview-btn" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
+    . '<button type="button" class="preview-btn" id="gridToggle" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
     . '</div>';
+$paletteFooter = '<div class="footer"><div class="action-row">'
+    . '<button class="action-btn undo-btn"><i class="fas fa-undo"></i><span>Undo</span></button>'
+    . '<button class="action-btn page-history-btn"><i class="fas fa-clock-rotate-left"></i><span>History</span></button>'
+    . '<button class="action-btn redo-btn"><i class="fas fa-redo"></i><span>Redo</span></button>'
+    . '</div><div class="footer-links">'
+    . '<a href="#" class="footer-link">Help</a>'
+    . '<span class="version-badge">v2.1</span>'
+    . '<a href="#" class="footer-link">Settings</a>'
+    . '</div></div>';
 $builderStart = '<div class="builder"><button type="button" id="viewModeToggle" class="view-toggle" title="View mode"><i class="fa-solid fa-eye"></i></button><aside class="block-palette">'
     . $builderHeader
-    . $historyToolbar
     . $previewToolbar
-    . '<h2>Blocks</h2><div class="palette-search-container"><i class="fa-solid fa-search search-icon"></i><input type="text" class="palette-search" placeholder="Search blocks"></div><div class="palette-items"></div></aside><main class="canvas-container">';
+    . '<h2 class="blocks-title">Blocks</h2><div class="palette-search-container"><i class="fa-solid fa-search search-icon"></i><input type="text" class="palette-search" placeholder="Search blocks"></div><div class="palette-items"></div>'
+    . $paletteFooter
+    . '</aside><main class="canvas-container">';
 
 $mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
     . '<div class="modal-content media-picker">'
