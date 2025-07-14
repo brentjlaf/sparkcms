@@ -386,6 +386,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const historyBtn = palette.querySelector('.page-history-btn');
   const saveBtn = palette.querySelector('.manual-save-btn');
   const historyPanel = document.getElementById('historyPanel');
+  if (historyPanel) {
+    historyPanel.classList.remove('open');
+    historyPanel.style.left = '0px';
+  }
   if (undoBtn) undoBtn.addEventListener('click', () => history.undo());
   if (redoBtn) redoBtn.addEventListener('click', () => history.redo());
   if (saveBtn)
@@ -429,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeBtn)
       closeBtn.addEventListener('click', () => {
         historyPanel.classList.remove('open');
+        historyPanel.style.left = '0px';
       });
   }
   initWysiwyg(canvas, true);
