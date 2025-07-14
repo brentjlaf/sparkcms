@@ -1,5 +1,5 @@
-<!-- File: basic.divider.php -->
-<!-- Template: basic.divider -->
+<!-- File: layout.basic.divider.php -->
+<!-- Template: layout.basic.divider -->
 <templateSetting caption="Divider Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Style</dt>
