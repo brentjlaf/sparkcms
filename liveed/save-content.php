@@ -25,11 +25,13 @@ foreach ($pages as &$p) {
 }
 unset($p);
 
+$action = 'updated content';
+
 $historyFile = __DIR__ . '/../CMS/data/page_history.json';
 $historyData = file_exists($historyFile) ? json_decode(file_get_contents($historyFile), true) : [];
 if (!isset($historyData[$id])) $historyData[$id] = [];
 $user = $_SESSION['user']['username'] ?? 'Unknown';
-$historyData[$id][] = ['time' => $timestamp, 'user' => $user];
+$historyData[$id][] = ['time' => $timestamp, 'user' => $user, 'action' => $action];
 $historyData[$id] = array_slice($historyData[$id], -20);
 file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 

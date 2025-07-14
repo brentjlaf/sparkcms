@@ -415,7 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
             data.history.forEach((h) => {
               const li = document.createElement('li');
               const d = new Date(h.time * 1000);
-              li.textContent = d.toLocaleString() + ' - ' + h.user;
+              const action = h.action ? ' - ' + h.action : '';
+              li.textContent = d.toLocaleString() + ' - ' + h.user + action;
               ul.appendChild(li);
             });
             cont.appendChild(ul);
