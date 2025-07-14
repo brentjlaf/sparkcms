@@ -1,5 +1,5 @@
-<!-- File: basic.accordion.php -->
-<!-- Template: basic.accordion -->
+<!-- File: interactive.accordion.php -->
+<!-- Template: interactive.accordion -->
 <templateSetting caption="Accordion Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dd>

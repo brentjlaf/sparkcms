@@ -1,5 +1,5 @@
-<!-- File: module.blog-post-list.php -->
-<!-- Template: module.blog-post-list -->
+<!-- File: advanced.module.blog-post-list.php -->
+<!-- Template: advanced.module.blog-post-list -->
 <?php
 $postsFile = __DIR__ . '/../../../CMS/data/blog_posts.json';
 $blogCategories = [];

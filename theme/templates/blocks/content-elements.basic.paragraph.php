@@ -1,5 +1,5 @@
-<!-- File: basic.paragraph.php -->
-<!-- Template: basic.paragraph -->
+<!-- File: content-elements.basic.paragraph.php -->
+<!-- Template: content-elements.basic.paragraph -->
 <templateSetting caption="Paragraph Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Text</dt>
