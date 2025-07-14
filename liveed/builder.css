@@ -500,15 +500,15 @@
 
 /* Palette accordion styles */
 .palette-group {
-  border: 1px solid #e2e8f0;
+  /* border: 1px solid #e2e8f0; */
   border-radius: 6px;
   margin-bottom: 10px;
-  background: #fff;
+  /* background: #fff; */
 }
 .palette-group summary {
   cursor: pointer;
   padding: 12px 20px 8px;
-  background: transparent;
+  /* background: transparent; */
   font-weight: 700;
   position: relative;
   user-select: none;
