@@ -34,7 +34,7 @@
         </dd>
     </dl>
 </templateSetting>
-<div class="row {custom_layout}{custom_gap}{custom_alignment} drop-area" data-tpl-tooltip="2 Columns">
+<div class="row {custom_layout} {custom_gap} {custom_alignment}" data-tpl-tooltip="2 Columns">
     <div class="col"><div class="drop-area"></div></div>
     <div class="col"><div class="drop-area"></div></div>
 </div>
