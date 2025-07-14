@@ -397,11 +397,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = historyPanel.querySelector('.close-btn');
     const renderHistory = () => {
       fetch(
-        window.builderBase +
-          '/liveed/get-history.php?id=' +
-          window.builderPageId
+        window.builderBase + '/liveed/get-history.php?id=' + window.builderPageId
       )
-        .then((r) => r.json())
+        .then((r) => {
+          if (!r.ok) throw new Error('fetch failed');
+          return r.json();
+        })
         .then((data) => {
           const cont = historyPanel.querySelector('.history-content');
           cont.innerHTML = '';
@@ -417,6 +418,10 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             cont.textContent = 'No history yet.';
           }
+        })
+        .catch(() => {
+          const cont = historyPanel.querySelector('.history-content');
+          cont.textContent = 'Error loading history.';
         });
     };
     historyBtn.addEventListener('click', () => {
