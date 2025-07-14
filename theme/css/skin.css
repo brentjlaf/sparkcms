@@ -170,3 +170,112 @@ section.container-fluid {
 .accordion.open .accordion-panel {
     display: block;
 }
+
+
+
+
+
+/* Hero Section Styles */
+.hero-section {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* Dark overlay for better text readability */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+/* Hero content container */
+.hero-section .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Hero size variants */
+.hero-section .hero-side {
+    min-height: 300px;
+    height: 40vh;
+}
+
+.hero-section.hero-small {
+    min-height: 400px;
+    height: 50vh;
+}
+
+.hero-section.hero-medium {
+    min-height: 500px;
+    height: 60vh;
+}
+
+.hero-section.hero-large {
+    min-height: 600px;
+    height: 80vh;
+}
+
+/* Text alignment classes */
+.hero-section ._text-left {
+    text-align: left;
+}
+
+.hero-section ._text-center {
+    text-align: center;
+}
+
+.hero-section ._text-right {
+    text-align: right;
+}
+
+/* Hero typography */
+.hero-section .hero-content h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.hero-section .hero-content p {
+    font-size: 1.25rem;
+    font-weight: 400;
+    margin: 0 0 2rem 0;
+    line-height: 1.6;
+    opacity: 0.9;
+    max-width: 600px;
+}
+
+/* Adjust paragraph alignment based on text alignment */
+.hero-section ._text-left .hero-content p {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.hero-section ._text-center .hero-content p {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-section ._text-right .hero-content p {
+    margin-left: auto;
+    margin-right: 0;
+}
+
