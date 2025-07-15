@@ -12,5 +12,15 @@
         <dt>Alt Text</dt>
         <dd><input type="text" name="custom_alt" value=""></dd>
     </dl>
+    <dl class="sparkDialog _tpl-box">
+        <dt>Alignment</dt>
+        <dd class="align-options">
+            <label><input type="radio" name="custom_align" value=" text-start"> Left</label>
+            <label><input type="radio" name="custom_align" value=" text-center" checked> Center</label>
+            <label><input type="radio" name="custom_align" value=" text-end"> Right</label>
+        </dd>
+    </dl>
 </templateSetting>
-<img src="{custom_src}" alt="{custom_alt}" data-tpl-tooltip="Image"/>
+<div class="{custom_align}">
+    <img src="{custom_src}" alt="{custom_alt}" class="img-fluid" data-tpl-tooltip="Image"/>
+</div>
