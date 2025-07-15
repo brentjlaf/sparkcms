@@ -595,6 +595,11 @@
             display: flex;
             gap: 20px;
         }
+        .builder-columns {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+        }
         #fieldPalette {
             width: 200px;
         }
@@ -629,6 +634,17 @@
             border-radius: 6px;
             padding: 10px;
             margin-bottom: 10px;
+        }
+        .field-item.selected {
+            border-color: #4299e1;
+        }
+        #fieldSettings {
+            width: 260px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            background: #fff;
+            height: fit-content;
         }
         .field-bar {
             display: flex;

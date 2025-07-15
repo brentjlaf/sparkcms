@@ -41,7 +41,12 @@
                     <div class="palette-item" data-type="file" role="button" tabindex="0">File</div>
                     <div class="palette-item" data-type="submit" role="button" tabindex="0">Submit Button</div>
                 </div>
-                <ul id="formFields" class="field-list" aria-label="Form fields" data-placeholder="Drop fields here"></ul>
+                <div class="builder-columns">
+                    <ul id="formPreview" class="field-list" aria-label="Form preview" data-placeholder="Drop fields here"></ul>
+                    <div id="fieldSettings" class="field-settings">
+                        <p>Select a field to edit</p>
+                    </div>
+                </div>
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Save Form</button>
