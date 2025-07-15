@@ -1,5 +1,5 @@
-<!-- File: content-elements.image-gallery.php -->
-<!-- Template: content-elements.image-gallery -->
+<!-- File: media.image-gallery.php -->
+<!-- Template: media.image-gallery -->
 <templateSetting caption="Gallery Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Image 1 URL</dt>
