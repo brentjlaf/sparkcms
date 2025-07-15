@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
     previewModal.classList.add('active');
     if (!previewLoaded) {
       const base = window.location.origin + window.builderBase + '/';
-      const url = new URL(window.builderSlug + '?preview=1', base);
+      const url = new URL('?page=' + window.builderSlug + '&preview=1', base);
       previewFrame.src = url.toString();
       previewLoaded = true;
     }
