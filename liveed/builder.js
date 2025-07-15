@@ -13,31 +13,39 @@ let favorites = [];
 let gridActive = false;
 
 function animateAccordion(details) {
+  const summary = details.querySelector('summary');
   const items = details.querySelector('.group-items');
-  if (!items) return;
+  if (!summary || !items) return;
   if (!details.open) {
     items.style.height = '0px';
   }
-  details.addEventListener('toggle', () => {
+  summary.addEventListener('click', (e) => {
+    e.preventDefault();
+    const isOpen = details.open;
     const startHeight = items.scrollHeight;
-    if (details.open) {
-      items.style.height = '0px';
-      items.offsetHeight; // force reflow
-      items.style.transition = 'height 0.3s ease';
+    if (isOpen) {
       items.style.height = startHeight + 'px';
+      requestAnimationFrame(() => {
+        items.style.transition = 'height 0.3s ease';
+        items.style.height = '0px';
+      });
       const onEnd = () => {
         items.style.transition = '';
-        items.style.height = 'auto';
+        details.open = false;
         items.removeEventListener('transitionend', onEnd);
       };
       items.addEventListener('transitionend', onEnd);
     } else {
-      items.style.height = items.scrollHeight + 'px';
-      items.offsetHeight;
-      items.style.transition = 'height 0.3s ease';
+      details.open = true;
+      const targetHeight = items.scrollHeight;
       items.style.height = '0px';
+      requestAnimationFrame(() => {
+        items.style.transition = 'height 0.3s ease';
+        items.style.height = targetHeight + 'px';
+      });
       const onEnd = () => {
         items.style.transition = '';
+        items.style.height = 'auto';
         items.removeEventListener('transitionend', onEnd);
       };
       items.addEventListener('transitionend', onEnd);
