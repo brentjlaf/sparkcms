@@ -48,10 +48,12 @@
         </dd>
     </dl>
 </templateSetting>
-<section class="hero-section hero-{custom_size}" style="background-image:url('{custom_bg}');" data-tpl-tooltip="Hero">
-    <div class="container hero-content{custom_align}">
-        <h1 data-editable>{custom_heading}</h1>
-        <p data-editable>{custom_subheading}</p>
-        <a href="{custom_btn_link}" class="btn btn-primary"{custom_btn_new} data-editable>{custom_btn_text}</a>
+<section class="hero-section hero-{custom_size} d-flex align-items-center" style="background-image:url('{custom_bg}');" data-tpl-tooltip="Hero">
+    <div class="container">
+        <div class="hero-content{custom_align}">
+            <h1 data-editable>{custom_heading}</h1>
+            <p data-editable>{custom_subheading}</p>
+            <a href="{custom_btn_link}" class="btn btn-primary"{custom_btn_new} data-editable>{custom_btn_text}</a>
+        </div>
     </div>
 </section>
