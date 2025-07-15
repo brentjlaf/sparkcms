@@ -12,6 +12,9 @@ let allBlockFiles = [];
 let favorites = [];
 let builderDraftKey = '';
 let lastSavedTimestamp = 0;
+// Delay before auto-saving after a change. A longer delay prevents rapid
+// successive saves while the user is still actively editing.
+const SAVE_DEBOUNCE_DELAY = 1000;
 
 function storeDraft() {
   const canvas = document.getElementById('canvas');
@@ -228,7 +231,7 @@ function savePage() {
 function scheduleSave() {
   clearTimeout(saveTimer);
   storeDraft();
-  saveTimer = setTimeout(savePage, 200);
+  saveTimer = setTimeout(savePage, SAVE_DEBOUNCE_DELAY);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
