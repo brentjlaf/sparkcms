@@ -389,8 +389,9 @@ document.addEventListener('DOMContentLoaded', () => {
       else previewWrapper.style.width = '100%';
       previewWrapper.style.height = '90vh';
     }
-    previewFrame.src =
-      window.builderBase + '/' + window.builderSlug + '?preview=1';
+    const base = window.location.origin + window.builderBase + '/';
+    const url = new URL(window.builderSlug + '?preview=1', base);
+    previewFrame.src = url.toString();
     previewModal.classList.add('active');
     updatePreview(size);
   }
