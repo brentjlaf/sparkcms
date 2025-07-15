@@ -45,6 +45,21 @@ placeholder.innerHTML = '<span class="drop-text">Drop block here</span>';
 const insertionIndicator = document.createElement('div');
 insertionIndicator.className = 'insertion-indicator';
 
+function throttleRAF(fn) {
+  let running = false;
+  let lastEvent;
+  return function (e) {
+    e.preventDefault();
+    lastEvent = e;
+    if (running) return;
+    running = true;
+    requestAnimationFrame(() => {
+      running = false;
+      fn(lastEvent);
+    });
+  };
+}
+
 export function initDragDrop(options = {}) {
   palette = options.palette;
   canvas = options.canvas;
@@ -58,8 +73,8 @@ export function initDragDrop(options = {}) {
     canvas.addEventListener('dragstart', canvasDragStart);
     canvas.addEventListener('dragenter', handleDragEnter, true);
     canvas.addEventListener('dragleave', handleDragLeave, true);
-    canvas.addEventListener('dragover', handleDragOver, true);
-    canvas.addEventListener('drop', handleDrop, true);
+    canvas.addEventListener('dragover', throttledDragOver, true);
+    canvas.addEventListener('drop', throttledDrop, true);
     canvas.addEventListener('dragend', handleDragEnd, true);
   }
   setupDropArea(canvas);
@@ -264,3 +279,6 @@ function getDragAfterElement(container, y) {
     return closest;
   }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
+
+const throttledDragOver = throttleRAF(handleDragOver);
+const throttledDrop = throttleRAF(handleDrop);
