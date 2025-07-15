@@ -499,17 +499,161 @@ document.addEventListener('DOMContentLoaded', () => {
       clearTimeout(saveTimer);
       savePage();
     });
-  if (linkCheckBtn)
-    linkCheckBtn.addEventListener('click', () => {
-      const html = canvas.innerHTML;
-      checkLinks(html).then((warnings) => {
-        if (warnings.length) {
-          alert('Link issues found:\n' + warnings.join('\n'));
-        } else {
-          alert('No link issues found.');
+  if (linkCheckBtn) {
+    let legendVisible = false;
+    const legend = document.getElementById('link-check-legend');
+
+    const fetchWithTimeout = (url, opts, timeout = 5000) => {
+      return Promise.race([
+        fetch(url, opts),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), timeout)
+        ),
+      ]);
+    };
+
+    const runLinkCheck = () => {
+      let brokenLinks = 0,
+        workingLinks = 0,
+        externalLinks = 0,
+        unsetLinks = 0;
+      const linkCache = {};
+
+      if (!legend) return;
+      legend.innerHTML = `
+            <div class="legend-item">
+              <span class="legend-color broken"></span>
+              Broken Links: <span id="broken-count">0</span>
+              <span class="tooltip-icon">?
+                <span class="tooltip-text">Links that are not working or return errors.</span>
+              </span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color working"></span>
+              Working Links: <span id="working-count">0</span>
+              <span class="tooltip-icon">?
+                <span class="tooltip-text">Links that are working properly.</span>
+              </span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color external"></span>
+              External Links: <span id="external-count">0</span>
+              <span class="tooltip-icon">?
+                <span class="tooltip-text">Links that lead to external websites.</span>
+              </span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color unset"></span>
+              Unset Links: <span id="unset-count">0</span>
+              <span class="tooltip-icon">?
+                <span class="tooltip-text">Links that do not have a proper URL set.</span>
+              </span>
+            </div>`;
+      legend.style.display = 'block';
+
+      const updateLegend = () => {
+        legend.querySelector('#broken-count').textContent = brokenLinks;
+        legend.querySelector('#working-count').textContent = workingLinks;
+        legend.querySelector('#external-count').textContent = externalLinks;
+        legend.querySelector('#unset-count').textContent = unsetLinks;
+      };
+
+      const applyLinkStatus = (link, status) => {
+        if (status === 'working') {
+          link.classList.add('working-link', 'link-status');
+        } else if (status === 'broken') {
+          link.classList.add('broken-link', 'link-status');
         }
+      };
+
+      const links = canvas.querySelectorAll('a');
+      links.forEach((l) =>
+        l.classList.remove(
+          'broken-link',
+          'working-link',
+          'external-link',
+          'unset-link',
+          'link-status'
+        )
+      );
+
+      const promises = [];
+
+      links.forEach((link) => {
+        const url = link.getAttribute('href');
+        if (!url || url === '#' || url === '' || url === '/' || url === 'false') {
+          link.classList.add('unset-link');
+          unsetLinks++;
+          updateLegend();
+          return;
+        }
+
+        let isExternal = false;
+        try {
+          const linkUrl = new URL(url, window.location.href);
+          isExternal = linkUrl.hostname !== window.location.hostname;
+        } catch (e) {
+          link.classList.add('unset-link');
+          unsetLinks++;
+          updateLegend();
+          return;
+        }
+
+        if (isExternal) {
+          link.classList.add('external-link');
+          externalLinks++;
+          updateLegend();
+          return;
+        }
+
+        if (linkCache[url]) {
+          applyLinkStatus(link, linkCache[url]);
+          if (linkCache[url] === 'working') workingLinks++;
+          else brokenLinks++;
+          updateLegend();
+          return;
+        }
+
+        const p = fetchWithTimeout(url, { method: 'HEAD' }, 5000)
+          .then((r) => {
+            linkCache[url] = r.ok ? 'working' : 'broken';
+            applyLinkStatus(link, linkCache[url]);
+            if (r.ok) workingLinks++;
+            else brokenLinks++;
+          })
+          .catch(() => {
+            linkCache[url] = 'broken';
+            applyLinkStatus(link, 'broken');
+            brokenLinks++;
+          })
+          .finally(updateLegend);
+        promises.push(p);
       });
+
+      Promise.all(promises).then(updateLegend);
+    };
+
+    linkCheckBtn.addEventListener('click', () => {
+      if (legendVisible) {
+        legend.style.display = 'none';
+        canvas
+          .querySelectorAll('a')
+          .forEach((l) =>
+            l.classList.remove(
+              'broken-link',
+              'working-link',
+              'external-link',
+              'unset-link',
+              'link-status'
+            )
+          );
+        legendVisible = false;
+      } else {
+        runLinkCheck();
+        legendVisible = true;
+      }
     });
+  }
   if (seoCheckBtn)
     seoCheckBtn.addEventListener('click', () => {
       const issues = checkSeo(canvas.innerHTML);
