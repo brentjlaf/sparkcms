@@ -16,10 +16,30 @@ $(function(){
         });
     }
 
+    function createPreview(type){
+        switch(type){
+            case 'text': return $('<input type="text" class="form-input" disabled>');
+            case 'email': return $('<input type="email" class="form-input" disabled>');
+            case 'password': return $('<input type="password" class="form-input" disabled>');
+            case 'number': return $('<input type="number" class="form-input" disabled>');
+            case 'date': return $('<input type="date" class="form-input" disabled>');
+            case 'textarea': return $('<textarea class="form-textarea" disabled></textarea>');
+            case 'select': return $('<select class="form-select" disabled><option>Option</option></select>');
+            case 'checkbox': return $('<input type="checkbox" disabled>');
+            case 'radio': return $('<input type="radio" disabled>');
+            case 'file': return $('<input type="file" disabled>');
+            default: return $('<input type="text" disabled>');
+        }
+    }
+
     function addField(type, field){
         field = field || {};
         const $li = $('<li class="field-item" data-type="'+type+'"></li>');
         $li.append('<div class="field-bar"><span class="drag-handle">&#9776;</span> <span class="field-type">'+type+'</span> <button type="button" class="btn btn-danger btn-sm removeField">X</button></div>');
+        const preview = $('<div class="field-preview"></div>');
+        preview.append('<label class="preview-label"></label>');
+        preview.append(createPreview(type));
+        $li.append(preview);
         const body = $('<div class="field-body"></div>');
         body.append('<div class="form-group"><label class="form-label">Label</label><input type="text" class="form-input field-label"></div>');
         body.append('<div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input field-name"></div>');
@@ -28,11 +48,22 @@ $(function(){
             body.append('<div class="form-group field-options"><label class="form-label">Options (comma separated)</label><input type="text" class="form-input field-options-input"></div>');
         }
         $li.append(body);
+
         if(field.label) $li.find('.field-label').val(field.label);
         if(field.name) $li.find('.field-name').val(field.name);
         if(field.required) $li.find('.field-required').prop('checked', true);
         if(field.options) $li.find('.field-options-input').val(field.options);
+        $li.find('.preview-label').text(field.label || 'Label');
+
+        attachFieldEvents($li);
         $('#formFields').append($li);
+    }
+
+    function attachFieldEvents($li){
+        const preview = $li.find('.preview-label');
+        $li.find('.field-label').on('input', function(){
+            preview.text(this.value || 'Label');
+        });
     }
 
     $('.palette-item').draggable({ helper:'clone', revert:'invalid' });
@@ -54,6 +85,7 @@ $(function(){
         $('#formBuilderCard').hide();
         $('#formBuilderForm')[0].reset();
         $('#formFields').empty();
+        $('#fieldSettings').empty().hide();
     });
 
     $('#formsTable').on('click', '.editForm', function(){
@@ -101,12 +133,29 @@ $(function(){
             $('#formBuilderCard').hide();
             $('#formBuilderForm')[0].reset();
             $('#formFields').empty();
+            $('#fieldSettings').empty().hide();
             loadForms();
         });
     });
 
     $('#formFields').on('click','.removeField',function(){
-        $(this).closest('li').remove();
+        const li = $(this).closest('li');
+        if(li.hasClass('active')){
+            $('#fieldSettings').empty().hide();
+        }
+        li.remove();
+    });
+
+    let activeField = null;
+    $('#formFields').on('click', '.field-item', function(e){
+        if($(e.target).hasClass('removeField') || $(e.target).closest('.field-bar').length && $(e.target).hasClass('drag-handle')) return;
+        if(activeField){
+            activeField.removeClass('active');
+            activeField.append($('#fieldSettings').children().hide());
+        }
+        activeField = $(this);
+        activeField.addClass('active');
+        $('#fieldSettings').empty().append(activeField.find('.field-body').show()).show();
     });
 
     loadForms();

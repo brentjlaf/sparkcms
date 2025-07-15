@@ -598,6 +598,12 @@
         #fieldPalette {
             width: 200px;
         }
+        .form-preview {
+            flex: 1;
+        }
+        .field-settings {
+            width: 250px;
+        }
         .palette-item {
             background: #e2e8f0;
             margin-bottom: 10px;
@@ -620,11 +626,17 @@
             padding: 10px;
             margin-bottom: 10px;
         }
+        .field-item.active {
+            border-color: #667eea;
+        }
         .field-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+        }
+        .field-body {
+            display: none;
         }
 
         /* Modal */
