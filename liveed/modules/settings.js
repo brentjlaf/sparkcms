@@ -79,6 +79,10 @@ export function initSettings(options = {}) {
         setSetting(block, input.name, val);
         if (input.name === 'custom_src') suggestAltText(block);
         renderBlock(block);
+        // Automatically schedule a save whenever a setting changes so that
+        // media selections are persisted even if the user forgets to press
+        // the "Apply" button.
+        if (typeof savePageFn === 'function') savePageFn();
       }
     });
   }
