@@ -25,6 +25,14 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+.builder-header .title-top { display:flex; justify-content:space-between; align-items:center}
+
+
+
+
+
+
 .builder-header .header-actions {
   display: flex;
   align-items: center;
