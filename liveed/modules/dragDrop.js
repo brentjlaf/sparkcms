@@ -70,12 +70,9 @@ export function initDragDrop(options = {}) {
 
   if (palette) palette.addEventListener('dragstart', paletteDragStart);
   if (canvas) {
-    canvas.addEventListener('dragstart', canvasDragStart);
-    canvas.addEventListener('dragenter', handleDragEnter, true);
-    canvas.addEventListener('dragleave', handleDragLeave, true);
-    canvas.addEventListener('dragover', throttledDragOver, true);
-    canvas.addEventListener('drop', throttledDrop, true);
-    canvas.addEventListener('dragend', handleDragEnd, true);
+    ['dragstart', 'dragenter', 'dragleave', 'dragover', 'drop', 'dragend'].forEach(
+      (ev) => canvas.addEventListener(ev, delegateDragEvents, true)
+    );
   }
   setupDropArea(canvas);
   if (canvas) {
@@ -282,3 +279,26 @@ function getDragAfterElement(container, y) {
 
 const throttledDragOver = throttleRAF(handleDragOver);
 const throttledDrop = throttleRAF(handleDrop);
+
+function delegateDragEvents(e) {
+  switch (e.type) {
+    case 'dragstart':
+      canvasDragStart(e);
+      break;
+    case 'dragenter':
+      handleDragEnter(e);
+      break;
+    case 'dragleave':
+      handleDragLeave(e);
+      break;
+    case 'dragover':
+      throttledDragOver(e);
+      break;
+    case 'drop':
+      throttledDrop(e);
+      break;
+    case 'dragend':
+      handleDragEnd(e);
+      break;
+  }
+}
