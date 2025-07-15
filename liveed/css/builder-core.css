@@ -314,12 +314,10 @@
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .drop-area:hover {
-  background: #f7fafc;
   border-color: #3182ce;
   cursor: pointer;
 }
 .drop-area.drag-over {
-  background: #ebf4ff;
   transform: scale(1.02);
 }
 .drop-area::before {
