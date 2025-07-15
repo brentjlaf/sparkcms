@@ -308,10 +308,9 @@
 .drop-area {
   position: relative;
   height: auto;
-  background: #efefef;
+  /* background: #efefef; */
   padding: 10px 0;
-  border: 2px dashed transparent;
-  box-sizing: border-box;
+  border: 2px dashed;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .drop-area:hover {
