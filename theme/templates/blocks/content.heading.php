@@ -1,5 +1,5 @@
-<!-- File: content-elements.heading.php -->
-<!-- Template: content-elements.heading -->
+<!-- File: content.heading.php -->
+<!-- Template: content.heading -->
 <templateSetting caption="Heading Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Text</dt>

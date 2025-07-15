@@ -1,5 +1,5 @@
-<!-- File: content-elements.image.php -->
-<!-- Template: content-elements.image -->
+<!-- File: media.image.php -->
+<!-- Template: media.image -->
 <templateSetting caption="Image Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Source</dt>
