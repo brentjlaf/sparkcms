@@ -798,7 +798,7 @@
 
 .palette-search-container .search-icon {
   position: absolute;
-  left: 16px;
+  left: 32px;
   top: 50%;
   transform: translateY(-50%);
   color: #64748b;
