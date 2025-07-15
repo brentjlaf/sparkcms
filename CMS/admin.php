@@ -42,7 +42,7 @@ $settings = get_cached_json($settingsFile);
             <nav class="sidebar-nav">
                 <div class="nav-section">
                     <div class="nav-section-title">Overview</div>
-                    <div class="nav-item" data-section="dashboard">
+                    <div class="nav-item active" data-section="dashboard">
                         <div class="nav-icon"><i class="fas fa-tachometer-alt"></i></div>
                         <div class="nav-text">Dashboard</div>
                     </div>
@@ -98,7 +98,7 @@ $settings = get_cached_json($settingsFile);
                         <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
                         <div class="nav-text">Analytics</div>
                     </div>
-                    <div class="nav-item active" data-section="logs">
+                    <div class="nav-item" data-section="logs">
                         <div class="nav-icon"><i class="fas fa-clipboard-list"></i></div>
                         <div class="nav-text">Logs</div>
                     </div>
@@ -189,7 +189,7 @@ $(function(){
     $('#sidebar').removeClass('mobile-open');
     $(this).removeClass('active');
   });
-  loadModule("logs");
+  loadModule("dashboard");
 });
     </script>
 </div>
