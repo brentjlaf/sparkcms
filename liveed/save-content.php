@@ -38,4 +38,10 @@ file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 file_put_contents($pagesFile, json_encode($pages, JSON_PRETTY_PRINT));
 require_once __DIR__ . '/../CMS/modules/sitemap/generate.php';
 
+// remove saved draft if exists
+$draftFile = __DIR__ . '/../CMS/data/drafts/page-' . $id . '.json';
+if (is_file($draftFile)) {
+    unlink($draftFile);
+}
+
 echo 'OK';
