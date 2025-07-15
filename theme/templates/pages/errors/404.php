@@ -12,14 +12,18 @@ $mainMenu = $menus[0]['items'] ?? [];
 $footerMenu = $menus[1]['items'] ?? [];
 $social = $settings['social'] ?? [];
 
-function renderMenu($items){
+function renderMenu($items, $isDropdown = false){
     foreach ($items as $it) {
-        echo '<li>';
-        echo '<a href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
-        if (!empty($it['children'])) {
-            echo '<ul>';
-            renderMenu($it['children']);
+        $hasChildren = !empty($it['children']);
+        if ($hasChildren) {
+            echo '<li class="nav-item dropdown">';
+            echo '<a class="nav-link dropdown-toggle" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').' role="button" data-bs-toggle="dropdown" aria-expanded="false">'.htmlspecialchars($it['label']).'</a>';
+            echo '<ul class="dropdown-menu">';
+            renderMenu($it['children'], true);
             echo '</ul>';
+        } else {
+            echo '<li class="nav-item'.($isDropdown ? '' : '').'">';
+            echo '<a class="nav-link" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
         }
         echo '</li>';
     }
@@ -27,8 +31,8 @@ function renderMenu($items){
 
 function renderFooterMenu($items){
     foreach ($items as $it) {
-        echo '<li>';
-        echo '<a href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
+        echo '<li class="nav-item">';
+        echo '<a class="nav-link px-2" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
         echo '</li>';
     }
 }
@@ -56,8 +60,9 @@ function renderFooterMenu($items){
 		<!-- Preload Vendor Stylesheets -->
 		<link rel="preload" as="style" crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
-		<!-- Vendor Stylesheets -->
-		<link nocache="nocache" rel="stylesheet" crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+                <!-- Vendor Stylesheets -->
+                <link nocache="nocache" rel="stylesheet" crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
                 <!-- Preload Stylesheet -->
                 <link rel="preload" as="style" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
@@ -80,15 +85,19 @@ function renderFooterMenu($items){
                         </main>
 
                         <!-- Footer -->
-                        <footer id="footer-area" class="site-footer">
-                                <div class="container footer-main">
-                                        <a href="<?php echo $scriptBase; ?>/" class="logo"><img src="<?php echo htmlspecialchars($logo); ?>" alt="Logo"></a>
-                                        <nav class="footer-menu">
-                                                <ul>
-                                                        <?php renderFooterMenu($footerMenu); ?>
-                                                </ul>
-                                        </nav>
-                                        <div class="footer-social">
+                        <footer id="footer-area" class="site-footer bg-dark text-light mt-auto">
+                                <div class="container py-4">
+                                        <div class="row align-items-center">
+                                                <div class="col-md-4 mb-3 mb-md-0">
+                                                        <a href="<?php echo $scriptBase; ?>/" class="navbar-brand"><img src="<?php echo htmlspecialchars($logo); ?>" alt="Logo"></a>
+                                                </div>
+                                                <div class="col-md-4 mb-3 mb-md-0">
+                                                        <ul class="nav justify-content-center">
+                                                                <?php renderFooterMenu($footerMenu); ?>
+                                                        </ul>
+                                                </div>
+                                                <div class="col-md-4 text-md-end">
+                                                        <div class="footer-social">
                                                 <?php if (!empty($social['facebook'])): ?>
                                                 <a href="<?php echo htmlspecialchars($social['facebook']); ?>" aria-label="Facebook" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
                                                 <?php endif; ?>
@@ -98,9 +107,11 @@ function renderFooterMenu($items){
                                                 <?php if (!empty($social['instagram'])): ?>
                                                 <a href="<?php echo htmlspecialchars($social['instagram']); ?>" aria-label="Instagram" target="_blank"><i class="fa-brands fa-instagram"></i></a>
                                                 <?php endif; ?>
+                                                        </div>
+                                                </div>
                                         </div>
+                                        <div class="text-center mt-3 footer-copy">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?></div>
                                 </div>
-                                <div class="footer-copy">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?></div>
                         </footer>
 
 			<!-- Back to Top Button -->
@@ -120,6 +131,7 @@ function renderFooterMenu($items){
 		<!-- Javascript -->
                 <script src="<?php echo $themeBase; ?>/js/global.js?v=mw3.2"></script>
                 <script src="<?php echo $themeBase; ?>/js/script.js?v=mw3.2"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 		
 		
