@@ -40,7 +40,7 @@
                     <div class="palette-item" data-type="radio" role="button" tabindex="0">Radio</div>
                     <div class="palette-item" data-type="file" role="button" tabindex="0">File</div>
                 </div>
-                <ul id="formFields" class="field-list" aria-label="Form fields"></ul>
+                <ul id="formFields" class="field-list" aria-label="Form fields" data-placeholder="Drop fields here"></ul>
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Save Form</button>
