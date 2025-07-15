@@ -385,6 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  let previewLoaded = false;
+
   function openPreview(size) {
     if (!previewModal || !previewFrame) return;
     if (previewWrapper) {
@@ -393,10 +395,13 @@ document.addEventListener('DOMContentLoaded', () => {
       else previewWrapper.style.width = '100%';
       previewWrapper.style.height = '90vh';
     }
-    const base = window.location.origin + window.builderBase + '/';
-    const url = new URL(window.builderSlug + '?preview=1', base);
-    previewFrame.src = url.toString();
     previewModal.classList.add('active');
+    if (!previewLoaded) {
+      const base = window.location.origin + window.builderBase + '/';
+      const url = new URL(window.builderSlug + '?preview=1', base);
+      previewFrame.src = url.toString();
+      previewLoaded = true;
+    }
     updatePreview(size);
   }
 
@@ -404,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closePreview.addEventListener('click', () => {
       previewModal.classList.remove('active');
       previewFrame.src = '';
+      previewLoaded = false;
       updatePreview('desktop');
     });
   }
