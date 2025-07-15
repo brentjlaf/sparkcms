@@ -24,6 +24,14 @@ function storeDraft() {
     timestamp: Date.now(),
   };
   localStorage.setItem(builderDraftKey, JSON.stringify(data));
+  const fd = new FormData();
+  fd.append('id', window.builderPageId);
+  fd.append('content', data.html);
+  fd.append('timestamp', data.timestamp);
+  fetch(window.builderBase + '/liveed/save-draft.php', {
+    method: 'POST',
+    body: fd,
+  }).catch(() => {});
 }
 
 function renderGroupItems(details) {
@@ -283,6 +291,19 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem(builderDraftKey);
     }
   }
+
+  fetch(
+    window.builderBase + '/liveed/load-draft.php?id=' + window.builderPageId
+  )
+    .then((r) => (r.ok ? r.json() : null))
+    .then((serverDraft) => {
+      if (serverDraft && serverDraft.timestamp > lastSavedTimestamp) {
+        canvas.innerHTML = serverDraft.content;
+        lastSavedTimestamp = serverDraft.timestamp;
+        localStorage.setItem(builderDraftKey, JSON.stringify(serverDraft));
+      }
+    })
+    .catch(() => {});
 
   // Restore palette position
   const storedPos = localStorage.getItem('palettePosition');
