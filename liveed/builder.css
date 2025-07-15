@@ -572,6 +572,7 @@
   gap: 8px;
   overflow: hidden;
   transition: height 0.3s ease;
+  font-size: 13px;
 }
 .palette-group .group-items.collapsed {
   height: 0;
