@@ -120,11 +120,13 @@ $settings = get_cached_json($settingsFile);
                 </div>
             </nav>
         </div>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <!-- Main Content -->
         <div class="main-content">
             <!-- Top Bar -->
             <div class="top-bar">
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="page-title" id="pageTitle">Dashboard</div>
                 <div class="top-bar-actions">
                     <div class="search-box">
@@ -161,6 +163,10 @@ $(function(){
     $(this).addClass("active");
     $("#pageTitle").text($(this).find(".nav-text").text());
     loadModule(section);
+    if(window.innerWidth <= 1024){
+        $("#sidebar").removeClass("mobile-open");
+        $("#sidebarOverlay").removeClass("active");
+    }
   });
 
   $('.search-input').on('keypress', function(e){
@@ -172,6 +178,16 @@ $(function(){
         loadModule('search','q='+encodeURIComponent(q));
       }
     }
+  });
+
+  $('#menuToggle').on('click', function(){
+    $('#sidebar').toggleClass('mobile-open');
+    $('#sidebarOverlay').toggleClass('active');
+  });
+
+  $('#sidebarOverlay').on('click', function(){
+    $('#sidebar').removeClass('mobile-open');
+    $(this).removeClass('active');
   });
   loadModule("logs");
 });
