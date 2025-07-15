@@ -1,1 +1,55 @@
-[]
+[
+    {
+        "id": 1,
+        "name": "Newsletter Signup",
+        "fields": [
+            {
+                "type": "text",
+                "label": "Name",
+                "name": "name",
+                "required": false
+            },
+            {
+                "type": "email",
+                "label": "Email",
+                "name": "email",
+                "required": true
+            },
+            {
+                "type": "submit",
+                "label": "Subscribe",
+                "name": "submit"
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Contact Form",
+        "fields": [
+            {
+                "type": "text",
+                "label": "Name",
+                "name": "name",
+                "required": true
+            },
+            {
+                "type": "email",
+                "label": "Email",
+                "name": "email",
+                "required": true
+            },
+            {
+                "type": "textarea",
+                "label": "Message",
+                "name": "message",
+                "required": true
+            },
+            {
+                "type": "submit",
+                "label": "Send Message",
+                "name": "submit"
+            }
+        ]
+    }
+]
+
