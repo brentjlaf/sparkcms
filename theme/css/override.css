@@ -949,9 +949,6 @@ section.container-fluid {
     width: 100%;
 }
 
-.content-width-wrap {
-    margin: 0 auto;
-}
 
 .drop-area {
     min-height: 20px;

@@ -2,17 +2,15 @@
 <!-- Template: layout.content-width -->
 <templateSetting caption="Options" order="1">
     <dl class="mwDialog">
-        <dt>Width:</dt>
+        <dt>Container Width:</dt>
         <dd>
             <select name="custom_width">
-                <option value="480">480 pixel wide</option>
-                <option value="570">570 pixel wide</option>
-                <option value="670" selected="selected">670 pixel wide (default)</option>
-                <option value="770">770 pixel wide</option>
-                <option value="870">870 pixel wide</option>
-                <option value="970">970 pixel wide</option>
-                <option value="1170">1170 pixel wide</option>
-                <option value="1240">1240 pixel wide</option>
+                <option value=" container-sm">Small</option>
+                <option value=" container-md">Medium</option>
+                <option value=" container-lg" selected="selected">Large (default)</option>
+                <option value=" container-xl">Extra Large</option>
+                <option value=" container-xxl">XX Large</option>
+                <option value=" container-fluid">Full Width</option>
             </select>
         </dd>
         <dt>Position:</dt>
@@ -25,9 +23,7 @@
         </dd>
     </dl>
 </templateSetting>
-<div class="content-width _content-style" data-tpl-tooltip="Content Width">
-    <div class="content-width-wrap {custom_position}" style="max-width: {custom_width}px;">
-        <div class="drop-area"></div>
-    </div>
+<div class="content-width {custom_width}{custom_position} _content-style" data-tpl-tooltip="Content Width">
+    <div class="drop-area"></div>
 </div>
 
