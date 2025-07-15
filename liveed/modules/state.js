@@ -1,6 +1,7 @@
 // File: state.js
 const stateMap = new Map();
 let nextId = 1;
+const RESERVED_KEYS = new Set(['blockId', 'template', 'original', 'active', 'ts']);
 
 export function ensureBlockState(block) {
   if (!block) return null;
@@ -10,12 +11,11 @@ export function ensureBlockState(block) {
   const id = block.dataset.blockId;
   if (!stateMap.has(id)) {
     const data = {};
-    const reserved = ['blockId', 'template', 'original', 'active', 'ts'];
-    Object.keys(block.dataset).forEach((k) => {
-      if (!reserved.includes(k)) {
-        data[k] = block.dataset[k];
+    for (const [key, val] of Object.entries(block.dataset)) {
+      if (!RESERVED_KEYS.has(key)) {
+        data[key] = val;
       }
-    });
+    }
     stateMap.set(id, data);
   }
   return id;
