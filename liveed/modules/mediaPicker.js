@@ -15,6 +15,10 @@ let currentFolder = null;
 let currentEditId = null;
 let pickerTargetId = null;
 
+const cacheTTL = 30000; // 30 seconds
+let folderCache = { data: null, time: 0 };
+const imageCache = new Map();
+
 export function initMediaPicker(options = {}) {
   basePath = options.basePath || '';
   mediaPickerModal = document.getElementById('mediaPickerModal');
@@ -83,70 +87,101 @@ export function closeMediaPicker() {
   if (pickerFolderList) pickerFolderList.innerHTML = '';
 }
 
-function loadPickerFolders() {
-  fetch(basePath + '/CMS/modules/media/list_media.php')
-    .then((r) => r.json())
-    .then((data) => {
-      if (!pickerFolderList) return;
-      pickerFolderList.innerHTML = '';
-      const cmsBase = basePath + '/CMS';
-      (data.folders || []).forEach((f) => {
-        const name = typeof f === 'string' ? f : f.name;
-        const thumb = f.thumbnail ? cmsBase + '/' + f.thumbnail : null;
-        const li = document.createElement('li');
-        li.dataset.folder = name;
-        li.className = 'picker-folder-item';
-        if (thumb) {
-          const img = document.createElement('img');
-          img.src = thumb;
-          img.alt = name;
-          li.appendChild(img);
-        }
-        const span = document.createElement('span');
-        span.textContent = name;
-        li.appendChild(span);
-        pickerFolderList.appendChild(li);
-      });
-    });
+async function loadPickerFolders() {
+  const now = Date.now();
+  if (folderCache.data && now - folderCache.time < cacheTTL) {
+    renderFolders(folderCache.data);
+    return;
+  }
+  try {
+    const r = await fetch(basePath + '/CMS/modules/media/list_media.php');
+    const data = await r.json();
+    folderCache = { data, time: now };
+    renderFolders(data);
+  } catch (err) {
+    console.error('Failed to load folders', err);
+  }
 }
 
-function selectPickerFolder(folder) {
+function renderFolders(data) {
+  if (!pickerFolderList) return;
+  pickerFolderList.innerHTML = '';
+  const cmsBase = basePath + '/CMS';
+  const frag = document.createDocumentFragment();
+  (data.folders || []).forEach((f) => {
+    const name = typeof f === 'string' ? f : f.name;
+    const thumb = f.thumbnail ? cmsBase + '/' + f.thumbnail : null;
+    const li = document.createElement('li');
+    li.dataset.folder = name;
+    li.className = 'picker-folder-item';
+    if (thumb) {
+      const img = document.createElement('img');
+      img.src = thumb;
+      img.alt = name;
+      li.appendChild(img);
+    }
+    const span = document.createElement('span');
+    span.textContent = name;
+    li.appendChild(span);
+    frag.appendChild(li);
+  });
+  pickerFolderList.appendChild(frag);
+}
+
+async function selectPickerFolder(folder) {
   currentFolder = folder;
   if (pickerFolderList) {
     pickerFolderList.querySelectorAll('li').forEach((li) => {
       li.classList.toggle('active', li.dataset.folder === folder);
     });
   }
-  fetch(basePath + '/CMS/modules/media/list_media.php?folder=' + encodeURIComponent(folder))
-    .then((r) => r.json())
-    .then((data) => {
-      if (!pickerImageGrid) return;
-      pickerImageGrid.innerHTML = '';
-      const cmsBase = basePath + '/CMS';
-      (data.media || []).forEach((img) => {
-        const src = cmsBase + '/' + (img.thumbnail ? img.thumbnail : img.file);
-        const full = cmsBase + '/' + img.file;
-        const item = document.createElement('div');
-        item.className = 'picker-image-item';
-        const el = document.createElement('img');
-        el.src = src;
-        el.dataset.file = full;
-        el.dataset.id = img.id;
-        item.appendChild(el);
-        const overlay = document.createElement('div');
-        overlay.className = 'picker-image-overlay';
-        const edit = document.createElement('button');
-        edit.className = 'edit-btn';
-        edit.textContent = '✎';
-        edit.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openEdit(img.id, full);
-        });
-        overlay.appendChild(edit);
-        item.appendChild(overlay);
-        pickerImageGrid.appendChild(item);
-      });
+
+  const now = Date.now();
+  let data;
+  const cache = imageCache.get(folder);
+  if (cache && now - cache.time < cacheTTL) {
+    data = cache.data;
+  } else {
+    try {
+      const r = await fetch(
+        basePath + '/CMS/modules/media/list_media.php?folder=' + encodeURIComponent(folder)
+      );
+      data = await r.json();
+      imageCache.set(folder, { data, time: now });
+    } catch (err) {
+      console.error('Failed to load media', err);
+      return;
+    }
+  }
+
+  if (!pickerImageGrid) return;
+  pickerImageGrid.innerHTML = '';
+  const cmsBase = basePath + '/CMS';
+  const frag = document.createDocumentFragment();
+  (data.media || []).forEach((img) => {
+    const src = cmsBase + '/' + (img.thumbnail ? img.thumbnail : img.file);
+    const full = cmsBase + '/' + img.file;
+    const item = document.createElement('div');
+    item.className = 'picker-image-item';
+    const el = document.createElement('img');
+    el.src = src;
+    el.dataset.file = full;
+    el.dataset.id = img.id;
+    item.appendChild(el);
+    const overlay = document.createElement('div');
+    overlay.className = 'picker-image-overlay';
+    const edit = document.createElement('button');
+    edit.className = 'edit-btn';
+    edit.textContent = '✎';
+    edit.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEdit(img.id, full);
     });
+    overlay.appendChild(edit);
+    item.appendChild(overlay);
+    frag.appendChild(item);
+  });
+  pickerImageGrid.appendChild(frag);
 }
 
 
