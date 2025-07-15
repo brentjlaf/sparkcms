@@ -3,6 +3,7 @@ export function initUndoRedo(options = {}) {
   const canvas = options.canvas;
   const restore = options.restore;
   const onChange = options.onChange;
+  const maxHistory = options.maxHistory || 15;
   if (!canvas) return;
   let history = [];
   let index = -1;
@@ -15,6 +16,9 @@ export function initUndoRedo(options = {}) {
     if (history[index] === html) return;
     history = history.slice(0, index + 1);
     history.push(html);
+    if (history.length > maxHistory) {
+      history.shift();
+    }
     index = history.length - 1;
     if (typeof onChange === 'function') onChange(html);
   };

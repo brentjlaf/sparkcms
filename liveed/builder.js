@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     applyStoredSettings,
   });
 
-  const history = initUndoRedo({ canvas, onChange: scheduleSave });
+  const history = initUndoRedo({ canvas, onChange: scheduleSave, maxHistory: 15 });
   const undoBtn = palette.querySelector('.undo-btn');
   const redoBtn = palette.querySelector('.redo-btn');
   const historyBtn = palette.querySelector('.page-history-btn');
