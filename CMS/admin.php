@@ -1,19 +1,14 @@
 <?php
 // File: admin.php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/data.php';
 require_login();
 
 $pagesFile = __DIR__ . '/data/pages.json';
-$pages = [];
-if (file_exists($pagesFile)) {
-    $pages = json_decode(file_get_contents($pagesFile), true) ?: [];
-}
+$pages = get_cached_json($pagesFile);
 
 $settingsFile = __DIR__ . '/data/settings.json';
-$settings = [];
-if (file_exists($settingsFile)) {
-    $settings = json_decode(file_get_contents($settingsFile), true) ?: [];
-}
+$settings = get_cached_json($settingsFile);
 ?>
 <!DOCTYPE html>
 <html lang="en">
