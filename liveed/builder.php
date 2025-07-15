@@ -42,12 +42,14 @@ $themeHtml = preg_replace('/<div class="drop-area"><\\/div>/', '<div id="canvas"
 $headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\">" .
     "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
+
 $previewToolbar = '<div class="preview-toolbar">'
     . '<button type="button" class="preview-btn active" data-size="desktop" title="Desktop"><i class="fa-solid fa-desktop"></i></button>'
     . '<button type="button" class="preview-btn" data-size="tablet" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>'
     . '<button type="button" class="preview-btn" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
     . '<button type="button" class="preview-btn" id="gridToggle" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
     . '</div>';
+
 $builderHeader = '<header class="builder-header" title="Drag to reposition">'
     . '<div class="header-actions">'
     . '<button type="button" class="header-btn palette-toggle-btn" title="Collapse Palette"><i class="fa-solid fa-chevron-left"></i></button>'
@@ -57,6 +59,7 @@ $builderHeader = '<header class="builder-header" title="Drag to reposition">'
     . '<button type="button" class="manual-save-btn btn btn-primary">Save</button></div>'
     . '<div id="saveStatus" class="save-status"></div>'
     . '<div id="a11yStatus" class="a11y-status" title=""></div>'
+    . $previewToolbar
     . '</header>';
 
 $paletteFooter = '<div class="footer"><div class="action-row">'
@@ -66,9 +69,9 @@ $paletteFooter = '<div class="footer"><div class="action-row">'
     . '</div><div class="footer-links">'
     . '<span id="lastSavedTime" class="last-saved-time">Last saved: ' . date('Y-m-d H:i', $page['last_modified']) . '</span>'
     . '</div></div>';
+
 $builderStart = '<div class="builder"><button type="button" id="viewModeToggle" class="view-toggle" title="View mode"><i class="fa-solid fa-eye"></i></button><aside class="block-palette">'
     . $builderHeader
-    . $previewToolbar
     . '<h2 class="blocks-title">Blocks</h2><div class="palette-search-container"><i class="fa-solid fa-search search-icon"></i><input type="text" class="palette-search" placeholder="Search blocks"></div><div class="palette-items"></div>'
     . $paletteFooter
     . '</aside><main class="canvas-container">';
