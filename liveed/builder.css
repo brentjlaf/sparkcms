@@ -567,17 +567,14 @@
 }
 .palette-group .group-items {
   padding: 0 12px 12px;
-  display: grid;
+  display: none;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 8px;
   overflow: hidden;
-  transition: height 0.3s ease;
   font-size: 13px;
 }
-.palette-group .group-items.collapsed {
-  height: 0;
-  padding: 0 12px;
-  overflow: hidden;
+.palette-group[open] .group-items {
+  display: grid;
 }
 .palette-group .block-item {
   margin-bottom: 0;

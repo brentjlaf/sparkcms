@@ -28,38 +28,24 @@ function animateAccordion(details) {
   const items = details.querySelector('.group-items');
   if (!summary || !items) return;
   if (!details.open) {
-    items.style.height = '0px';
+    items.style.display = 'none';
   }
   summary.addEventListener('click', (e) => {
     e.preventDefault();
     const isOpen = details.open;
-    const startHeight = items.scrollHeight;
     if (isOpen) {
-      items.style.height = startHeight + 'px';
-      requestAnimationFrame(() => {
-        items.style.transition = 'height 0.3s ease';
-        items.style.height = '0px';
-      });
-      const onEnd = () => {
-        items.style.transition = '';
-        details.open = false;
-        items.removeEventListener('transitionend', onEnd);
-      };
-      items.addEventListener('transitionend', onEnd);
+      details.open = false;
+      items.style.display = 'none';
     } else {
-      details.open = true;
-      const targetHeight = items.scrollHeight;
-      items.style.height = '0px';
-      requestAnimationFrame(() => {
-        items.style.transition = 'height 0.3s ease';
-        items.style.height = targetHeight + 'px';
+      document.querySelectorAll('.palette-group[open]').forEach((other) => {
+        if (other !== details) {
+          other.open = false;
+          const otherItems = other.querySelector('.group-items');
+          if (otherItems) otherItems.style.display = 'none';
+        }
       });
-      const onEnd = () => {
-        items.style.transition = '';
-        items.style.height = 'auto';
-        items.removeEventListener('transitionend', onEnd);
-      };
-      items.addEventListener('transitionend', onEnd);
+      details.open = true;
+      items.style.display = 'grid';
     }
   });
 }
