@@ -307,7 +307,7 @@
   position: relative;
   height: auto;
   background: #efefef;
-  padding: 40px 0;
+  padding: 10px 0;
   border: 2px dashed transparent;
   box-sizing: border-box;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
