@@ -1,5 +1,5 @@
-<!-- File: layout.layout.column_3.php -->
-<!-- Template: layout.layout.column_3 -->
+<!-- File: layout.column_3.php -->
+<!-- Template: layout.column_3 -->
 <templateSetting caption="Column Settings" order="1">
     <dl class="mwDialog">
         <dt>Gap:</dt>
