@@ -1,13 +1,14 @@
 <?php
 // File: auth.php
 session_start();
+require_once __DIR__ . '/data.php';
 
 // Path to users.json
 $usersFile = __DIR__ . '/../data/users.json';
 if (!file_exists($usersFile)) {
-    file_put_contents(
+    write_json(
         $usersFile,
-        json_encode([
+        [
             [
                 'id' => 1,
                 'username' => 'admin',
@@ -17,10 +18,10 @@ if (!file_exists($usersFile)) {
                 'created_at' => time(),
                 'last_login' => null
             ]
-        ], JSON_PRETTY_PRINT)
+        ]
     );
 }
-$users = json_decode(file_get_contents($usersFile), true) ?: [];
+$users = read_json($usersFile);
 
 function find_user($username) {
     global $users;

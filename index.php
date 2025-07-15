@@ -9,11 +9,13 @@ if ($base && strpos($path, $base) === 0) {
     $path = trim(substr($path, strlen($base)), '/');
 }
 
+$settingsFile = __DIR__ . '/CMS/data/settings.json';
+require_once __DIR__ . '/CMS/includes/data.php';
+$settings = read_json($settingsFile);
+$homepage = $settings['homepage'] ?? 'home';
+
 // If a real file is requested, serve it directly. This allows access to
 // backend scripts like CMS/login.php when using URL rewriting.
-$settingsFile = __DIR__ . '/CMS/data/settings.json';
-$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
-$homepage = $settings['homepage'] ?? 'home';
 
 $requested = __DIR__ . '/' . $path;
 if ($path !== '' && is_file($requested)) {

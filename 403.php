@@ -3,8 +3,9 @@
 http_response_code(403);
 $settingsFile = __DIR__ . '/CMS/data/settings.json';
 $menusFile = __DIR__ . '/CMS/data/menus.json';
-$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
-$menus = file_exists($menusFile) ? json_decode(file_get_contents($menusFile), true) : [];
+require_once __DIR__ . '/CMS/includes/data.php';
+$settings = read_json($settingsFile);
+$menus = read_json($menusFile);
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {
     $scriptBase = substr($scriptBase, 0, -4);
