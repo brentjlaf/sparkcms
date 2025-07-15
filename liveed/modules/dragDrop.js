@@ -26,6 +26,7 @@ let basePath = '';
 let loggedIn = false;
 let openSettings;
 let applyStoredSettings;
+let listenersAdded = false;
 
 let dragSource = null;
 let fromPalette = false;
@@ -53,14 +54,14 @@ export function initDragDrop(options = {}) {
   openSettings = options.openSettings;
   applyStoredSettings = options.applyStoredSettings;
 
-  if (palette) palette.addEventListener('dragstart', paletteDragStart);
-  if (canvas) {
-    canvas.addEventListener('dragstart', canvasDragStart);
-    canvas.addEventListener('dragenter', handleDragEnter, true);
-    canvas.addEventListener('dragleave', handleDragLeave, true);
-    canvas.addEventListener('dragover', handleDragOver, true);
-    canvas.addEventListener('drop', handleDrop, true);
-    canvas.addEventListener('dragend', handleDragEnd, true);
+  if (!listenersAdded) {
+    document.addEventListener('dragstart', handleDragStart, true);
+    document.addEventListener('dragenter', handleDragEnter, true);
+    document.addEventListener('dragleave', handleDragLeave, true);
+    document.addEventListener('dragover', handleDragOver, true);
+    document.addEventListener('drop', handleDrop, true);
+    document.addEventListener('dragend', handleDragEnd, true);
+    listenersAdded = true;
   }
   setupDropArea(canvas);
   if (canvas) {
@@ -105,6 +106,14 @@ function canvasDragStart(e) {
     setTimeout(() => document.body.removeChild(dragImage), 0);
   } else if (e.target.closest('.block-wrapper')) {
     e.preventDefault();
+  }
+}
+
+function handleDragStart(e) {
+  if (palette && palette.contains(e.target) && e.target.closest('.block-item')) {
+    paletteDragStart(e);
+  } else if (canvas && canvas.contains(e.target)) {
+    canvasDragStart(e);
   }
 }
 
