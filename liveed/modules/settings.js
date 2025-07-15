@@ -8,17 +8,32 @@ let settingsPanel;
 let settingsContent;
 let savePageFn;
 
-function suggestAltText(block) {
-  const src = getSetting(block, 'custom_src', '').trim();
-  let alt = getSetting(block, 'custom_alt', '').trim();
-  if (!src || alt) return;
+function deriveAltText(src) {
+  if (!src) return '';
   let name = src.split('/').pop();
   name = name.split('?')[0];
   name = name.replace(/\.[^/.]+$/, '');
   name = name.replace(/[-_]+/g, ' ').trim();
-  if (!name) return;
-  name = name.charAt(0).toUpperCase() + name.slice(1);
-  setSetting(block, 'custom_alt', name);
+  if (!name) return '';
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function suggestAltText(
+  block,
+  altName = 'custom_alt',
+  srcName = 'custom_src',
+  updateInput = false
+) {
+  const src = getSetting(block, srcName, '').trim();
+  let alt = getSetting(block, altName, '').trim();
+  const suggestion = deriveAltText(src);
+  if (!suggestion || alt) return suggestion;
+  setSetting(block, altName, suggestion);
+  if (updateInput && settingsPanel) {
+    const input = settingsPanel.querySelector(`input[name="${altName}"]`);
+    if (input && !input.value) input.value = suggestion;
+  }
+  return suggestion;
 }
 
 function getTemplateSettingElement(block) {
@@ -77,7 +92,17 @@ export function initSettings(options = {}) {
           val = input.value;
         }
         setSetting(block, input.name, val);
-        if (input.name === 'custom_src') suggestAltText(block);
+        if (input.name === 'custom_src') {
+          suggestAltText(block, 'custom_alt', 'custom_src', true);
+        } else if (/^custom_img(\d+)$/.test(input.name)) {
+          const idx = input.name.match(/^custom_img(\d+)$/)[1];
+          suggestAltText(
+            block,
+            `custom_alt${idx}`,
+            `custom_img${idx}`,
+            true
+          );
+        }
         renderBlock(block);
         // Automatically schedule a save whenever a setting changes so that
         // media selections are persisted even if the user forgets to press
@@ -112,7 +137,18 @@ export function applyStoredSettings(block) {
   if (!hasSettings && !block.innerHTML.includes('{')) {
     return;
   }
-  suggestAltText(block);
+  // Prefill alt text suggestions for stored settings as well
+  const templateSetting = getTemplateSettingElement(block);
+  if (templateSetting) {
+    const altInputs = templateSetting.querySelectorAll('input[name^="custom_alt"]');
+    altInputs.forEach((inp) => {
+      const altName = inp.name;
+      const srcName = altName === 'custom_alt' ? 'custom_src' : altName.replace('alt', 'img');
+      suggestAltText(block, altName, srcName);
+    });
+  } else {
+    suggestAltText(block);
+  }
   renderBlock(block);
 }
 
@@ -162,7 +198,14 @@ function getSettingsForm(template, block) {
 function initTemplateSettingValues(block) {
   const templateSetting = getTemplateSettingElement(block);
   if (!templateSetting || !settingsPanel) return;
-  suggestAltText(block);
+  // Prefill alt text suggestions for any alt inputs
+  const altInputs = templateSetting.querySelectorAll('input[name^="custom_alt"]');
+  altInputs.forEach((inp) => {
+    const altName = inp.name;
+    const srcName = altName === 'custom_alt' ? 'custom_src' : altName.replace('alt', 'img');
+    suggestAltText(block, altName, srcName, true);
+  });
+
   const inputs = settingsPanel.querySelectorAll('input[name], textarea[name], select[name]');
   inputs.forEach((input) => {
     const name = input.name;
