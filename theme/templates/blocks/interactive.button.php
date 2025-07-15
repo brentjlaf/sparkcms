@@ -1,5 +1,5 @@
-<!-- File: interactive.basic.button.php -->
-<!-- Template: interactive.basic.button -->
+<!-- File: interactive.button.php -->
+<!-- Template: interactive.button -->
 <templateSetting caption="Button Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Text</dt>

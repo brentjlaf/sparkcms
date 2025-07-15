@@ -1,5 +1,5 @@
-<!-- File: content-elements.basic.video.php -->
-<!-- Template: content-elements.basic.video -->
+<!-- File: content-elements.video.php -->
+<!-- Template: content-elements.video -->
 <templateSetting caption="Video Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Embed URL</dt>
