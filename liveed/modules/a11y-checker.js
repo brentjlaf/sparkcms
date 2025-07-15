@@ -35,6 +35,14 @@
       .insertAfter($el);
   }
 
+  function clearHighlights($root) {
+    $root
+      .find('.highlight-issue, .highlight-htag')
+      .removeClass('highlight-issue highlight-htag')
+      .removeAttr('aria-label');
+    $root.find('.accessibility-bubble').remove();
+  }
+
   function checkIssues($elements, issue) {
     addError($elements, issue);
   }
@@ -276,6 +284,7 @@
 
   function runChecks() {
     const $root = $('#canvas');
+    clearHighlights($root);
     $('.error-message').remove();
     checkIssues($root.find('img:not([alt])'),'Missing alt attribute');
     checkIssues($root.find('img[alt=""]'),'Empty alt attribute');
