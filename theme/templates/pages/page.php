@@ -60,7 +60,7 @@ function renderFooterMenu($items){
     
     <!-- Custom Stylesheets -->
     <link rel="stylesheet" href="<?php echo $themeBase; ?>/css/root.css?v=mw3.2"/>
-    <link rel="stylesheet" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
+    <link rel="stylesheet" href="<?php echo $themeBase; ?>/css/combined.css?v=mw3.2"/>
     <link rel="stylesheet" href="<?php echo $themeBase; ?>/css/override.css?v=mw3.2"/>
 </head>
 <body class="d-flex flex-column min-vh-100">
