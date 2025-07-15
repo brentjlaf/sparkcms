@@ -47,7 +47,6 @@ $previewToolbar = '<div class="preview-toolbar">'
     . '<button type="button" class="preview-btn active" data-size="desktop" title="Desktop"><i class="fa-solid fa-desktop"></i></button>'
     . '<button type="button" class="preview-btn" data-size="tablet" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>'
     . '<button type="button" class="preview-btn" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
-    . '<button type="button" class="preview-btn" id="gridToggle" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
     . '</div>';
 
 $builderHeader = '<header class="builder-header" title="Drag to reposition">'
