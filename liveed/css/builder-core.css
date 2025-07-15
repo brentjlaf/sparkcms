@@ -52,11 +52,11 @@
   color: #e53e3e;
 }
 .block-palette {
-  width: 320px;
+  width: 280px;
   background: rgba(12, 14, 20, 0.95);
   backdrop-filter: blur(24px);
   border-right: 1px solid rgba(51, 65, 85, 0.2);
-  padding: 16px;
+  padding: 8px;
   overflow-y: auto;
   box-shadow: 0 0 0 1px rgba(51, 65, 85, 0.15),
     0 8px 32px rgba(0, 0, 0, 0.4),
