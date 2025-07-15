@@ -48,13 +48,16 @@ $previewToolbar = '<div class="preview-toolbar">'
     . '<button type="button" class="preview-btn" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
     . '<button type="button" class="preview-btn" id="gridToggle" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
     . '</div>';
-$builderHeader = '<header class="builder-header" title="Drag to reposition"><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div>'
+$builderHeader = '<header class="builder-header" title="Drag to reposition">'
+    . '<div><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div> '
+    . '<button type="button" class="manual-save-btn btn btn-primary">Save</button></div>'
+    . '<div id="saveStatus" class="save-status"></div>'
     . '<div class="header-actions">'
     . '<button type="button" class="header-btn palette-toggle-btn" title="Collapse Palette"><i class="fa-solid fa-chevron-left"></i></button>'
     . '<button type="button" class="header-btn palette-dock-btn" title="Dock palette"><i class="fa-solid fa-up-down-left-right"></i></button>'
-    . '<button type="button" class="manual-save-btn btn btn-primary">Save</button>'
-    . '<span id="saveStatus" class="save-status"></span>'
-    . '</div><div id="a11yStatus" class="a11y-status"></div></header>';
+    . '</div>'
+    . '<div id="a11yStatus" class="a11y-status" title=""></div>'
+    . '</header>';
 
 $paletteFooter = '<div class="footer"><div class="action-row">'
     . '<button class="action-btn undo-btn"><i class="fas fa-undo"></i><span>Undo</span></button>'
