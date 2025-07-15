@@ -1,5 +1,5 @@
-<!-- File: content-elements.basic.cta-banner.php -->
-<!-- Template: content-elements.basic.cta-banner -->
+<!-- File: content-elements.cta-banner.php -->
+<!-- Template: content-elements.cta-banner -->
 <templateSetting caption="CTA Banner Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Heading</dt>
