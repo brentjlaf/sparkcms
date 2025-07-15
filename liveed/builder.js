@@ -10,6 +10,18 @@ import { executeScripts } from "./modules/executeScripts.js";
 
 let allBlockFiles = [];
 let favorites = [];
+let builderDraftKey = '';
+let lastSavedTimestamp = 0;
+
+function storeDraft() {
+  const canvas = document.getElementById('canvas');
+  if (!canvas) return;
+  const data = {
+    html: canvas.innerHTML,
+    timestamp: Date.now(),
+  };
+  localStorage.setItem(builderDraftKey, JSON.stringify(data));
+}
 
 function animateAccordion(details) {
   const summary = details.querySelector('summary');
@@ -202,6 +214,8 @@ function savePage() {
         return r.text();
       })
       .then(() => {
+        localStorage.removeItem(builderDraftKey);
+        lastSavedTimestamp = Date.now();
         if (statusEl) {
           statusEl.textContent = 'Saved';
           statusEl.classList.remove('saving');
@@ -227,6 +241,7 @@ function savePage() {
 
 function scheduleSave() {
   clearTimeout(saveTimer);
+  storeDraft();
   saveTimer = setTimeout(savePage, 200);
 }
 
@@ -247,6 +262,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleBtn = palette.querySelector('.palette-toggle-btn');
   const dockBtn = palette.querySelector('.palette-dock-btn');
   const paletteHeader = palette.querySelector('.builder-header');
+
+  builderDraftKey = 'builderDraft-' + window.builderPageId;
+  lastSavedTimestamp = window.builderLastModified || 0;
+  const draft = localStorage.getItem(builderDraftKey);
+  if (draft) {
+    try {
+      const data = JSON.parse(draft);
+      if (data.timestamp > lastSavedTimestamp && data.html) {
+        canvas.innerHTML = data.html;
+        lastSavedTimestamp = data.timestamp;
+      } else {
+        localStorage.removeItem(builderDraftKey);
+      }
+    } catch (e) {
+      localStorage.removeItem(builderDraftKey);
+    }
+  }
 
   // Restore palette position
   const storedPos = localStorage.getItem('palettePosition');
@@ -581,6 +613,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const block = handle.closest('.block-wrapper');
       if (block) block.style.transform = '';
     }
+  });
+
+  window.addEventListener('beforeunload', () => {
+    storeDraft();
   });
 
 });
