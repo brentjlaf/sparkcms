@@ -98,7 +98,7 @@
 }
 
 .block-palette.collapsed {
-  width: 40px;
+  width: 60px;
   padding: 8px;
 }
 
@@ -113,7 +113,7 @@
 }
 
 .builder.palette-collapsed .canvas-container {
-  margin-left: 40px;
+  margin-left: 60px;
 }
 
 .block-palette.collapsed .history-toolbar,
