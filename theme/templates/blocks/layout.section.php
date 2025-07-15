@@ -1,5 +1,5 @@
-<!-- File: layout.layout.section.php -->
-<!-- Template: layout.layout.section -->
+<!-- File: layout.section.php -->
+<!-- Template: layout.section -->
 <templateSetting caption="Section Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Width</dt>

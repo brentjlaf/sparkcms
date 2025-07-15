@@ -1,7 +1,19 @@
-<!-- File: layout.layout.column_4.php -->
-<!-- Template: layout.layout.column_4 -->
+<!-- File: layout.column_2.php -->
+<!-- Template: layout.column_2 -->
 <templateSetting caption="Column Settings" order="1">
     <dl class="mwDialog">
+        <dt>Layout:</dt>
+        <dd>
+            <select name="custom_layout">
+                <option value="20_80">20% | 80%</option>
+                <option value="30_70">30% | 70%</option>
+                <option value="40_60">40% | 60%</option>
+                <option value="50_50" selected="selected">50% | 50% (default)</option>
+                <option value="60_40">60% | 40%</option>
+                <option value="70_30">70% | 30%</option>
+                <option value="80_20">80% | 20%</option>
+            </select>
+        </dd>
         <dt>Gap:</dt>
         <dd>
             <select name="custom_gap">
@@ -22,9 +34,7 @@
         </dd>
     </dl>
 </templateSetting>
-<div class="row {custom_gap} {custom_alignment} " data-tpl-tooltip="4 Columns">
-    <div class="col"><div class="drop-area"></div></div>
-    <div class="col"><div class="drop-area"></div></div>
+<div class="row {custom_layout} {custom_gap} {custom_alignment}" data-tpl-tooltip="2 Columns">
     <div class="col"><div class="drop-area"></div></div>
     <div class="col"><div class="drop-area"></div></div>
 </div>

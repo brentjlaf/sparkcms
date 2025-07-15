@@ -1,5 +1,5 @@
-<!-- File: layout.layout.sidebar.php -->
-<!-- Template: layout.layout.sidebar -->
+<!-- File: layout.sidebar.php -->
+<!-- Template: layout.sidebar -->
 <?php $tpl_id = uniqid('tpl-'); ?>
 <templateSetting caption="Options" order="1">
     <dl class="sparkDialog">
