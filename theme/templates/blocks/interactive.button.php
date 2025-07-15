@@ -62,5 +62,5 @@
     </dl>
 </templateSetting>
 <div class="{custom_align}">
-    <a href="{custom_link}" class="btn btn-primary"{custom_new_window} data-tpl-tooltip="Button" data-editable>{custom_text}</a>
+    <a href="{custom_link}" class="btn" style="background-color:{custom_bg_color};border-color:{custom_bg_color};"{custom_new_window} data-tpl-tooltip="Button" data-editable>{custom_text}</a>
 </div>
