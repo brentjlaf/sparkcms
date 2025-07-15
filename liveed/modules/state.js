@@ -14,7 +14,6 @@ export function ensureBlockState(block) {
     Object.keys(block.dataset).forEach((k) => {
       if (!reserved.includes(k)) {
         data[k] = block.dataset[k];
-        delete block.dataset[k];
       }
     });
     stateMap.set(id, data);
@@ -30,6 +29,9 @@ export function getSettings(block) {
 export function setSetting(block, name, value) {
   const s = getSettings(block);
   s[name] = value;
+  if (block) {
+    block.dataset[name] = value;
+  }
 }
 
 export function getSetting(block, name, defaultValue = '') {

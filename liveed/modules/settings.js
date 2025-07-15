@@ -107,6 +107,11 @@ export function openSettings(block) {
 
 export function applyStoredSettings(block) {
   ensureBlockState(block);
+  const settings = getSettings(block);
+  const hasSettings = Object.keys(settings).length > 0;
+  if (!hasSettings && !block.innerHTML.includes('{')) {
+    return;
+  }
   suggestAltText(block);
   renderBlock(block);
 }
@@ -212,7 +217,7 @@ function renderBlock(block) {
     } else {
       value = input.value || '';
     }
-    settings[name] = value;
+    setSetting(block, name, value);
     processed.add(name);
     html = html.split('{' + name + '}').join(value);
   });
