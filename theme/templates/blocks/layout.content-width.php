@@ -25,7 +25,7 @@
         </dd>
     </dl>
 </templateSetting>
-<div class="content-width container{custom_position}" style="max-width: {custom_width}px;" data-tpl-tooltip="Content Width">
+<div class="content-width container{custom_position} content-width-{custom_width}" data-tpl-tooltip="Content Width">
     <div class="drop-area"></div>
 </div>
 

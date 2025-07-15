@@ -952,6 +952,16 @@ section.container-fluid {
     margin: 0 auto;
 }
 
+/* Specific width utilities for the content width block */
+.content-width-480  { max-width: 480px; }
+.content-width-570  { max-width: 570px; }
+.content-width-670  { max-width: 670px; }
+.content-width-770  { max-width: 770px; }
+.content-width-870  { max-width: 870px; }
+.content-width-970  { max-width: 970px; }
+.content-width-1170 { max-width: 1170px; }
+.content-width-1240 { max-width: 1240px; }
+
 .drop-area {
     min-height: 20px;
 }
