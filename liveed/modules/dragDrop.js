@@ -5,15 +5,16 @@ import { executeScripts } from "./executeScripts.js";
 const templateCache = new Map();
 
 function loadTemplate(file) {
-  if (templateCache.has(file)) {
-    return templateCache.get(file);
+  const cached = templateCache.get(file);
+  if (cached) {
+    return typeof cached === 'string' ? Promise.resolve(cached) : cached;
   }
   const p = fetch(
     basePath + '/liveed/load-block.php?file=' + encodeURIComponent(file)
   )
     .then((r) => r.text())
     .then((html) => {
-      templateCache.set(file, Promise.resolve(html));
+      templateCache.set(file, html);
       return html;
     });
   templateCache.set(file, p);
@@ -29,7 +30,16 @@ let applyStoredSettings;
 
 let dragSource = null;
 let fromPalette = false;
-let currentDropArea = null;
+// caching block control markup avoids rebuilding the DOM for each block
+const controlsTemplate = `
+  <span class="control edit" title="Edit"><i class="fa-solid fa-pen"></i></span>
+  <span class="control drag" title="Drag"><i class="fa-solid fa-arrows-up-down-left-right"></i></span>
+  <span class="control duplicate" title="Duplicate"><i class="fa-solid fa-clone"></i></span>
+  <span class="control delete" title="Delete"><i class="fa-solid fa-trash"></i></span>
+`;
+const controlsFragment = document.createElement('div');
+controlsFragment.className = 'block-controls';
+controlsFragment.innerHTML = controlsTemplate;
 
 function extractTemplateSetting(html) {
   const match = html.match(/<templateSetting[^>]*>[\s\S]*?<\/templateSetting>/i);
@@ -130,13 +140,7 @@ export function addBlockControls(block) {
     return;
   }
   if (!block.querySelector('.block-controls')) {
-    const controls = document.createElement('div');
-    controls.className = 'block-controls';
-    controls.innerHTML =
-      '<span class="control edit" title="Edit"><i class="fa-solid fa-pen"></i></span>' +
-      '<span class="control drag" title="Drag"><i class="fa-solid fa-arrows-up-down-left-right"></i></span>' +
-      '<span class="control duplicate" title="Duplicate"><i class="fa-solid fa-clone"></i></span>' +
-      '<span class="control delete" title="Delete"><i class="fa-solid fa-trash"></i></span>';
+    const controls = controlsFragment.cloneNode(true);
     block.style.position = 'relative';
     block.appendChild(controls);
   }
@@ -174,7 +178,6 @@ export function setupDropArea(area) {
 function handleDragEnter(e) {
   const area = e.target.closest('[data-drop-area]');
   if (area) {
-    currentDropArea = area;
     area.classList.add('drag-over');
   }
 }
@@ -185,7 +188,6 @@ function handleDragLeave(e) {
     area.classList.remove('drag-over');
     placeholder.remove();
     insertionIndicator.remove();
-    if (currentDropArea === area) currentDropArea = null;
   }
 }
 
@@ -254,7 +256,6 @@ function handleDrop(e) {
   area.classList.remove('drag-over');
   dragSource = null;
   fromPalette = false;
-  currentDropArea = null;
 }
 
 function handleDragEnd() {
@@ -262,19 +263,21 @@ function handleDragEnd() {
   insertionIndicator.remove();
   if (dragSource) dragSource.classList.remove('dragging');
   dragSource = null;
-  currentDropArea = null;
 }
 
 function getDragAfterElement(container, y) {
-  const els = [...container.querySelectorAll('.block-wrapper:not(.dragging)')];
-  return els.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
+  const els = container.querySelectorAll('.block-wrapper:not(.dragging)');
+  let closest = null;
+  let closestOffset = Number.NEGATIVE_INFINITY;
+  for (let i = 0; i < els.length; i++) {
+    const box = els[i].getBoundingClientRect();
     const offset = y - box.top - box.height / 2;
-    if (offset < 0 && offset > closest.offset) {
-      return { offset: offset, element: child };
+    if (offset < 0 && offset > closestOffset) {
+      closestOffset = offset;
+      closest = els[i];
     }
-    return closest;
-  }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+  return closest;
 }
 
 const throttledDragOver = throttleRAF(handleDragOver);
