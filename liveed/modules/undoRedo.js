@@ -5,7 +5,9 @@ export function initUndoRedo(options = {}) {
   const onChange = options.onChange;
   const maxHistory = options.maxHistory || 15;
   if (!canvas) return;
-  let history = [];
+  let history = new Array(maxHistory);
+  let size = 0;
+  let head = 0;
   let index = -1;
   let recording = true;
   let timer;
@@ -13,14 +15,21 @@ export function initUndoRedo(options = {}) {
   const record = () => {
     if (!recording) return;
     const html = canvas.innerHTML;
-    if (history[index] === html) return;
-    history = history.slice(0, index + 1);
-    history.push(html);
-    if (history.length > maxHistory) {
-      history.shift();
+    const currentPos = index >= 0 ? (head + index) % maxHistory : -1;
+    if (currentPos >= 0 && history[currentPos] === html) return;
+    if (index < size - 1) {
+      size = index + 1;
     }
-    index = history.length - 1;
-    if (typeof onChange === 'function') onChange(html);
+    let insertPos = (head + size) % maxHistory;
+    history[insertPos] = html;
+    if (size < maxHistory) {
+      size++;
+    } else {
+      head = (head + 1) % maxHistory;
+    }
+    index = size - 1;
+    insertPos = (head + index) % maxHistory;
+    if (typeof onChange === 'function') onChange(history[insertPos]);
   };
 
   const scheduleRecord = () => {
@@ -43,14 +52,16 @@ export function initUndoRedo(options = {}) {
   const undo = () => {
     if (index > 0) {
       index--;
-      applyState(history[index]);
+      const pos = (head + index) % maxHistory;
+      applyState(history[pos]);
     }
   };
 
   const redo = () => {
-    if (index < history.length - 1) {
+    if (index < size - 1) {
       index++;
-      applyState(history[index]);
+      const pos = (head + index) % maxHistory;
+      applyState(history[pos]);
     }
   };
 
