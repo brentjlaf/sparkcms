@@ -5,11 +5,17 @@
  */
 export function executeScripts(container) {
   if (!container) return;
-  container.querySelectorAll('script').forEach((oldScript) => {
+
+  const scripts = container.querySelectorAll('script');
+  if (!scripts.length) return;
+
+  scripts.forEach((oldScript) => {
     const newScript = document.createElement('script');
-    [...oldScript.attributes].forEach((attr) => {
+
+    for (const attr of oldScript.attributes) {
       newScript.setAttribute(attr.name, attr.value);
-    });
+    }
+
     newScript.textContent = oldScript.textContent;
     oldScript.replaceWith(newScript);
   });
