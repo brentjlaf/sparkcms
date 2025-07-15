@@ -12,14 +12,18 @@ $mainMenu = $menus[0]['items'] ?? [];
 $footerMenu = $menus[1]['items'] ?? [];
 $social = $settings['social'] ?? [];
 
-function renderMenu($items){
+function renderMenu($items, $isDropdown = false){
     foreach ($items as $it) {
-        echo '<li>';
-        echo '<a href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
-        if (!empty($it['children'])) {
-            echo '<ul>';
-            renderMenu($it['children']);
+        $hasChildren = !empty($it['children']);
+        if ($hasChildren) {
+            echo '<li class="nav-item dropdown">';
+            echo '<a class="nav-link dropdown-toggle" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').' role="button" data-bs-toggle="dropdown" aria-expanded="false">'.htmlspecialchars($it['label']).'</a>';
+            echo '<ul class="dropdown-menu">';
+            renderMenu($it['children'], true);
             echo '</ul>';
+        } else {
+            echo '<li class="nav-item'.($isDropdown ? '' : '').'">';
+            echo '<a class="nav-link" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
         }
         echo '</li>';
     }
@@ -27,8 +31,8 @@ function renderMenu($items){
 
 function renderFooterMenu($items){
     foreach ($items as $it) {
-        echo '<li>';
-        echo '<a href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
+        echo '<li class="nav-item">';
+        echo '<a class="nav-link px-2" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
         echo '</li>';
     }
 }
@@ -56,9 +60,10 @@ function renderFooterMenu($items){
 		<!-- Preload Vendor Stylesheets -->
 		<link rel="preload" as="style" crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 
-		<!-- Vendor Stylesheets -->
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-		<link nocache="nocache" rel="stylesheet" crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+                <!-- Vendor Stylesheets -->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+                <link nocache="nocache" rel="stylesheet" crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
                 <!-- Preload Stylesheet -->
                 <link rel="preload" as="style" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
@@ -74,26 +79,28 @@ function renderFooterMenu($items){
 		<div id="app" class="page-template default-page">
 
                         <!-- Header -->
-                        <header class="site-header">
-                                <div class="container header-inner">
-                                        <a href="<?php echo $scriptBase; ?>/" class="logo">
-                                                <img src="<?php echo htmlspecialchars($logo); ?>" alt="Logo">
+                        <nav class="navbar navbar-expand-lg navbar-light bg-light site-header">
+                                <div class="container">
+                                        <a class="navbar-brand" href="<?php echo $scriptBase; ?>/">
+                                                <img src="<?php echo htmlspecialchars($logo); ?>" alt="Logo" class="d-inline-block align-text-top">
                                         </a>
-                                        <nav class="main-nav" id="main-nav">
-                                                <ul>
+                                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
+                                                <span class="navbar-toggler-icon"></span>
+                                        </button>
+                                        <div class="collapse navbar-collapse" id="main-nav">
+                                                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                                                         <?php renderMenu($mainMenu); ?>
                                                 </ul>
-                                        </nav>
-                                        <form class="search-box" action="<?php echo $scriptBase; ?>/search" method="get">
-                                                <input type="text" name="q" class="search-input" placeholder="Search..." />
-                                                <button type="submit" class="search-icon" aria-label="Search">
-                                                        <i class="fa-solid fa-search"></i>
-                                                </button>
-                                        </form>
-                                        <a href="<?php echo $scriptBase; ?>/contact-us" class="cta-btn">Contact Us</a>
-                                        <button class="nav-toggle" aria-label="Toggle Menu"><i class="fa-solid fa-bars"></i></button>
+                                                <form class="d-flex me-2" action="<?php echo $scriptBase; ?>/search" method="get">
+                                                        <input class="form-control me-2" type="text" name="q" placeholder="Search..." />
+                                                        <button class="btn btn-outline-secondary" type="submit" aria-label="Search">
+                                                                <i class="fa-solid fa-search"></i>
+                                                        </button>
+                                                </form>
+                                                <a href="<?php echo $scriptBase; ?>/contact-us" class="btn btn-primary">Contact Us</a>
+                                        </div>
                                 </div>
-                        </header>
+                        </nav>
 
                         <!-- Main -->
                         <main id="main-area">
@@ -101,15 +108,19 @@ function renderFooterMenu($items){
                         </main>
 
                         <!-- Footer -->
-                        <footer id="footer-area" class="site-footer">
-                                <div class="container footer-main">
-                                        <a href="<?php echo $scriptBase; ?>/" class="logo"><img src="<?php echo htmlspecialchars($logo); ?>" alt="Logo"></a>
-                                        <nav class="footer-menu">
-                                                <ul>
-                                                        <?php renderFooterMenu($footerMenu); ?>
-                                                </ul>
-                                        </nav>
-                                        <div class="footer-social">
+                        <footer id="footer-area" class="site-footer bg-dark text-light mt-auto">
+                                <div class="container py-4">
+                                        <div class="row align-items-center">
+                                                <div class="col-md-4 mb-3 mb-md-0">
+                                                        <a href="<?php echo $scriptBase; ?>/" class="navbar-brand"><img src="<?php echo htmlspecialchars($logo); ?>" alt="Logo"></a>
+                                                </div>
+                                                <div class="col-md-4 mb-3 mb-md-0">
+                                                        <ul class="nav justify-content-center">
+                                                                <?php renderFooterMenu($footerMenu); ?>
+                                                        </ul>
+                                                </div>
+                                                <div class="col-md-4 text-md-end">
+                                                        <div class="footer-social">
                                                 <?php if (!empty($social['facebook'])): ?>
                                                 <a href="<?php echo htmlspecialchars($social['facebook']); ?>" aria-label="Facebook" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
                                                 <?php endif; ?>
@@ -119,9 +130,11 @@ function renderFooterMenu($items){
                                                 <?php if (!empty($social['instagram'])): ?>
                                                 <a href="<?php echo htmlspecialchars($social['instagram']); ?>" aria-label="Instagram" target="_blank"><i class="fa-brands fa-instagram"></i></a>
                                                 <?php endif; ?>
+                                                        </div>
+                                                </div>
                                         </div>
+                                        <div class="text-center mt-3 footer-copy">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?></div>
                                 </div>
-                                <div class="footer-copy">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?></div>
                         </footer>
 
 			<!-- Back to Top Button -->
@@ -142,6 +155,7 @@ function renderFooterMenu($items){
                 <script>window.cmsBase = <?php echo json_encode($scriptBase); ?>;</script>
                 <script src="<?php echo $themeBase; ?>/js/global.js?v=mw3.2"></script>
                 <script src="<?php echo $themeBase; ?>/js/script.js?v=mw3.2"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 		
 		
