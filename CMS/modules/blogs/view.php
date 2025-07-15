@@ -126,14 +126,6 @@
                 <div class="form-group">
                     <label for="postContent">Content *</label>
                     <div class="editor-container">
-                        <div class="editor-toolbar">
-                            <button type="button" class="editor-btn" data-command="bold">B</button>
-                            <button type="button" class="editor-btn" data-command="italic">I</button>
-                            <button type="button" class="editor-btn" data-command="underline">U</button>
-                            <button type="button" class="editor-btn" data-command="insertOrderedList">OL</button>
-                            <button type="button" class="editor-btn" data-command="insertUnorderedList">UL</button>
-                            <button type="button" class="editor-btn" data-command="createLink">Link</button>
-                        </div>
                         <div id="postContent" class="editor-content" contenteditable="true"></div>
                     </div>
                 </div>

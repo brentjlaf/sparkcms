@@ -46,6 +46,18 @@ $(document).ready(function(){
     let authors = [];
     let nextPostId = 4;
 
+    function loadTinyMCE(cb){
+        if(window.tinymce){
+            cb();
+            return;
+        }
+        const s = document.createElement('script');
+        s.src = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js';
+        s.referrerPolicy = 'origin';
+        s.onload = cb;
+        document.head.appendChild(s);
+    }
+
     // Load authors from user accounts
     function loadAuthors(){
         $.getJSON('modules/users/list_users.php', function(data){
@@ -63,6 +75,16 @@ $(document).ready(function(){
     loadAuthors();
     populateFilters();
     renderPosts();
+
+    loadTinyMCE(function(){
+        tinymce.init({
+            selector: '#postContent',
+            inline: true,
+            menubar: false,
+            plugins: 'lists link',
+            toolbar: 'bold italic underline | bullist numlist | link'
+        });
+    });
 
     $('#newPostBtn').click(function(){
         openPostModal();
@@ -115,19 +137,7 @@ $(document).ready(function(){
             $('#postSlug').val(slug);
         }
     });
-    $('.editor-btn').click(function(){
-        const command = $(this).data('command');
-        if(command === 'createLink'){
-            promptModal('Enter URL:').then(url => {
-                if(url){
-                    document.execCommand(command,false,url);
-                }
-            });
-        } else {
-            document.execCommand(command,false,null);
-        }
-        $('#postContent').focus();
-    });
+
 
     function updateStats(){
         const total = posts.length;
@@ -217,7 +227,11 @@ $(document).ready(function(){
             $('#postTitle').val(post.title);
             $('#postSlug').val(post.slug);
             $('#postExcerpt').val(post.excerpt);
-            $('#postContent').html(post.content);
+            if(window.tinymce){
+                tinymce.get('postContent').setContent(post.content);
+            }else{
+                $('#postContent').html(post.content);
+            }
             $('#postCategory').val(post.category);
             $('#postAuthor').val(post.author);
             $('#postStatus').val(post.status);
@@ -231,7 +245,11 @@ $(document).ready(function(){
             $('#modalTitle').text('New Post');
             $('#postForm')[0].reset();
             $('#postId').val('');
-            $('#postContent').html('');
+            if(window.tinymce){
+                tinymce.get('postContent').setContent('');
+            }else{
+                $('#postContent').html('');
+            }
             $('#publishDate').val('');
         }
         openModal('postModal');
@@ -275,7 +293,7 @@ $(document).ready(function(){
             title: formData.get('title'),
             slug: formData.get('slug'),
             excerpt: formData.get('excerpt'),
-            content: $('#postContent').html(),
+            content: window.tinymce ? tinymce.get('postContent').getContent() : $('#postContent').html(),
             category: formData.get('category'),
             author: formData.get('author'),
             status: formData.get('status'),
@@ -359,7 +377,7 @@ $(document).ready(function(){
     });
 
     let autoSaveTimer;
-    $('#postTitle, #postContent, #postExcerpt').on('input', function(){
+    $('#postTitle, #postExcerpt').on('input', function(){
         clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(function(){
             console.log('Auto-saving draft...');
