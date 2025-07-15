@@ -7,6 +7,8 @@ $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
 $postsFile = __DIR__ . '/../../data/blog_posts.json';
 $posts = file_exists($postsFile) ? json_decode(file_get_contents($postsFile), true) : [];
+$mediaFile = __DIR__ . '/../../data/media.json';
+$media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
 
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 $lower = strtolower($q);
@@ -22,6 +24,15 @@ if ($lower !== '') {
         if (stripos($b['title'], $lower) !== false || stripos($b['slug'], $lower) !== false || stripos($b['excerpt'], $lower) !== false || stripos($b['content'], $lower) !== false || stripos($b['tags'], $lower) !== false) {
             $b['type'] = 'Post';
             $results[] = $b;
+        }
+    }
+    foreach ($media as $m) {
+        $tags = isset($m['tags']) && is_array($m['tags']) ? implode(',', $m['tags']) : '';
+        if (stripos($m['name'], $lower) !== false || stripos($m['file'], $lower) !== false || stripos($tags, $lower) !== false) {
+            $m['type'] = 'Media';
+            $m['title'] = $m['name'];
+            $m['slug'] = $m['file'];
+            $results[] = $m;
         }
     }
 }
@@ -42,6 +53,9 @@ if ($lower !== '') {
                             if(($r['type'] ?? '') === 'Post') {
                                 $viewUrl = '../' . urlencode($r['slug']);
                                 $status = ucfirst($r['status'] ?? 'draft');
+                            } elseif(($r['type'] ?? '') === 'Media') {
+                                $viewUrl = '../' . ltrim($r['file'], '/');
+                                $status = !empty($r['size']) ? round($r['size']/1024).' KB' : '';
                             } else {
                                 $viewUrl = '../?page=' . urlencode($r['slug']);
                                 if(isset($_SESSION['user'])) {

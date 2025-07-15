@@ -23,6 +23,8 @@ if (file_exists($menusFile)) {
 
 $blogFile = __DIR__ . '/data/blog_posts.json';
 $blogPosts = file_exists($blogFile) ? json_decode(file_get_contents($blogFile), true) : [];
+$mediaFile = __DIR__ . '/data/media.json';
+$mediaItems = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
 
 // Base paths used by theme templates
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
@@ -67,6 +69,12 @@ if ($slug === 'search') {
     foreach ($blogPosts as $b) {
         if ($q === '' || stripos($b['title'], $lower) !== false || stripos($b['slug'], $lower) !== false || stripos($b['excerpt'], $lower) !== false || stripos($b['content'], $lower) !== false || stripos($b['tags'], $lower) !== false) {
             $results[] = ['title' => $b['title'], 'slug' => $b['slug']];
+        }
+    }
+    foreach ($mediaItems as $m) {
+        $tags = isset($m['tags']) && is_array($m['tags']) ? implode(',', $m['tags']) : '';
+        if ($q === '' || stripos($m['name'], $lower) !== false || stripos($m['file'], $lower) !== false || stripos($tags, $lower) !== false) {
+            $results[] = ['title' => $m['name'], 'slug' => ltrim($m['file'], '/')];
         }
     }
     $content = '<div class="search-results"><h1>Search Results';
