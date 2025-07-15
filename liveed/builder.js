@@ -654,15 +654,125 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  if (seoCheckBtn)
-    seoCheckBtn.addEventListener('click', () => {
-      const issues = checkSeo(canvas.innerHTML);
-      if (issues.length) {
-        alert('SEO issues found:\n' + issues.join('\n'));
+  if (seoCheckBtn) {
+    const seoModal = document.getElementById('seoModal');
+    const seoIssues = document.getElementById('seoIssues');
+    const seoClose = seoModal ? seoModal.querySelector('.close') : null;
+
+    const runSeoCheck = () => {
+      if (!seoModal || !seoIssues) return;
+      let results = '';
+      $('.highlight-error').removeClass('highlight-error');
+
+      if ($('title').length === 0) {
+        results += '<li class="error">Missing <code>&lt;title&gt;</code> tag.</li>';
       } else {
-        alert('No SEO issues found.');
+        results += '<li class="pass">Title tag is present.</li>';
+        if ($('title').length > 1) {
+          results += '<li class="error">Duplicate <code>&lt;title&gt;</code> tags found.</li>';
+        }
       }
+
+      if ($('meta[name="description"]').length === 0) {
+        results += '<li class="error">Missing meta description.</li>';
+      } else {
+        results += '<li class="pass">Meta description is present.</li>';
+        if ($('meta[name="description"]').length > 1) {
+          results += '<li class="error">Duplicate meta description tags found.</li>';
+        }
+      }
+
+      if ($('h1').length === 0) {
+        results += '<li class="error">Missing <code>&lt;h1&gt;</code> tag.</li>';
+      } else {
+        results += '<li class="pass">H1 tag is present.</li>';
+      }
+
+      if ($('h2').length === 0) {
+        results += '<li class="error">No <code>&lt;h2&gt;</code> tag found. Consider adding subheadings for better structure.</li>';
+      } else {
+        results += '<li class="pass">H2 tags are present.</li>';
+      }
+
+      const imagesWithoutAlt = $('img:not([alt])');
+      if (imagesWithoutAlt.length > 0) {
+        results += `<li class="error">${imagesWithoutAlt.length} image(s) missing alt attribute.</li>`;
+        imagesWithoutAlt.addClass('highlight-error');
+      } else {
+        results += '<li class="pass">All images have alt attributes.</li>';
+      }
+
+      const imagesWithoutLazy = $('img:not([loading])');
+      if (imagesWithoutLazy.length > 0) {
+        results += `<li class="error">${imagesWithoutLazy.length} image(s) missing lazy loading attribute (consider using loading=\"lazy\").</li>`;
+        imagesWithoutLazy.addClass('highlight-error');
+      } else {
+        results += '<li class="pass">All images have lazy loading attribute.</li>';
+      }
+
+      if ($('link[rel="canonical"]').length === 0) {
+        results += '<li class="error">Missing canonical tag.</li>';
+      } else {
+        results += '<li class="pass">Canonical tag is present.</li>';
+      }
+
+      if ($('link[rel="sitemap"]').length === 0) {
+        results += '<li class="error">Missing sitemap link.</li>';
+      } else {
+        results += '<li class="pass">Sitemap link is present.</li>';
+      }
+
+      if ($('meta[name="viewport"]').length === 0) {
+        results += '<li class="error">Missing viewport meta tag.</li>';
+      } else {
+        results += '<li class="pass">Viewport meta tag is present.</li>';
+      }
+
+      if ($('html').attr('lang') === undefined) {
+        results += '<li class="error">Missing language attribute on <code>&lt;html&gt;</code> tag.</li>';
+      } else {
+        results += '<li class="pass">Language attribute is present on <code>&lt;html&gt;</code> tag.</li>';
+      }
+
+      if ($('meta[name="robots"]').length === 0) {
+        results += '<li class="error">Missing meta robots tag.</li>';
+      } else {
+        results += '<li class="pass">Meta robots tag is present.</li>';
+      }
+
+      if (
+        $('meta[property="og:title"]').length === 0 ||
+        $('meta[property="og:description"]').length === 0 ||
+        $('meta[property="og:image"]').length === 0
+      ) {
+        results += '<li class="error">One or more Open Graph tags (og:title, og:description, og:image) are missing.</li>';
+      } else {
+        results += '<li class="pass">Open Graph tags are present.</li>';
+      }
+
+      if ($('meta[name="twitter:card"]').length === 0) {
+        results += '<li class="error">Missing Twitter Card meta tag (twitter:card).</li>';
+      } else {
+        results += '<li class="pass">Twitter Card meta tag is present.</li>';
+      }
+
+      if ($('script[type="application/ld+json"]').length === 0) {
+        results += '<li class="error">Missing structured data (JSON-LD).</li>';
+      } else {
+        results += '<li class="pass">Structured data (JSON-LD) is present.</li>';
+      }
+
+      seoIssues.innerHTML = results;
+      seoModal.style.display = 'block';
+    };
+
+    seoCheckBtn.addEventListener('click', runSeoCheck);
+
+    if (seoClose) seoClose.addEventListener('click', () => (seoModal.style.display = 'none'));
+    window.addEventListener('click', (e) => {
+      if (e.target === seoModal) seoModal.style.display = 'none';
     });
+  }
   if (a11yCheckBtn)
     a11yCheckBtn.addEventListener('click', () => {
       if (window.runAccessibilityCheck) {
