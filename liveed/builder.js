@@ -5,7 +5,7 @@ import { ensureBlockState, getSettings, setSetting } from './modules/state.js';
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
-import { initAccessibility, checkAccessibility } from './modules/accessibility.js';
+import { initAccessibility } from './modules/accessibility.js';
 import { executeScripts } from "./modules/executeScripts.js";
 
 let allBlockFiles = [];
@@ -665,11 +665,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   if (a11yCheckBtn)
     a11yCheckBtn.addEventListener('click', () => {
-      const { count, messages } = checkAccessibility();
-      if (count) {
-        alert('Accessibility issues:\n' + messages.join('\n'));
-      } else {
-        alert('No accessibility issues found.');
+      if (window.runAccessibilityCheck) {
+        window.runAccessibilityCheck();
       }
     });
   if (historyBtn && historyPanel) {
