@@ -5,7 +5,7 @@ import { ensureBlockState, getSettings, setSetting } from './modules/state.js';
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
-import { initAccessibility } from './modules/accessibility.js';
+import { initAccessibility, checkAccessibility } from './modules/accessibility.js';
 import { executeScripts } from "./modules/executeScripts.js";
 
 let allBlockFiles = [];
@@ -170,6 +170,19 @@ function checkLinks(html) {
   doc.querySelectorAll('img[src]').forEach((el) => check(el.getAttribute('src'), 'Image'));
 
   return Promise.all(checks).then(() => warnings);
+}
+
+function checkSeo(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const issues = [];
+  if (!doc.querySelector('h1')) {
+    issues.push('Missing H1 heading');
+  }
+  const wordCount = doc.body.textContent.trim().split(/\s+/).length;
+  if (wordCount < 300) {
+    issues.push('Low word count');
+  }
+  return issues;
 }
 function savePage() {
   const canvas = document.getElementById('canvas');
@@ -397,6 +410,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const undoBtn = palette.querySelector('.undo-btn');
   const redoBtn = palette.querySelector('.redo-btn');
   const historyBtn = palette.querySelector('.page-history-btn');
+  const linkCheckBtn = palette.querySelector('.link-check-btn');
+  const seoCheckBtn = palette.querySelector('.seo-check-btn');
+  const a11yCheckBtn = palette.querySelector('.a11y-check-btn');
   const saveBtn = palette.querySelector('.manual-save-btn');
   const historyPanel = document.getElementById('historyPanel');
   if (historyPanel) {
@@ -409,6 +425,35 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.addEventListener('click', () => {
       clearTimeout(saveTimer);
       savePage();
+    });
+  if (linkCheckBtn)
+    linkCheckBtn.addEventListener('click', () => {
+      const html = canvas.innerHTML;
+      checkLinks(html).then((warnings) => {
+        if (warnings.length) {
+          alert('Link issues found:\n' + warnings.join('\n'));
+        } else {
+          alert('No link issues found.');
+        }
+      });
+    });
+  if (seoCheckBtn)
+    seoCheckBtn.addEventListener('click', () => {
+      const issues = checkSeo(canvas.innerHTML);
+      if (issues.length) {
+        alert('SEO issues found:\n' + issues.join('\n'));
+      } else {
+        alert('No SEO issues found.');
+      }
+    });
+  if (a11yCheckBtn)
+    a11yCheckBtn.addEventListener('click', () => {
+      const { count, messages } = checkAccessibility();
+      if (count) {
+        alert('Accessibility issues:\n' + messages.join('\n'));
+      } else {
+        alert('No accessibility issues found.');
+      }
     });
   if (historyBtn && historyPanel) {
     const closeBtn = historyPanel.querySelector('.close-btn');
