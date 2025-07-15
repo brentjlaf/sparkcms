@@ -1,0 +1,54 @@
+/* accessibility checker styles */
+.highlight-issue {
+  border: 2px solid #cc0000 !important;
+}
+.error-message {
+  color: #fff !important;
+  font-size: 14px;
+  margin-top: 0.2em;
+  background: #cc000090 !important;
+  border: 1px solid #cc0000 !important;
+  padding: 10px;
+  position: relative;
+  margin: 0 0 10px;
+  display: block;
+}
+.accessibility-checker {
+  position: fixed;
+  top: 300px;
+  right: -150px;
+  border: 1px solid #4044c6;
+  background: #4044c6;
+  color: #fff;
+  z-index: 999;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  display: none;
+}
+.accessibility-checker:hover {
+  border: 1px solid #2f2063;
+  background: #2f2063;
+}
+.accessibility-bubble {
+  position: absolute;
+  top: -0px;
+  left: -0px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .60vw;
+  color: white;
+  font-weight: bold;
+}
+.accessibility-bubble.green { background-color: green; }
+.accessibility-bubble.red { background-color: red; }
+h1.highlight-htag, h2.highlight-htag, h3.highlight-htag, h4.highlight-htag, h5.highlight-htag, h6.highlight-htag { position: relative; }
+.error-message.highlight-htag { padding-left: 50px; }
+.error-message.highlight-htag .accessibility-bubble.green { background: #cc0000 !important; }
