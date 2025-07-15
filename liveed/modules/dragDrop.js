@@ -2,6 +2,24 @@
 import { ensureBlockState } from './state.js';
 import { executeScripts } from "./executeScripts.js";
 
+const templateCache = new Map();
+
+function loadTemplate(file) {
+  if (templateCache.has(file)) {
+    return templateCache.get(file);
+  }
+  const p = fetch(
+    basePath + '/liveed/load-block.php?file=' + encodeURIComponent(file)
+  )
+    .then((r) => r.text())
+    .then((html) => {
+      templateCache.set(file, Promise.resolve(html));
+      return html;
+    });
+  templateCache.set(file, p);
+  return p;
+}
+
 let palette;
 let canvas;
 let basePath = '';
@@ -184,9 +202,7 @@ function handleDrop(e) {
   if (fromPalette && dragSource) {
     const file = dragSource.dataset.file;
     if (file) {
-      fetch(basePath + '/liveed/load-block.php?file=' + encodeURIComponent(file))
-        .then((r) => r.text())
-        .then((html) => {
+      loadTemplate(file).then((html) => {
           const wrapper = document.createElement('div');
           wrapper.className = 'block-wrapper';
           wrapper.dataset.template = file;
