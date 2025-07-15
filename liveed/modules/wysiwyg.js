@@ -2,6 +2,18 @@
 export function initWysiwyg(canvas, loggedIn) {
   if (!loggedIn) return;
 
+  function throttleRAF(fn) {
+    let scheduled = false;
+    return (...args) => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        fn(...args);
+      });
+    };
+  }
+
   const rteToolbar = document.createElement('div');
   rteToolbar.className = 'wysiwyg-toolbar';
   rteToolbar.style.display = 'none';
@@ -47,20 +59,22 @@ export function initWysiwyg(canvas, loggedIn) {
     el.setAttribute('contenteditable', 'true');
   });
 
+  const throttledPosition = throttleRAF(positionToolbar);
+
   canvas.addEventListener('focusin', (e) => {
     const el = e.target.closest('[contenteditable]');
     if (el) {
       currentEditable = el;
-      positionToolbar();
+      throttledPosition();
     }
   });
 
   canvas.addEventListener('mouseup', () => {
-    if (currentEditable) positionToolbar();
+    if (currentEditable) throttledPosition();
   });
 
   canvas.addEventListener('keyup', () => {
-    if (currentEditable) positionToolbar();
+    if (currentEditable) throttledPosition();
   });
 
   document.addEventListener('click', (e) => {
