@@ -249,6 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const settingsPanel = document.getElementById('settingsPanel');
   const previewContainer = document.querySelector('.canvas-container');
   const previewButtons = document.querySelectorAll('.preview-toolbar button');
+  const previewModal = document.getElementById('previewModal');
+  const previewFrame = document.getElementById('previewFrame');
+  const previewClose = document.getElementById('previewClose');
   const gridToggle = document.getElementById('gridToggle');
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
@@ -366,8 +369,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function showIframePreview(size) {
+    if (!previewModal || !previewFrame) return;
+    previewModal.classList.add('active');
+    previewModal.classList.remove('desktop', 'tablet', 'phone');
+    previewModal.classList.add(size);
+    previewFrame.src = window.builderBase + '/liveed/preview.php?id=' + window.builderPageId;
+  }
+
+  if (previewClose) {
+    previewClose.addEventListener('click', () => {
+      previewModal.classList.remove('active', 'desktop', 'tablet', 'phone');
+      if (previewFrame) previewFrame.src = '';
+    });
+  }
+
   previewButtons.forEach((btn) => {
-    btn.addEventListener('click', () => updatePreview(btn.dataset.size));
+    btn.addEventListener('click', () => {
+      if (btn.dataset.size === 'tablet' || btn.dataset.size === 'phone') {
+        showIframePreview(btn.dataset.size);
+      } else {
+        updatePreview(btn.dataset.size);
+      }
+    });
   });
 
   updatePreview('desktop');

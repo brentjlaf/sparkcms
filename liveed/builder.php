@@ -95,10 +95,16 @@ $mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
     . '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">'
     . '<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>';
 
+$previewModal = '<div id="previewModal" class="modal">'
+    . '<div class="modal-content preview-frame">'
+    . '<iframe id="previewFrame" src="" loading="lazy"></iframe>'
+    . '<div class="modal-footer"><button type="button" class="btn btn-secondary" id="previewClose">Close</button></div>'
+    . '</div></div>';
+
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
     . '<div id="historyPanel" class="history-panel"><div class="history-header"><span class="title">Page History</span><button type="button" class="close-btn">&times;</button></div><div class="history-content"></div></div>'
-    . $mediaPickerHtml . '</div>'
-    . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';</script>'
+    . $mediaPickerHtml . $previewModal . '</div>'
+    . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';window.builderPageSlug = ' . json_encode($page['slug']) . ';</script>'
     . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
 
 $themeHtml = preg_replace('/<body([^>]*)>/', '<body$1>' . $builderStart, $themeHtml, 1);
