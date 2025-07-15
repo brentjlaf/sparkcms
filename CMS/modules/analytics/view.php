@@ -1,10 +1,11 @@
 <?php
 // File: view.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
+$pages = read_json_file($pagesFile);
 $totalViews = 0;
 foreach ($pages as $p) {
     $totalViews += $p['views'] ?? 0;

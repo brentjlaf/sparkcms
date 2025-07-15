@@ -1,11 +1,12 @@
 <?php
 // File: builder.php
 require_once __DIR__ . '/../CMS/includes/auth.php';
+require_once __DIR__ . '/../CMS/includes/data.php';
 require_login();
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $pagesFile = __DIR__ . '/../CMS/data/pages.json';
-$pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
+$pages = read_json_file($pagesFile);
 $page = null;
 foreach ($pages as $p) {
     if ((int)$p['id'] === $id) { $page = $p; break; }
@@ -24,9 +25,9 @@ $themeBase = $scriptBase . '/theme';
 
 // Load settings and menus for the theme template
 $settingsFile = __DIR__ . '/../CMS/data/settings.json';
-$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+$settings = read_json_file($settingsFile);
 $menusFile = __DIR__ . '/../CMS/data/menus.json';
-$menus = file_exists($menusFile) ? json_decode(file_get_contents($menusFile), true) : [];
+$menus = read_json_file($menusFile);
 
 // Render the theme page template with a canvas placeholder
 $templateFile = realpath(__DIR__ . '/../theme/templates/pages/page.php');

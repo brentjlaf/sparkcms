@@ -1,11 +1,12 @@
 <?php
 // File: list_media.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $mediaFile = __DIR__ . '/../../data/media.json';
-$media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
+$media = read_json_file($mediaFile);
 $query = strtolower(sanitize_text($_GET['q'] ?? ''));
 $folder = sanitize_text($_GET['folder'] ?? '');
 

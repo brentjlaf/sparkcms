@@ -1,10 +1,12 @@
 <!-- File: advanced.blog-post-list.php -->
 <!-- Template: advanced.blog-post-list -->
 <?php
+$__data = __DIR__ . '/../../../CMS/includes/data.php';
+if (file_exists($__data)) require_once $__data;
 $postsFile = __DIR__ . '/../../../CMS/data/blog_posts.json';
 $blogCategories = [];
 if (file_exists($postsFile)) {
-    $posts = json_decode(file_get_contents($postsFile), true) ?: [];
+    $posts = read_json_file($postsFile);
     foreach ($posts as $p) {
         if (!empty($p['category']) && !in_array($p['category'], $blogCategories)) {
             $blogCategories[] = $p['category'];

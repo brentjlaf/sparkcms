@@ -1,11 +1,12 @@
 <?php
 // File: save_settings.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $settingsFile = __DIR__ . '/../../data/settings.json';
-$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+$settings = read_json_file($settingsFile);
 
 $settings['site_name'] = sanitize_text($_POST['site_name'] ?? ($settings['site_name'] ?? ''));
 $settings['tagline'] = sanitize_text($_POST['tagline'] ?? ($settings['tagline'] ?? ''));

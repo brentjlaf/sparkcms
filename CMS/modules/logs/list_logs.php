@@ -1,17 +1,18 @@
 <?php
 // File: list_logs.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
+$pages = read_json_file($pagesFile);
 $pageLookup = [];
 foreach ($pages as $p) {
     $pageLookup[$p['id']] = $p['title'];
 }
 
 $historyFile = __DIR__ . '/../../data/page_history.json';
-$historyData = file_exists($historyFile) ? json_decode(file_get_contents($historyFile), true) : [];
+$historyData = read_json_file($historyFile);
 
 $logs = [];
 foreach ($historyData as $pid => $entries) {
