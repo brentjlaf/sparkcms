@@ -10,7 +10,14 @@ if (substr($scriptBase, -4) === '/CMS') {
     $scriptBase = substr($scriptBase, 0, -4);
 }
 $scriptBase = rtrim($scriptBase, '/');
-$page = ['title' => 'Page Not Found', 'content' => '<h1>Page Not Found</h1>'];
+$page = [
+    'title' => 'Page Not Found',
+    'content' =>
+        '<h1>Page Not Found</h1>' .
+        '<p>The page you are looking for might have been moved or deleted.</p>' .
+        '<p><a href="' . htmlspecialchars($scriptBase) . '/">Return to homepage</a>' .
+        ' or use the site search to find what you are looking for.</p>'
+];
 $themeBase = $scriptBase . '/theme';
 $templateFile = __DIR__ . '/theme/templates/pages/errors/404.php';
 ob_start();

@@ -106,7 +106,14 @@ foreach ($pages as $i => $p) {
 
 if (!$page) {
     http_response_code(404);
-    $page = ['title' => 'Page Not Found', 'content' => '<h1>Page Not Found</h1>'];
+    $page = [
+        'title' => 'Page Not Found',
+        'content' =>
+            '<h1>Page Not Found</h1>' .
+            '<p>The page you are looking for might have been moved or deleted.</p>' .
+            '<p><a href="' . htmlspecialchars($scriptBase) . '/">Return to homepage</a>' .
+            ' or use the site search to find what you are looking for.</p>'
+    ];
     $templateFile = realpath(__DIR__ . '/../theme/templates/pages/errors/404.php');
     if ($templateFile && file_exists($templateFile)) {
         render_theme_page($templateFile, $page, $scriptBase);
@@ -118,7 +125,14 @@ if (!$page) {
 
 if (empty($page['published']) && !$logged_in) {
     http_response_code(404);
-    $page = ['title' => 'Page Not Found', 'content' => '<h1>Page Not Found</h1>'];
+    $page = [
+        'title' => 'Page Not Found',
+        'content' =>
+            '<h1>Page Not Found</h1>' .
+            '<p>The page you are looking for might have been moved or deleted.</p>' .
+            '<p><a href="' . htmlspecialchars($scriptBase) . '/">Return to homepage</a>' .
+            ' or use the site search to find what you are looking for.</p>'
+    ];
     $templateFile = realpath(__DIR__ . '/../theme/templates/pages/errors/404.php');
     if ($templateFile && file_exists($templateFile)) {
         render_theme_page($templateFile, $page, $scriptBase);
@@ -130,7 +144,15 @@ if (empty($page['published']) && !$logged_in) {
 
 if (($page['access'] ?? 'public') !== 'public' && !$logged_in) {
     http_response_code(403);
-    $page = ['title' => 'Restricted', 'content' => '<h1>Restricted</h1>'];
+    $page = [
+        'title' => 'Restricted',
+        'content' =>
+            '<h1>Restricted</h1>' .
+            '<p>You do not have permission to view this page.</p>' .
+            '<p><a href="' . htmlspecialchars($scriptBase) . '/">Return to homepage</a>' .
+            ' or <a href="' . htmlspecialchars($scriptBase) . '/CMS/login.php">log in</a> ' .
+            'with an account that has access.</p>'
+    ];
     $templateFile = realpath(__DIR__ . '/../theme/templates/pages/errors/403.php');
     if ($templateFile && file_exists($templateFile)) {
         render_theme_page($templateFile, $page, $scriptBase);
