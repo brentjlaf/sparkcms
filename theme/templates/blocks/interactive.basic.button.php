@@ -16,9 +16,9 @@
     <dl class="sparkDialog _tpl-box">
         <dt>Alignment</dt>
         <dd class="align-options">
-            <label><input type="radio" name="custom_align" value=" _text-left" checked> Left</label>
-            <label><input type="radio" name="custom_align" value=" _text-center"> Center</label>
-            <label><input type="radio" name="custom_align" value=" _text-right"> Right</label>
+            <label><input type="radio" name="custom_align" value=" text-start" checked> Left</label>
+            <label><input type="radio" name="custom_align" value=" text-center"> Center</label>
+            <label><input type="radio" name="custom_align" value=" text-end"> Right</label>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">

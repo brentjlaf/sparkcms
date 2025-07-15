@@ -21,10 +21,10 @@
         <dt>Gap Between the Side Area and the Main Area:</dt>
         <dd>
             <select name="custom_gap">
-                <option value="_gutter-10">Small</option>
-                <option value="_gutter-30" selected>Medium (default)</option>
-                <option value="_gutter-60">Large</option>
-                <option value="_gutter-80">Extra Large</option>
+                <option value=" g-1">Small</option>
+                <option value=" g-3" selected>Medium (default)</option>
+                <option value=" g-5">Large</option>
+                <option value=" g-5">Extra Large</option>
             </select>
         </dd>
     </dl>
@@ -41,14 +41,14 @@
         <dt>Side Area Background Color:</dt>
         <dd class="color-options">
             <label><input type="radio" name="custom_side_bg" value="" checked> None</label>
-            <label><input type="radio" name="custom_side_bg" value="_bg-primary"> Primary</label>
-            <label><input type="radio" name="custom_side_bg" value="_bg-secondary"> Secondary</label>
-            <label><input type="radio" name="custom_side_bg" value="_bg-third"> Third</label>
-            <label><input type="radio" name="custom_side_bg" value="_bg-fourth"> Fourth</label>
-            <label><input type="radio" name="custom_side_bg" value="_bg-white"> White</label>
-            <label><input type="radio" name="custom_side_bg" value="_bg-light"> Light</label>
-            <label><input type="radio" name="custom_side_bg" value="_bg-gray"> Gray</label>
-            <label><input type="radio" name="custom_side_bg" value="_bg-dark"> Dark</label>
+            <label><input type="radio" name="custom_side_bg" value=" bg-primary"> Primary</label>
+            <label><input type="radio" name="custom_side_bg" value=" bg-secondary"> Secondary</label>
+            <label><input type="radio" name="custom_side_bg" value=" bg-success"> Third</label>
+            <label><input type="radio" name="custom_side_bg" value=" bg-info"> Fourth</label>
+            <label><input type="radio" name="custom_side_bg" value=" bg-white"> White</label>
+            <label><input type="radio" name="custom_side_bg" value=" bg-light"> Light</label>
+            <label><input type="radio" name="custom_side_bg" value=" bg-secondary"> Gray</label>
+            <label><input type="radio" name="custom_side_bg" value=" bg-dark"> Dark</label>
         </dd>
     </dl>
 </templateSetting>
