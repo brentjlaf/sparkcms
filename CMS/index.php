@@ -21,6 +21,9 @@ if (file_exists($menusFile)) {
     $menus = json_decode(file_get_contents($menusFile), true) ?: [];
 }
 
+$blogFile = __DIR__ . '/data/blog_posts.json';
+$blogPosts = file_exists($blogFile) ? json_decode(file_get_contents($blogFile), true) : [];
+
 // Base paths used by theme templates
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {
@@ -59,6 +62,11 @@ if ($slug === 'search') {
         }
         if ($q === '' || stripos($p['title'], $lower) !== false || stripos($p['slug'], $lower) !== false || stripos($p['content'], $lower) !== false) {
             $results[] = $p;
+        }
+    }
+    foreach ($blogPosts as $b) {
+        if ($q === '' || stripos($b['title'], $lower) !== false || stripos($b['slug'], $lower) !== false || stripos($b['excerpt'], $lower) !== false || stripos($b['content'], $lower) !== false || stripos($b['tags'], $lower) !== false) {
+            $results[] = ['title' => $b['title'], 'slug' => $b['slug']];
         }
     }
     $content = '<div class="search-results"><h1>Search Results';
