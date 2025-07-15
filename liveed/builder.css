@@ -114,8 +114,13 @@
 .block-palette.collapsed .builder-header .title,
 .block-palette.collapsed .manual-save-btn,
 .block-palette.collapsed #saveStatus,
-.block-palette.collapsed #a11yStatus {
+.block-palette.collapsed #a11yStatus,
+.block-palette.collapsed .footer {
   display: none;
+}
+
+.block-palette.collapsed .header-actions {
+  flex-direction: column;
 }
 .history-toolbar {
   display: flex;

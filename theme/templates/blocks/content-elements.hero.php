@@ -1,5 +1,5 @@
-<!-- File: content-elements.basic.hero.php -->
-<!-- Template: content-elements.basic.hero -->
+<!-- File: content-elements.hero.php -->
+<!-- Template: content-elements.hero -->
 <templateSetting caption="Hero Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Background Image</dt>
