@@ -45,6 +45,7 @@ function render_theme_page($templateFile, $page, $scriptBase) {
         $html = preg_replace('#<div class="block-controls"[^>]*>.*?</div>#si', '', $html);
         $html = str_replace('draggable="true"', '', $html);
         $html = preg_replace('#\sdata-ts="[^"]*"#i', '', $html);
+        $html = preg_replace('#\sdata-(?:blockid|template|original|active|custom_[A-Za-z0-9_-]+)="[^"]*"#i', '', $html);
     }
     echo $html;
 }
