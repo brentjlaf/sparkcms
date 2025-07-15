@@ -1,6 +1,7 @@
 <?php
 // File: upload_media.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $allowed = [
@@ -10,8 +11,8 @@ $allowed = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $folder = trim($_POST['folder'] ?? '');
-    $tags = array_filter(array_map('trim', explode(',', $_POST['tags'] ?? '')));
+    $folder = sanitize_text($_POST['folder'] ?? '');
+    $tags = sanitize_tags(explode(',', $_POST['tags'] ?? ''));
     $root = dirname(__DIR__, 2);
     $baseDir = $root . '/uploads';
     if ($folder) {

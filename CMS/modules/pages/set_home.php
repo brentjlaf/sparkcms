@@ -1,9 +1,10 @@
 <?php
 // File: set_home.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
-$slug = trim($_POST['slug'] ?? '');
+$slug = sanitize_text($_POST['slug'] ?? '');
 if ($slug === '') {
     http_response_code(400);
     echo 'Missing slug';

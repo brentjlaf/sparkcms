@@ -1,6 +1,7 @@
 <?php
 // File: login.php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/sanitize.php';
 
 $settingsFile = __DIR__ . '/data/settings.json';
 $settings = [];
@@ -10,7 +11,7 @@ if (file_exists($settingsFile)) {
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-$username = trim($_POST['username'] ?? '');
+$username = sanitize_text($_POST['username'] ?? '');
 $password = $_POST['password'] ?? '';
 $user = find_user($username);
     if ($user && password_verify($password, $user['password'])) {

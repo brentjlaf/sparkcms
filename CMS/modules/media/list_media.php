@@ -1,12 +1,13 @@
 <?php
 // File: list_media.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $mediaFile = __DIR__ . '/../../data/media.json';
 $media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
-$query = strtolower($_GET['q'] ?? '');
-$folder = $_GET['folder'] ?? '';
+$query = strtolower(sanitize_text($_GET['q'] ?? ''));
+$folder = sanitize_text($_GET['folder'] ?? '');
 
 usort($media, function($a,$b){
     return ($a['order'] ?? 0) <=> ($b['order'] ?? 0);

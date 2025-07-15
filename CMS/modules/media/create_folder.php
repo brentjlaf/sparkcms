@@ -1,9 +1,10 @@
 <?php
 // File: create_folder.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
-$folder = trim($_POST['folder'] ?? '');
+$folder = sanitize_text($_POST['folder'] ?? '');
 if ($folder === '') {
     echo json_encode(['status' => 'error', 'message' => 'Folder name required']);
     exit;

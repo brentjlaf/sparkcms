@@ -1,6 +1,7 @@
 <?php
 // File: save_menu.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $menusFile = __DIR__ . '/../../data/menus.json';
@@ -10,7 +11,7 @@ $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
 
 $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
-$name = trim($_POST['name'] ?? '');
+$name = sanitize_text($_POST['name'] ?? '');
 $itemsData = isset($_POST['items']) ? json_decode($_POST['items'], true) : [];
 
 $items = process_items($itemsData, $pages);
@@ -19,8 +20,8 @@ function process_items($itemsData, $pages){
     $items = [];
     if(!is_array($itemsData)) return $items;
     foreach ($itemsData as $it) {
-        $label = trim($it['label'] ?? '');
-        $type = $it['type'] ?? 'custom';
+        $label = sanitize_text($it['label'] ?? '');
+        $type = sanitize_text($it['type'] ?? 'custom');
         $newTab = !empty($it['new_tab']);
         if ($type === 'page') {
             $pageId = (int)($it['page'] ?? 0);
@@ -37,7 +38,7 @@ function process_items($itemsData, $pages){
                 'new_tab' => $newTab
             ];
         } else {
-            $link = trim($it['link'] ?? '');
+            $link = sanitize_url($it['link'] ?? '');
             if ($link === '') continue;
             $item = [
                 'label' => $label !== '' ? $label : $link,

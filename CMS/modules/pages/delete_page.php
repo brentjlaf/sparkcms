@@ -1,13 +1,14 @@
 <?php
 // File: delete_page.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 $pagesFile = __DIR__ . '/../../data/pages.json';
 if (!file_exists($pagesFile)) {
     exit('No pages');
 }
 $pages = json_decode(file_get_contents($pagesFile), true) ?: [];
-$id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+$id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT) ?: 0;
 $deletedPage = null;
 foreach ($pages as $p) {
     if ($p['id'] == $id) { $deletedPage = $p; break; }

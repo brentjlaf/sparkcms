@@ -1,10 +1,11 @@
 <?php
 // File: rename_folder.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
-$old = trim($_POST['old'] ?? '');
-$new = trim($_POST['new'] ?? '');
+$old = sanitize_text($_POST['old'] ?? '');
+$new = sanitize_text($_POST['new'] ?? '');
 if ($old === '' || $new === '') {
     echo json_encode(['status' => 'error', 'message' => 'Invalid folder']);
     exit;

@@ -2,6 +2,7 @@
 // File: index.php
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/data.php';
+require_once __DIR__ . '/includes/sanitize.php';
 // Load pages from JSON
 $pagesFile = __DIR__ . '/data/pages.json';
 $pages = get_cached_json($pagesFile);
@@ -42,13 +43,13 @@ function render_theme_page($templateFile, $page, $scriptBase) {
 }
 
 // Determine page slug
-$slug = isset($_GET['page']) ? $_GET['page'] : ($settings['homepage'] ?? 'home');
+$slug = isset($_GET['page']) ? sanitize_text($_GET['page']) : ($settings['homepage'] ?? 'home');
 
 $logged_in = is_logged_in();
 $preview_mode = isset($_GET['preview']) && $logged_in;
 
 if ($slug === 'search') {
-    $q = isset($_GET['q']) ? trim($_GET['q']) : '';
+    $q = isset($_GET['q']) ? sanitize_text($_GET['q']) : '';
     $results = [];
     $lower = strtolower($q);
     foreach ($pages as $p) {
