@@ -115,18 +115,14 @@ function renderFooterMenu($items){
         </main>
 
         <!-- Footer -->
-        <footer id="footer-area" class="site-footer bg-dark text-light mt-auto">
-            <div class="container py-5">
-                <!-- Main Footer Content -->
-                <div class="row">
-                    <!-- Brand Section -->
-                    <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+        <footer id="footer-area" class="site-footer mt-auto">
+            <div class="container">
+                <div class="footer-main">
+                    <div>
                         <a href="<?php echo $scriptBase; ?>/" class="navbar-brand d-inline-block mb-3">
                             <img src="<?php echo htmlspecialchars($logo); ?>" alt="<?php echo htmlspecialchars($siteName); ?>" style="height: 40px;" class="filter-invert">
                         </a>
-                        <p class="text-muted mb-3">Your trusted partner for exceptional service and innovative solutions.</p>
-                        
-                        <!-- Social Media -->
+                        <p class="small opacity-75 mb-3">Your trusted partner for exceptional service and innovative solutions.</p>
                         <div class="footer-social">
                             <?php if (!empty($social['facebook'])): ?>
                             <a href="<?php echo htmlspecialchars($social['facebook']); ?>" class="btn btn-outline-light btn-sm me-2" aria-label="Facebook" target="_blank">
@@ -155,17 +151,13 @@ function renderFooterMenu($items){
                             <?php endif; ?>
                         </div>
                     </div>
-                    
-                    <!-- Quick Links -->
-                    <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                    <nav class="footer-menu">
                         <h5 class="text-white mb-3">Quick Links</h5>
-                        <ul class="nav flex-column">
+                        <ul>
                             <?php renderFooterMenu($footerMenu); ?>
                         </ul>
-                    </div>
-                    
-                    <!-- Contact Info -->
-                    <div class="col-lg-4 col-md-12">
+                    </nav>
+                    <div>
                         <h5 class="text-white mb-3">Contact Info</h5>
                         <ul class="list-unstyled">
                             <?php if (!empty($settings['address'])): ?>
@@ -189,22 +181,16 @@ function renderFooterMenu($items){
                         </ul>
                     </div>
                 </div>
-                
-                <!-- Footer Bottom -->
-                <div class="row border-top pt-3 mt-3">
-                    <div class="col-md-6 text-center text-md-start">
-                        <p class="text-muted mb-0">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. All rights reserved.</p>
-                    </div>
-                    <div class="col-md-6 text-center text-md-end">
-                        <ul class="nav justify-content-center justify-content-md-end">
-                            <li class="nav-item">
-                                <a class="nav-link text-muted px-2" href="<?php echo $scriptBase; ?>/privacy-policy">Privacy Policy</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-muted px-2" href="<?php echo $scriptBase; ?>/terms-of-service">Terms of Service</a>
-                            </li>
-                        </ul>
-                    </div>
+                <div class="footer-copy d-flex flex-column flex-md-row justify-content-between align-items-center">
+                    <p class="mb-2 mb-md-0">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. All rights reserved.</p>
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="nav-link text-muted px-2" href="<?php echo $scriptBase; ?>/privacy-policy">Privacy Policy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-muted px-2" href="<?php echo $scriptBase; ?>/terms-of-service">Terms of Service</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </footer>
