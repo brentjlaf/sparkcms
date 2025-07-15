@@ -1,10 +1,11 @@
 <?php
 // File: save-content.php
 require_once __DIR__ . '/../CMS/includes/auth.php';
+require_once __DIR__ . '/../CMS/includes/data.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../CMS/data/pages.json';
-$pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
+$pages = read_json_file($pagesFile);
 
 $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
 $content = $_POST['content'] ?? '';
@@ -28,14 +29,14 @@ unset($p);
 $action = 'updated content';
 
 $historyFile = __DIR__ . '/../CMS/data/page_history.json';
-$historyData = file_exists($historyFile) ? json_decode(file_get_contents($historyFile), true) : [];
+$historyData = read_json_file($historyFile);
 if (!isset($historyData[$id])) $historyData[$id] = [];
 $user = $_SESSION['user']['username'] ?? 'Unknown';
 $historyData[$id][] = ['time' => $timestamp, 'user' => $user, 'action' => $action];
 $historyData[$id] = array_slice($historyData[$id], -20);
-file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
+write_json_file($historyFile, $historyData);
 
-file_put_contents($pagesFile, json_encode($pages, JSON_PRETTY_PRINT));
+write_json_file($pagesFile, $pages);
 require_once __DIR__ . '/../CMS/modules/sitemap/generate.php';
 
 echo 'OK';

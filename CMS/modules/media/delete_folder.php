@@ -2,6 +2,7 @@
 // File: delete_folder.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $folder = sanitize_text($_POST['folder'] ?? '');
@@ -18,7 +19,7 @@ if (!is_dir($dir)) {
 }
 
 $mediaFile = $root . '/data/media.json';
-$media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
+$media = read_json_file($mediaFile);
 $new = [];
 foreach ($media as $m) {
     if ($m['folder'] === $folder) {
@@ -32,7 +33,7 @@ foreach ($media as $m) {
         $new[] = $m;
     }
 }
-file_put_contents($mediaFile, json_encode(array_values($new), JSON_PRETTY_PRINT));
+write_json_file($mediaFile, array_values($new));
 
 // remove directory recursively
 $iterator = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);

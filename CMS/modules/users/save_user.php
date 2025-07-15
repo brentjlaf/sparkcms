@@ -2,10 +2,11 @@
 // File: save_user.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $usersFile = __DIR__ . '/../../data/users.json';
-$users = file_exists($usersFile) ? json_decode(file_get_contents($usersFile), true) : [];
+$users = read_json_file($usersFile);
 
 $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
 $username = sanitize_text($_POST['username'] ?? '');
@@ -56,6 +57,6 @@ if ($id) {
     ];
 }
 
-file_put_contents($usersFile, json_encode($users, JSON_PRETTY_PRINT));
+write_json_file($usersFile, $users);
 echo 'OK';
 ?>

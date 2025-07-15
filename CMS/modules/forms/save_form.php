@@ -2,10 +2,11 @@
 // File: save_form.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $formsFile = __DIR__ . '/../../data/forms.json';
-$forms = file_exists($formsFile) ? json_decode(file_get_contents($formsFile), true) : [];
+$forms = read_json_file($formsFile);
 
 $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
 $name = sanitize_text($_POST['name'] ?? '');
@@ -46,7 +47,7 @@ if ($id) {
     $forms[] = ['id' => $id, 'name' => $name, 'fields' => $fields];
 }
 
-file_put_contents($formsFile, json_encode($forms, JSON_PRETTY_PRINT));
+write_json_file($formsFile, $forms);
 
 echo 'OK';
 ?>

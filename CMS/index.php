@@ -166,7 +166,7 @@ if (($page['access'] ?? 'public') !== 'public' && !$logged_in) {
 if ($pageIndex !== null) {
     $pages[$pageIndex]['views'] = ($pages[$pageIndex]['views'] ?? 0) + 1;
     $page = $pages[$pageIndex];
-    file_put_contents($pagesFile, json_encode($pages, JSON_PRETTY_PRINT));
+    write_json_file($pagesFile, $pages);
 }
 
 // If logged in show the page builder instead of the static page

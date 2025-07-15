@@ -2,10 +2,11 @@
 // File: crop_media.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $mediaFile = __DIR__ . '/../../data/media.json';
-$media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
+$media = read_json_file($mediaFile);
 
 $id = sanitize_text($_POST['id'] ?? '');
 $imageData = $_POST['image'] ?? '';
@@ -76,7 +77,7 @@ if ($newVersion) {
     $media[$index] = $entry;
 }
 
-file_put_contents($mediaFile, json_encode($media, JSON_PRETTY_PRINT));
+write_json_file($mediaFile, $media);
 
 echo json_encode(['status' => 'success']);
 

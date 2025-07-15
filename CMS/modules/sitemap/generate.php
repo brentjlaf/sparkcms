@@ -3,7 +3,8 @@
 // Generate sitemap.xml listing all published pages
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
+require_once __DIR__ . '/../../includes/data.php';
+$pages = read_json_file($pagesFile);
 
 $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';

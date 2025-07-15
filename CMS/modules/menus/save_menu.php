@@ -2,13 +2,14 @@
 // File: save_menu.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $menusFile = __DIR__ . '/../../data/menus.json';
-$menus = file_exists($menusFile) ? json_decode(file_get_contents($menusFile), true) : [];
+$menus = read_json_file($menusFile);
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
+$pages = read_json_file($pagesFile);
 
 $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
 $name = sanitize_text($_POST['name'] ?? '');
@@ -79,6 +80,6 @@ if ($id) {
     $menus[] = ['id' => $id, 'name' => $name, 'items' => $items];
 }
 
-file_put_contents($menusFile, json_encode($menus, JSON_PRETTY_PRINT));
+write_json_file($menusFile, $menus);
 echo 'OK';
 ?>

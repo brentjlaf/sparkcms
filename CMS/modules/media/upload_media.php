@@ -2,6 +2,7 @@
 // File: upload_media.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $allowed = [
@@ -23,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $mediaFile = $root . '/data/media.json';
-    $media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
+    $media = read_json_file($mediaFile);
 
     $maxOrder = -1;
     foreach ($media as $m) {
@@ -68,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     }
 
-    file_put_contents($mediaFile, json_encode($media, JSON_PRETTY_PRINT));
+    write_json_file($mediaFile, $media);
     echo json_encode(['status' => 'success']);
     exit;
 }

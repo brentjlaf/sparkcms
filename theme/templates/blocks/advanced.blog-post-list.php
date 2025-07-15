@@ -3,8 +3,8 @@
 <?php
 $postsFile = __DIR__ . '/../../../CMS/data/blog_posts.json';
 $blogCategories = [];
-if (file_exists($postsFile)) {
-    $posts = json_decode(file_get_contents($postsFile), true) ?: [];
+$posts = read_json_file($postsFile);
+if ($posts) {
     foreach ($posts as $p) {
         if (!empty($p['category']) && !in_array($p['category'], $blogCategories)) {
             $blogCategories[] = $p['category'];

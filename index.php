@@ -12,7 +12,8 @@ if ($base && strpos($path, $base) === 0) {
 // If a real file is requested, serve it directly. This allows access to
 // backend scripts like CMS/login.php when using URL rewriting.
 $settingsFile = __DIR__ . '/CMS/data/settings.json';
-$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+require_once __DIR__ . '/CMS/includes/data.php';
+$settings = read_json_file($settingsFile);
 $homepage = $settings['homepage'] ?? 'home';
 
 $requested = __DIR__ . '/' . $path;
