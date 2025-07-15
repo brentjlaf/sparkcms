@@ -233,7 +233,7 @@
   border: 2px dashed #cbd5e0;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 24px;
+  padding: 0;
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
 }
