@@ -3,19 +3,6 @@ let canvas;
 
 export function initAccessibility(options = {}) {
   canvas = options.canvas;
-  if (!canvas) return;
-  const update = () => {
-    const { count, messages } = checkAccessibility();
-    const statusEl = document.getElementById('a11yStatus');
-    if (statusEl) {
-      statusEl.textContent = count
-        ? `${count} accessibility issue${count > 1 ? 's' : ''}`
-        : '';
-      statusEl.title = messages.join('\n');
-    }
-  };
-  update();
-  document.addEventListener('canvasUpdated', update);
 }
 
 export function checkAccessibility() {
