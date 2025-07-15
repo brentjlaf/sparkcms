@@ -35,8 +35,14 @@
         <dd><input type="text" name="custom_alt3" value=""></dd>
     </dl>
 </templateSetting>
-<div class="image-gallery" data-tpl-tooltip="Image Gallery">
-    <img src="{custom_img1}" alt="{custom_alt1}">
-    <img src="{custom_img2}" alt="{custom_alt2}">
-    <img src="{custom_img3}" alt="{custom_alt3}">
+<div class="image-gallery row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" data-tpl-tooltip="Image Gallery">
+    <div class="col gallery-item">
+        <img src="{custom_img1}" alt="{custom_alt1}" class="img-fluid">
+    </div>
+    <div class="col gallery-item">
+        <img src="{custom_img2}" alt="{custom_alt2}" class="img-fluid">
+    </div>
+    <div class="col gallery-item">
+        <img src="{custom_img3}" alt="{custom_alt3}" class="img-fluid">
+    </div>
 </div>
