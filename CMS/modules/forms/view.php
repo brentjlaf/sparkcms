@@ -31,8 +31,14 @@
                 <div id="fieldPalette">
                     <div class="palette-item" data-type="text" role="button" tabindex="0">Text Input</div>
                     <div class="palette-item" data-type="email" role="button" tabindex="0">Email</div>
+                    <div class="palette-item" data-type="password" role="button" tabindex="0">Password</div>
+                    <div class="palette-item" data-type="number" role="button" tabindex="0">Number</div>
+                    <div class="palette-item" data-type="date" role="button" tabindex="0">Date</div>
                     <div class="palette-item" data-type="textarea" role="button" tabindex="0">Textarea</div>
                     <div class="palette-item" data-type="select" role="button" tabindex="0">Select</div>
+                    <div class="palette-item" data-type="checkbox" role="button" tabindex="0">Checkbox</div>
+                    <div class="palette-item" data-type="radio" role="button" tabindex="0">Radio</div>
+                    <div class="palette-item" data-type="file" role="button" tabindex="0">File</div>
                 </div>
                 <ul id="formFields" class="field-list" aria-label="Form fields"></ul>
             </div>

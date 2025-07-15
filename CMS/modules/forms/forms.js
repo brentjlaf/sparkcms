@@ -24,7 +24,7 @@ $(function(){
         body.append('<div class="form-group"><label class="form-label">Label</label><input type="text" class="form-input field-label"></div>');
         body.append('<div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input field-name"></div>');
         body.append('<div class="form-group"><label><input type="checkbox" class="field-required"> Required</label></div>');
-        if(type==='select'){
+        if(['select','radio','checkbox'].includes(type)){
             body.append('<div class="form-group field-options"><label class="form-label">Options (comma separated)</label><input type="text" class="form-input field-options-input"></div>');
         }
         $li.append(body);
@@ -90,7 +90,7 @@ $(function(){
                 name: $li.find('.field-name').val(),
                 required: $li.find('.field-required').is(':checked')
             };
-            if(f.type==='select') f.options = $li.find('.field-options-input').val();
+            if(['select','radio','checkbox'].includes(f.type)) f.options = $li.find('.field-options-input').val();
             fields.push(f);
         });
         $.post('modules/forms/save_form.php',{
