@@ -18,9 +18,9 @@
         <dt>Position:</dt>
         <dd>
             <select name="custom_position">
-                <option value="_mx-auto" selected="selected">Center (default)</option>
-                <option value="_mr-auto">Left</option>
-                <option value="_ml-auto">Right</option>
+                <option value=" mx-auto" selected="selected">Center (default)</option>
+                <option value=" me-auto">Left</option>
+                <option value=" ms-auto">Right</option>
             </select>
         </dd>
     </dl>
