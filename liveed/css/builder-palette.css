@@ -174,9 +174,11 @@
 
 .insertion-indicator {
   height: 4px;
-  background: #4299e1;
+  background: #3b82f6;
   border-radius: 2px;
   margin: 4px 0;
+  pointer-events: none;
+  transition: background 0.2s ease;
 }
 
 .insertion-indicator::before,

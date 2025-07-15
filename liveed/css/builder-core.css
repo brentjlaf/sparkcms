@@ -288,16 +288,18 @@
   color: #ffd700;
 }
 .block-placeholder {
-  border: 2px dashed #4299e1;
+  border: 2px dashed #3b82f6;
   padding: 16px;
   background: #f0f8ff;
   text-align: center;
   border-radius: 6px;
-  color: #3182ce;
+  color: #2563eb;
+  pointer-events: none;
 }
 
 .block-placeholder .drop-text {
   font-weight: 600;
+  font-size: 14px;
 }
 
 .block-placeholder::before {
