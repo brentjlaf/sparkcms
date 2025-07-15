@@ -236,6 +236,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const settingsPanel = document.getElementById('settingsPanel');
   const previewContainer = document.querySelector('.canvas-container');
   const previewButtons = document.querySelectorAll('.preview-toolbar button');
+  const previewModal = document.getElementById('previewModal');
+  const previewFrame = document.getElementById('previewFrame');
+  const closePreview = document.getElementById('closePreview');
+  const previewWrapper = previewModal
+    ? previewModal.querySelector('.frame-wrapper')
+    : null;
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
   const toggleBtn = palette.querySelector('.palette-toggle-btn');
@@ -330,15 +336,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updatePreview(size) {
     if (!previewContainer) return;
-    previewContainer.classList.remove('preview-desktop', 'preview-tablet', 'preview-phone');
-    previewContainer.classList.add('preview-' + size);
+    previewContainer.classList.remove(
+      'preview-desktop',
+      'preview-tablet',
+      'preview-phone'
+    );
+    if (size === 'desktop') {
+      previewContainer.classList.add('preview-desktop');
+    }
     previewButtons.forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.size === size);
     });
   }
 
+  function openPreview(size) {
+    if (!previewModal || !previewFrame) return;
+    if (previewWrapper) {
+      if (size === 'tablet') previewWrapper.style.width = '768px';
+      else if (size === 'phone') previewWrapper.style.width = '375px';
+      else previewWrapper.style.width = '100%';
+      previewWrapper.style.height = '90vh';
+    }
+    previewFrame.src =
+      window.builderBase + '/' + window.builderSlug + '?preview=1';
+    previewModal.classList.add('active');
+    updatePreview(size);
+  }
+
+  if (closePreview) {
+    closePreview.addEventListener('click', () => {
+      previewModal.classList.remove('active');
+      previewFrame.src = '';
+      updatePreview('desktop');
+    });
+  }
+
   previewButtons.forEach((btn) => {
-    btn.addEventListener('click', () => updatePreview(btn.dataset.size));
+    btn.addEventListener('click', () => {
+      const size = btn.dataset.size;
+      if (size === 'desktop') {
+        updatePreview('desktop');
+      } else {
+        openPreview(size);
+      }
+    });
   });
 
   updatePreview('desktop');

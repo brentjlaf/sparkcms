@@ -1037,6 +1037,27 @@
   margin-bottom: 10px;
 }
 
+#previewModal .modal-content.preview-frame {
+  max-width: 100%;
+  width: auto;
+  padding: 0;
+  background: none;
+}
+
+#previewModal .frame-wrapper {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: auto;
+}
+
+#previewModal iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
 
 
 /* View mode */

@@ -53,6 +53,7 @@ function render_theme_page($templateFile, $page, $scriptBase) {
 $slug = isset($_GET['page']) ? $_GET['page'] : ($settings['homepage'] ?? 'home');
 
 $logged_in = is_logged_in();
+$preview_mode = isset($_GET['preview']) && $logged_in;
 
 if ($slug === 'search') {
     $q = isset($_GET['q']) ? trim($_GET['q']) : '';
@@ -154,10 +155,14 @@ if ($pageIndex !== null) {
 }
 
 // If logged in show the page builder instead of the static page
-if ($logged_in) {
+if ($logged_in && !$preview_mode) {
     $_GET['id'] = $page['id'];
     require __DIR__ . '/../liveed/builder.php';
     return;
+}
+
+if ($preview_mode) {
+    $logged_in = false;
 }
 
 $templateFile = null;
@@ -167,7 +172,7 @@ if (!empty($page['template'])) {
         $templateFile = $candidate;
     }
 }
-if ($templateFile && !$logged_in) {
+if ($templateFile && (!$logged_in || $preview_mode)) {
     render_theme_page($templateFile, $page, $scriptBase);
     return;
 }
