@@ -114,7 +114,7 @@ $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class=
     . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';window.builderSlug = ' . json_encode($page['slug']) . ';window.builderLastModified = ' . json_encode($page['last_modified']) . ';</script>'
     . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>'
     . '<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>'
-    . '<script src="' . $scriptBase . '/liveed/a11y-checker.js"></script>';
+    . '<script src="' . $scriptBase . '/liveed/modules/a11y-checker.js"></script>';
 
 $themeHtml = preg_replace('/<body([^>]*)>/', '<body$1>' . $builderStart, $themeHtml, 1);
 $themeHtml = preg_replace('/<\/body>/', $builderEnd . '</body>', $themeHtml, 1);
