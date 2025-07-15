@@ -21,10 +21,10 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
         <!-- Preload Stylesheet -->
-        <link rel="preload" as="style" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
+        <link rel="preload" as="style" href="<?php echo $themeBase; ?>/css/combined.css?v=mw3.2"/>
 
         <!-- Stylesheets -->
-        <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
+        <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/combined.css?v=mw3.2"/>
         <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/override.css?v=mw3.2"/>
     </head>
     <body>
