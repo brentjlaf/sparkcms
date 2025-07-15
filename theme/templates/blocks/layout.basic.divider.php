@@ -16,22 +16,22 @@
         <dt>Height</dt>
         <dd>
             <select name="custom_height">
-                <option value="small">Small</option>
-                <option value="medium" selected="selected">Medium</option>
-                <option value="large">Large</option>
+                <option value="my-2">Small</option>
+                <option value="my-4" selected="selected">Medium</option>
+                <option value="my-5">Large</option>
             </select>
         </dd>
     </dl>
 </templateSetting>
 <toggle rel="custom_style" value="none">
-    <div class="spacer spacer-{custom_height}" data-tpl-tooltip="Spacer"></div>
+    <div class="{custom_height}" data-tpl-tooltip="Spacer"></div>
 </toggle>
 <toggle rel="custom_style" value="solid">
-    <hr class="divider-solid spacer-{custom_height}" data-tpl-tooltip="Divider"/>
+    <hr class="divider-solid {custom_height}" data-tpl-tooltip="Divider"/>
 </toggle>
 <toggle rel="custom_style" value="dashed">
-    <hr class="divider-dashed spacer-{custom_height}" data-tpl-tooltip="Divider"/>
+    <hr class="divider-dashed {custom_height}" data-tpl-tooltip="Divider"/>
 </toggle>
 <toggle rel="custom_style" value="dotted">
-    <hr class="divider-dotted spacer-{custom_height}" data-tpl-tooltip="Divider"/>
+    <hr class="divider-dotted {custom_height}" data-tpl-tooltip="Divider"/>
 </toggle>
