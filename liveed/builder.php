@@ -64,9 +64,7 @@ $paletteFooter = '<div class="footer"><div class="action-row">'
     . '<button class="action-btn page-history-btn"><i class="fas fa-clock-rotate-left"></i><span>History</span></button>'
     . '<button class="action-btn redo-btn"><i class="fas fa-redo"></i><span>Redo</span></button>'
     . '</div><div class="footer-links">'
-    . '<a href="#" class="footer-link">Help</a>'
-    . '<span class="version-badge">v2.1</span>'
-    . '<a href="#" class="footer-link">Settings</a>'
+    . '<span id="lastSavedTime" class="last-saved-time">Last saved: ' . date('Y-m-d H:i', $page['last_modified']) . '</span>'
     . '</div></div>';
 $builderStart = '<div class="builder"><button type="button" id="viewModeToggle" class="view-toggle" title="View mode"><i class="fa-solid fa-eye"></i></button><aside class="block-palette">'
     . $builderHeader

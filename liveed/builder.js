@@ -206,6 +206,11 @@ function savePage() {
           statusEl.textContent = 'Saved';
           statusEl.classList.remove('saving');
         }
+        const lastSavedEl = document.getElementById('lastSavedTime');
+        if (lastSavedEl) {
+          const now = new Date();
+          lastSavedEl.textContent = 'Last saved: ' + now.toLocaleString();
+        }
         setTimeout(() => {
           if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
         }, 2000);
