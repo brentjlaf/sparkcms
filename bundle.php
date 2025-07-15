@@ -5,9 +5,9 @@
 $base = __DIR__;
 
 $cssFiles = [
-    "$base/theme/css/essential.css",
+    "$base/theme/css/root.css",
     "$base/theme/css/skin.css",
-    "$base/theme/css/utilities.css",
+    "$base/theme/css/override.css",
 ];
 $cssOutput = "$base/theme/css/combined.css";
 
