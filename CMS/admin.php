@@ -160,6 +160,7 @@ $(function(){
   }
   $(".nav-item").click(function(){
     var section=$(this).data("section");
+    if(typeof section === 'string'){ section = section.trim(); }
     if(section==="logout"){ window.location="logout.php"; return; }
     $(".nav-item").removeClass("active");
     $(this).addClass("active");
