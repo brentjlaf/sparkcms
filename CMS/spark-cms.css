@@ -970,6 +970,17 @@
 }
 .upload-drop.dragging { background: #f0f0f0; }
 
+#galleryContent{position:relative;}
+#dropZone{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,0.8);
+    z-index:1000;
+}
+
 .media-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));

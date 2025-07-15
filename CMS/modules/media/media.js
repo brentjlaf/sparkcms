@@ -342,6 +342,33 @@ $(function(){
     $('#uploadBtn').click(function(){ $('#fileInput').click(); });
     $('#fileInput').change(function(){ uploadFiles(this.files); });
 
+    let dragCounter = 0;
+    const dropZone = $('#dropZone');
+    $('#galleryContent').on('dragenter', function(e){
+        if(!currentFolder) return;
+        e.preventDefault();
+        dragCounter++;
+        dropZone.addClass('dragging').show();
+    }).on('dragover', function(e){
+        if(!currentFolder) return;
+        e.preventDefault();
+    }).on('dragleave', function(e){
+        if(!currentFolder) return;
+        dragCounter--;
+        if(dragCounter<=0){
+            dragCounter = 0;
+            dropZone.removeClass('dragging').hide();
+        }
+    }).on('drop', function(e){
+        if(!currentFolder) return;
+        e.preventDefault();
+        dragCounter = 0;
+        dropZone.removeClass('dragging').hide();
+        const files = e.originalEvent.dataTransfer.files;
+        uploadFiles(files);
+    });
+    dropZone.click(function(){ $('#fileInput').click(); });
+
     $('#renameFolderBtn').click(renameFolder);
     $('#deleteFolderBtn').click(deleteFolder);
     $('#createFolderBtn').click(function(){ openModal('createFolderModal'); $('#newFolderName').focus(); });
