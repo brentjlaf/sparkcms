@@ -5,8 +5,8 @@
     <dl class="sparkDialog">
         <dt>Layout:</dt>
         <dd>
-            <label><input type="radio" name="custom_layout" value="is-left" checked> Side | Main</label>
-            <label><input type="radio" name="custom_layout" value="is-right"> Main | Side</label>
+            <label><input type="radio" name="custom_layout" value="left" checked> Side | Main</label>
+            <label><input type="radio" name="custom_layout" value="right"> Main | Side</label>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
@@ -14,8 +14,8 @@
         <dt>Border:</dt>
         <dd>
             <select name="custom_border">
-                <option value="no-border" selected>Disable (default)</option>
-                <option value="has-border">Enable</option>
+                <option value="" selected>Disable (default)</option>
+                <option value=" border">Enable</option>
             </select>
         </dd>
         <dt>Gap Between the Side Area and the Main Area:</dt>
@@ -53,21 +53,43 @@
     </dl>
 </templateSetting>
 
-<div id="<?= $tpl_id ?>" class="sidebar sidebar-default {custom_layout} {custom_border}" data-tpl-tooltip="Sidebar - Style 1">
-    <div class="row {custom_gap}">
-        <div class="sidebar-side {custom_size}">
-            <div class="sidebar-side-wrap">
-                <div class="sidebar-inner {custom_side_bg}">
-                    <div class="drop-area"></div>
+<toggle rel="custom_layout" value="left">
+    <div id="<?= $tpl_id ?>" class="sidebar sidebar-default" data-tpl-tooltip="Sidebar - Style 1">
+        <div class="row{custom_gap}">
+            <div class="sidebar-side {custom_size} order-lg-first">
+                <div class="sidebar-side-wrap">
+                    <div class="sidebar-inner{custom_side_bg}{custom_border}">
+                        <div class="drop-area"></div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="sidebar-main col">
-            <div class="sidebar-main-wrap">
-                <div class="sidebar-inner">
-                    <div class="drop-area"></div>
+            <div class="sidebar-main col order-lg-last">
+                <div class="sidebar-main-wrap">
+                    <div class="sidebar-inner{custom_border}">
+                        <div class="drop-area"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</toggle>
+<toggle rel="custom_layout" value="right">
+    <div id="<?= $tpl_id ?>" class="sidebar sidebar-default" data-tpl-tooltip="Sidebar - Style 1">
+        <div class="row{custom_gap}">
+            <div class="sidebar-side {custom_size} order-lg-last">
+                <div class="sidebar-side-wrap">
+                    <div class="sidebar-inner{custom_side_bg}{custom_border}">
+                        <div class="drop-area"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-main col order-lg-first">
+                <div class="sidebar-main-wrap">
+                    <div class="sidebar-inner{custom_border}">
+                        <div class="drop-area"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</toggle>
