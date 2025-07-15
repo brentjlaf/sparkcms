@@ -25,7 +25,7 @@
   letter-spacing: 0.5px;
 }
 
-.builder-header .title-top { display:flex; justify-content:space-between; align-items:center}
+.builder-header .title-top {display:flex;justify-content:space-between;align-items:center;margin: 0 0 15px;}
 
 
 
@@ -34,9 +34,10 @@
 
 .builder-header .header-actions {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
+  margin: 0 0 15px;
 }
 .save-status {
   margin-left: 0;
