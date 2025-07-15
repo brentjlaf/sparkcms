@@ -1,30 +1,21 @@
 <?php
 // File: index.php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/data.php';
 // Load pages from JSON
 $pagesFile = __DIR__ . '/data/pages.json';
-$pages = [];
-if (file_exists($pagesFile)) {
-    $json = file_get_contents($pagesFile);
-    $pages = json_decode($json, true) ?: [];
-}
+$pages = get_cached_json($pagesFile);
 
 $settingsFile = __DIR__ . '/data/settings.json';
-$settings = [];
-if (file_exists($settingsFile)) {
-    $settings = json_decode(file_get_contents($settingsFile), true) ?: [];
-}
+$settings = get_cached_json($settingsFile);
 
 $menusFile = __DIR__ . '/data/menus.json';
-$menus = [];
-if (file_exists($menusFile)) {
-    $menus = json_decode(file_get_contents($menusFile), true) ?: [];
-}
+$menus = get_cached_json($menusFile);
 
 $blogFile = __DIR__ . '/data/blog_posts.json';
-$blogPosts = file_exists($blogFile) ? json_decode(file_get_contents($blogFile), true) : [];
+$blogPosts = get_cached_json($blogFile);
 $mediaFile = __DIR__ . '/data/media.json';
-$mediaItems = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
+$mediaItems = get_cached_json($mediaFile);
 
 // Base paths used by theme templates
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
