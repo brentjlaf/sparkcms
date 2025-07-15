@@ -40,8 +40,23 @@ $placeholderText = !empty($settings['canvas_placeholder'])
 $canvasContent = $page['content'] ?: '<div class="canvas-placeholder">' . $placeholderText . '</div>';
 $themeHtml = preg_replace('/<div class="drop-area"><\\/div>/', '<div id="canvas" class="canvas">' . $canvasContent . '</div>', $themeHtml);
 
-$headInject = "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/builder.css\">" .
-    "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
+$cssFiles = [
+    'builder-core.css',
+    'builder-history.css',
+    'builder-settings.css',
+    'builder-palette.css',
+    'builder-modal.css',
+    'builder-media.css',
+    'builder-view.css',
+    'builder-links.css',
+    'builder-a11y.css',
+    'builder-seo.css',
+];
+$headInject = '';
+foreach ($cssFiles as $css) {
+    $headInject .= "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/css/$css\">";
+}
+$headInject .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
 $previewToolbar = '<div class="preview-toolbar">'
