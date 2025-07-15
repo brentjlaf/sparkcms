@@ -215,12 +215,12 @@ if ($templateFile && (!$logged_in || $preview_mode)) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <?php if ($logged_in): ?>
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/root.css">
-<link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/combined.css">
+<link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/skin.css">
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/override.css">
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/spark-cms.css">
 <?php else: ?>
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/root.css">
-<link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/combined.css">
+<link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/skin.css">
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/override.css">
 <?php endif; ?>
 </head>
