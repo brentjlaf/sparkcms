@@ -1,3 +1,5 @@
+/* File: builder.css - merged from builder-core.css, builder-history.css, builder-settings.css, builder-palette.css, builder-modal.css, builder-media.css, builder-view.css, builder-links.css, builder-a11y.css, builder-seo.css */
+/* File: builder-core.css */
 /* File: builder.css */
 .builder {
   display: flex;
@@ -396,6 +398,8 @@
   margin-right: 8px;
 }
 
+
+/* File: builder-history.css */
 /* History panel styles */
 .history-panel {
   position: fixed;
@@ -454,6 +458,8 @@
   font-size: 13px;
 }
 
+
+/* File: builder-settings.css */
 /* Settings form styles */
 .settings-panel .settings-content {
   flex: 1;
@@ -523,6 +529,8 @@
   background: #edf2f7;
 }
 
+
+/* File: builder-palette.css */
 /* Palette accordion styles */
 .palette-group {
   /* border: 1px solid #e2e8f0; */
@@ -796,6 +804,8 @@
   font-size: 14px;
 }
 
+
+/* File: builder-modal.css */
 /* Modal Styles */
 .builder .modal {
   display: none;
@@ -953,6 +963,8 @@
   }
 }
 
+
+/* File: builder-media.css */
 /* Media picker styles */
 #mediaPickerModal .modal-content.media-picker {
   max-width: 900px;
@@ -1058,6 +1070,8 @@
 
 
 
+
+/* File: builder-view.css */
 /* View mode */
 .view-toggle {
   position: fixed;
@@ -1277,6 +1291,8 @@
 }
 /* --- end palette refresh styles --- */
 
+
+/* File: builder-links.css */
 /* link checker styles */
 .link-status {
   text-decoration: none;
@@ -1389,6 +1405,8 @@
   border-color: #333 transparent transparent transparent;
 }
 /* end link checker styles */
+
+/* File: builder-a11y.css */
 /* accessibility checker styles */
 .highlight-issue {
   border: 2px solid #cc0000 !important;
@@ -1443,6 +1461,8 @@
 h1.highlight-htag, h2.highlight-htag, h3.highlight-htag, h4.highlight-htag, h5.highlight-htag, h6.highlight-htag { position: relative; }
 .error-message.highlight-htag { padding-left: 50px; }
 .error-message.highlight-htag .accessibility-bubble.green { background: #cc0000 !important; }
+
+/* File: builder-seo.css */
 /* SEO Checker Styles */
 .seo-modal {
   display: none;
@@ -1505,3 +1525,4 @@ h1.highlight-htag, h2.highlight-htag, h3.highlight-htag, h4.highlight-htag, h5.h
 .seo-modal-content ul li.pass {
   border-left: 5px solid green;
 }
+
