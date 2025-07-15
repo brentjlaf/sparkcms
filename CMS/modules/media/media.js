@@ -348,7 +348,7 @@ $(function(){
         if(!currentFolder) return;
         e.preventDefault();
         dragCounter++;
-        dropZone.addClass('dragging').show();
+        dropZone.addClass('dragging').css('display','flex');
     }).on('dragover', function(e){
         if(!currentFolder) return;
         e.preventDefault();
@@ -357,13 +357,13 @@ $(function(){
         dragCounter--;
         if(dragCounter<=0){
             dragCounter = 0;
-            dropZone.removeClass('dragging').hide();
+            dropZone.removeClass('dragging').css('display','none');
         }
     }).on('drop', function(e){
         if(!currentFolder) return;
         e.preventDefault();
         dragCounter = 0;
-        dropZone.removeClass('dragging').hide();
+        dropZone.removeClass('dragging').css('display','none');
         const files = e.originalEvent.dataTransfer.files;
         uploadFiles(files);
     });
