@@ -37,41 +37,8 @@ function renderFooterMenu($items){
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-        <head>
+<?php include __DIR__ . "/../partials/head.php"; ?>
 
-		<!-- Metas & Morweb CMS Assets -->
- <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		
-		
-
-		<!-- Favicon -->
-                <link rel="shortcut icon" href="<?php echo $themeBase; ?>/images/favicon.png" type="image/x-icon"/>
-
-		
-		
-		<!-- Fonts -->
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,600;0,700;1,400&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-
-		<!-- Preload Vendor Stylesheets -->
-		<link rel="preload" as="style" crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-
-                <!-- Vendor Stylesheets -->
-                <link nocache="nocache" rel="stylesheet" crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-                <!-- Preload Stylesheet -->
-                <link rel="preload" as="style" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
-
-		<!-- Stylesheets -->
-                <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
-                <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/override.css?v=mw3.2"/>
-	</head>
-	<body>
 
 		<!-- Default Page -->
 		<div id="app" class="page-template default-page">
@@ -85,58 +52,4 @@ function renderFooterMenu($items){
                         </main>
 
                         <!-- Footer -->
-                        <footer id="footer-area" class="site-footer bg-dark text-light mt-auto">
-                                <div class="container py-4">
-                                        <div class="row align-items-center">
-                                                <div class="col-md-4 mb-3 mb-md-0">
-                                                        <a href="<?php echo $scriptBase; ?>/" class="navbar-brand"><img src="<?php echo htmlspecialchars($logo); ?>" alt="Logo"></a>
-                                                </div>
-                                                <div class="col-md-4 mb-3 mb-md-0">
-                                                        <ul class="nav justify-content-center">
-                                                                <?php renderFooterMenu($footerMenu); ?>
-                                                        </ul>
-                                                </div>
-                                                <div class="col-md-4 text-md-end">
-                                                        <div class="footer-social">
-                                                <?php if (!empty($social['facebook'])): ?>
-                                                <a href="<?php echo htmlspecialchars($social['facebook']); ?>" aria-label="Facebook" target="_blank"><i class="fa-brands fa-facebook-f"></i></a>
-                                                <?php endif; ?>
-                                                <?php if (!empty($social['twitter'])): ?>
-                                                <a href="<?php echo htmlspecialchars($social['twitter']); ?>" aria-label="Twitter" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
-                                                <?php endif; ?>
-                                                <?php if (!empty($social['instagram'])): ?>
-                                                <a href="<?php echo htmlspecialchars($social['instagram']); ?>" aria-label="Instagram" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-                                                <?php endif; ?>
-                                                        </div>
-                                                </div>
-                                        </div>
-                                        <div class="text-center mt-3 footer-copy">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?></div>
-                                </div>
-                        </footer>
-
-			<!-- Back to Top Button -->
-			<button id="back-to-top-btn" class="_js-scroll-top" aria-label="Back to Top">
-    <span>
-        <span>
-            <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
-        </span>
-    </span>
-    <span>Back to Top</span>
-</button>
-
-		</div>
-
-		<!-- Vendor Javascript -->
-
-		<!-- Javascript -->
-                <script src="<?php echo $themeBase; ?>/js/global.js?v=mw3.2"></script>
-                <script src="<?php echo $themeBase; ?>/js/script.js?v=mw3.2"></script>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-		
-		
-		
-		
-		
-	</body>
-</html>
+                        <?php include __DIR__ . "/../partials/footer.php"; ?>
