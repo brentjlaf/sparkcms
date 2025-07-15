@@ -69,8 +69,8 @@ function renderFooterMenu($items){
     <div id="app" class="page-template default-page d-flex flex-column min-vh-100">
 
         <!-- Header -->
-        <header>
-            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <header class="bg-white shadow-sm border-bottom">
+            <nav class="navbar navbar-expand-lg navbar-light" role="navigation">
                 <div class="container">
                     <!-- Brand/Logo -->
                     <a class="navbar-brand d-flex align-items-center" href="<?php echo $scriptBase; ?>/">
@@ -116,9 +116,9 @@ function renderFooterMenu($items){
 
         <!-- Footer -->
         <footer id="footer-area" class="site-footer bg-dark text-light mt-auto">
-            <div class="container">
+            <div class="container py-5">
                 <!-- Main Footer Content -->
-                <div class="row py-5">
+                <div class="row">
                     <!-- Brand Section -->
                     <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
                         <a href="<?php echo $scriptBase; ?>/" class="navbar-brand d-inline-block mb-3">
@@ -191,7 +191,7 @@ function renderFooterMenu($items){
                 </div>
                 
                 <!-- Footer Bottom -->
-                <div class="row border-top pt-3">
+                <div class="row border-top pt-3 mt-3">
                     <div class="col-md-6 text-center text-md-start">
                         <p class="text-muted mb-0">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. All rights reserved.</p>
                     </div>
