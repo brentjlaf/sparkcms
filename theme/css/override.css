@@ -546,10 +546,8 @@ img[data-tpl-tooltip="Image"] {
 
 /* Image Gallery Block */
 .image-gallery {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
 }
 .image-gallery img {
@@ -752,7 +750,8 @@ section.container-fluid {
 
 /* Enhanced Image Gallery */
 .image-gallery {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     width: 100%;
 }
 
