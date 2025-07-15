@@ -211,17 +211,7 @@ body {
     position: relative;
 }
 
-.heading-text::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 4px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 2px;
-}
+
 
 /* Footer */
 .site-footer {
