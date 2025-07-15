@@ -1,14 +1,15 @@
 <?php
 // File: save_settings.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $settingsFile = __DIR__ . '/../../data/settings.json';
 $settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
 
-$settings['site_name'] = trim($_POST['site_name'] ?? ($settings['site_name'] ?? ''));
-$settings['tagline'] = trim($_POST['tagline'] ?? ($settings['tagline'] ?? ''));
-$settings['admin_email'] = trim($_POST['admin_email'] ?? ($settings['admin_email'] ?? ''));
+$settings['site_name'] = sanitize_text($_POST['site_name'] ?? ($settings['site_name'] ?? ''));
+$settings['tagline'] = sanitize_text($_POST['tagline'] ?? ($settings['tagline'] ?? ''));
+$settings['admin_email'] = sanitize_text($_POST['admin_email'] ?? ($settings['admin_email'] ?? ''));
 
 $uploadDir = __DIR__ . '/../../uploads';
 if (!is_dir($uploadDir)) {

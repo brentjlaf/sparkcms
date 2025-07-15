@@ -1,6 +1,7 @@
 <?php
 // File: save_page.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = [];
 if (file_exists($pagesFile)) {
@@ -8,8 +9,8 @@ if (file_exists($pagesFile)) {
 }
 
 $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
-$title = trim($_POST['title'] ?? '');
-$slug = trim($_POST['slug'] ?? '');
+$title = sanitize_text($_POST['title'] ?? '');
+$slug = sanitize_text($_POST['slug'] ?? '');
 
 function slugify($text){
     $text = strtolower(trim($text));
@@ -23,17 +24,19 @@ if ($slug === '') {
 }
 $slug = slugify($slug);
 $content = trim($_POST['content'] ?? '');
+// strip script tags to avoid XSS in stored content
+$content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $content);
 $published = isset($_POST['published']) ? (bool)$_POST['published'] : false;
-$template = trim($_POST['template'] ?? '');
+$template = sanitize_text($_POST['template'] ?? '');
 if ($template === '') {
     $template = 'page.php';
 }
-$meta_title = trim($_POST['meta_title'] ?? '');
-$meta_description = trim($_POST['meta_description'] ?? '');
-$og_title = trim($_POST['og_title'] ?? '');
-$og_description = trim($_POST['og_description'] ?? '');
-$og_image = trim($_POST['og_image'] ?? '');
-$access = trim($_POST['access'] ?? 'public');
+$meta_title = sanitize_text($_POST['meta_title'] ?? '');
+$meta_description = sanitize_text($_POST['meta_description'] ?? '');
+$og_title = sanitize_text($_POST['og_title'] ?? '');
+$og_description = sanitize_text($_POST['og_description'] ?? '');
+$og_image = sanitize_url($_POST['og_image'] ?? '');
+$access = sanitize_text($_POST['access'] ?? 'public');
 
 if ($title === '') {
     http_response_code(400);

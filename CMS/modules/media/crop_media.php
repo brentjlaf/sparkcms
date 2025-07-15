@@ -1,15 +1,16 @@
 <?php
 // File: crop_media.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $mediaFile = __DIR__ . '/../../data/media.json';
 $media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
 
-$id = $_POST['id'] ?? '';
+$id = sanitize_text($_POST['id'] ?? '');
 $imageData = $_POST['image'] ?? '';
 $newVersion = isset($_POST['new_version']) && $_POST['new_version'] == '1';
-$format = $_POST['format'] ?? 'jpeg';
+$format = sanitize_text($_POST['format'] ?? 'jpeg');
 
 if ($id === '' || strpos($imageData, 'data:image') !== 0) {
     echo json_encode(['status' => 'error']);

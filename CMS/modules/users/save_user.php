@@ -1,16 +1,25 @@
 <?php
 // File: save_user.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $usersFile = __DIR__ . '/../../data/users.json';
 $users = file_exists($usersFile) ? json_decode(file_get_contents($usersFile), true) : [];
 
 $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
-$username = trim($_POST['username'] ?? '');
-$password = $_POST['password'] ?? '';
-$role = trim($_POST['role'] ?? 'editor');
-$status = trim($_POST['status'] ?? 'active');
+$username = sanitize_text($_POST['username'] ?? '');
+$password = trim($_POST['password'] ?? '');
+$role = sanitize_text($_POST['role'] ?? 'editor');
+$status = sanitize_text($_POST['status'] ?? 'active');
+$allowedRoles = ['admin', 'editor'];
+if (!in_array($role, $allowedRoles, true)) {
+    $role = 'editor';
+}
+$allowedStatus = ['active', 'inactive'];
+if (!in_array($status, $allowedStatus, true)) {
+    $status = 'active';
+}
 
 if ($username === '') {
     http_response_code(400);

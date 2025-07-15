@@ -1,9 +1,10 @@
 <?php
 // File: picker.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
-$base = rtrim($_GET['base'] ?? '', '/');
+$base = rtrim(sanitize_text($_GET['base'] ?? ''), '/');
 $mediaFile = __DIR__ . '/../../data/media.json';
 $media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
 ?>
