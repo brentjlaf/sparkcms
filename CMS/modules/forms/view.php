@@ -39,6 +39,7 @@
                     <div class="palette-item" data-type="checkbox" role="button" tabindex="0">Checkbox</div>
                     <div class="palette-item" data-type="radio" role="button" tabindex="0">Radio</div>
                     <div class="palette-item" data-type="file" role="button" tabindex="0">File</div>
+                    <div class="palette-item" data-type="submit" role="button" tabindex="0">Submit Button</div>
                 </div>
                 <ul id="formFields" class="field-list" aria-label="Form fields"></ul>
             </div>

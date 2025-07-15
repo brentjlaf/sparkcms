@@ -23,14 +23,16 @@ $(function(){
         const body = $('<div class="field-body"></div>');
         body.append('<div class="form-group"><label class="form-label">Label</label><input type="text" class="form-input field-label"></div>');
         body.append('<div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input field-name"></div>');
-        body.append('<div class="form-group"><label><input type="checkbox" class="field-required"> Required</label></div>');
+        if(type !== 'submit'){
+            body.append('<div class="form-group"><label><input type="checkbox" class="field-required"> Required</label></div>');
+        }
         if(['select','radio','checkbox'].includes(type)){
             body.append('<div class="form-group field-options"><label class="form-label">Options (comma separated)</label><input type="text" class="form-input field-options-input"></div>');
         }
         $li.append(body);
         if(field.label) $li.find('.field-label').val(field.label);
         if(field.name) $li.find('.field-name').val(field.name);
-        if(field.required) $li.find('.field-required').prop('checked', true);
+        if(field.required && type !== 'submit') $li.find('.field-required').prop('checked', true);
         if(field.options) $li.find('.field-options-input').val(field.options);
         $('#formFields').append($li);
     }
@@ -87,9 +89,11 @@ $(function(){
             const f = {
                 type: $li.data('type'),
                 label: $li.find('.field-label').val(),
-                name: $li.find('.field-name').val(),
-                required: $li.find('.field-required').is(':checked')
+                name: $li.find('.field-name').val()
             };
+            if(f.type !== 'submit'){
+                f.required = $li.find('.field-required').is(':checked');
+            }
             if(['select','radio','checkbox'].includes(f.type)) f.options = $li.find('.field-options-input').val();
             fields.push(f);
         });
