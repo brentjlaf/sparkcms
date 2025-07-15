@@ -11,12 +11,13 @@ let allBlockFiles = [];
 let favorites = [];
 let builderDraftKey = '';
 let lastSavedTimestamp = 0;
+let canvas;
+let paletteEl;
 // Delay before auto-saving after a change. A longer delay prevents rapid
 // successive saves while the user is still actively editing.
 const SAVE_DEBOUNCE_DELAY = 1000;
 
 function storeDraft() {
-  const canvas = document.getElementById('canvas');
   if (!canvas) return;
   const data = {
     html: canvas.innerHTML,
@@ -37,7 +38,8 @@ function renderGroupItems(details) {
   const items = details.querySelector('.group-items');
   if (!items || details._rendered) return;
   const favs = favorites;
-  const list = (details._items || []).sort((a, b) => a.label.localeCompare(b.label));
+  const list = details._items || [];
+  const frag = document.createDocumentFragment();
   list.forEach((it) => {
     const item = document.createElement('div');
     item.className = 'block-item';
@@ -57,8 +59,9 @@ function renderGroupItems(details) {
       toggleFavorite(it.file);
     });
     item.appendChild(favBtn);
-    items.appendChild(item);
+    frag.appendChild(item);
   });
+  items.appendChild(frag);
   details._rendered = true;
 }
 
@@ -134,7 +137,9 @@ function renderPalette(palette, files = []) {
       const wrap = document.createElement('div');
       wrap.className = 'group-items';
 
-      details._items = groups[g].slice();
+      details._items = groups[g]
+        .slice()
+        .sort((a, b) => a.label.localeCompare(b.label));
       details.appendChild(wrap);
       container.appendChild(details);
       animateAccordion(details);
@@ -149,8 +154,7 @@ function toggleFavorite(file) {
     favorites.push(file);
   }
   localStorage.setItem('favoriteBlocks', JSON.stringify(favorites));
-  const palette = document.querySelector('.block-palette');
-  if (palette) renderPalette(palette, allBlockFiles);
+  if (paletteEl) renderPalette(paletteEl, allBlockFiles);
 }
 
 let saveTimer;
@@ -195,7 +199,7 @@ function checkSeo(html) {
   return issues;
 }
 function savePage() {
-  const canvas = document.getElementById('canvas');
+  if (!canvas) return;
   const statusEl = document.getElementById('saveStatus');
   const html = canvas.innerHTML;
 
@@ -257,8 +261,8 @@ function scheduleSave() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const canvas = document.getElementById('canvas');
-  const palette = document.querySelector('.block-palette');
+  canvas = document.getElementById('canvas');
+  const palette = (paletteEl = document.querySelector('.block-palette'));
   const settingsPanel = document.getElementById('settingsPanel');
   const previewContainer = document.querySelector('.canvas-container');
   const previewButtons = document.querySelectorAll('.preview-toolbar button');
@@ -270,9 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
     : null;
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
-  const toggleBtn = palette.querySelector('.palette-toggle-btn');
-  const dockBtn = palette.querySelector('.palette-dock-btn');
-  const paletteHeader = palette.querySelector('.builder-header');
+  const toggleBtn = palette ? palette.querySelector('.palette-toggle-btn') : null;
+  const dockBtn = palette ? palette.querySelector('.palette-dock-btn') : null;
+  const paletteHeader = palette ? palette.querySelector('.builder-header') : null;
 
   builderDraftKey = 'builderDraft-' + window.builderPageId;
   lastSavedTimestamp = window.builderLastModified || 0;
