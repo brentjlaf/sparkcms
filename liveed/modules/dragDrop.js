@@ -51,9 +51,11 @@ function extractTemplateSetting(html) {
 const placeholder = document.createElement('div');
 placeholder.className = 'block-placeholder';
 placeholder.innerHTML = '<span class="drop-text">Drop block here</span>';
+placeholder.style.pointerEvents = 'none';
 
 const insertionIndicator = document.createElement('div');
 insertionIndicator.className = 'insertion-indicator';
+insertionIndicator.style.pointerEvents = 'none';
 
 function throttleRAF(fn) {
   let running = false;
