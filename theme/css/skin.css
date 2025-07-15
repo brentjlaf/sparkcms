@@ -234,15 +234,15 @@ section.container-fluid {
 }
 
 /* Text alignment classes */
-.hero-section ._text-left {
+.hero-section .text-start {
     text-align: left;
 }
 
-.hero-section ._text-center {
+.hero-section .text-center {
     text-align: center;
 }
 
-.hero-section ._text-right {
+.hero-section .text-end {
     text-align: right;
 }
 
@@ -265,17 +265,17 @@ section.container-fluid {
 }
 
 /* Adjust paragraph alignment based on text alignment */
-.hero-section ._text-left .hero-content p {
+.hero-section .text-start .hero-content p {
     margin-left: 0;
     margin-right: auto;
 }
 
-.hero-section ._text-center .hero-content p {
+.hero-section .text-center .hero-content p {
     margin-left: auto;
     margin-right: auto;
 }
 
-.hero-section ._text-right .hero-content p {
+.hero-section .text-end .hero-content p {
     margin-left: auto;
     margin-right: 0;
 }
