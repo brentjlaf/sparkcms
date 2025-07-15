@@ -211,7 +211,18 @@ function savePage() {
 
   checkLinks(html).then((warnings) => {
     if (warnings.length) {
-      alert('Link issues found:\n' + warnings.join('\n'));
+      console.warn('Link issues found:', warnings.join('\n'));
+      if (statusEl) {
+        statusEl.textContent = 'Link issues found';
+        statusEl.classList.add('error');
+        statusEl.classList.remove('saving');
+        setTimeout(() => {
+          if (statusEl.textContent === 'Link issues found') {
+            statusEl.textContent = '';
+            statusEl.classList.remove('error');
+          }
+        }, 4000);
+      }
     }
 
     const fd = new FormData();
