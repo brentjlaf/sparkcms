@@ -1,10 +1,11 @@
 <?php
 // File: list_users.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $usersFile = __DIR__ . '/../../data/users.json';
-$users = file_exists($usersFile) ? json_decode(file_get_contents($usersFile), true) : [];
+$users = read_json_file($usersFile);
 
 $clean = [];
 foreach ($users as $u) {

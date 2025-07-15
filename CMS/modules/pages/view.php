@@ -1,12 +1,13 @@
 <?php
 // File: view.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
+$pages = read_json_file($pagesFile);
 $settingsFile = __DIR__ . '/../../data/settings.json';
-$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+$settings = read_json_file($settingsFile);
 $templateDir = realpath(__DIR__ . '/../../../theme/templates/pages');
 $templates = [];
 if ($templateDir) {

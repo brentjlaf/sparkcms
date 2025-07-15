@@ -1,13 +1,14 @@
 <?php
 // File: delete_page.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 $pagesFile = __DIR__ . '/../../data/pages.json';
 if (!file_exists($pagesFile)) {
     exit('No pages');
 }
-$pages = json_decode(file_get_contents($pagesFile), true) ?: [];
+$pages = read_json_file($pagesFile);
 $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT) ?: 0;
 $deletedPage = null;
 foreach ($pages as $p) {
@@ -19,7 +20,7 @@ file_put_contents($pagesFile, json_encode(array_values($pages), JSON_PRETTY_PRIN
 require_once __DIR__ . '/../sitemap/generate.php';
 
 $historyFile = __DIR__ . '/../../data/page_history.json';
-$historyData = file_exists($historyFile) ? json_decode(file_get_contents($historyFile), true) : [];
+$historyData = read_json_file($historyFile);
 if (!isset($historyData[$id])) $historyData[$id] = [];
 $user = $_SESSION['user']['username'] ?? 'Unknown';
 $action = 'deleted page';

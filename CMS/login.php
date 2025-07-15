@@ -2,11 +2,12 @@
 // File: login.php
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/sanitize.php';
+require_once __DIR__ . '/includes/data.php';
 
 $settingsFile = __DIR__ . '/data/settings.json';
 $settings = [];
 if (file_exists($settingsFile)) {
-    $settings = json_decode(file_get_contents($settingsFile), true) ?: [];
+    $settings = read_json_file($settingsFile);
 }
 
 $error = '';

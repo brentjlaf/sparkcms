@@ -1,6 +1,7 @@
 <?php
 // File: set_home.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
@@ -12,7 +13,7 @@ if ($slug === '') {
 }
 
 $settingsFile = __DIR__ . '/../../data/settings.json';
-$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
+$settings = read_json_file($settingsFile);
 $settings['homepage'] = $slug;
 file_put_contents($settingsFile, json_encode($settings, JSON_PRETTY_PRINT));
 

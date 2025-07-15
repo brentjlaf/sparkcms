@@ -1,14 +1,15 @@
 <?php
 // File: view.php
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/data.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = file_exists($pagesFile) ? json_decode(file_get_contents($pagesFile), true) : [];
+$pages = read_json_file($pagesFile);
 $postsFile = __DIR__ . '/../../data/blog_posts.json';
-$posts = file_exists($postsFile) ? json_decode(file_get_contents($postsFile), true) : [];
+$posts = read_json_file($postsFile);
 $mediaFile = __DIR__ . '/../../data/media.json';
-$media = file_exists($mediaFile) ? json_decode(file_get_contents($mediaFile), true) : [];
+$media = read_json_file($mediaFile);
 
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 $lower = strtolower($q);
