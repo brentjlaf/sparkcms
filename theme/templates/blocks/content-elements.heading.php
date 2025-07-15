@@ -27,11 +27,11 @@
         </dd>
     </dl>
 </templateSetting>
-<div class="{custom_align}">
-    <toggle rel="custom_level" value="h1"><h1 data-tpl-tooltip="Heading" data-editable>{custom_text}</h1></toggle>
-    <toggle rel="custom_level" value="h2"><h2 data-tpl-tooltip="Heading" data-editable>{custom_text}</h2></toggle>
-    <toggle rel="custom_level" value="h3"><h3 data-tpl-tooltip="Heading" data-editable>{custom_text}</h3></toggle>
-    <toggle rel="custom_level" value="h4"><h4 data-tpl-tooltip="Heading" data-editable>{custom_text}</h4></toggle>
-    <toggle rel="custom_level" value="h5"><h5 data-tpl-tooltip="Heading" data-editable>{custom_text}</h5></toggle>
-    <toggle rel="custom_level" value="h6"><h6 data-tpl-tooltip="Heading" data-editable>{custom_text}</h6></toggle>
+<div class="heading {custom_align}">
+    <toggle rel="custom_level" value="h1"><h1 class="heading-text" data-tpl-tooltip="Heading" data-editable>{custom_text}</h1></toggle>
+    <toggle rel="custom_level" value="h2"><h2 class="heading-text" data-tpl-tooltip="Heading" data-editable>{custom_text}</h2></toggle>
+    <toggle rel="custom_level" value="h3"><h3 class="heading-text" data-tpl-tooltip="Heading" data-editable>{custom_text}</h3></toggle>
+    <toggle rel="custom_level" value="h4"><h4 class="heading-text" data-tpl-tooltip="Heading" data-editable>{custom_text}</h4></toggle>
+    <toggle rel="custom_level" value="h5"><h5 class="heading-text" data-tpl-tooltip="Heading" data-editable>{custom_text}</h5></toggle>
+    <toggle rel="custom_level" value="h6"><h6 class="heading-text" data-tpl-tooltip="Heading" data-editable>{custom_text}</h6></toggle>
 </div>
