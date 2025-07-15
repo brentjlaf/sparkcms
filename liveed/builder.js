@@ -16,6 +16,8 @@ let paletteEl;
 // Delay before auto-saving after a change. A longer delay prevents rapid
 // successive saves while the user is still actively editing.
 const SAVE_DEBOUNCE_DELAY = 1000;
+// Cache of link statuses across checks to avoid repeating requests
+const linkStatusCache = {};
 
 function storeDraft() {
   if (!canvas) return;
@@ -526,12 +528,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ]);
     };
 
-    const runLinkCheck = () => {
+    const MAX_CONCURRENT_REQUESTS = 5;
+
+    const runLinkCheck = async () => {
       let brokenLinks = 0,
         workingLinks = 0,
         externalLinks = 0,
         unsetLinks = 0;
-      const linkCache = {};
 
       if (!legend) return;
       legend.innerHTML = `
@@ -591,8 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
         )
       );
 
-      const promises = [];
-
+      const queue = [];
       links.forEach((link) => {
         const url = link.getAttribute('href');
         if (!url || url === '#' || url === '' || url === '/' || url === 'false') {
@@ -620,31 +622,47 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        if (linkCache[url]) {
-          applyLinkStatus(link, linkCache[url]);
-          if (linkCache[url] === 'working') workingLinks++;
+        queue.push({ link, url });
+      });
+
+      const running = [];
+      const all = [];
+
+      const runTask = async ({ link, url }) => {
+        if (linkStatusCache[url]) {
+          applyLinkStatus(link, linkStatusCache[url]);
+          if (linkStatusCache[url] === 'working') workingLinks++;
           else brokenLinks++;
           updateLegend();
           return;
         }
 
-        const p = fetchWithTimeout(url, { method: 'HEAD' }, 5000)
-          .then((r) => {
-            linkCache[url] = r.ok ? 'working' : 'broken';
-            applyLinkStatus(link, linkCache[url]);
-            if (r.ok) workingLinks++;
-            else brokenLinks++;
-          })
-          .catch(() => {
-            linkCache[url] = 'broken';
-            applyLinkStatus(link, 'broken');
-            brokenLinks++;
-          })
-          .finally(updateLegend);
-        promises.push(p);
-      });
+        try {
+          const r = await fetchWithTimeout(url, { method: 'HEAD' }, 5000);
+          linkStatusCache[url] = r.ok ? 'working' : 'broken';
+        } catch (_) {
+          linkStatusCache[url] = 'broken';
+        }
 
-      Promise.all(promises).then(updateLegend);
+        applyLinkStatus(link, linkStatusCache[url]);
+        if (linkStatusCache[url] === 'working') workingLinks++;
+        else brokenLinks++;
+        updateLegend();
+      };
+
+      for (const item of queue) {
+        const p = runTask(item).finally(() => {
+          running.splice(running.indexOf(p), 1);
+        });
+        running.push(p);
+        all.push(p);
+        if (running.length >= MAX_CONCURRENT_REQUESTS) {
+          await Promise.race(running);
+        }
+      }
+
+      await Promise.all(all);
+      updateLegend();
     };
 
     linkCheckBtn.addEventListener('click', () => {
