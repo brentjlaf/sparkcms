@@ -7,6 +7,12 @@ let canvas;
 let settingsPanel;
 let settingsContent;
 let savePageFn;
+let renderDebounce;
+
+function scheduleRender(block) {
+  clearTimeout(renderDebounce);
+  renderDebounce = setTimeout(() => renderBlock(block), 100);
+}
 
 function deriveAltText(src) {
   if (!src) return '';
@@ -103,7 +109,7 @@ export function initSettings(options = {}) {
             true
           );
         }
-        renderBlock(block);
+        scheduleRender(block);
         // Automatically schedule a save whenever a setting changes so that
         // media selections are persisted even if the user forgets to press
         // the "Apply" button.
