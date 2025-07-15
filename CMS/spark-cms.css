@@ -78,11 +78,14 @@
             border-left-color: white;
         }
 
-        .nav-icon {
-            width: 20px;
-            margin-right: 12px;
-            font-size: 18px;
-        }
+.nav-icon {
+    width: 20px;
+    margin-right: 12px;
+    font-size: 18px;
+}
+.nav-icon i {
+    color: white;
+}
 
         .nav-text {
             font-size: 14px;

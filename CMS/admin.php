@@ -26,6 +26,7 @@ if (file_exists($settingsFile)) {
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="modal-utils.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="spark-cms.css">
                 <link rel="shortcut icon" href="images/favicon.png" />
 
@@ -47,7 +48,7 @@ if (file_exists($settingsFile)) {
                 <div class="nav-section">
                     <div class="nav-section-title">Overview</div>
                     <div class="nav-item active" data-section="dashboard">
-                        <div class="nav-icon">📊</div>
+                        <div class="nav-icon"><i class="fas fa-tachometer-alt"></i></div>
                         <div class="nav-text">Dashboard</div>
                     </div>
                 </div>
@@ -55,11 +56,11 @@ if (file_exists($settingsFile)) {
                 <div class="nav-section">
                     <div class="nav-section-title">Content</div>
                     <div class="nav-item" data-section="pages">
-                        <div class="nav-icon">📄</div>
+                        <div class="nav-icon"><i class="far fa-file-alt"></i></div>
                         <div class="nav-text">Pages</div>
                     </div>
                     <div class="nav-item" data-section="blogs">
-                        <div class="nav-icon">📝</div>
+                        <div class="nav-icon"><i class="fas fa-blog"></i></div>
                         <div class="nav-text">Blogs</div>
                     </div>
                 </div>
@@ -67,19 +68,19 @@ if (file_exists($settingsFile)) {
                 <div class="nav-section">
                     <div class="nav-section-title">Site</div>
                     <div class="nav-item" data-section="media">
-                        <div class="nav-icon">🖼️</div>
+                        <div class="nav-icon"><i class="fas fa-images"></i></div>
                         <div class="nav-text">Media Library</div>
                     </div>
                     <div class="nav-item" data-section="menus">
-                        <div class="nav-icon">📑</div>
+                        <div class="nav-icon"><i class="fas fa-bars"></i></div>
                         <div class="nav-text">Menus</div>
                     </div>
                     <div class="nav-item" data-section="forms">
-                        <div class="nav-icon">📋</div>
+                        <div class="nav-icon"><i class="fas fa-clipboard"></i></div>
                         <div class="nav-text">Forms</div>
                     </div>
                     <div class="nav-item" data-section="maps">
-                        <div class="nav-icon">🗺️</div>
+                        <div class="nav-icon"><i class="fas fa-map-marked-alt"></i></div>
                         <div class="nav-text">Maps</div>
                     </div>
                 </div>
@@ -87,11 +88,11 @@ if (file_exists($settingsFile)) {
                 <div class="nav-section">
                     <div class="nav-section-title">Administration</div>
                     <div class="nav-item" data-section="users">
-                        <div class="nav-icon">👥</div>
+                        <div class="nav-icon"><i class="fas fa-users"></i></div>
                         <div class="nav-text">Users</div>
                     </div>
                     <div class="nav-item" data-section="settings">
-                        <div class="nav-icon">⚙️</div>
+                        <div class="nav-icon"><i class="fas fa-cog"></i></div>
                         <div class="nav-text">Settings</div>
                     </div>
                 </div>
@@ -99,26 +100,26 @@ if (file_exists($settingsFile)) {
                 <div class="nav-section">
                     <div class="nav-section-title">System</div>
                     <div class="nav-item" data-section="analytics">
-                        <div class="nav-icon">📈</div>
+                        <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
                         <div class="nav-text">Analytics</div>
                     </div>
                     <div class="nav-item" data-section="logs">
-                        <div class="nav-icon">📋</div>
+                        <div class="nav-icon"><i class="fas fa-clipboard-list"></i></div>
                         <div class="nav-text">Logs</div>
                     </div>
                     <div class="nav-item" data-section="backup">
-                        <div class="nav-icon">💾</div>
+                        <div class="nav-icon"><i class="fas fa-save"></i></div>
                         <div class="nav-text">Backup</div>
                     </div>
                     <div class="nav-item" data-section="import">
-                        <div class="nav-icon">📥</div>
+                        <div class="nav-icon"><i class="fas fa-file-import"></i></div>
                         <div class="nav-text">Import/Export</div>
                     </div>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-item" data-section="logout">
-                        <div class="nav-icon">🚪</div>
+                        <div class="nav-icon"><i class="fas fa-sign-out-alt"></i></div>
                         <div class="nav-text"><a href="logout.php" style="color: inherit; text-decoration: none;">Logout</a></div>
                     </div>
                 </div>
@@ -133,7 +134,7 @@ if (file_exists($settingsFile)) {
                 <div class="top-bar-actions">
                     <div class="search-box">
                         <input type="text" class="search-input" placeholder="Search...">
-                        <div class="search-icon">🔍</div>
+                        <div class="search-icon"><i class="fas fa-search"></i></div>
                     </div>
                     <div class="user-menu">
                         <div class="user-avatar">AD</div>
