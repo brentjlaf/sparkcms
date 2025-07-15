@@ -49,13 +49,13 @@ $previewToolbar = '<div class="preview-toolbar">'
     . '<button type="button" class="preview-btn" id="gridToggle" title="Toggle Grid"><i class="fa-solid fa-border-all"></i></button>'
     . '</div>';
 $builderHeader = '<header class="builder-header" title="Drag to reposition">'
-    . '<div  class="title-top"><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div> '
-    . '<button type="button" class="manual-save-btn btn btn-primary">Save</button></div>'
-    . '<div id="saveStatus" class="save-status"></div>'
     . '<div class="header-actions">'
     . '<button type="button" class="header-btn palette-toggle-btn" title="Collapse Palette"><i class="fa-solid fa-chevron-left"></i></button>'
     . '<button type="button" class="header-btn palette-dock-btn" title="Dock palette"><i class="fa-solid fa-up-down-left-right"></i></button>'
     . '</div>'
+    . '<div  class="title-top"><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div> '
+    . '<button type="button" class="manual-save-btn btn btn-primary">Save</button></div>'
+    . '<div id="saveStatus" class="save-status"></div>'
     . '<div id="a11yStatus" class="a11y-status" title=""></div>'
     . '</header>';
 
