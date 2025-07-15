@@ -51,12 +51,6 @@
 .save-status.error {
   color: #e53e3e;
 }
-.a11y-status {
-  margin-left: 0;
-  font-size: 14px;
-  color: #e53e3e;
-  flex-basis: 100%;
-}
 .block-palette {
   width: 320px;
   background: rgba(12, 14, 20, 0.95);
@@ -131,8 +125,7 @@
 .block-palette.collapsed .palette-search,
 .block-palette.collapsed .builder-header .title,
 .block-palette.collapsed .manual-save-btn,
-.block-palette.collapsed #saveStatus,
-.block-palette.collapsed #a11yStatus {
+.block-palette.collapsed #saveStatus {
   display: none;
 }
 .history-toolbar {
@@ -1126,15 +1119,6 @@
   color: #64748b;
   font-size: 11px;
   margin-left: 8px;
-}
-.a11y-status {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  font-size: 10px;
-  margin: 0 0 15px;
-  padding: 6px 6px;
-  border-radius: 4px;
-  font-weight: 600;
 }
 .preview-btn {
   padding: 8px 10px;

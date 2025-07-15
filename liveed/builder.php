@@ -58,7 +58,6 @@ $builderHeader = '<header class="builder-header" title="Drag to reposition">'
     . '<div  class="title-top"><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div> '
     . '<button type="button" class="manual-save-btn btn btn-primary">Save</button></div>'
     . '<div id="saveStatus" class="save-status"></div>'
-    . '<div id="a11yStatus" class="a11y-status" title=""></div>'
     . $previewToolbar
     . '</header>';
 
