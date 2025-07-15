@@ -224,11 +224,9 @@ if ($templateFile && (!$logged_in || $preview_mode)) {
     </footer>
 <?php endif; ?>
 <?php if ($logged_in): ?>
-<script src="<?php echo $scriptBase; ?>/theme/js/global.js"></script>
-<script src="<?php echo $scriptBase; ?>/theme/js/script.js"></script>
+<script src="<?php echo $scriptBase; ?>/theme/js/combined.js"></script>
 <?php else: ?>
-<script src="<?php echo $scriptBase; ?>/theme/js/global.js"></script>
-<script src="<?php echo $scriptBase; ?>/theme/js/script.js"></script>
+<script src="<?php echo $scriptBase; ?>/theme/js/combined.js"></script>
 <?php endif; ?>
 </body>
 </html>
