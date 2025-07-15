@@ -100,9 +100,16 @@ $previewModalHtml = '<div id="previewModal" class="modal">'
     . '<div class="modal-footer"><button type="button" class="btn btn-secondary" id="closePreview">Close</button></div>'
     . '</div></div>';
 
+$seoModalHtml = '<div id="seoModal" class="modal seo-modal">'
+    . '<div class="modal-content seo-modal-content">'
+    . '<span class="close">&times;</span>'
+    . '<h2>SEO Report</h2>'
+    . '<ul id="seoIssues"></ul>'
+    . '</div></div>';
+
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
     . '<div id="historyPanel" class="history-panel"><div class="history-header"><span class="title">Page History</span><button type="button" class="close-btn">&times;</button></div><div class="history-content"></div></div>'
-    . $mediaPickerHtml . $previewModalHtml . '</div>'
+    . $mediaPickerHtml . $previewModalHtml . $seoModalHtml . '</div>'
     . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';window.builderSlug = ' . json_encode($page['slug']) . ';window.builderLastModified = ' . json_encode($page['last_modified']) . ';</script>'
     . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>';
 

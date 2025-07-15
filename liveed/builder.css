@@ -1275,4 +1275,54 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* SEO modal styles */
+#seoModal .seo-modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+#seoModal .seo-modal-content h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+#seoModal ul {
+  list-style: none;
+  padding: 0;
+}
+#seoModal ul li {
+  background: #f9f9f9;
+  margin: 5px 0;
+  padding: 10px;
+  border-left: 5px solid #4044c6;
+  border-radius: 5px;
+}
+#seoModal ul li:nth-child(even) {
+  background: #efefef;
+}
+#seoModal ul li.error {
+  border-left-color: red;
+}
+#seoModal ul li.pass {
+  border-left-color: green;
+}
+#seoModal .close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#seoModal .close:hover {
+  color: #000;
+}
+.highlight-error {
+  outline: 2px solid #cc0000;
+}
 /* --- end palette refresh styles --- */

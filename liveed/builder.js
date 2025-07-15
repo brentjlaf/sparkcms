@@ -183,17 +183,142 @@ function checkLinks(html) {
   return Promise.all(checks).then(() => warnings);
 }
 
-function checkSeo(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const issues = [];
-  if (!doc.querySelector('h1')) {
-    issues.push('Missing H1 heading');
+function generateSeoReport() {
+  const canvas = document.getElementById('canvas');
+  if (!canvas) return [];
+
+  const head = document.head;
+  const htmlEl = document.documentElement;
+  const report = [];
+
+  const titles = head.querySelectorAll('title');
+  if (titles.length === 0) {
+    report.push({ msg: 'Missing <code>&lt;title&gt;</code> tag.', error: true });
+  } else {
+    report.push({ msg: 'Title tag is present.', error: false });
+    if (titles.length > 1) {
+      report.push({ msg: 'Duplicate <code>&lt;title&gt;</code> tags found.', error: true });
+    }
   }
-  const wordCount = doc.body.textContent.trim().split(/\s+/).length;
-  if (wordCount < 300) {
-    issues.push('Low word count');
+
+  const desc = head.querySelectorAll('meta[name="description"]');
+  if (desc.length === 0) {
+    report.push({ msg: 'Missing meta description.', error: true });
+  } else {
+    report.push({ msg: 'Meta description is present.', error: false });
+    if (desc.length > 1) {
+      report.push({ msg: 'Duplicate meta description tags found.', error: true });
+    }
   }
-  return issues;
+
+  if (!canvas.querySelector('h1')) {
+    report.push({ msg: 'Missing <code>&lt;h1&gt;</code> tag.', error: true });
+  } else {
+    report.push({ msg: 'H1 tag is present.', error: false });
+  }
+
+  if (!canvas.querySelector('h2')) {
+    report.push({
+      msg: 'No <code>&lt;h2&gt;</code> tag found. Consider adding subheadings for better structure.',
+      error: true,
+    });
+  } else {
+    report.push({ msg: 'H2 tags are present.', error: false });
+  }
+
+  const imgsNoAlt = canvas.querySelectorAll('img:not([alt])');
+  if (imgsNoAlt.length) {
+    report.push({ msg: `${imgsNoAlt.length} image(s) missing alt attribute.`, error: true });
+  } else {
+    report.push({ msg: 'All images have alt attributes.', error: false });
+  }
+
+  const imgsNoLazy = canvas.querySelectorAll('img:not([loading])');
+  if (imgsNoLazy.length) {
+    report.push({
+      msg: `${imgsNoLazy.length} image(s) missing lazy loading attribute (consider using loading="lazy").`,
+      error: true,
+    });
+  } else {
+    report.push({ msg: 'All images have lazy loading attribute.', error: false });
+  }
+
+  if (!head.querySelector('link[rel="canonical"]')) {
+    report.push({ msg: 'Missing canonical tag.', error: true });
+  } else {
+    report.push({ msg: 'Canonical tag is present.', error: false });
+  }
+
+  if (!head.querySelector('link[rel="sitemap"]')) {
+    report.push({ msg: 'Missing sitemap link.', error: true });
+  } else {
+    report.push({ msg: 'Sitemap link is present.', error: false });
+  }
+
+  if (!head.querySelector('meta[name="viewport"]')) {
+    report.push({ msg: 'Missing viewport meta tag.', error: true });
+  } else {
+    report.push({ msg: 'Viewport meta tag is present.', error: false });
+  }
+
+  if (!htmlEl.getAttribute('lang')) {
+    report.push({ msg: 'Missing language attribute on <code>&lt;html&gt;</code> tag.', error: true });
+  } else {
+    report.push({ msg: 'Language attribute is present on <code>&lt;html&gt;</code> tag.', error: false });
+  }
+
+  if (!head.querySelector('meta[name="robots"]')) {
+    report.push({ msg: 'Missing meta robots tag.', error: true });
+  } else {
+    report.push({ msg: 'Meta robots tag is present.', error: false });
+  }
+
+  if (
+    !head.querySelector('meta[property="og:title"]') ||
+    !head.querySelector('meta[property="og:description"]') ||
+    !head.querySelector('meta[property="og:image"]')
+  ) {
+    report.push({
+      msg: 'One or more Open Graph tags (og:title, og:description, og:image) are missing.',
+      error: true,
+    });
+  } else {
+    report.push({ msg: 'Open Graph tags are present.', error: false });
+  }
+
+  if (!head.querySelector('meta[name="twitter:card"]')) {
+    report.push({ msg: 'Missing Twitter Card meta tag (twitter:card).', error: true });
+  } else {
+    report.push({ msg: 'Twitter Card meta tag is present.', error: false });
+  }
+
+  if (!head.querySelector('script[type="application/ld+json"]')) {
+    report.push({ msg: 'Missing structured data (JSON-LD).', error: true });
+  } else {
+    report.push({ msg: 'Structured data (JSON-LD) is present.', error: false });
+  }
+
+  return report;
+}
+
+function openSeoModal() {
+  const modal = document.getElementById('seoModal');
+  const list = document.getElementById('seoIssues');
+  if (!modal || !list) return;
+
+  const report = generateSeoReport();
+  list.innerHTML = report
+    .map((r) => `<li class="${r.error ? 'error' : 'pass'}">${r.msg}</li>`)
+    .join('');
+
+  modal.classList.add('active');
+
+  const closeBtn = modal.querySelector('.close');
+  const close = () => modal.classList.remove('active');
+  if (closeBtn) closeBtn.addEventListener('click', close, { once: true });
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) close();
+  }, { once: true });
 }
 function savePage() {
   const canvas = document.getElementById('canvas');
@@ -510,15 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     });
-  if (seoCheckBtn)
-    seoCheckBtn.addEventListener('click', () => {
-      const issues = checkSeo(canvas.innerHTML);
-      if (issues.length) {
-        alert('SEO issues found:\n' + issues.join('\n'));
-      } else {
-        alert('No SEO issues found.');
-      }
-    });
+  if (seoCheckBtn) seoCheckBtn.addEventListener('click', openSeoModal);
   if (a11yCheckBtn)
     a11yCheckBtn.addEventListener('click', () => {
       const { count, messages } = checkAccessibility();
