@@ -1,10 +1,12 @@
 <?php
 // File: 404.php
 http_response_code(404);
+// Reuse cached settings data if available to avoid redundant disk access
+require_once __DIR__ . '/CMS/includes/data.php';
 $settingsFile = __DIR__ . '/CMS/data/settings.json';
 $menusFile = __DIR__ . '/CMS/data/menus.json';
-$settings = file_exists($settingsFile) ? json_decode(file_get_contents($settingsFile), true) : [];
-$menus = file_exists($menusFile) ? json_decode(file_get_contents($menusFile), true) : [];
+$settings = get_cached_json($settingsFile);
+$menus = get_cached_json($menusFile);
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {
     $scriptBase = substr($scriptBase, 0, -4);
