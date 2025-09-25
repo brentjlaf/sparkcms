@@ -288,6 +288,11 @@
             transform: translateY(-2px);
         }
 
+        .stat-card[data-seo-filter],
+        .stat-card[data-a11y-filter] {
+            cursor: pointer;
+        }
+
         .stat-header {
             display: flex;
             align-items: center;
@@ -319,6 +324,20 @@
         .stat-icon.media {
             background: linear-gradient(135deg, #ed8936, #dd6b20);
             color: white;
+        }
+
+        .stat-icon.seo {
+            background: linear-gradient(135deg, #38b2ac, #319795);
+            color: white;
+        }
+
+        .stat-icon.accessibility {
+            background: linear-gradient(135deg, #805ad5, #6b46c1);
+            color: white;
+        }
+
+        .stat-card.active {
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.35);
         }
 
         .stat-icon.views {
@@ -404,6 +423,20 @@
             gap: 10px;
         }
 
+        .table-search {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .table-search:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+        }
+
         .btn {
             padding: 8px 16px;
             border: none;
@@ -476,12 +509,43 @@
             background: #f7fafc;
         }
 
+        .cell-title {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .cell-subtext {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .cell-muted {
+            color: #4a5568;
+            font-size: 13px;
+        }
+
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
+        }
+
+        .status-good {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-warning {
+            background: #fefcbf;
+            color: #744210;
+        }
+
+        .status-critical {
+            background: #fed7d7;
+            color: #742a2a;
         }
 
         .status-published {
@@ -497,6 +561,21 @@
         .status-archived {
             background: #e2e8f0;
             color: #4a5568;
+        }
+
+        .issue-list {
+            margin: 0;
+            padding-left: 18px;
+            color: #4a5568;
+        }
+
+        .issue-list li + li {
+            margin-top: 4px;
+        }
+
+        .issue-none {
+            color: #2f855a;
+            font-weight: 500;
         }
 
         .home-badge {
