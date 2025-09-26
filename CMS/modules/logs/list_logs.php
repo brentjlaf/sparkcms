@@ -15,13 +15,27 @@ $historyFile = __DIR__ . '/../../data/page_history.json';
 $historyData = read_json_file($historyFile);
 
 $logs = [];
+
+function normalize_action_label(?string $action): string {
+    $label = trim((string)($action ?? ''));
+    return $label !== '' ? $label : 'Updated content';
+}
+
+function slugify_action_label(string $label): string {
+    $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $label));
+    $slug = trim($slug ?? '', '-');
+    return $slug !== '' ? $slug : 'unknown';
+}
+
 foreach ($historyData as $pid => $entries) {
     foreach ($entries as $entry) {
+        $actionLabel = normalize_action_label($entry['action'] ?? '');
         $logs[] = [
-            'time' => $entry['time'] ?? 0,
+            'time' => (int)($entry['time'] ?? 0),
             'user' => $entry['user'] ?? '',
             'page_title' => $pageLookup[$pid] ?? 'Unknown',
-            'action' => $entry['action'] ?? ''
+            'action' => $actionLabel,
+            'action_slug' => slugify_action_label($actionLabel),
         ];
     }
 }
