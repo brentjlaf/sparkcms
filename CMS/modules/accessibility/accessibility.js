@@ -2,6 +2,7 @@ $(function () {
     const $rows = $('#accessibilityTable tbody tr');
     const $search = $('#a11ySearch');
     let activeFilter = 'all';
+    const $filters = $('[data-a11y-filter]');
 
     function applyFilters() {
         const query = $search.val().toLowerCase();
@@ -21,16 +22,21 @@ $(function () {
         });
     }
 
+    function setActiveFilter(filter) {
+        activeFilter = filter;
+        $filters.removeClass('active');
+        $filters.filter(function () {
+            return $(this).data('a11y-filter') === filter;
+        }).addClass('active');
+        applyFilters();
+    }
+
     $search.on('input', applyFilters);
 
-    $('[data-a11y-filter]').on('click', function () {
-        const $card = $(this);
-        activeFilter = $card.data('a11y-filter');
-
-        $('[data-a11y-filter]').removeClass('active');
-        $card.addClass('active');
-        applyFilters();
+    $filters.on('click', function () {
+        const filter = $(this).data('a11y-filter');
+        setActiveFilter(filter);
     });
 
-    $('[data-a11y-filter="all"]').addClass('active');
+    setActiveFilter('all');
 });

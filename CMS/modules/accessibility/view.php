@@ -15,6 +15,7 @@ $summary = [
     'needs_review' => 0,
     'missing_alt' => 0,
 ];
+$issueCount = 0;
 
 $genericLinkTerms = [
     'click here',
@@ -103,6 +104,7 @@ foreach ($pages as $page) {
         $summary['needs_review']++;
     }
 
+    $issueCount += count($issues);
     $report[] = [
         'title' => $title,
         'slug' => $slug,
@@ -114,53 +116,88 @@ foreach ($pages as $page) {
         'issues' => $issues,
     ];
 }
+
+$totalPages = count($report);
+$avgCompliance = $totalPages > 0 ? round(($summary['accessible'] / $totalPages) * 100) : 0;
+$criticalIssues = $issueCount;
+$accessibleRate = $avgCompliance;
+$lastScan = date('M j, Y g:i A');
 ?>
 <div class="content-section" id="accessibility">
+    <div class="a11y-hero">
+        <div class="a11y-hero-header">
+            <div>
+                <h2 class="a11y-hero-title">Accessibility Dashboard</h2>
+                <p class="a11y-hero-subtitle">Monitor WCAG compliance and ensure every experience is inclusive.</p>
+            </div>
+            <div class="a11y-hero-meta">Last scan: <?php echo htmlspecialchars($lastScan); ?></div>
+        </div>
+        <div class="a11y-hero-stats">
+            <button class="a11y-stat-card active" data-a11y-filter="all">
+                <div class="a11y-stat-icon">♿</div>
+                <div>
+                    <div class="a11y-stat-value"><?php echo $totalPages; ?></div>
+                    <div class="a11y-stat-label">Total Pages</div>
+                </div>
+                <span class="a11y-stat-chip">View all</span>
+            </button>
+            <button class="a11y-stat-card" data-a11y-filter="accessible">
+                <div class="a11y-stat-icon success">✅</div>
+                <div>
+                    <div class="a11y-stat-value"><?php echo $summary['accessible']; ?></div>
+                    <div class="a11y-stat-label">AA Compliant</div>
+                </div>
+                <span class="a11y-stat-chip"><?php echo $accessibleRate; ?>% pass</span>
+            </button>
+            <button class="a11y-stat-card" data-a11y-filter="review">
+                <div class="a11y-stat-icon warning">⚠️</div>
+                <div>
+                    <div class="a11y-stat-value"><?php echo $summary['needs_review']; ?></div>
+                    <div class="a11y-stat-label">Needs Review</div>
+                </div>
+                <span class="a11y-stat-chip">Focus first</span>
+            </button>
+            <button class="a11y-stat-card" data-a11y-filter="alt">
+                <div class="a11y-stat-icon critical">🖼️</div>
+                <div>
+                    <div class="a11y-stat-value"><?php echo $summary['missing_alt']; ?></div>
+                    <div class="a11y-stat-label">Alt Text Missing</div>
+                </div>
+                <span class="a11y-stat-chip">High impact</span>
+            </button>
+        </div>
+        <div class="a11y-hero-overview">
+            <div class="a11y-overview-item">
+                <div class="a11y-overview-label">Average Compliance</div>
+                <div class="a11y-overview-value"><?php echo $avgCompliance; ?>%</div>
+            </div>
+            <div class="a11y-overview-item">
+                <div class="a11y-overview-label">Critical Issues Detected</div>
+                <div class="a11y-overview-value"><?php echo $criticalIssues; ?></div>
+            </div>
+            <div class="a11y-overview-item">
+                <div class="a11y-overview-label">Reports Generated</div>
+                <div class="a11y-overview-value"><?php echo $totalPages; ?></div>
+            </div>
+        </div>
+    </div>
+
     <div class="table-card">
         <div class="table-header">
-            <div class="table-title">Accessibility Insights</div>
+            <div>
+                <div class="table-title">Accessibility Insights</div>
+                <p class="table-subtitle">Filter pages and prioritize fixes to improve overall compliance.</p>
+            </div>
             <div class="table-actions">
-                <input type="text" id="a11ySearch" class="table-search" placeholder="Filter pages..." aria-label="Filter accessibility rows">
+                <input type="text" id="a11ySearch" class="table-search" placeholder="Search by page, issue, or URL" aria-label="Filter accessibility rows">
             </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card" data-a11y-filter="all">
-                <div class="stat-header">
-                    <div class="stat-icon accessibility">♿</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Total Pages</div>
-                        <div class="stat-number"><?php echo count($report); ?></div>
-                    </div>
-                </div>
-            </div>
-            <div class="stat-card" data-a11y-filter="accessible">
-                <div class="stat-header">
-                    <div class="stat-icon accessibility">✅</div>
-                    <div class="stat-content">
-                        <div class="stat-label">No Issues</div>
-                        <div class="stat-number"><?php echo $summary['accessible']; ?></div>
-                    </div>
-                </div>
-            </div>
-            <div class="stat-card" data-a11y-filter="review">
-                <div class="stat-header">
-                    <div class="stat-icon accessibility">⚠️</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Needs Review</div>
-                        <div class="stat-number"><?php echo $summary['needs_review']; ?></div>
-                    </div>
-                </div>
-            </div>
-            <div class="stat-card" data-a11y-filter="alt">
-                <div class="stat-header">
-                    <div class="stat-icon accessibility">🖼️</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Missing Alt Text</div>
-                        <div class="stat-number"><?php echo $summary['missing_alt']; ?></div>
-                    </div>
-                </div>
-            </div>
+        <div class="a11y-filter-bar">
+            <button class="a11y-filter-pill active" data-a11y-filter="all">All Pages <span><?php echo $totalPages; ?></span></button>
+            <button class="a11y-filter-pill" data-a11y-filter="review">Needs Review <span><?php echo $summary['needs_review']; ?></span></button>
+            <button class="a11y-filter-pill" data-a11y-filter="alt">Missing Alt Text <span><?php echo $summary['missing_alt']; ?></span></button>
+            <button class="a11y-filter-pill" data-a11y-filter="accessible">WCAG Compliant <span><?php echo $summary['accessible']; ?></span></button>
         </div>
 
         <table class="data-table" id="accessibilityTable">
