@@ -12,7 +12,7 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon posts">📝</div>
+                    <div class="stat-icon posts"><i class="fa-solid fa-newspaper" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Total Posts</div>
                         <div class="stat-number" id="totalPosts">0</div>
@@ -21,7 +21,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon posts">✅</div>
+                    <div class="stat-icon posts"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Published</div>
                         <div class="stat-number" id="publishedPosts">0</div>
@@ -30,7 +30,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon posts">✏️</div>
+                    <div class="stat-icon posts"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Drafts</div>
                         <div class="stat-number" id="draftPosts">0</div>
@@ -39,7 +39,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon posts">📅</div>
+                    <div class="stat-icon posts"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Scheduled</div>
                         <div class="stat-number" id="scheduledPosts">0</div>
@@ -107,7 +107,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modalTitle">New Post</h2>
-            <button class="modal-close" id="closeModal">×</button>
+            <button class="modal-close" id="closeModal" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
             <form id="postForm">
@@ -175,7 +175,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2>Manage Categories</h2>
-            <button class="modal-close" id="closeCategoriesModal">×</button>
+            <button class="modal-close" id="closeCategoriesModal" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
             <div class="form-group">
@@ -194,7 +194,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="previewTitle"></h2>
-            <button class="modal-close" id="closePreviewModal">×</button>
+            <button class="modal-close" id="closePreviewModal" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
             <div id="previewMeta" style="margin-bottom:10px;"></div>

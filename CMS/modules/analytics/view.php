@@ -19,7 +19,7 @@ foreach ($pages as $p) {
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon views">📈</div>
+                    <div class="stat-icon views"><i class="fa-solid fa-chart-line" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Total Views</div>
                         <div class="stat-number"><?php echo $totalViews; ?></div>

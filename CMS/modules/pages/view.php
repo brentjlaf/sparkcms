@@ -43,7 +43,7 @@ foreach ($pages as $p) {
                         <div class="stats-grid">
                             <div class="stat-card">
                                 <div class="stat-header">
-                                    <div class="stat-icon pages">📄</div>
+                                    <div class="stat-icon pages"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></div>
                                     <div class="stat-content">
                                         <div class="stat-label">Total Pages</div>
                                         <div class="stat-number"><?php echo $totalPages; ?></div>
@@ -52,7 +52,7 @@ foreach ($pages as $p) {
                             </div>
                             <div class="stat-card">
                                 <div class="stat-header">
-                                    <div class="stat-icon pages">✅</div>
+                                    <div class="stat-icon pages"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
                                     <div class="stat-content">
                                         <div class="stat-label">Published</div>
                                         <div class="stat-number"><?php echo $publishedPages; ?></div>
@@ -61,7 +61,7 @@ foreach ($pages as $p) {
                             </div>
                             <div class="stat-card">
                                 <div class="stat-header">
-                                    <div class="stat-icon pages">✏️</div>
+                                    <div class="stat-icon pages"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></div>
                                     <div class="stat-content">
                                         <div class="stat-label">Drafts</div>
                                         <div class="stat-number"><?php echo $draftPages; ?></div>
@@ -70,7 +70,7 @@ foreach ($pages as $p) {
                             </div>
                             <div class="stat-card">
                                 <div class="stat-header">
-                                    <div class="stat-icon views">📈</div>
+                                    <div class="stat-icon views"><i class="fa-solid fa-chart-line" aria-hidden="true"></i></div>
                                     <div class="stat-content">
                                         <div class="stat-label">Total Views</div>
                                         <div class="stat-number"><?php echo $totalViews; ?></div>
@@ -84,7 +84,7 @@ foreach ($pages as $p) {
                                     <th>Title</th>
                                     <th>Status</th>
                                     <th>Views</th>
-                                    <th title="Homepage">&#x1F3E0;</th>
+                                    <th title="Homepage" aria-label="Homepage"><i class="fa-solid fa-house" aria-hidden="true"></i></th>
                                     <th>Last Modified</th>
                                     <th>Actions</th>
                                 </tr>
@@ -112,9 +112,9 @@ foreach ($pages as $p) {
     <td class="views"><?php echo $p['views'] ?? 0; ?></td>
     <td class="home">
         <?php if ($homepage === $p['slug']): ?>
-            <span class="home-icon is-home" title="Homepage">&#x1F3E0;</span>
+            <span class="home-icon is-home" title="Homepage"><i class="fa-solid fa-house" aria-hidden="true"></i></span>
         <?php else: ?>
-            <span class="home-icon set-home" title="Set as homepage">&#x1F3E0;</span>
+            <span class="home-icon set-home" title="Set as homepage"><i class="fa-solid fa-house" aria-hidden="true"></i></span>
         <?php endif; ?>
     </td>
     <td class="modified"><?php echo isset($p['last_modified']) ? date('Y-m-d H:i', $p['last_modified']) : ''; ?></td>
@@ -136,7 +136,7 @@ foreach ($pages as $p) {
 
                     <div id="pageModal" class="modal">
                         <div class="modal-content">
-                            <button class="close-btn" id="closePageModal">&times;</button>
+                            <button class="close-btn" id="closePageModal" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
                             <div class="modal-header">
                                 <div class="modal-title" id="formTitle">Add New Page</div>
                             </div>

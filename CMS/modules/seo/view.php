@@ -100,7 +100,7 @@ foreach ($pages as $page) {
         <div class="stats-grid">
             <div class="stat-card" data-seo-filter="all">
                 <div class="stat-header">
-                    <div class="stat-icon seo">🔎</div>
+                    <div class="stat-icon seo"><i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Total Pages</div>
                         <div class="stat-number"><?php echo count($report); ?></div>
@@ -109,7 +109,7 @@ foreach ($pages as $page) {
             </div>
             <div class="stat-card" data-seo-filter="optimized">
                 <div class="stat-header">
-                    <div class="stat-icon seo">✅</div>
+                    <div class="stat-icon seo"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Optimized</div>
                         <div class="stat-number"><?php echo $summary['optimized']; ?></div>
@@ -118,7 +118,7 @@ foreach ($pages as $page) {
             </div>
             <div class="stat-card" data-seo-filter="attention">
                 <div class="stat-header">
-                    <div class="stat-icon seo">⚠️</div>
+                    <div class="stat-icon seo"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Needs Attention</div>
                         <div class="stat-number"><?php echo $summary['needs_attention']; ?></div>
@@ -127,7 +127,7 @@ foreach ($pages as $page) {
             </div>
             <div class="stat-card" data-seo-filter="metadata">
                 <div class="stat-header">
-                    <div class="stat-icon seo">📝</div>
+                    <div class="stat-icon seo"><i class="fa-solid fa-file-pen" aria-hidden="true"></i></div>
                     <div class="stat-content">
                         <div class="stat-label">Metadata Gaps</div>
                         <div class="stat-number"><?php echo $summary['metadata_gaps']; ?></div>

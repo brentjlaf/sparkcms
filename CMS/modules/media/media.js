@@ -141,17 +141,25 @@ $(function(){
                     preview = '<img src="'+src+'" alt="'+img.name+'">';
                 }else{
                     const ext = img.file.split('.').pop().toLowerCase();
-                    const icons = {pdf:'📄',doc:'📄',docx:'📄',txt:'📄',mp4:'🎥',webm:'🎥',mov:'🎥'};
-                    const icon = icons[ext] || '📄';
+                    const icons = {
+                        pdf: '<i class="fa-solid fa-file-pdf" aria-hidden="true"></i>',
+                        doc: '<i class="fa-solid fa-file-lines" aria-hidden="true"></i>',
+                        docx: '<i class="fa-solid fa-file-lines" aria-hidden="true"></i>',
+                        txt: '<i class="fa-solid fa-file-lines" aria-hidden="true"></i>',
+                        mp4: '<i class="fa-solid fa-file-video" aria-hidden="true"></i>',
+                        webm: '<i class="fa-solid fa-file-video" aria-hidden="true"></i>',
+                        mov: '<i class="fa-solid fa-file-video" aria-hidden="true"></i>'
+                    };
+                    const icon = icons[ext] || '<i class="fa-solid fa-file" aria-hidden="true"></i>';
                     preview = '<div class="file-icon">'+icon+'</div>';
                 }
                 const card = $('<div class="image-card" data-id="'+img.id+'">\
                         <div class="image-preview">'+preview+'\
                             <div class="image-overlay">\
                                 <div>\
-                                    <button class="info-btn" data-id="'+img.id+'">ℹ</button>\
-                                    <button class="edit-btn" data-id="'+img.id+'">✎</button>\
-                                    <button class="remove-btn" data-id="'+img.id+'">×</button>\
+                                    <button class="info-btn" data-id="'+img.id+'" aria-label="View info"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>\
+                                    <button class="edit-btn" data-id="'+img.id+'" aria-label="Edit"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button>\
+                                    <button class="remove-btn" data-id="'+img.id+'" aria-label="Remove"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>\
                                 </div>\
                             </div>\
                         </div>\

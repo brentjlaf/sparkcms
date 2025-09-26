@@ -188,7 +188,7 @@ libxml_clear_errors();
         </div>
         <div class="a11y-hero-stats">
             <button class="a11y-stat-card active" data-a11y-filter="all">
-                <div class="a11y-stat-icon">♿</div>
+                <div class="a11y-stat-icon"><i class="fa-solid fa-universal-access" aria-hidden="true"></i></div>
                 <div>
                     <div class="a11y-stat-value"><?php echo $totalPages; ?></div>
                     <div class="a11y-stat-label">Total Pages</div>
@@ -196,7 +196,7 @@ libxml_clear_errors();
                 <span class="a11y-stat-chip">View all</span>
             </button>
             <button class="a11y-stat-card" data-a11y-filter="accessible">
-                <div class="a11y-stat-icon success">✅</div>
+                <div class="a11y-stat-icon success"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
                 <div>
                     <div class="a11y-stat-value"><?php echo $summary['accessible']; ?></div>
                     <div class="a11y-stat-label">AA Compliant</div>
@@ -204,7 +204,7 @@ libxml_clear_errors();
                 <span class="a11y-stat-chip"><?php echo $accessibleRate; ?>% pass</span>
             </button>
             <button class="a11y-stat-card" data-a11y-filter="review">
-                <div class="a11y-stat-icon warning">⚠️</div>
+                <div class="a11y-stat-icon warning"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
                 <div>
                     <div class="a11y-stat-value"><?php echo $summary['needs_review']; ?></div>
                     <div class="a11y-stat-label">Needs Review</div>
@@ -212,7 +212,7 @@ libxml_clear_errors();
                 <span class="a11y-stat-chip">Focus first</span>
             </button>
             <button class="a11y-stat-card" data-a11y-filter="alt">
-                <div class="a11y-stat-icon critical">🖼️</div>
+                <div class="a11y-stat-icon critical"><i class="fa-solid fa-image" aria-hidden="true"></i></div>
                 <div>
                     <div class="a11y-stat-value"><?php echo $summary['missing_alt']; ?></div>
                     <div class="a11y-stat-label">Alt Text Missing</div>
