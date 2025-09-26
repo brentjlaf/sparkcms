@@ -2,6 +2,13 @@
 $(function(){
         $('#pageTabs').tabs();
 
+        const $pagesTable = $('#pagesTable');
+        const $searchInput = $('#pagesSearchInput');
+        const $filterButtons = $('[data-pages-filter]');
+        const $emptyState = $('#pagesEmptyState');
+        const $visibleCount = $('#pagesVisibleCount');
+        let activeFilter = 'all';
+
         function openPageModal() {
             openModal('pageModal');
         }
@@ -9,6 +16,95 @@ $(function(){
         function closePageModal() {
             closeModal('pageModal');
             $('#cancelEdit').hide();
+        }
+
+        function getPageRows() {
+            return $pagesTable.find('tbody tr');
+        }
+
+        function updateVisibleCount(count) {
+            if (!$visibleCount.length) {
+                return;
+            }
+            const label = count === 1 ? 'page' : 'pages';
+            $visibleCount.text(`Showing ${count} ${label}`);
+        }
+
+        function refreshFilterCounts($rows) {
+            const counts = {
+                all: 0,
+                published: 0,
+                drafts: 0,
+                restricted: 0
+            };
+
+            $rows.each(function(){
+                const $row = $(this);
+                counts.all++;
+                if ($row.data('published') == 1) {
+                    counts.published++;
+                } else {
+                    counts.drafts++;
+                }
+                const access = (($row.data('access') || 'public') + '').toLowerCase();
+                if (access !== 'public') {
+                    counts.restricted++;
+                }
+            });
+
+            Object.keys(counts).forEach(function(key){
+                $(`.pages-filter-count[data-count="${key}"]`).text(counts[key]);
+            });
+        }
+
+        function rowMatchesFilter($row) {
+            switch (activeFilter) {
+                case 'published':
+                    return $row.data('published') == 1;
+                case 'drafts':
+                    return $row.data('published') != 1;
+                case 'restricted':
+                    return (($row.data('access') || 'public') + '').toLowerCase() !== 'public';
+                case 'all':
+                default:
+                    return true;
+            }
+        }
+
+        function applyPageFilters() {
+            if (!$pagesTable.length) {
+                return;
+            }
+
+            const query = ($searchInput.val() || '').toString().toLowerCase();
+            let visible = 0;
+            const $rows = getPageRows();
+
+            $rows.each(function(){
+                const $row = $(this);
+                const title = ($row.find('.pages-title-text').text() || '').toLowerCase();
+                const slug = (($row.data('slug') || '') + '').toLowerCase();
+                const matchesQuery = !query || title.indexOf(query) !== -1 || slug.indexOf(query) !== -1;
+                const matchesFilter = rowMatchesFilter($row);
+
+                if (matchesQuery && matchesFilter) {
+                    $row.show();
+                    visible++;
+                } else {
+                    $row.hide();
+                }
+            });
+
+            if ($emptyState.length) {
+                if (visible === 0) {
+                    $emptyState.removeAttr('hidden');
+                } else {
+                    $emptyState.attr('hidden', 'hidden');
+                }
+            }
+
+            updateVisibleCount(visible);
+            refreshFilterCounts($rows);
         }
 
         let slugEdited = false;
@@ -38,6 +134,7 @@ $(function(){
                 if(ok){
                     $.post('modules/pages/delete_page.php', {id: row.data('id')}, function(){
                         row.remove();
+                        applyPageFilters();
                     });
                 }
             });
@@ -89,19 +186,24 @@ $(function(){
             slugEdited = false;
         });
 
-        // Live filter pages by search query
-        $('.search-input').on('input', function(){
-            const query = $(this).val().toLowerCase();
-            $('#pagesTable tbody tr').each(function(){
-                const title = $(this).find('.title').text().toLowerCase();
-                const slug = $(this).data('slug').toString().toLowerCase();
-                if(title.indexOf(query) !== -1 || slug.indexOf(query) !== -1){
-                    $(this).show();
-                } else {
-                    $(this).hide();
+        if ($pagesTable.length) {
+            applyPageFilters();
+
+            $searchInput.on('input', applyPageFilters);
+
+            $filterButtons.on('click', function(){
+                const $btn = $(this);
+                const newFilter = $btn.data('pagesFilter');
+                if (!newFilter) {
+                    return;
                 }
+
+                activeFilter = newFilter;
+                $filterButtons.removeClass('active');
+                $btn.addClass('active');
+                applyPageFilters();
             });
-        });
+        }
 
         $('.copyBtn').on('click', function(){
             const row = $(this).closest('tr');
