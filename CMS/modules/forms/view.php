@@ -19,6 +19,28 @@
         </table>
     </div>
 
+    <div class="table-card" id="formSubmissionsCard" style="margin-top:20px;">
+        <div class="table-header">
+            <div class="table-title">Form Submissions</div>
+            <div class="table-actions">
+                <span id="selectedFormName" class="form-submissions-label">Select a form to view submissions</span>
+            </div>
+        </div>
+        <table class="data-table" id="formSubmissionsTable">
+            <thead>
+                <tr>
+                    <th>Submitted</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="placeholder-row">
+                    <td colspan="2">Select a form to view submissions.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
     <div class="form-card" id="formBuilderCard" style="margin-top:20px; display:none;">
         <h3 id="formBuilderTitle" style="margin-bottom:15px;">Add Form</h3>
         <form id="formBuilderForm">
