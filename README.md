@@ -51,7 +51,6 @@ You should log in and change the password immediately after installation. User d
 Modules live in `CMS/modules` and provide specific functionality:
 
 - **analytics** – Tracking code management
-- **backups** – Data export and import
 - **blogs** – Blog post management
 - **dashboard** – Admin home page
 - **forms** – Contact forms

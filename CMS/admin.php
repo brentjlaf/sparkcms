@@ -102,10 +102,6 @@ $settings = get_cached_json($settingsFile);
                         <div class="nav-icon"><i class="fas fa-clipboard-list"></i></div>
                         <div class="nav-text">Logs</div>
                     </div>
-                    <div class="nav-item" data-section="backup">
-                        <div class="nav-icon"><i class="fas fa-save"></i></div>
-                        <div class="nav-text">Backup</div>
-                    </div>
                     <div class="nav-item" data-section="import">
                         <div class="nav-icon"><i class="fas fa-file-import"></i></div>
                         <div class="nav-text">Import/Export</div>
