@@ -205,6 +205,7 @@ $(document).ready(function(){
             tbody.append(row);
         });
         $('#postsCount').text(`${filtered.length} posts`);
+        updateLastUpdated();
         $('.view-btn').click(function(){
             const id = parseInt($(this).data('id'));
             viewPost(id);
@@ -359,8 +360,30 @@ $(document).ready(function(){
         });
     }
 
-    function formatDate(str){
-        const d = new Date(str);
+    function updateLastUpdated(){
+        let latest = null;
+        posts.forEach(post => {
+            const baseValue = post.publishDate || post.createdAt;
+            const date = new Date(baseValue);
+            if (!Number.isNaN(date.getTime())) {
+                if (!latest || date > latest) {
+                    latest = date;
+                }
+            }
+        });
+
+        if (latest) {
+            $('#blogsLastUpdated').text(`Updated ${formatDate(latest)}`);
+        } else {
+            $('#blogsLastUpdated').text('No posts yet');
+        }
+    }
+
+    function formatDate(value){
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) {
+            return '—';
+        }
         return d.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
