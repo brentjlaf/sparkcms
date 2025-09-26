@@ -1,105 +1,108 @@
 <!-- File: view.php -->
 <div class="content-section" id="blogs">
-    <div class="table-card">
-        <div class="table-header">
-            <div class="table-title">Blog Management</div>
-            <div class="table-actions">
-                <button class="btn btn-secondary" id="categoriesBtn">Categories</button>
-                <button class="btn btn-primary" id="newPostBtn">+ New Post</button>
+    <div class="blog-dashboard">
+        <header class="blog-hero">
+            <div class="blog-hero-content">
+                <div>
+                    <h2 class="blog-hero-title">Editorial Dashboard</h2>
+                    <p class="blog-hero-subtitle">Plan, publish, and measure the health of your content pipeline.</p>
+                </div>
+                <div class="blog-hero-actions">
+                    <button type="button" class="blog-btn blog-btn--ghost" id="categoriesBtn">
+                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                        <span>Manage Categories</span>
+                    </button>
+                    <button type="button" class="blog-btn blog-btn--primary" id="newPostBtn">
+                        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                        <span>New Post</span>
+                    </button>
+                </div>
             </div>
-        </div>
+            <div class="blog-hero-meta">
+                <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                <span id="blogsLastUpdated">No posts yet</span>
+            </div>
+            <div class="blog-overview-grid">
+                <article class="blog-overview-card">
+                    <span class="blog-overview-label">Total Posts</span>
+                    <span class="blog-overview-value" id="totalPosts">0</span>
+                </article>
+                <article class="blog-overview-card">
+                    <span class="blog-overview-label">Published</span>
+                    <span class="blog-overview-value" id="publishedPosts">0</span>
+                </article>
+                <article class="blog-overview-card">
+                    <span class="blog-overview-label">Drafts</span>
+                    <span class="blog-overview-value" id="draftPosts">0</span>
+                </article>
+                <article class="blog-overview-card">
+                    <span class="blog-overview-label">Scheduled</span>
+                    <span class="blog-overview-value" id="scheduledPosts">0</span>
+                </article>
+            </div>
+        </header>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon posts"><i class="fa-solid fa-newspaper" aria-hidden="true"></i></div>
-                    <div class="stat-content">
-                        <div class="stat-label">Total Posts</div>
-                        <div class="stat-number" id="totalPosts">0</div>
-                    </div>
+        <div class="blog-controls">
+            <label class="blog-search" for="searchFilter">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" id="searchFilter" placeholder="Search posts by title, excerpt, or tag" aria-label="Search posts">
+            </label>
+            <div class="blog-filter-row">
+                <div class="blog-filter">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Draft</option>
+                        <option value="scheduled">Scheduled</option>
+                    </select>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon posts"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div>
-                    <div class="stat-content">
-                        <div class="stat-label">Published</div>
-                        <div class="stat-number" id="publishedPosts">0</div>
-                    </div>
+                <div class="blog-filter">
+                    <label for="categoryFilter">Category</label>
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                    </select>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon posts"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></div>
-                    <div class="stat-content">
-                        <div class="stat-label">Drafts</div>
-                        <div class="stat-number" id="draftPosts">0</div>
-                    </div>
+                <div class="blog-filter">
+                    <label for="authorFilter">Author</label>
+                    <select id="authorFilter">
+                        <option value="">All Authors</option>
+                    </select>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon posts"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i></div>
-                    <div class="stat-content">
-                        <div class="stat-label">Scheduled</div>
-                        <div class="stat-number" id="scheduledPosts">0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="filters">
-            <h3 class="filters-title">Filters</h3>
-            <div class="filters-row">
-            <div class="filter-group">
-                <label>Status</label>
-                <select id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="published">Published</option>
-                    <option value="draft">Draft</option>
-                    <option value="scheduled">Scheduled</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Category</label>
-                <select id="categoryFilter">
-                    <option value="">All Categories</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Author</label>
-                <select id="authorFilter">
-                    <option value="">All Authors</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label>Search</label>
-                <input type="text" id="searchFilter" placeholder="Search posts...">
-            </div>
-                <div class="filter-group">
+                <div class="blog-filter blog-filter--actions">
                     <label>&nbsp;</label>
-                    <button class="btn btn-secondary" id="clearFilters">Clear</button>
+                    <button type="button" class="blog-btn blog-btn--subtle" id="clearFilters">
+                        <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
+                        <span>Reset</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="table-header" style="margin-top:20px;">
-            <div class="table-title">Posts</div>
-            <span class="posts-count" id="postsCount">0 posts</span>
-        </div>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="postsTableBody"></tbody>
-        </table>
+        <section class="table-card blog-table-card">
+            <header class="blog-table-header">
+                <div>
+                    <h3>Content pipeline</h3>
+                    <p>Track statuses, schedules, and author activity at a glance.</p>
+                </div>
+                <span class="blog-posts-count" id="postsCount">0 posts</span>
+            </header>
+            <div class="blog-table-wrapper">
+                <table class="data-table blog-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="postsTableBody"></tbody>
+                </table>
+            </div>
+        </section>
     </div>
 </div>
 
