@@ -16,5 +16,9 @@ foreach ($pages as $p) {
     ];
 }
 
+usort($data, function ($a, $b) {
+    return ($b['views'] ?? 0) <=> ($a['views'] ?? 0);
+});
+
 header('Content-Type: application/json');
 echo json_encode($data);
