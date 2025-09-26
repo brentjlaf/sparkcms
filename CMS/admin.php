@@ -74,10 +74,6 @@ $settings = get_cached_json($settingsFile);
                         <div class="nav-icon"><i class="fas fa-clipboard"></i></div>
                         <div class="nav-text">Forms</div>
                     </div>
-                    <div class="nav-item" data-section="maps">
-                        <div class="nav-icon"><i class="fas fa-map-marked-alt"></i></div>
-                        <div class="nav-text">Maps</div>
-                    </div>
                 </div>
 
                 <div class="nav-section">
