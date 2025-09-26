@@ -6,6 +6,17 @@ body {
     color: #2d3748;
 }
 
+.sidebar {
+    width: 280px;
+    background: linear-gradient(135deg, #314dcc 0%, #1c0137 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
 /* Global */
 .btn {
     padding: 8px 16px;
