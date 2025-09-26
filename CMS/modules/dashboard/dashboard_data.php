@@ -9,12 +9,20 @@ $mediaFile = __DIR__ . '/../../data/media.json';
 $usersFile = __DIR__ . '/../../data/users.json';
 $settingsFile = __DIR__ . '/../../data/settings.json';
 $menusFile = __DIR__ . '/../../data/menus.json';
+$blogPostsFile = __DIR__ . '/../../data/blog_posts.json';
+$formsFile = __DIR__ . '/../../data/forms.json';
+$historyFile = __DIR__ . '/../../data/page_history.json';
+
+$sitemapFile = realpath(__DIR__ . '/../../../sitemap.xml');
 
 $pages = read_json_file($pagesFile);
 $media = read_json_file($mediaFile);
 $users = read_json_file($usersFile);
 $settings = read_json_file($settingsFile);
 $menus = read_json_file($menusFile);
+$blogPosts = read_json_file($blogPostsFile);
+$forms = read_json_file($formsFile);
+$history = read_json_file($historyFile);
 
 if (!is_array($pages)) {
     $pages = [];
@@ -31,11 +39,151 @@ if (!is_array($settings)) {
 if (!is_array($menus)) {
     $menus = [];
 }
+if (!is_array($blogPosts)) {
+    $blogPosts = [];
+}
+if (!is_array($forms)) {
+    $forms = [];
+}
+if (!is_array($history)) {
+    $history = [];
+}
 
 $views = 0;
+$publishedPages = 0;
+$draftPages = 0;
+$scheduledPages = 0;
 foreach ($pages as $p) {
     $views += $p['views'] ?? 0;
+    $isPublished = !empty($p['published']);
+    if ($isPublished) {
+        $publishedPages++;
+    } else {
+        $draftPages++;
+    }
+
+    $status = strtolower((string)($p['status'] ?? ''));
+    if ($status === 'scheduled') {
+        $scheduledPages++;
+    }
 }
+
+$averageViews = $totalPages = count($pages);
+$averageViews = $totalPages > 0 ? round($views / $totalPages) : 0;
+
+$blogStatusCounts = [
+    'published' => 0,
+    'draft' => 0,
+    'scheduled' => 0,
+];
+
+foreach ($blogPosts as $post) {
+    $status = strtolower((string)($post['status'] ?? ''));
+    if (isset($blogStatusCounts[$status])) {
+        $blogStatusCounts[$status]++;
+    }
+}
+
+$formFieldTotals = 0;
+$formRequiredFields = 0;
+foreach ($forms as $form) {
+    if (!empty($form['fields']) && is_array($form['fields'])) {
+        foreach ($form['fields'] as $field) {
+            $formFieldTotals++;
+            if (!empty($field['required'])) {
+                $formRequiredFields++;
+            }
+        }
+    }
+}
+
+function dashboard_count_menu_items(array $items, int &$nestedGroups = 0): int {
+    $count = 0;
+    foreach ($items as $item) {
+        $count++;
+        if (!empty($item['children']) && is_array($item['children'])) {
+            $nestedGroups++;
+            $count += dashboard_count_menu_items($item['children'], $nestedGroups);
+        }
+    }
+    return $count;
+}
+
+$menuNestedGroups = 0;
+$menuItems = 0;
+foreach ($menus as $menu) {
+    if (!empty($menu['items']) && is_array($menu['items'])) {
+        $menuItems += dashboard_count_menu_items($menu['items'], $menuNestedGroups);
+    }
+}
+
+$logEntries = 0;
+$lastLogTimestamp = null;
+foreach ($history as $entries) {
+    if (!is_array($entries)) {
+        continue;
+    }
+    foreach ($entries as $entry) {
+        $logEntries++;
+        $time = isset($entry['time']) ? (int)$entry['time'] : 0;
+        if ($time > 0) {
+            $lastLogTimestamp = $lastLogTimestamp === null ? $time : max($lastLogTimestamp, $time);
+        }
+    }
+}
+
+$lastLogFormatted = $lastLogTimestamp ? date('M j, Y H:i', $lastLogTimestamp) : null;
+
+$userRoles = [
+    'admin' => 0,
+    'editor' => 0,
+    'other' => 0,
+];
+$activeUsers = 0;
+$inactiveUsers = 0;
+foreach ($users as $user) {
+    $role = strtolower((string)($user['role'] ?? ''));
+    if (isset($userRoles[$role])) {
+        $userRoles[$role]++;
+    } else {
+        $userRoles['other']++;
+    }
+
+    if (isset($user['status']) && $user['status'] === 'active') {
+        $activeUsers++;
+    } else {
+        $inactiveUsers++;
+    }
+}
+
+usort($pages, function (array $a, array $b): int {
+    $aViews = (int)($a['views'] ?? 0);
+    $bViews = (int)($b['views'] ?? 0);
+    return $bViews <=> $aViews;
+});
+
+$topPages = [];
+foreach (array_slice($pages, 0, 5) as $page) {
+    $topPages[] = [
+        'title' => (string)($page['title'] ?? 'Untitled Page'),
+        'slug' => (string)($page['slug'] ?? ''),
+        'views' => (int)($page['views'] ?? 0),
+        'published' => !empty($page['published']),
+    ];
+}
+
+$settingsCount = is_array($settings) ? count($settings) : 0;
+$socialProfiles = 0;
+if (!empty($settings['social']) && is_array($settings['social'])) {
+    foreach ($settings['social'] as $profile) {
+        if (is_string($profile) && trim($profile) !== '') {
+            $socialProfiles++;
+        }
+    }
+}
+
+$sitemapUrlCount = $publishedPages;
+$sitemapLastGenerated = $sitemapFile && is_file($sitemapFile) ? date('M j, Y H:i', filemtime($sitemapFile)) : null;
 
 $seoSummary = [
     'optimized' => 0,
@@ -244,6 +392,10 @@ $data = [
     'media' => count($media),
     'users' => count($users),
     'views' => $views,
+    'averageViews' => $averageViews,
+    'pagesPublished' => $publishedPages,
+    'pagesDrafts' => $draftPages,
+    'pagesScheduled' => $scheduledPages,
     'seoScore' => $seoScore,
     'seoOptimized' => $seoSummary['optimized'],
     'seoNeedsAttention' => $seoSummary['needs_attention'],
@@ -255,6 +407,28 @@ $data = [
     'openAlerts' => $seoSummary['needs_attention'] + $accessibilitySummary['needs_review'],
     'alertsSeo' => $seoSummary['needs_attention'],
     'alertsAccessibility' => $accessibilitySummary['needs_review'],
+    'blogsTotal' => count($blogPosts),
+    'blogsPublished' => $blogStatusCounts['published'],
+    'blogsDrafts' => $blogStatusCounts['draft'],
+    'blogsScheduled' => $blogStatusCounts['scheduled'],
+    'formsTotal' => count($forms),
+    'formsFields' => $formFieldTotals,
+    'formsRequiredFields' => $formRequiredFields,
+    'menusTotal' => count($menus),
+    'menusItems' => $menuItems,
+    'menusNestedGroups' => $menuNestedGroups,
+    'logsEntries' => $logEntries,
+    'logsLastActivity' => $lastLogFormatted,
+    'usersActive' => $activeUsers,
+    'usersInactive' => $inactiveUsers,
+    'usersAdmins' => $userRoles['admin'],
+    'usersEditors' => $userRoles['editor'],
+    'usersOtherRoles' => $userRoles['other'],
+    'settingsCount' => $settingsCount,
+    'settingsSocialProfiles' => $socialProfiles,
+    'sitemapUrls' => $sitemapUrlCount,
+    'sitemapLastGenerated' => $sitemapLastGenerated,
+    'topPages' => $topPages,
 ];
 
 header('Content-Type: application/json');

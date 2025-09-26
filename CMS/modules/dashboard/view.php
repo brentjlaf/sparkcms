@@ -9,6 +9,7 @@
                                     <div class="stat-number" id="statPages">0</div>
                                 </div>
                             </div>
+                            <div class="stat-subtext" id="statPagesBreakdown">Published: 0 • Drafts: 0 • Scheduled: 0</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -27,6 +28,7 @@
                                     <div class="stat-number" id="statUsers">0</div>
                                 </div>
                             </div>
+                            <div class="stat-subtext" id="statUsersBreakdown">Admins: 0 • Editors: 0 • Inactive: 0</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -36,6 +38,7 @@
                                     <div class="stat-number" id="statViews">0</div>
                                 </div>
                             </div>
+                            <div class="stat-subtext" id="statViewsAverage">Average per page: 0</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -68,6 +71,78 @@
                                 </div>
                             </div>
                             <div class="stat-subtext" id="statAlertsBreakdown">SEO: 0 • Accessibility: 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon blogs"><i class="fa-solid fa-rss" aria-hidden="true"></i></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Blog Posts</div>
+                                    <div class="stat-number" id="statBlogPosts">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statBlogBreakdown">Published: 0 • Drafts: 0 • Scheduled: 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon forms"><i class="fa-solid fa-wpforms" aria-hidden="true"></i></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Forms</div>
+                                    <div class="stat-number" id="statForms">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statFormsBreakdown">Fields: 0 • Required: 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon menus"><i class="fa-solid fa-bars" aria-hidden="true"></i></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Menus</div>
+                                    <div class="stat-number" id="statMenus">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statMenusBreakdown">Items: 0 • Nested groups: 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon settings"><i class="fa-solid fa-sliders" aria-hidden="true"></i></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Site Settings</div>
+                                    <div class="stat-number" id="statSettings">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statSettingsBreakdown">Social profiles: 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon sitemap"><i class="fa-solid fa-sitemap" aria-hidden="true"></i></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Sitemap URLs</div>
+                                    <div class="stat-number" id="statSitemap">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statSitemapBreakdown">Last generated: Not yet generated</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon logs"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Change Log</div>
+                                    <div class="stat-number" id="statLogs">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statLogsBreakdown">Last activity: No history recorded</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon analytics"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Top Pages</div>
+                                    <div class="stat-number">Top 5</div>
+                                </div>
+                            </div>
+                            <ul class="stat-list" id="statTopPages">
+                                <li class="stat-list-empty">Loading…</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
