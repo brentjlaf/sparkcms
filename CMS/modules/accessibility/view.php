@@ -184,7 +184,13 @@ libxml_clear_errors();
                 <h2 class="a11y-hero-title">Accessibility Dashboard</h2>
                 <p class="a11y-hero-subtitle">Monitor WCAG compliance and ensure every experience is inclusive.</p>
             </div>
-            <div class="a11y-hero-meta">Last scan: <?php echo htmlspecialchars($lastScan); ?></div>
+            <div class="a11y-hero-actions">
+                <button type="button" id="scanAllPagesBtn" class="a11y-scan-btn">
+                    <span class="a11y-scan-icon" aria-hidden="true"><i class="fa-solid fa-arrows-rotate"></i></span>
+                    <span class="a11y-scan-label">Scan All Pages</span>
+                </button>
+                <div class="a11y-hero-meta">Last scan: <?php echo htmlspecialchars($lastScan); ?></div>
+            </div>
         </div>
         <div class="a11y-hero-stats">
             <button class="a11y-stat-card active" data-a11y-filter="all">
@@ -263,10 +269,11 @@ libxml_clear_errors();
                     <th>Links</th>
                     <th>Landmarks</th>
                     <th>Issues</th>
+                    <th class="a11y-action-header">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($report as $entry): ?>
+                <?php foreach ($report as $index => $entry): ?>
                     <?php
                         $statuses = [];
                         if (empty($entry['issues'])) {
@@ -278,8 +285,9 @@ libxml_clear_errors();
                             $statuses[] = 'alt';
                         }
                         $rowStatus = implode(' ', $statuses);
+                        $detailId = 'a11y-details-' . $index;
                     ?>
-                    <tr data-status="<?php echo htmlspecialchars($rowStatus); ?>">
+                    <tr class="a11y-summary-row" data-status="<?php echo htmlspecialchars($rowStatus); ?>" data-expanded="false">
                         <td>
                             <div class="cell-title"><?php echo htmlspecialchars($entry['title']); ?></div>
                             <div class="cell-subtext">/<?php echo htmlspecialchars($entry['slug']); ?></div>
@@ -320,6 +328,61 @@ libxml_clear_errors();
                             <?php else: ?>
                                 <span class="issue-none">No outstanding issues</span>
                             <?php endif; ?>
+                        </td>
+                        <td class="a11y-action-cell">
+                            <button type="button" class="a11y-detail-btn" aria-expanded="false" aria-controls="<?php echo htmlspecialchars($detailId); ?>">
+                                <span class="a11y-detail-icon" aria-hidden="true"><i class="fa-solid fa-chart-pie"></i></span>
+                                <span>View details</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr id="<?php echo htmlspecialchars($detailId); ?>" class="a11y-detail-row" data-status="<?php echo htmlspecialchars($rowStatus); ?>" hidden>
+                        <td colspan="7">
+                            <div class="a11y-detail-card">
+                                <div class="a11y-detail-meta">
+                                    <div>
+                                        <span class="a11y-detail-label">Page URL</span>
+                                        <span class="a11y-detail-value">/<?php echo htmlspecialchars($entry['slug']); ?></span>
+                                    </div>
+                                    <div>
+                                        <span class="a11y-detail-label">Last scanned</span>
+                                        <span class="a11y-detail-value"><?php echo htmlspecialchars($lastScan); ?></span>
+                                    </div>
+                                    <div>
+                                        <span class="a11y-detail-label">Landmarks</span>
+                                        <span class="a11y-detail-value"><?php echo $entry['landmarks']; ?></span>
+                                    </div>
+                                </div>
+                                <div class="a11y-detail-grid">
+                                    <div class="a11y-detail-metric">
+                                        <span class="a11y-detail-label">Images</span>
+                                        <span class="a11y-detail-value"><?php echo $entry['image_count']; ?></span>
+                                        <span class="a11y-detail-hint"><?php echo $entry['missing_alt'] > 0 ? $entry['missing_alt'] . ' missing alt' : 'All images described'; ?></span>
+                                    </div>
+                                    <div class="a11y-detail-metric">
+                                        <span class="a11y-detail-label">Headings</span>
+                                        <span class="a11y-detail-value">H1: <?php echo $entry['headings']['h1']; ?> / H2: <?php echo $entry['headings']['h2']; ?></span>
+                                        <span class="a11y-detail-hint">Ensure a single descriptive H1</span>
+                                    </div>
+                                    <div class="a11y-detail-metric">
+                                        <span class="a11y-detail-label">Links</span>
+                                        <span class="a11y-detail-value"><?php echo $entry['generic_links']; ?> generic</span>
+                                        <span class="a11y-detail-hint"><?php echo $entry['generic_links'] > 0 ? 'Improve link text clarity' : 'All links descriptive'; ?></span>
+                                    </div>
+                                </div>
+                                <div class="a11y-detail-issues">
+                                    <h4>Issues detected</h4>
+                                    <?php if (!empty($entry['issues'])): ?>
+                                        <ul>
+                                            <?php foreach ($entry['issues'] as $issue): ?>
+                                                <li><?php echo htmlspecialchars($issue); ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php else: ?>
+                                        <p class="a11y-detail-success">This page meets the current automated checks.</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
