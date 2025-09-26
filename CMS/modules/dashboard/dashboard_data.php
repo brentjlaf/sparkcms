@@ -9,12 +9,19 @@ $mediaFile = __DIR__ . '/../../data/media.json';
 $usersFile = __DIR__ . '/../../data/users.json';
 $settingsFile = __DIR__ . '/../../data/settings.json';
 $menusFile = __DIR__ . '/../../data/menus.json';
+$formsFile = __DIR__ . '/../../data/forms.json';
+$postsFile = __DIR__ . '/../../data/blog_posts.json';
+$historyFile = __DIR__ . '/../../data/page_history.json';
+$dataDirectory = __DIR__ . '/../../data';
 
 $pages = read_json_file($pagesFile);
 $media = read_json_file($mediaFile);
 $users = read_json_file($usersFile);
 $settings = read_json_file($settingsFile);
 $menus = read_json_file($menusFile);
+$forms = read_json_file($formsFile);
+$posts = read_json_file($postsFile);
+$history = read_json_file($historyFile);
 
 if (!is_array($pages)) {
     $pages = [];
@@ -30,6 +37,15 @@ if (!is_array($settings)) {
 }
 if (!is_array($menus)) {
     $menus = [];
+}
+if (!is_array($forms)) {
+    $forms = [];
+}
+if (!is_array($posts)) {
+    $posts = [];
+}
+if (!is_array($history)) {
+    $history = [];
 }
 
 $views = 0;
@@ -146,6 +162,44 @@ function dashboard_build_page_html(array $page, array $settings, array $menus, s
     return str_replace('{{CONTENT}}', $content, $templateHtml);
 }
 
+function dashboard_count_menu_items(array $items): int
+{
+    $total = 0;
+    foreach ($items as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $total++;
+        if (!empty($item['children']) && is_array($item['children'])) {
+            $total += dashboard_count_menu_items($item['children']);
+        }
+    }
+    return $total;
+}
+
+function dashboard_format_bytes(int $bytes): string
+{
+    if ($bytes <= 0) {
+        return '0 KB';
+    }
+
+    $units = ['bytes', 'KB', 'MB', 'GB'];
+    $power = (int)floor(log($bytes, 1024));
+    $power = max(0, min($power, count($units) - 1));
+    $value = $bytes / (1024 ** $power);
+
+    if ($power === 0) {
+        return number_format($bytes) . ' ' . $units[$power];
+    }
+
+    return number_format($value, $value >= 10 ? 0 : 1) . ' ' . $units[$power];
+}
+
+function dashboard_format_number(int $value): string
+{
+    return number_format($value);
+}
+
 $libxmlPrevious = libxml_use_internal_errors(true);
 
 $accessibilitySummary = [
@@ -239,11 +293,263 @@ libxml_use_internal_errors($libxmlPrevious);
 $totalPages = count($pages);
 $accessibilityScore = $totalPages > 0 ? round(($accessibilitySummary['accessible'] / $totalPages) * 100) : 0;
 
+$pagesPublished = 0;
+$pagesDraft = 0;
+$largestPage = ['title' => null, 'length' => 0];
+$speedSummary = [
+    'fast' => 0,
+    'monitor' => 0,
+    'slow' => 0,
+];
+
+foreach ($pages as $page) {
+    if (!empty($page['published'])) {
+        $pagesPublished++;
+    } else {
+        $pagesDraft++;
+    }
+
+    $content = strip_tags((string)($page['content'] ?? ''));
+    $length = strlen($content);
+    if ($length > $largestPage['length']) {
+        $largestPage = [
+            'title' => (string)($page['title'] ?? ''),
+            'length' => $length,
+        ];
+    }
+
+    if ($length < 5000) {
+        $speedSummary['fast']++;
+    } elseif ($length < 15000) {
+        $speedSummary['monitor']++;
+    } else {
+        $speedSummary['slow']++;
+    }
+}
+
+$mediaTotalSize = 0;
+foreach ($media as $item) {
+    if (isset($item['size']) && is_numeric($item['size'])) {
+        $mediaTotalSize += (int)$item['size'];
+    }
+}
+
+$usersByRole = [];
+foreach ($users as $user) {
+    $role = strtolower((string)($user['role'] ?? 'unknown'));
+    if ($role === '') {
+        $role = 'unknown';
+    }
+    if (!isset($usersByRole[$role])) {
+        $usersByRole[$role] = 0;
+    }
+    $usersByRole[$role]++;
+}
+
+$postsByStatus = [
+    'published' => 0,
+    'draft' => 0,
+    'scheduled' => 0,
+    'other' => 0,
+];
+foreach ($posts as $post) {
+    $status = strtolower(trim((string)($post['status'] ?? '')));
+    if ($status === '') {
+        $status = 'other';
+    }
+    if (!array_key_exists($status, $postsByStatus)) {
+        $status = 'other';
+    }
+    $postsByStatus[$status]++;
+}
+
+$formsFields = 0;
+foreach ($forms as $form) {
+    if (!empty($form['fields']) && is_array($form['fields'])) {
+        $formsFields += count($form['fields']);
+    }
+}
+
+$menuItems = 0;
+foreach ($menus as $menu) {
+    if (!empty($menu['items']) && is_array($menu['items'])) {
+        $menuItems += dashboard_count_menu_items($menu['items']);
+    }
+}
+
+$logEntries = 0;
+$latestLogTime = null;
+foreach ($history as $entries) {
+    if (!is_array($entries)) {
+        continue;
+    }
+    $logEntries += count($entries);
+    foreach ($entries as $entry) {
+        if (!is_array($entry)) {
+            continue;
+        }
+        $time = isset($entry['time']) ? (int)$entry['time'] : null;
+        if ($time) {
+            if ($latestLogTime === null || $time > $latestLogTime) {
+                $latestLogTime = $time;
+            }
+        }
+    }
+}
+$logsLastActivity = $latestLogTime ? date('c', $latestLogTime) : null;
+
+$searchBreakdown = [
+    'pages' => $totalPages,
+    'posts' => count($posts),
+    'media' => count($media),
+];
+$searchIndexCount = array_sum($searchBreakdown);
+
+$settingsCount = is_array($settings) ? count($settings) : 0;
+$socialCount = (isset($settings['social']) && is_array($settings['social'])) ? count($settings['social']) : 0;
+
+$sitemapEntries = 0;
+foreach ($pages as $page) {
+    if (!empty($page['published'])) {
+        $sitemapEntries++;
+    }
+}
+
+$topPage = null;
+foreach ($pages as $page) {
+    $pageViews = (int)($page['views'] ?? 0);
+    if (!$topPage || $pageViews > $topPage['views']) {
+        $topPage = [
+            'title' => (string)($page['title'] ?? ''),
+            'views' => $pageViews,
+        ];
+    }
+}
+
+$dataFiles = glob($dataDirectory . '/*.json');
+$dataFileCount = is_array($dataFiles) ? count($dataFiles) : 0;
+
+$analyticsSummary = [
+    'totalViews' => $views,
+    'averageViews' => $totalPages > 0 ? (int)round($views / $totalPages) : 0,
+    'topPage' => $topPage['title'] ?? null,
+    'topViews' => $topPage['views'] ?? 0,
+];
+
+$moduleSummaries = [
+    [
+        'id' => 'pages',
+        'module' => 'Pages',
+        'primary' => dashboard_format_number($totalPages) . ' total pages',
+        'secondary' => 'Published: ' . dashboard_format_number($pagesPublished) . ' • Drafts: ' . dashboard_format_number($pagesDraft),
+    ],
+    [
+        'id' => 'media',
+        'module' => 'Media',
+        'primary' => dashboard_format_number(count($media)) . ' files',
+        'secondary' => 'Library size: ' . dashboard_format_bytes($mediaTotalSize),
+    ],
+    [
+        'id' => 'blogs',
+        'module' => 'Blogs',
+        'primary' => dashboard_format_number(count($posts)) . ' posts',
+        'secondary' => 'Published: ' . dashboard_format_number($postsByStatus['published']) . ' • Draft: ' . dashboard_format_number($postsByStatus['draft']) . ' • Scheduled: ' . dashboard_format_number($postsByStatus['scheduled']),
+    ],
+    [
+        'id' => 'forms',
+        'module' => 'Forms',
+        'primary' => dashboard_format_number(count($forms)) . ' forms',
+        'secondary' => 'Fields configured: ' . dashboard_format_number($formsFields),
+    ],
+    [
+        'id' => 'menus',
+        'module' => 'Menus',
+        'primary' => dashboard_format_number(count($menus)) . ' menus',
+        'secondary' => 'Navigation items: ' . dashboard_format_number($menuItems),
+    ],
+    [
+        'id' => 'users',
+        'module' => 'Users',
+        'primary' => dashboard_format_number(count($users)) . ' users',
+        'secondary' => 'Admins: ' . dashboard_format_number($usersByRole['admin'] ?? 0) . ' • Editors: ' . dashboard_format_number($usersByRole['editor'] ?? 0),
+    ],
+    [
+        'id' => 'analytics',
+        'module' => 'Analytics',
+        'primary' => dashboard_format_number($analyticsSummary['totalViews']) . ' total views',
+        'secondary' => $analyticsSummary['topPage'] ? 'Top page: ' . $analyticsSummary['topPage'] . ' (' . dashboard_format_number($analyticsSummary['topViews']) . ')' : 'No views recorded yet',
+    ],
+    [
+        'id' => 'seo',
+        'module' => 'SEO',
+        'primary' => dashboard_format_number($seoSummary['optimized']) . ' optimized pages',
+        'secondary' => 'Needs attention: ' . dashboard_format_number($seoSummary['needs_attention']) . ' • Metadata gaps: ' . dashboard_format_number($seoSummary['metadata_gaps']),
+    ],
+    [
+        'id' => 'accessibility',
+        'module' => 'Accessibility',
+        'primary' => dashboard_format_number($accessibilitySummary['accessible']) . ' compliant pages',
+        'secondary' => 'Alt text issues: ' . dashboard_format_number($accessibilitySummary['missing_alt']),
+    ],
+    [
+        'id' => 'logs',
+        'module' => 'Logs',
+        'primary' => dashboard_format_number($logEntries) . ' history entries',
+        'secondary' => $logsLastActivity ? 'Last activity: ' . $logsLastActivity : 'No activity recorded yet',
+    ],
+    [
+        'id' => 'search',
+        'module' => 'Search',
+        'primary' => dashboard_format_number($searchIndexCount) . ' indexed records',
+        'secondary' => 'Pages: ' . dashboard_format_number($searchBreakdown['pages']) . ' • Posts: ' . dashboard_format_number($searchBreakdown['posts']) . ' • Media: ' . dashboard_format_number($searchBreakdown['media']),
+    ],
+    [
+        'id' => 'settings',
+        'module' => 'Settings',
+        'primary' => dashboard_format_number($settingsCount) . ' configuration values',
+        'secondary' => 'Social profiles: ' . dashboard_format_number($socialCount),
+    ],
+    [
+        'id' => 'sitemap',
+        'module' => 'Sitemap',
+        'primary' => dashboard_format_number($sitemapEntries) . ' published URLs',
+        'secondary' => 'Ready for export to sitemap.xml',
+    ],
+    [
+        'id' => 'speed',
+        'module' => 'Speed',
+        'primary' => 'Fast: ' . dashboard_format_number($speedSummary['fast']) . ' • Monitor: ' . dashboard_format_number($speedSummary['monitor']) . ' • Slow: ' . dashboard_format_number($speedSummary['slow']),
+        'secondary' => $largestPage['title'] ? 'Heaviest content: ' . $largestPage['title'] : 'Content analysis based on page length',
+    ],
+    [
+        'id' => 'import_export',
+        'module' => 'Import/Export',
+        'primary' => dashboard_format_number($dataFileCount) . ' data files detected',
+        'secondary' => 'Use tools to migrate or backup your site',
+    ],
+];
+
 $data = [
     'pages' => $totalPages,
+    'pagesPublished' => $pagesPublished,
+    'pagesDraft' => $pagesDraft,
     'media' => count($media),
+    'mediaSize' => $mediaTotalSize,
     'users' => count($users),
+    'usersAdmins' => $usersByRole['admin'] ?? 0,
+    'usersEditors' => $usersByRole['editor'] ?? 0,
     'views' => $views,
+    'analyticsAvgViews' => $analyticsSummary['averageViews'],
+    'analyticsTopPage' => $analyticsSummary['topPage'],
+    'analyticsTopViews' => $analyticsSummary['topViews'],
+    'blogsTotal' => count($posts),
+    'blogsPublished' => $postsByStatus['published'],
+    'blogsDraft' => $postsByStatus['draft'],
+    'blogsScheduled' => $postsByStatus['scheduled'],
+    'formsTotal' => count($forms),
+    'formsFields' => $formsFields,
+    'menusCount' => count($menus),
+    'menuItems' => $menuItems,
     'seoScore' => $seoScore,
     'seoOptimized' => $seoSummary['optimized'],
     'seoNeedsAttention' => $seoSummary['needs_attention'],
@@ -255,6 +561,20 @@ $data = [
     'openAlerts' => $seoSummary['needs_attention'] + $accessibilitySummary['needs_review'],
     'alertsSeo' => $seoSummary['needs_attention'],
     'alertsAccessibility' => $accessibilitySummary['needs_review'],
+    'logsEntries' => $logEntries,
+    'logsLastActivity' => $logsLastActivity,
+    'searchIndex' => $searchIndexCount,
+    'searchBreakdown' => $searchBreakdown,
+    'settingsCount' => $settingsCount,
+    'settingsSocialLinks' => $socialCount,
+    'sitemapEntries' => $sitemapEntries,
+    'speedFast' => $speedSummary['fast'],
+    'speedMonitor' => $speedSummary['monitor'],
+    'speedSlow' => $speedSummary['slow'],
+    'speedHeaviestPage' => $largestPage['title'],
+    'speedHeaviestPageLength' => $largestPage['length'],
+    'dataFileCount' => $dataFileCount,
+    'moduleSummaries' => $moduleSummaries,
 ];
 
 header('Content-Type: application/json');
