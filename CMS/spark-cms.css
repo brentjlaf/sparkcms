@@ -196,8 +196,406 @@
             transition: background 0.3s ease;
         }
 
-        .notification-btn:hover {
+.notification-btn:hover {
             background: #f7fafc;
+        }
+
+        /* Logs module */
+        .logs-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .logs-hero {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 32px;
+            padding: 32px;
+            border-radius: 24px;
+            color: #fff;
+            overflow: hidden;
+            background: linear-gradient(135deg, #312e81, #4c1d95);
+            box-shadow: 0 30px 60px -40px rgba(76, 29, 149, 0.6);
+        }
+
+        .logs-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(147, 197, 253, 0.15));
+            pointer-events: none;
+        }
+
+        .logs-hero-copy {
+            position: relative;
+            z-index: 1;
+            max-width: 640px;
+        }
+
+        .logs-hero-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .logs-hero-subtitle {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .logs-hero-meta {
+            display: flex;
+            gap: 28px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .logs-hero-meta > div {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .logs-hero-meta__label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            opacity: 0.65;
+        }
+
+        .logs-hero-meta__value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .logs-hero-actions {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logs-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 999px;
+            border: none;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 14px;
+        }
+
+        .logs-btn i {
+            font-size: 16px;
+        }
+
+        .logs-btn--ghost {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
+        .logs-btn--ghost:hover,
+        .logs-btn--ghost:focus-visible {
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+
+        .logs-btn.is-loading {
+            opacity: 0.65;
+            cursor: progress;
+        }
+
+        .logs-btn.is-loading i {
+            animation: logs-spin 0.9s linear infinite;
+        }
+
+        @keyframes logs-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logs-stats-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .logs-stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 20px 40px -35px rgba(76, 29, 149, 0.35);
+            border: 1px solid rgba(99, 102, 241, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .logs-stat-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .logs-stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e1b4b;
+        }
+
+        .logs-stat-hint {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .logs-activity {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .logs-activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .logs-activity-header h3 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+
+        .logs-activity-header p {
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .logs-controls {
+            margin-left: auto;
+        }
+
+        .logs-search {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            background: #fff;
+            border-radius: 999px;
+            padding: 8px 16px;
+            box-shadow: 0 10px 30px -20px rgba(76, 29, 149, 0.4);
+        }
+
+        .logs-search i {
+            color: #6366f1;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .logs-search input {
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            min-width: 220px;
+            color: #1f2937;
+        }
+
+        .logs-search input:focus {
+            outline: none;
+        }
+
+        .logs-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .logs-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            background: #f8fafc;
+            color: #1f2937;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logs-filter-btn:hover,
+        .logs-filter-btn:focus-visible {
+            border-color: rgba(99, 102, 241, 0.45);
+            background: #eef2ff;
+            outline: none;
+        }
+
+        .logs-filter-btn.active {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 16px 30px -24px rgba(79, 70, 229, 0.6);
+        }
+
+        .logs-filter-count {
+            background: rgba(15, 23, 42, 0.08);
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .logs-filter-btn.active .logs-filter-count {
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
+        }
+
+        .logs-activity-list {
+            display: grid;
+            gap: 18px;
+        }
+
+        .logs-activity-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 20px 24px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 18px 40px -35px rgba(30, 64, 175, 0.5);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .logs-activity-card:hover,
+        .logs-activity-card:focus-within {
+            transform: translateY(-2px);
+            border-color: rgba(129, 140, 248, 0.6);
+            box-shadow: 0 22px 40px -28px rgba(99, 102, 241, 0.55);
+        }
+
+        .logs-activity-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .logs-activity-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(79, 70, 229, 0.1);
+            color: #4338ca;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .logs-activity-time {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .logs-activity-page {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .logs-activity-description {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .logs-activity-user {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .logs-activity-divider {
+            opacity: 0.4;
+        }
+
+        .logs-empty {
+            background: #fff;
+            border-radius: 18px;
+            padding: 48px 24px;
+            text-align: center;
+            color: #64748b;
+            border: 1px dashed rgba(148, 163, 184, 0.4);
+        }
+
+        .logs-empty i {
+            font-size: 40px;
+            color: rgba(79, 70, 229, 0.4);
+            margin-bottom: 12px;
+        }
+
+        .logs-empty-hint {
+            font-size: 13px;
+            margin-top: 6px;
+            color: #94a3b8;
+        }
+
+        .logs-inline-alert {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 30px -25px rgba(248, 113, 113, 0.5);
+        }
+
+        @media (max-width: 900px) {
+            .logs-hero {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .logs-hero-actions {
+                width: 100%;
+            }
+
+            .logs-hero-actions .logs-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .logs-search input {
+                min-width: 160px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .logs-activity-card {
+                padding: 18px;
+            }
+
+            .logs-activity-description {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .logs-hero-title {
+                font-size: 28px;
+            }
         }
 
         .notification-badge {

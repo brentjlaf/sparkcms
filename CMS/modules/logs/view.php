@@ -14,43 +14,252 @@ foreach ($pages as $p) {
 $historyFile = __DIR__ . '/../../data/page_history.json';
 $historyData = read_json_file($historyFile);
 
+function normalize_action_label(?string $action): string {
+    $label = trim((string)($action ?? ''));
+    return $label !== '' ? $label : 'Updated content';
+}
+
+function slugify_action_label(string $label): string {
+    $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $label));
+    $slug = trim($slug ?? '', '-');
+    return $slug !== '' ? $slug : 'unknown';
+}
+
+function describe_time_ago(?int $timestamp, bool $forHero = false): string {
+    if (!$timestamp) {
+        return $forHero ? 'No activity yet' : 'Unknown time';
+    }
+
+    $now = time();
+    $diff = $now - $timestamp;
+
+    if ($diff < 0) {
+        return 'Scheduled update';
+    }
+
+    if ($diff < 60) {
+        return 'Just now';
+    }
+
+    if ($diff < 3600) {
+        $minutes = (int) floor($diff / 60);
+        return $minutes . ' min' . ($minutes === 1 ? '' : 's') . ' ago';
+    }
+
+    if ($diff < 86400) {
+        $hours = (int) floor($diff / 3600);
+        return $hours . ' hour' . ($hours === 1 ? '' : 's') . ' ago';
+    }
+
+    if ($diff < 604800) {
+        $days = (int) floor($diff / 86400);
+        return $days . ' day' . ($days === 1 ? '' : 's') . ' ago';
+    }
+
+    return date('M j, Y g:i A', $timestamp);
+}
+
 $logs = [];
 foreach ($historyData as $pid => $entries) {
     foreach ($entries as $entry) {
+        $actionLabel = normalize_action_label($entry['action'] ?? '');
         $logs[] = [
-            'time' => $entry['time'] ?? 0,
+            'time' => (int)($entry['time'] ?? 0),
             'user' => $entry['user'] ?? '',
             'page_title' => $pageLookup[$pid] ?? 'Unknown',
-            'action' => $entry['action'] ?? ''
+            'action' => $actionLabel,
+            'action_slug' => slugify_action_label($actionLabel),
         ];
     }
 }
-usort($logs, function($a, $b) { return $b['time'] <=> $a['time']; });
+
+usort($logs, function ($a, $b) {
+    return $b['time'] <=> $a['time'];
+});
+
+$now = time();
+$totalLogs = count($logs);
+$lastActivity = $totalLogs > 0 ? $logs[0]['time'] : null;
+$last24Hours = 0;
+$last7Days = 0;
+$uniqueUsers = [];
+$uniquePages = [];
+$actionsSummary = [];
+
+foreach ($logs as $log) {
+    $timestamp = (int) $log['time'];
+    if ($timestamp >= $now - 86400) {
+        $last24Hours++;
+    }
+    if ($timestamp >= $now - (7 * 86400)) {
+        $last7Days++;
+    }
+
+    $userKey = strtolower(trim($log['user']));
+    if ($userKey !== '') {
+        $uniqueUsers[$userKey] = true;
+    }
+
+    $pageKey = strtolower(trim($log['page_title']));
+    if ($pageKey !== '') {
+        $uniquePages[$pageKey] = true;
+    }
+
+    $slug = $log['action_slug'];
+    if (!isset($actionsSummary[$slug])) {
+        $actionsSummary[$slug] = [
+            'label' => $log['action'],
+            'slug' => $slug,
+            'count' => 0,
+        ];
+    }
+    $actionsSummary[$slug]['count']++;
+}
+
+usort($actionsSummary, function ($a, $b) {
+    return $b['count'] <=> $a['count'];
+});
+
+$topActions = array_slice($actionsSummary, 0, 4);
+$topAction = $actionsSummary[0] ?? null;
+
+$logsJson = htmlspecialchars(json_encode($logs, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+$matchCountLabel = 'No entries to display';
+if ($totalLogs === 1) {
+    $matchCountLabel = '1 entry';
+} elseif ($totalLogs > 1) {
+    $matchCountLabel = $totalLogs . ' entries';
+}
+$uniqueUsersCount = count($uniqueUsers);
+$uniquePagesCount = count($uniquePages);
+$lastActivityLabel = $lastActivity ? describe_time_ago($lastActivity, true) : 'No activity yet';
+$lastActivityExact = $lastActivity ? date('M j, Y g:i A', $lastActivity) : 'No recent activity';
+$recentPageTitle = $totalLogs > 0 ? htmlspecialchars($logs[0]['page_title'], ENT_QUOTES, 'UTF-8') : '';
+$topActionLabel = $topAction ? htmlspecialchars($topAction['label'], ENT_QUOTES, 'UTF-8') : '—';
+$topActionCountText = $topAction ? $topAction['count'] . ' entries' : 'No recorded actions yet';
+$editorsHint = 'No editor activity yet';
+if ($uniqueUsersCount === 1) {
+    $editorsHint = 'Team member contributing recently';
+} elseif ($uniqueUsersCount > 1) {
+    $editorsHint = 'Editors with recent changes';
+}
 ?>
 <div class="content-section" id="logs">
-    <div class="table-card">
-        <div class="table-header">
-            <div class="table-title">Activity Logs</div>
-        </div>
-        <table class="data-table" id="logsTable">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>User</th>
-                    <th>Page</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-<?php foreach ($logs as $log): ?>
-                <tr>
-                    <td class="time"><?php echo date('Y-m-d H:i', $log['time']); ?></td>
-                    <td class="user"><?php echo htmlspecialchars($log['user']); ?></td>
-                    <td class="page"><?php echo htmlspecialchars($log['page_title']); ?></td>
-                    <td class="action"><?php echo htmlspecialchars($log['action']); ?></td>
-                </tr>
+    <div class="logs-dashboard" data-logs="<?php echo $logsJson; ?>" data-endpoint="modules/logs/list_logs.php">
+        <header class="logs-hero">
+            <div class="logs-hero-copy">
+                <h2 class="logs-hero-title">Activity Logs</h2>
+                <p class="logs-hero-subtitle">Monitor publishing events, workflow actions, and page edits from a single, friendly timeline.</p>
+                <div class="logs-hero-meta">
+                    <div>
+                        <span class="logs-hero-meta__label">Last activity</span>
+                        <span class="logs-hero-meta__value" id="logsLastActivity" title="<?php echo htmlspecialchars($lastActivityExact, ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($lastActivityLabel, ENT_QUOTES, 'UTF-8'); ?>
+                        </span>
+                    </div>
+                    <div>
+                        <span class="logs-hero-meta__label">Past 24 hours</span>
+                        <span class="logs-hero-meta__value" id="logsPast24h"><?php echo $last24Hours; ?></span>
+                    </div>
+                </div>
+            </div>
+            <div class="logs-hero-actions">
+                <button type="button" class="logs-btn logs-btn--ghost" id="logsRefreshBtn">
+                    <i class="fas fa-rotate" aria-hidden="true"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <section class="logs-stats" aria-label="Activity summary">
+            <div class="logs-stats-grid">
+                <article class="logs-stat-card">
+                    <span class="logs-stat-label">Total events</span>
+                    <span class="logs-stat-value" id="logsTotalCount"><?php echo $totalLogs; ?></span>
+                    <span class="logs-stat-hint"><span id="logsLast7Days"><?php echo $last7Days; ?></span> in the last 7 days</span>
+                </article>
+                <article class="logs-stat-card">
+                    <span class="logs-stat-label">Active editors</span>
+                    <span class="logs-stat-value" id="logsUserCount"><?php echo $uniqueUsersCount; ?></span>
+                    <span class="logs-stat-hint"><?php echo htmlspecialchars($editorsHint, ENT_QUOTES, 'UTF-8'); ?></span>
+                </article>
+                <article class="logs-stat-card">
+                    <span class="logs-stat-label">Pages updated</span>
+                    <span class="logs-stat-value" id="logsPageCount"><?php echo $uniquePagesCount; ?></span>
+                    <span class="logs-stat-hint">
+                        <?php if ($uniquePagesCount > 0): ?>
+                            Most recent: <?php echo $recentPageTitle; ?>
+                        <?php else: ?>
+                            Waiting for the first edit
+                        <?php endif; ?>
+                    </span>
+                </article>
+                <article class="logs-stat-card">
+                    <span class="logs-stat-label">Most common action</span>
+                    <span class="logs-stat-value" id="logsTopActionLabel"><?php echo $topActionLabel; ?></span>
+                    <span class="logs-stat-hint" id="logsTopActionCount"><?php echo htmlspecialchars($topActionCountText, ENT_QUOTES, 'UTF-8'); ?></span>
+                </article>
+            </div>
+        </section>
+
+        <section class="logs-activity" aria-label="Activity feed">
+            <div class="logs-activity-header">
+                <div>
+                    <h3>Recent activity</h3>
+                    <p id="logsMatchCount"><?php echo htmlspecialchars($matchCountLabel, ENT_QUOTES, 'UTF-8'); ?></p>
+                </div>
+                <div class="logs-controls">
+                    <label class="logs-search" for="logsSearch">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <input type="search" id="logsSearch" placeholder="Search by editor, page, or action" autocomplete="off">
+                    </label>
+                </div>
+            </div>
+
+            <div class="logs-filters" id="logsFilters">
+                <button type="button" class="logs-filter-btn active" data-filter="all">
+                    <span>All activity</span>
+                    <span class="logs-filter-count" id="logsAllCount"><?php echo $totalLogs; ?></span>
+                </button>
+                <?php foreach ($topActions as $action): ?>
+                    <button type="button" class="logs-filter-btn" data-filter="<?php echo htmlspecialchars($action['slug'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <span><?php echo htmlspecialchars($action['label'], ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span class="logs-filter-count" data-filter-count="<?php echo htmlspecialchars($action['slug'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo $action['count']; ?></span>
+                    </button>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="logs-activity-list" id="logsTimeline">
+<?php if (empty($logs)): ?>
+                <div class="logs-empty">
+                    <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                    <p>No activity recorded yet.</p>
+                    <p class="logs-empty-hint">Updates will appear here as your team edits content.</p>
+                </div>
+<?php else: ?>
+<?php foreach ($logs as $log):
+    $timestamp = (int) $log['time'];
+    $relative = describe_time_ago($timestamp, false);
+    $absolute = $timestamp ? date('M j, Y g:i A', $timestamp) : 'Unknown time';
+    $searchText = strtolower(trim(($log['user'] ?? '') . ' ' . ($log['page_title'] ?? '') . ' ' . $log['action']));
+?>
+                <article class="logs-activity-card" data-search="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>" data-action="<?php echo htmlspecialchars($log['action_slug'], ENT_QUOTES, 'UTF-8'); ?>">
+                    <header class="logs-activity-card__header">
+                        <span class="logs-activity-badge"><?php echo htmlspecialchars($log['action'], ENT_QUOTES, 'UTF-8'); ?></span>
+                        <time datetime="<?php echo $timestamp ? date('c', $timestamp) : ''; ?>" class="logs-activity-time" title="<?php echo htmlspecialchars($absolute, ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($relative, ENT_QUOTES, 'UTF-8'); ?>
+                        </time>
+                    </header>
+                    <h4 class="logs-activity-page"><?php echo htmlspecialchars($log['page_title'], ENT_QUOTES, 'UTF-8'); ?></h4>
+                    <p class="logs-activity-description">
+                        <span class="logs-activity-user"><?php echo $log['user'] !== '' ? htmlspecialchars($log['user'], ENT_QUOTES, 'UTF-8') : 'System'; ?></span>
+                        <span class="logs-activity-divider" aria-hidden="true">•</span>
+                        <span class="logs-activity-action"><?php echo htmlspecialchars($log['action'], ENT_QUOTES, 'UTF-8'); ?></span>
+                    </p>
+                </article>
 <?php endforeach; ?>
-            </tbody>
-        </table>
+<?php endif; ?>
+            </div>
+        </section>
     </div>
 </div>
