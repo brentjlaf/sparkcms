@@ -6,9 +6,15 @@ require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = read_json_file($pagesFile);
+
 $totalViews = 0;
+$lastUpdatedTimestamp = 0;
 foreach ($pages as $p) {
-    $totalViews += $p['views'] ?? 0;
+    $totalViews += (int) ($p['views'] ?? 0);
+    $modified = isset($p['last_modified']) ? (int) $p['last_modified'] : 0;
+    if ($modified > $lastUpdatedTimestamp) {
+        $lastUpdatedTimestamp = $modified;
+    }
 }
 
 $totalPages = count($pages);
@@ -20,125 +26,182 @@ usort($sortedPages, function ($a, $b) {
 });
 
 $topPages = array_slice($sortedPages, 0, 3);
-$topPage = $topPages[0] ?? null;
-
-$zeroViewPages = array_values(array_filter($pages, function ($page) {
-    return ($page['views'] ?? 0) === 0;
+$zeroViewPages = array_values(array_filter($pages, static function ($page) {
+    return (int) ($page['views'] ?? 0) === 0;
 }));
 $zeroViewCount = count($zeroViewPages);
 $zeroViewExamples = array_slice($zeroViewPages, 0, 3);
+
+$initialEntries = [];
+foreach ($sortedPages as $page) {
+    $initialEntries[] = [
+        'title' => isset($page['title']) ? (string) $page['title'] : 'Untitled',
+        'slug' => isset($page['slug']) ? (string) $page['slug'] : '',
+        'views' => (int) ($page['views'] ?? 0),
+    ];
+}
+
+$lastUpdatedDisplay = $lastUpdatedTimestamp > 0
+    ? date('M j, Y g:i a', $lastUpdatedTimestamp)
+    : null;
 ?>
 <div class="content-section" id="analytics">
-    <div class="table-card">
-        <div class="table-header">
-            <div class="table-title">Analytics</div>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon views"><i class="fa-solid fa-chart-line" aria-hidden="true"></i></div>
-                    <div class="stat-content">
-                        <div class="stat-label">Total Views</div>
-                        <div class="stat-number"><?php echo number_format($totalViews); ?></div>
-                        <?php if ($topPage): ?>
-                        <div class="stat-subtext">Top page: <?php echo htmlspecialchars($topPage['title']); ?> (<?php echo number_format($topPage['views'] ?? 0); ?>)</div>
-                        <?php else: ?>
-                        <div class="stat-subtext">No traffic recorded yet</div>
-                        <?php endif; ?>
-                    </div>
+    <div class="analytics-dashboard">
+        <header class="analytics-hero">
+            <div class="analytics-hero-content">
+                <div class="analytics-hero-text">
+                    <h2 class="analytics-hero-title">Analytics Dashboard</h2>
+                    <p class="analytics-hero-subtitle">Monitor traffic trends, understand what resonates, and uncover pages that need promotion.</p>
+                </div>
+                <div class="analytics-hero-actions">
+                    <button type="button" class="analytics-btn analytics-btn--primary" data-analytics-action="refresh" data-loading-text="Refreshing&hellip;">
+                        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                        <span class="analytics-btn__text">Refresh data</span>
+                    </button>
+                    <button type="button" class="analytics-btn analytics-btn--ghost" data-analytics-action="export">
+                        <i class="fa-solid fa-file-export" aria-hidden="true"></i>
+                        <span class="analytics-btn__text">Export CSV</span>
+                    </button>
+                    <span class="analytics-hero-meta" id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
+                        <?php echo $lastUpdatedDisplay
+                            ? 'Data refreshed ' . htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES)
+                            : 'Data refreshed moments ago'; ?>
+                    </span>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon average"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i></div>
-                    <div class="stat-content">
-                        <div class="stat-label">Avg. Views / Page</div>
-                        <div class="stat-number"><?php echo number_format($averageViews, 1); ?></div>
-                        <div class="stat-subtext">Based on <?php echo $totalPages; ?> published pages</div>
-                    </div>
-                </div>
+            <div class="analytics-overview-grid">
+                <article class="analytics-overview-card">
+                    <div class="analytics-overview-value" id="analyticsTotalViews" data-value="<?php echo (int) $totalViews; ?>"><?php echo number_format($totalViews); ?></div>
+                    <div class="analytics-overview-label">Total Views</div>
+                    <?php if (!empty($topPages)):
+                        $topPage = $topPages[0]; ?>
+                        <div class="analytics-overview-hint">Top page: <?php echo htmlspecialchars($topPage['title'] ?? 'Untitled', ENT_QUOTES); ?> (<?php echo number_format((int) ($topPage['views'] ?? 0)); ?>)</div>
+                    <?php else: ?>
+                        <div class="analytics-overview-hint">Traffic insights will appear as data arrives.</div>
+                    <?php endif; ?>
+                </article>
+                <article class="analytics-overview-card">
+                    <div class="analytics-overview-value" id="analyticsAverageViews" data-value="<?php echo $averageViews; ?>"><?php echo number_format($averageViews, 1); ?></div>
+                    <div class="analytics-overview-label">Avg. views per page</div>
+                    <div class="analytics-overview-hint">Based on <?php echo number_format($totalPages); ?> published pages</div>
+                </article>
+                <article class="analytics-overview-card">
+                    <div class="analytics-overview-value" id="analyticsTotalPages" data-value="<?php echo $totalPages; ?>"><?php echo number_format($totalPages); ?></div>
+                    <div class="analytics-overview-label">Published pages</div>
+                    <div class="analytics-overview-hint">Includes static and dynamic content</div>
+                </article>
+                <article class="analytics-overview-card">
+                    <div class="analytics-overview-value" id="analyticsZeroPages" data-value="<?php echo $zeroViewCount; ?>"><?php echo number_format($zeroViewCount); ?></div>
+                    <div class="analytics-overview-label">Pages with no views</div>
+                    <div class="analytics-overview-hint"><?php echo $zeroViewCount > 0 ? 'Great candidates for internal promotion.' : 'Every published page has traffic.'; ?></div>
+                </article>
             </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon pages"><i class="fa-regular fa-file-lines" aria-hidden="true"></i></div>
-                    <div class="stat-content">
-                        <div class="stat-label">Published Pages</div>
-                        <div class="stat-number"><?php echo number_format($totalPages); ?></div>
-                        <div class="stat-subtext">Includes static and dynamic content</div>
+        </header>
+
+        <section class="analytics-insights">
+            <article class="analytics-insight-card">
+                <header class="analytics-insight-header">
+                    <div class="analytics-insight-icon">
+                        <i class="fa-solid fa-ranking-star" aria-hidden="true"></i>
                     </div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon low-views"><i class="fa-solid fa-arrow-trend-down" aria-hidden="true"></i></div>
-                    <div class="stat-content">
-                        <div class="stat-label">Unviewed Pages</div>
-                        <div class="stat-number"><?php echo number_format($zeroViewCount); ?></div>
-                        <div class="stat-subtext"><?php echo $zeroViewCount > 0 ? 'Great candidates for promotion' : 'Every page has traffic'; ?></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="insights-grid">
-            <div class="insights-card">
-                <div class="insights-header">
-                    <div class="insights-icon highlight"><i class="fa-solid fa-ranking-star" aria-hidden="true"></i></div>
                     <div>
-                        <div class="insights-title">Top Performing Pages</div>
-                        <div class="insights-subtitle">Most viewed content this period</div>
+                        <h3 class="analytics-insight-title">Top performers</h3>
+                        <p class="analytics-insight-subtitle">Highest viewed content across your site</p>
                     </div>
-                </div>
+                </header>
                 <?php if (!empty($topPages)): ?>
-                <ul class="insights-list">
-                    <?php foreach ($topPages as $page): ?>
-                        <li>
-                            <div>
-                                <div class="insight-title"><?php echo htmlspecialchars($page['title']); ?></div>
-                                <div class="insight-subtitle"><?php echo htmlspecialchars($page['slug']); ?></div>
-                            </div>
-                            <div class="insight-metric"><?php echo number_format($page['views'] ?? 0); ?> views</div>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                    <ul class="analytics-insight-list" id="analyticsTopList">
+                        <?php foreach ($topPages as $page): ?>
+                            <li>
+                                <div>
+                                    <span class="analytics-insight-item-title"><?php echo htmlspecialchars($page['title'] ?? 'Untitled', ENT_QUOTES); ?></span>
+                                    <span class="analytics-insight-item-slug"><?php echo htmlspecialchars($page['slug'] ?? '', ENT_QUOTES); ?></span>
+                                </div>
+                                <span class="analytics-insight-metric"><?php echo number_format((int) ($page['views'] ?? 0)); ?> views</span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <p class="analytics-insight-empty" id="analyticsTopEmpty" hidden>Traffic insights will appear once pages start receiving views.</p>
                 <?php else: ?>
-                <div class="insight-empty">Traffic insights will appear once pages start receiving views.</div>
+                    <ul class="analytics-insight-list" id="analyticsTopList" hidden></ul>
+                    <p class="analytics-insight-empty" id="analyticsTopEmpty">Traffic insights will appear once pages start receiving views.</p>
                 <?php endif; ?>
-            </div>
-            <div class="insights-card opportunities">
-                <div class="insights-header">
-                    <div class="insights-icon opportunities"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i></div>
-                    <div>
-                        <div class="insights-title">Opportunities</div>
-                        <div class="insights-subtitle">Pages that need more attention</div>
+            </article>
+            <article class="analytics-insight-card analytics-insight-card--secondary">
+                <header class="analytics-insight-header">
+                    <div class="analytics-insight-icon">
+                        <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
                     </div>
-                </div>
+                    <div>
+                        <h3 class="analytics-insight-title">Opportunities</h3>
+                        <p class="analytics-insight-subtitle">Pages that could use extra attention</p>
+                    </div>
+                </header>
+                <p class="analytics-insight-summary" id="analyticsZeroSummary"><?php echo $zeroViewCount > 0
+                    ? 'You have ' . number_format($zeroViewCount) . ' page' . ($zeroViewCount === 1 ? '' : 's') . ' with no recorded views.'
+                    : 'Great job! Every published page has at least one view.'; ?></p>
                 <?php if ($zeroViewCount > 0): ?>
-                <div class="insight-summary">You have <?php echo number_format($zeroViewCount); ?> page<?php echo $zeroViewCount === 1 ? '' : 's'; ?> without any views.</div>
-                <ul class="insights-list">
-                    <?php foreach ($zeroViewExamples as $page): ?>
-                        <li>
-                            <div>
-                                <div class="insight-title"><?php echo htmlspecialchars($page['title']); ?></div>
-                                <div class="insight-subtitle"><?php echo htmlspecialchars($page['slug']); ?></div>
-                            </div>
-                            <div class="insight-metric">0 views</div>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                    <ul class="analytics-insight-list" id="analyticsZeroList">
+                        <?php foreach ($zeroViewExamples as $page): ?>
+                            <li>
+                                <div>
+                                    <span class="analytics-insight-item-title"><?php echo htmlspecialchars($page['title'] ?? 'Untitled', ENT_QUOTES); ?></span>
+                                    <span class="analytics-insight-item-slug"><?php echo htmlspecialchars($page['slug'] ?? '', ENT_QUOTES); ?></span>
+                                </div>
+                                <span class="analytics-insight-metric">0 views</span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <p class="analytics-insight-empty" id="analyticsZeroEmpty" hidden>Great job! Every published page has at least one view.</p>
                 <?php else: ?>
-                <div class="insight-empty">Great job! Every published page has at least one view.</div>
+                    <ul class="analytics-insight-list" id="analyticsZeroList" hidden></ul>
+                    <p class="analytics-insight-empty" id="analyticsZeroEmpty">Great job! Every published page has at least one view.</p>
                 <?php endif; ?>
+            </article>
+        </section>
+
+        <section class="analytics-controls" aria-label="Analytics controls">
+            <label class="analytics-search" for="analyticsSearchInput">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" id="analyticsSearchInput" placeholder="Search pages by title or slug" aria-label="Search analytics results">
+            </label>
+            <div class="analytics-filter-group" role="group" aria-label="Filter analytics results">
+                <button type="button" class="analytics-filter-btn active" data-analytics-filter="all">All pages <span class="analytics-filter-count" data-analytics-count="all"><?php echo count($initialEntries); ?></span></button>
+                <button type="button" class="analytics-filter-btn" data-analytics-filter="top">Top performers <span class="analytics-filter-count" data-analytics-count="top">0</span></button>
+                <button type="button" class="analytics-filter-btn" data-analytics-filter="growing">Steady traffic <span class="analytics-filter-count" data-analytics-count="growing">0</span></button>
+                <button type="button" class="analytics-filter-btn" data-analytics-filter="no-views">Needs promotion <span class="analytics-filter-count" data-analytics-count="no-views">0</span></button>
             </div>
+            <div class="analytics-view-toggle" role="group" aria-label="Toggle analytics layout">
+                <button type="button" class="analytics-view-btn active" data-analytics-view="grid" aria-label="Grid view"><i class="fa-solid fa-grip" aria-hidden="true"></i></button>
+                <button type="button" class="analytics-view-btn" data-analytics-view="table" aria-label="Table view"><i class="fa-solid fa-table" aria-hidden="true"></i></button>
+            </div>
+        </section>
+
+        <div class="analytics-grid" id="analyticsGrid" role="list"></div>
+
+        <div class="analytics-table" id="analyticsTableView" hidden>
+            <table class="analytics-table__table">
+                <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Slug</th>
+                        <th scope="col">Views</th>
+                    </tr>
+                </thead>
+                <tbody id="analyticsTableBody"></tbody>
+            </table>
         </div>
-        <table class="data-table" id="analyticsTable">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Slug</th>
-                    <th>Views</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+
+        <div class="analytics-empty-state" id="analyticsEmptyState" hidden>
+            <i class="fa-regular fa-chart-bar" aria-hidden="true"></i>
+            <p>No pages match your current filters. Adjust the filters or clear the search to see results.</p>
+        </div>
     </div>
 </div>
+<script>
+    window.analyticsInitialEntries = <?php echo json_encode($initialEntries, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+    window.analyticsInitialMeta = <?php echo json_encode([
+        'lastUpdated' => $lastUpdatedDisplay ? 'Data refreshed ' . $lastUpdatedDisplay : 'Data refreshed moments ago',
+        'lastUpdatedIso' => $lastUpdatedTimestamp > 0 ? date(DATE_ATOM, $lastUpdatedTimestamp) : null,
+    ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+</script>
