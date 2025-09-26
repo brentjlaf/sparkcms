@@ -6,6 +6,16 @@ require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = read_json_file($pagesFile);
+if (!is_array($pages)) {
+    $pages = [];
+}
+
+$stringLength = function (string $value): int {
+    if (function_exists('mb_strlen')) {
+        return mb_strlen($value);
+    }
+    return strlen($value);
+};
 
 $report = [];
 $summary = [
@@ -15,17 +25,17 @@ $summary = [
 ];
 
 foreach ($pages as $page) {
-    $title = $page['title'] ?? 'Untitled';
-    $slug = $page['slug'] ?? '';
+    $title = isset($page['title']) ? (string) $page['title'] : 'Untitled';
+    $slug = isset($page['slug']) ? (string) $page['slug'] : '';
 
-    $metaTitle = trim($page['meta_title'] ?? '');
-    $metaDescription = trim($page['meta_description'] ?? '');
-    $ogTitle = trim($page['og_title'] ?? '');
-    $ogDescription = trim($page['og_description'] ?? '');
-    $ogImage = trim($page['og_image'] ?? '');
+    $metaTitle = trim((string) ($page['meta_title'] ?? ''));
+    $metaDescription = trim((string) ($page['meta_description'] ?? ''));
+    $ogTitle = trim((string) ($page['og_title'] ?? ''));
+    $ogDescription = trim((string) ($page['og_description'] ?? ''));
+    $ogImage = trim((string) ($page['og_image'] ?? ''));
 
-    $metaTitleLength = $metaTitle !== '' ? mb_strlen($metaTitle) : 0;
-    $metaDescriptionLength = $metaDescription !== '' ? mb_strlen($metaDescription) : 0;
+    $metaTitleLength = $metaTitle !== '' ? $stringLength($metaTitle) : 0;
+    $metaDescriptionLength = $metaDescription !== '' ? $stringLength($metaDescription) : 0;
 
     $issues = [];
     $metaTitleStatus = 'good';
