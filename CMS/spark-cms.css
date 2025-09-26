@@ -311,6 +311,19 @@
             margin-right: 15px;
         }
 
+        .stat-icon i,
+        .a11y-stat-icon i,
+        .home-icon i,
+        .modal-close i,
+        .close-btn i,
+        .info-btn i,
+        .edit-btn i,
+        .remove-btn i,
+        .image-preview .file-icon i {
+            font-size: inherit;
+            line-height: 1;
+        }
+
         .stat-icon.pages {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -797,6 +810,9 @@
 
         .home-icon {
             font-size: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .home-icon.set-home {
@@ -1020,6 +1036,9 @@
             font-size: 24px;
             cursor: pointer;
             color: #a0aec0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Close button used in blog modals */
@@ -1032,6 +1051,9 @@
             font-size: 24px;
             cursor: pointer;
             color: #a0aec0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Responsive */

@@ -4,7 +4,7 @@
                         <div class="stats-grid">
                             <div class="stat-card">
                                 <div class="stat-header">
-                                    <div class="stat-icon media">🗂️</div>
+                                    <div class="stat-icon media"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></div>
                                     <div class="stat-content">
                                         <div class="stat-label">Folders</div>
                                         <div class="stat-number" id="totalFolders">0</div>
@@ -13,7 +13,7 @@
                             </div>
                             <div class="stat-card">
                                 <div class="stat-header">
-                                    <div class="stat-icon media">🖼️</div>
+                                    <div class="stat-icon media"><i class="fa-solid fa-images" aria-hidden="true"></i></div>
                                     <div class="stat-content">
                                         <div class="stat-label">Files</div>
                                         <div class="stat-number" id="totalImages">0</div>
@@ -22,7 +22,7 @@
                             </div>
                             <div class="stat-card">
                                 <div class="stat-header">
-                                    <div class="stat-icon media">📦</div>
+                                    <div class="stat-icon media"><i class="fa-solid fa-database" aria-hidden="true"></i></div>
                                     <div class="stat-content">
                                         <div class="stat-label">Storage Used</div>
                                         <div class="stat-number" id="totalSize">0</div>
