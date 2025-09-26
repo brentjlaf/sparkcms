@@ -467,9 +467,6 @@
                 }, 900);
             });
 
-            $('[data-a11y-action="export-page-report"]').on('click', function () {
-                window.alert('Exporting detailed accessibility report for this page...\n\nThe export includes violation breakdowns, remediation steps, and testing history.');
-            });
         }
 
         applyFilters();

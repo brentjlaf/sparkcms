@@ -395,10 +395,6 @@ $dashboardStats = [
                     <i class="fas fa-rotate" aria-hidden="true"></i>
                     <span>Rescan Page</span>
                 </button>
-                <button type="button" class="a11y-btn a11y-btn--secondary" data-a11y-action="export-page-report">
-                    <i class="fas fa-file-export" aria-hidden="true"></i>
-                    <span>Export Report</span>
-                </button>
             </div>
         </header>
 
