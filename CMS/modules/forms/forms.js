@@ -3,6 +3,93 @@ $(function(){
     function escapeHtml(str){ return $('<div>').text(str).html(); }
 
     let currentField = null;
+    let currentFormId = null;
+
+    function resetSubmissionsCard(message){
+        currentFormId = null;
+        const text = message || 'Select a form to view submissions';
+        const rowMessage = /[.!?]$/.test(text) ? text : text + '.';
+        $('#formsTable tbody tr').removeClass('selected');
+        $('#selectedFormName').text(text);
+        $('#formSubmissionsTable tbody').html('<tr class="placeholder-row"><td colspan="2">'+escapeHtml(rowMessage)+'</td></tr>');
+    }
+
+    function formatSubmissionDate(value){
+        if(!value) return 'Unknown';
+        const numeric = Number(value);
+        if(!Number.isNaN(numeric) && numeric > 0){
+            return new Date(numeric * (numeric < 1e12 ? 1000 : 1)).toLocaleString();
+        }
+        const date = new Date(value);
+        if(!Number.isNaN(date.getTime())){
+            return date.toLocaleString();
+        }
+        return String(value);
+    }
+
+    function normalizeSubmissionValue(value){
+        if(value === null || typeof value === 'undefined') return '';
+        if(Array.isArray(value)){
+            return value.map(v => String(v)).join(', ');
+        }
+        if(typeof value === 'object'){
+            try {
+                return JSON.stringify(value);
+            } catch (err) {
+                return '[object]';
+            }
+        }
+        return String(value);
+    }
+
+    function loadFormSubmissions(formId, formName){
+        currentFormId = formId;
+        $('#formsTable tbody tr').removeClass('selected');
+        $('#formsTable tbody tr').filter(function(){ return $(this).data('id') == formId; }).addClass('selected');
+        $('#selectedFormName').text(formName);
+        const tbody = $('#formSubmissionsTable tbody').empty();
+        tbody.append('<tr class="loading-row"><td colspan="2">Loading submissions...</td></tr>');
+        $.getJSON('modules/forms/list_submissions.php', { form_id: formId }, function(data){
+            tbody.empty();
+            const submissions = Array.isArray(data) ? data : [];
+            if(!submissions.length){
+                tbody.append('<tr class="empty-row"><td colspan="2">No submissions yet.</td></tr>');
+                return;
+            }
+            submissions.forEach(function(submission){
+                const submittedAt = formatSubmissionDate(submission.submitted_at || submission.created_at || submission.timestamp);
+                const fields = submission.data && typeof submission.data === 'object' ? submission.data : {};
+                const meta = submission.meta && typeof submission.meta === 'object' ? Object.assign({}, submission.meta) : {};
+                if(submission.source && !meta.source){
+                    meta.source = submission.source;
+                }
+                if(submission.id && !meta.id){
+                    meta.id = submission.id;
+                }
+                const fieldKeys = Object.keys(fields).sort();
+                const metaKeys = Object.keys(meta).sort();
+                const details = [];
+                fieldKeys.forEach(function(key){
+                    const value = normalizeSubmissionValue(fields[key]);
+                    details.push('<div class="submission-detail"><div class="submission-label">'+escapeHtml(key)+'</div><div class="submission-value">'+escapeHtml(value)+'</div></div>');
+                });
+                if(metaKeys.length){
+                    details.push('<div class="submission-meta-group"><div class="submission-meta-title">Metadata</div>');
+                    metaKeys.forEach(function(key){
+                        const value = normalizeSubmissionValue(meta[key]);
+                        details.push('<div class="submission-detail"><div class="submission-label">'+escapeHtml(key)+'</div><div class="submission-value">'+escapeHtml(value)+'</div></div>');
+                    });
+                    details.push('</div>');
+                }
+                if(!details.length){
+                    details.push('<div class="submission-detail"><div class="submission-label">Details</div><div class="submission-value"><em>No submission data provided.</em></div></div>');
+                }
+                tbody.append('<tr><td class="submitted">'+escapeHtml(submittedAt)+'</td><td class="details">'+details.join('')+'</td></tr>');
+            });
+        }).fail(function(){
+            tbody.empty().append('<tr class="error-row"><td colspan="2">Unable to load submissions.</td></tr>');
+        });
+    }
 
     function updatePreview($li){
         const type = $li.data('type');
@@ -55,15 +142,38 @@ $(function(){
 
     function loadForms(){
         $.getJSON('modules/forms/list_forms.php', function(data){
+            const forms = Array.isArray(data) ? data : [];
             const tbody = $('#formsTable tbody').empty();
-            (data||[]).forEach(f => {
+            forms.forEach(function(f){
                 tbody.append('<tr data-id="'+f.id+'">'+
                     '<td class="name">'+escapeHtml(f.name)+'</td>'+
                     '<td class="count">'+(f.fields?f.fields.length:0)+'</td>'+
-                    '<td><button class="btn btn-secondary editForm">Edit</button> '+
+                    '<td><button class="btn btn-secondary viewSubmissions">Submissions</button> '+
+                    '<button class="btn btn-secondary editForm">Edit</button> '+
                     '<button class="btn btn-danger deleteForm">Delete</button></td>'+
                     '</tr>');
             });
+            if(!forms.length){
+                resetSubmissionsCard('Create a form to start collecting submissions');
+                return;
+            }
+            if(currentFormId){
+                const activeRow = tbody.find('tr[data-id="'+currentFormId+'"]').first();
+                if(activeRow.length){
+                    loadFormSubmissions(currentFormId, activeRow.find('.name').text());
+                } else {
+                    resetSubmissionsCard();
+                    const fallbackRow = tbody.find('tr').first();
+                    if(fallbackRow.length){
+                        loadFormSubmissions(fallbackRow.data('id'), fallbackRow.find('.name').text());
+                    }
+                }
+            } else {
+                const firstRow = tbody.find('tr').first();
+                if(firstRow.length){
+                    loadFormSubmissions(firstRow.data('id'), firstRow.find('.name').text());
+                }
+            }
         });
     }
 
@@ -112,6 +222,24 @@ $(function(){
         $('#formBuilderForm')[0].reset();
         $('#formPreview').empty();
         selectField(null);
+    });
+
+    $('#formsTable').on('click', '.viewSubmissions', function(){
+        const row = $(this).closest('tr');
+        const id = row.data('id');
+        const name = row.find('.name').text();
+        if(id){
+            loadFormSubmissions(id, name);
+        }
+    });
+
+    $('#formsTable').on('click', 'tbody tr', function(e){
+        if($(e.target).closest('button').length) return;
+        const row = $(this);
+        const id = row.data('id');
+        if(id){
+            loadFormSubmissions(id, row.find('.name').text());
+        }
     });
 
     $('#formsTable').on('click', '.editForm', function(){
@@ -178,5 +306,6 @@ $(function(){
         if(currentField) updatePreview(currentField);
     });
 
+    resetSubmissionsCard();
     loadForms();
 });

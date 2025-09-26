@@ -3192,6 +3192,66 @@
     }
 }
 
+/* Forms module */
+#formsTable tbody tr.selected {
+    background: #eef2ff;
+}
+
+.form-submissions-label {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+#formSubmissionsTable .submission-detail {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 4px 16px;
+    margin-bottom: 8px;
+}
+
+#formSubmissionsTable .submission-detail:last-child {
+    margin-bottom: 0;
+}
+
+#formSubmissionsTable .submission-meta-group .submission-detail:last-child {
+    margin-bottom: 0;
+}
+
+#formSubmissionsTable .submission-label {
+    font-weight: 600;
+    color: #1f2937;
+    word-break: break-word;
+}
+
+#formSubmissionsTable .submission-value {
+    color: #374151;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+#formSubmissionsTable .submission-meta-group {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+
+#formSubmissionsTable .submission-meta-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+
+#formSubmissionsTable tbody .loading-row td,
+#formSubmissionsTable tbody .empty-row td,
+#formSubmissionsTable tbody .error-row td,
+#formSubmissionsTable tbody .placeholder-row td {
+    color: #6b7280;
+    font-style: italic;
+}
+
 /* Footer */
 .footer {
     background: #f0f0f0;
