@@ -55,7 +55,6 @@ Modules live in `CMS/modules` and provide specific functionality:
 - **blogs** – Blog post management
 - **dashboard** – Admin home page
 - **forms** – Contact forms
-- **import_export** – Data migration tools
 - **logs** – View system logs
 - **maps** – Embed maps
 - **media** – Upload and organize media files
