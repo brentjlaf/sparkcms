@@ -2266,6 +2266,70 @@
             color: #1e293b;
         }
 
+        .settings-dashboard .settings-card-description {
+            margin: 0;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .settings-file-input {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .settings-file-preview {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px dashed #cbd5f5;
+            background: #f8fafc;
+            padding: 8px;
+        }
+
+        .settings-toggle-group {
+            display: grid;
+            gap: 12px;
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            cursor: pointer;
+        }
+
+        .settings-toggle input {
+            margin-top: 4px;
+        }
+
+        .settings-toggle__title {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .settings-toggle__description {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .settings-social-grid {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .settings-social-grid .form-group {
+            margin-bottom: 0;
+        }
+
         .a11y-detail-metrics div {
             display: flex;
             flex-direction: column;
