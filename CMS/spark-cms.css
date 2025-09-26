@@ -857,6 +857,10 @@
         .a11y-score--aa { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .a11y-score--partial { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .a11y-score--failing { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .speed-score--a { background: linear-gradient(135deg, #10b981, #059669); }
+        .speed-score--b { background: linear-gradient(135deg, #38bdf8, #0ea5e9); }
+        .speed-score--c { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .speed-score--d { background: linear-gradient(135deg, #f97316, #dc2626); }
 
         .a11y-page-title {
             font-size: 18px;
@@ -981,6 +985,10 @@
         .level-aa { background: #dbeafe; color: #1d4ed8; }
         .level-partial { background: #fef3c7; color: #92400e; }
         .level-failing { background: #fee2e2; color: #b91c1c; }
+        .grade-a { background: #dcfce7; color: #047857; }
+        .grade-b { background: #dbeafe; color: #1d4ed8; }
+        .grade-c { background: #fef3c7; color: #92400e; }
+        .grade-d { background: #fee2e2; color: #b91c1c; }
 
         .a11y-empty-state {
             background: #fff;
