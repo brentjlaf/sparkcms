@@ -336,6 +336,11 @@
             color: white;
         }
 
+        .stat-icon.alerts {
+            background: linear-gradient(135deg, #f6ad55, #dd6b20);
+            color: white;
+        }
+
         .stat-card.active {
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.35);
         }
@@ -359,6 +364,12 @@
             font-size: 14px;
             color: #718096;
             margin-bottom: 5px;
+        }
+
+        .stat-subtext {
+            font-size: 13px;
+            color: #a0aec0;
+            margin-top: 6px;
         }
 
         .stat-change {

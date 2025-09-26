@@ -37,6 +37,38 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon seo">🔎</div>
+                                <div class="stat-content">
+                                    <div class="stat-label">SEO Health</div>
+                                    <div class="stat-number" id="statSeoScore">0%</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statSeoBreakdown">Optimized: 0 • Needs attention: 0</div>
+                            <div class="stat-subtext" id="statSeoMetadata">Metadata gaps: 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon accessibility">♿</div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Accessibility</div>
+                                    <div class="stat-number" id="statAccessibilityScore">0%</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statAccessibilityBreakdown">Compliant: 0 • Needs review: 0</div>
+                            <div class="stat-subtext" id="statAccessibilityAlt">Alt text issues: 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon alerts">⚠️</div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Open Alerts</div>
+                                    <div class="stat-number" id="statAlerts">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-subtext" id="statAlertsBreakdown">SEO: 0 • Accessibility: 0</div>
+                        </div>
                     </div>
                 </div>
 
