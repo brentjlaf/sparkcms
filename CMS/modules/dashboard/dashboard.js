@@ -21,6 +21,22 @@ $(function(){
         return `${Math.round(value)}%`;
     }
 
+    function formatBytes(bytes) {
+        const size = Number(bytes);
+        if (!Number.isFinite(size) || size <= 0) {
+            return '0 KB';
+        }
+        const units = ['bytes', 'KB', 'MB', 'GB'];
+        let power = Math.floor(Math.log(size) / Math.log(1024));
+        power = Math.max(0, Math.min(power, units.length - 1));
+        const value = size / (1024 ** power);
+        if (power === 0) {
+            return `${formatNumber(size)} ${units[power]}`;
+        }
+        const display = value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
+        return `${formatNumber(display)} ${units[power]}`;
+    }
+
     function updateText(selector, value, formatter) {
         const $el = $(selector);
         if (!$el.length) {
@@ -30,12 +46,62 @@ $(function(){
         $el.text(output);
     }
 
+    function renderModuleSummaries(modules) {
+        const $table = $('#moduleSummaryTable tbody');
+        if (!$table.length) {
+            return;
+        }
+        $table.empty();
+
+        if (!Array.isArray(modules) || modules.length === 0) {
+            $table.append(
+                $('<tr>').append(
+                    $('<td>', {
+                        text: 'No module data available',
+                        colspan: 3
+                    })
+                )
+            );
+            return;
+        }
+
+        modules.forEach(function (module) {
+            const name = module.module || module.name || module.id || '';
+            const primary = module.primary || '—';
+            const secondary = module.secondary || '';
+            const $row = $('<tr>');
+            if (module.id) {
+                $row.attr('data-module', module.id);
+            }
+            $('<td>').text(name).appendTo($row);
+            $('<td>').text(primary).appendTo($row);
+            $('<td>').text(secondary).appendTo($row);
+            $table.append($row);
+        });
+    }
+
     function loadStats(){
         $.getJSON('modules/dashboard/dashboard_data.php', function(data){
             updateText('#statPages', data.pages);
+            updateText('#statPagesBreakdown', [data.pagesPublished, data.pagesDraft], function(values){
+                const published = formatNumber(values[0] || 0);
+                const drafts = formatNumber(values[1] || 0);
+                return `Published: ${published} • Drafts: ${drafts}`;
+            });
             updateText('#statMedia', data.media);
+            updateText('#statMediaSize', data.mediaSize, function(value){
+                return `Library size: ${formatBytes(value)}`;
+            });
             updateText('#statUsers', data.users);
+            updateText('#statUsersBreakdown', [data.usersAdmins, data.usersEditors], function(values){
+                const admins = formatNumber(values[0] || 0);
+                const editors = formatNumber(values[1] || 0);
+                return `Admins: ${admins} • Editors: ${editors}`;
+            });
             updateText('#statViews', data.views);
+            updateText('#statViewsAverage', data.analyticsAvgViews, function(value){
+                return `Average per page: ${formatNumber(value || 0)}`;
+            });
 
             updateText('#statSeoScore', data.seoScore, formatPercent);
             updateText('#statSeoBreakdown', [data.seoOptimized, data.seoNeedsAttention], function(values){
@@ -63,6 +129,8 @@ $(function(){
                 const accessibility = formatNumber(values[1]);
                 return `SEO: ${seo} • Accessibility: ${accessibility}`;
             });
+
+            renderModuleSummaries(data.moduleSummaries || data.modules || []);
         });
     }
     loadStats();

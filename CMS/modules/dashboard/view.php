@@ -9,6 +9,7 @@
                                     <div class="stat-number" id="statPages">0</div>
                                 </div>
                             </div>
+                            <div class="stat-subtext" id="statPagesBreakdown">Published: 0 • Drafts: 0</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -18,6 +19,7 @@
                                     <div class="stat-number" id="statMedia">0</div>
                                 </div>
                             </div>
+                            <div class="stat-subtext" id="statMediaSize">Library size: 0 KB</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -27,6 +29,7 @@
                                     <div class="stat-number" id="statUsers">0</div>
                                 </div>
                             </div>
+                            <div class="stat-subtext" id="statUsersBreakdown">Admins: 0 • Editors: 0</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -36,6 +39,7 @@
                                     <div class="stat-number" id="statViews">0</div>
                                 </div>
                             </div>
+                            <div class="stat-subtext" id="statViewsAverage">Average per page: 0</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -69,6 +73,25 @@
                             </div>
                             <div class="stat-subtext" id="statAlertsBreakdown">SEO: 0 • Accessibility: 0</div>
                         </div>
+                    </div>
+                    <div class="table-card module-summary-card">
+                        <div class="table-header">
+                            <div class="table-title">Module Insights</div>
+                        </div>
+                        <table class="data-table" id="moduleSummaryTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Module</th>
+                                    <th scope="col">Primary Metric</th>
+                                    <th scope="col">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3">Loading module data…</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
