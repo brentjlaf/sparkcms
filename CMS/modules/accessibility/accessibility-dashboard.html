@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessibility Dashboard - WCAG Compliance Overview</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* Header Section */
+        .header {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .site-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .overview-stat {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .overview-stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .overview-stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Controls */
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            background: white;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: #7c3aed;
+            color: #7c3aed;
+        }
+
+        .filter-btn.active {
+            background: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+
+        .view-toggle {
+            display: flex;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .view-btn {
+            padding: 8px 15px;
+            border: none;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .view-btn.active {
+            background: #7c3aed;
+            color: white;
+        }
+
+        /* Pages Grid */
+        .pages-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .page-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .page-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .page-card-header {
+            padding: 25px 25px 0 25px;
+            position: relative;
+        }
+
+        .page-score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .score-aaa { background: linear-gradient(135deg, #059669, #047857); }
+        .score-aa { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .score-partial { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .score-failing { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            padding-right: 70px;
+            line-height: 1.3;
+        }
+
+        .page-url {
+            font-family: monospace;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .page-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .page-stat {
+            text-align: center;
+        }
+
+        .page-stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .page-stat-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .page-issues {
+            padding: 20px 25px 25px 25px;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .issues-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .issues-count {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .wcag-level {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .level-aaa {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .level-aa {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .level-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .level-failing {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .issues-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .issue-tag {
+            padding: 4px 8px;
+            background: #e2e8f0;
+            color: #475569;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .issue-tag.critical {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .issue-tag.serious {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+
+        /* Table View */
+        .table-view {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: none;
+        }
+
+        .table-view.active {
+            display: block;
+        }
+
+        .table-header {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 2fr 100px 100px 100px 100px 150px 80px;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .table-row:hover {
+            background: #f8fafc;
+        }
+
+        .table-header .table-row {
+            cursor: default;
+            font-weight: 600;
+            color: #64748b;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-header .table-row:hover {
+            background: #f8fafc;
+        }
+
+        .table-score {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+
+        .table-issues {
+            font-size: 12px;
+        }
+
+        .last-updated {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Action Buttons */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 30px 25px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: none;
+            }
+
+            .pages-container {
+                grid-template-columns: 1fr;
+            }
+
+            .table-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .table-view .table-row > div {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        /* Page Detail Modal */
+        .page-detail {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .page-detail.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detail-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .detail-header {
+            padding: 30px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #64748b;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+        }
+
+        .compliance-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>Accessibility Dashboard</h1>
+                <p>Monitor WCAG compliance and accessibility performance across your website. Ensure your content is accessible to all users including those with disabilities.</p>
+                
+                <div class="site-overview">
+                    <div class="overview-stat">
+                        <div class="overview-stat-value" id="total-pages">6</div>
+                        <div class="overview-stat-label">Total Pages</div>
+                    </div>
+                    <div class="overview-stat">
+                        <div class="overview-stat-value" id="avg-score">82%</div>
+                        <div class="overview-stat-label">Avg Compliance</div>
+                    </div>
+                    <div class="overview-stat">
+                        <div class="overview-stat-value" id="critical-violations">8</div>
+                        <div class="overview-stat-label">Critical Issues</div>
+                    </div>
+                    <div class="overview-stat">
+                        <div class="overview-stat-value" id="aa-compliant">4</div>
+                        <div class="overview-stat-label">AA Compliant</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" placeholder="Search pages by title, URL, or accessibility issue..." id="search-input">
+                <i class="fas fa-search"></i>
+            </div>
+
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">All Pages</button>
+                <button class="filter-btn" data-filter="failing">Critical Issues</button>
+                <button class="filter-btn" data-filter="partial">Needs Work</button>
+                <button class="filter-btn" data-filter="compliant">WCAG Compliant</button>
+            </div>
+
+            <div class="view-toggle">
+                <button class="view-btn active" data-view="grid">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button class="view-btn" data-view="table">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <div class="bulk-actions">
+                <button class="btn btn-primary">
+                    <i class="fas fa-universal-access"></i>
+                    Scan All Pages
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="fas fa-download"></i>
+                    WCAG Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="pages-container" id="pages-grid">
+            <!-- Pages will be populated by JavaScript -->
+        </div>
+
+        <!-- Table View -->
+        <div class="table-view" id="table-view">
+            <div class="table-header">
+                <div class="table-row">
+                    <div>Page</div>
+                    <div>Score</div>
+                    <div>WCAG Level</div>
+                    <div>Violations</div>
+                    <div>Warnings</div>
+                    <div>Last Scanned</div>
+                    <div>Action</div>
+                </div>
+            </div>
+            <div id="table-body">
+                <!-- Table rows will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <i class="fas fa-universal-access"></i>
+            <h3>No pages found</h3>
+            <p>Try adjusting your search or filter criteria</p>
+        </div>
+    </div>
+
+    <!-- Page Detail Modal -->
+    <div class="page-detail" id="page-detail">
+        <div class="detail-content">
+            <button class="close-btn" onclick="closePageDetail()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="detail-header">
+                <h2 id="detail-title">Page Accessibility Details</h2>
+                <p id="detail-url">URL will be displayed here</p>
+                <p id="detail-description">Accessibility compliance overview for this page.</p>
+                <button class="analyze-btn" onclick="analyzePageFull()">
+                    <i class="fas fa-universal-access"></i>
+                    Full Accessibility Audit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page data with accessibility metrics
+        const pageData = {
+            '/': {
+                title: 'Homepage - Professional Web Development Services',
+                url: 'https://yoursite.com/',
+                path: '/',
+                accessibilityScore: 94,
+                wcagLevel: 'AAA',
+                violations: {
+                    critical: 0,
+                    serious: 0,
+                    moderate: 1,
+                    minor: 0,
+                    total: 1
+                },
+                warnings: 2,
+                lastScanned: '2 hours ago',
+                pageType: 'Homepage',
+                compliance: 'AAA',
+                issues: {
+                    preview: ['Focus indicators', 'Skip links']
+                }
+            },
+            '/about-us': {
+                title: 'About Us - Expert Web Development Team',
+                url: 'https://yoursite.com/about-us',
+                path: '/about-us',
+                accessibilityScore: 87,
+                wcagLevel: 'AA',
+                violations: {
+                    critical: 0,
+                    serious: 1,
+                    moderate: 2,
+                    minor: 1,
+                    total: 4
+                },
+                warnings: 3,
+                lastScanned: '4 hours ago',
+                pageType: 'Content Page',
+                compliance: 'AA',
+                issues: {
+                    preview: ['Alt text missing', 'Color contrast', 'Heading structure']
+                }
+            },
+            '/services': {
+                title: 'Our Services - Custom Web Development Solutions',
+                url: 'https://yoursite.com/services',
+                path: '/services',
+                accessibilityScore: 78,
+                wcagLevel: 'AA',
+                violations: {
+                    critical: 1,
+                    serious: 2,
+                    moderate: 3,
+                    minor: 2,
+                    total: 8
+                },
+                warnings: 5,
+                lastScanned: '1 hour ago',
+                pageType: 'Service Page',
+                compliance: 'Partial',
+                issues: {
+                    preview: ['Form labels', 'Keyboard navigation', 'ARIA labels']
+                }
+            },
+            '/contact': {
+                title: 'Contact Us - Get Your Web Development Quote',
+                url: 'https://yoursite.com/contact',
+                path: '/contact',
+                accessibilityScore: 62,
+                wcagLevel: 'Partial',
+                violations: {
+                    critical: 3,
+                    serious: 2,
+                    moderate: 4,
+                    minor: 1,
+                    total: 10
+                },
+                warnings: 7,
+                lastScanned: '30 minutes ago',
+                pageType: 'Contact Page',
+                compliance: 'Failing',
+                issues: {
+                    preview: ['Form validation', 'Focus management', 'Error handling', 'Screen reader']
+                }
+            },
+            '/blog': {
+                title: 'Web Development Blog - Latest Tips & Insights',
+                url: 'https://yoursite.com/blog',
+                path: '/blog',
+                accessibilityScore: 91,
+                wcagLevel: 'AA',
+                violations: {
+                    critical: 0,
+                    serious: 0,
+                    moderate: 1,
+                    minor: 2,
+                    total: 3
+                },
+                warnings: 2,
+                lastScanned: '3 hours ago',
+                pageType: 'Blog Index',
+                compliance: 'AA',
+                issues: {
+                    preview: ['Image descriptions', 'Link context']
+                }
+            },
+            '/products': {
+                title: 'Web Development Products & Tools',
+                url: 'https://yoursite.com/products',
+                path: '/products',
+                accessibilityScore: 71,
+                wcagLevel: 'Partial',
+                violations: {
+                    critical: 2,
+                    serious: 3,
+                    moderate: 2,
+                    minor: 3,
+                    total: 10
+                },
+                warnings: 8,
+                lastScanned: '6 hours ago',
+                pageType: 'Product Page',
+                compliance: 'Failing',
+                issues: {
+                    preview: ['Interactive elements', 'Table headers', 'Media controls', 'Navigation']
+                }
+            }
+        };
+
+        let currentFilter = 'all';
+        let currentView = 'grid';
+        let filteredPages = Object.entries(pageData);
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSiteOverview();
+            renderPages();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Search functionality
+            document.getElementById('search-input').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                filteredPages = Object.entries(pageData).filter(([path, data]) => {
+                    return data.title.toLowerCase().includes(query) ||
+                           data.url.toLowerCase().includes(query) ||
+                           data.issues.preview.some(issue => issue.toLowerCase().includes(query));
+                });
+                renderPages();
+            });
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    applyFilters();
+                });
+            });
+
+            // View toggle
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentView = this.dataset.view;
+                    toggleView();
+                });
+            });
+        }
+
+        function updateSiteOverview() {
+            const pages = Object.values(pageData);
+            const totalPages = pages.length;
+            const avgScore = Math.round(pages.reduce((sum, page) => sum + page.accessibilityScore, 0) / totalPages);
+            const criticalViolations = pages.reduce((sum, page) => sum + page.violations.critical, 0);
+            const aaCompliant = pages.filter(page => page.wcagLevel === 'AA' || page.wcagLevel === 'AAA').length;
+
+            document.getElementById('total-pages').textContent = totalPages;
+            document.getElementById('avg-score').textContent = avgScore + '%';
+            document.getElementById('critical-violations').textContent = criticalViolations;
+            document.getElementById('aa-compliant').textContent = aaCompliant;
+        }
+
+        function renderPages() {
+            const grid = document.getElementById('pages-grid');
+            const tableBody = document.getElementById('table-body');
+            const emptyState = document.getElementById('empty-state');
+
+            if (filteredPages.length === 0) {
+                grid.style.display = 'none';
+                document.getElementById('table-view').style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            
+            // Render grid view
+            grid.innerHTML = '';
+            grid.style.display = currentView === 'grid' ? 'grid' : 'none';
+
+            // Render table view
+            tableBody.innerHTML = '';
+            document.getElementById('table-view').style.display = currentView === 'table' ? 'block' : 'none';
+
+            filteredPages.forEach(([path, data]) => {
+                if (currentView === 'grid') {
+                    grid.appendChild(createPageCard(path, data));
+                } else {
+                    tableBody.appendChild(createTableRow(path, data));
+                }
+            });
+        }
+
+        function createPageCard(path, data) {
+            const card = document.createElement('div');
+            card.className = 'page-card';
+            card.onclick = () => openPageDetail(path, data);
+
+            const scoreClass = getScoreClass(data.accessibilityScore);
+            const levelClass = getLevelClass(data.wcagLevel);
+
+            card.innerHTML = `
+                <div class="page-card-header">
+                    <div class="page-score ${scoreClass}">${data.accessibilityScore}%</div>
+                    <div class="page-title">${data.title}</div>
+                    <div class="page-url">${data.url}</div>
+                    
+                    <div class="page-stats">
+                        <div class="page-stat">
+                            <div class="page-stat-value">${data.violations.total}</div>
+                            <div class="page-stat-label">Violations</div>
+                        </div>
+                        <div class="page-stat">
+                            <div class="page-stat-value">${data.warnings}</div>
+                            <div class="page-stat-label">Warnings</div>
+                        </div>
+                        <div class="page-stat">
+                            <div class="page-stat-value">${data.wcagLevel}</div>
+                            <div class="page-stat-label">WCAG Level</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page-issues">
+                    <div class="issues-summary">
+                        <div class="issues-count">${data.violations.total} Issues Found</div>
+                        <div class="wcag-level ${levelClass}">
+                            ${data.wcagLevel} ${data.violations.critical > 0 ? 'Failing' : 
+                              data.wcagLevel === 'AAA' ? 'Compliant' : 
+                              data.wcagLevel === 'AA' ? 'Compliant' : 'Partial'}
+                        </div>
+                    </div>
+                    <div class="issues-preview">
+                        ${data.issues.preview.map(issue => 
+                            `<div class="issue-tag ${data.violations.critical > 0 ? 'critical' : data.violations.serious > 0 ? 'serious' : ''}">${issue}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function createTableRow(path, data) {
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            row.onclick = () => openPageDetail(path, data);
+
+            const scoreClass = getScoreClass(data.accessibilityScore);
+
+            row.innerHTML = `
+                <div>
+                    <div style="font-weight: 600; color: #1e293b; margin-bottom: 4px;">${data.title}</div>
+                    <div style="font-family: monospace; font-size: 12px; color: #64748b;">${data.url}</div>
+                </div>
+                <div class="table-score ${scoreClass}">${data.accessibilityScore}%</div>
+                <div>
+                    <span class="compliance-indicator">
+                        <i class="fas ${getWcagIcon(data.wcagLevel)}" style="color: ${getWcagColor(data.wcagLevel)};"></i>
+                        ${data.wcagLevel}
+                    </span>
+                </div>
+                <div class="table-issues">
+                    <div style="font-weight: 600; margin-bottom: 2px;">${data.violations.total} total</div>
+                    <div style="color: #ef4444;">${data.violations.critical} critical</div>
+                </div>
+                <div style="color: #f59e0b;">${data.warnings}</div>
+                <div class="last-updated">${data.lastScanned}</div>
+                <div>
+                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation(); analyzePageFull('${path}')">
+                        <i class="fas fa-universal-access"></i>
+                    </button>
+                </div>
+            `;
+
+            return row;
+        }
+
+        function applyFilters() {
+            const allPages = Object.entries(pageData);
+            
+            switch(currentFilter) {
+                case 'failing':
+                    filteredPages = allPages.filter(([path, data]) => data.violations.critical > 0 || data.accessibilityScore < 70);
+                    break;
+                case 'partial':
+                    filteredPages = allPages.filter(([path, data]) => data.accessibilityScore >= 70 && data.accessibilityScore < 90 && data.violations.total > 0);
+                    break;
+                case 'compliant':
+                    filteredPages = allPages.filter(([path, data]) => data.wcagLevel === 'AA' || data.wcagLevel === 'AAA');
+                    break;
+                default:
+                    filteredPages = allPages;
+            }
+            
+            renderPages();
+        }
+
+        function toggleView() {
+            renderPages();
+        }
+
+        function getScoreClass(score) {
+            if (score >= 90) return 'score-aaa';
+            if (score >= 80) return 'score-aa';
+            if (score >= 60) return 'score-partial';
+            return 'score-failing';
+        }
+
+        function getLevelClass(level) {
+            switch(level) {
+                case 'AAA': return 'level-aaa';
+                case 'AA': return 'level-aa';
+                case 'Partial': return 'level-partial';
+                default: return 'level-failing';
+            }
+        }
+
+        function getWcagIcon(level) {
+            switch(level) {
+                case 'AAA': return 'fa-check-circle';
+                case 'AA': return 'fa-check';
+                case 'Partial': return 'fa-exclamation-triangle';
+                default: return 'fa-times-circle';
+            }
+        }
+
+        function getWcagColor(level) {
+            switch(level) {
+                case 'AAA': return '#059669';
+                case 'AA': return '#3b82f6';
+                case 'Partial': return '#f59e0b';
+                default: return '#ef4444';
+            }
+        }
+
+        function openPageDetail(path, data) {
+            const modal = document.getElementById('page-detail');
+            const title = document.getElementById('detail-title');
+            const url = document.getElementById('detail-url');
+            const description = document.getElementById('detail-description');
+
+            title.textContent = data.title;
+            url.textContent = data.url;
+            
+            let statusText = '';
+            if (data.wcagLevel === 'AAA') {
+                statusText = 'This page exceeds WCAG AA standards and meets AAA accessibility guidelines with minimal issues.';
+            } else if (data.wcagLevel === 'AA') {
+                statusText = 'This page meets WCAG AA accessibility standards but has some areas for improvement.';
+            } else if (data.accessibilityScore >= 60) {
+                statusText = 'This page has partial accessibility compliance and requires attention to meet WCAG standards.';
+            } else {
+                statusText = 'This page has significant accessibility violations that prevent users with disabilities from accessing content.';
+            }
+            
+            description.textContent = `${statusText} Current accessibility score: ${data.accessibilityScore}%, ${data.violations.total} violations found (${data.violations.critical} critical), WCAG level: ${data.wcagLevel}.`;
+
+            // Store the current page path for the analyze button
+            modal.dataset.currentPath = path;
+            
+            modal.classList.add('active');
+        }
+
+        function closePageDetail() {
+            document.getElementById('page-detail').classList.remove('active');
+        }
+
+        function analyzePageFull(path = null) {
+            // If path is provided, use it; otherwise get from modal
+            const targetPath = path || document.getElementById('page-detail').dataset.currentPath;
+            
+            // Close modal if open
+            closePageDetail();
+            
+            // Create the detailed accessibility analysis page URL
+            const analysisUrl = `accessibility-page-analysis.html?page=${encodeURIComponent(targetPath)}`;
+            
+            // For demonstration purposes, we'll show an alert
+            alert(`Launching comprehensive accessibility audit for: ${targetPath}\n\nThis would open a detailed analysis showing:\n• WCAG 2.1 compliance checklist\n• Screen reader compatibility\n• Keyboard navigation testing\n• Color contrast analysis\n• Focus management review\n• Alternative text validation\n• Form accessibility audit\n\nURL: ${analysisUrl}`);
+            
+            // Uncomment this line in production:
+            // window.location.href = analysisUrl;
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('page-detail').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePageDetail();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePageDetail();
+            }
+        });
+
+        // Bulk actions
+        document.querySelector('.btn-primary').addEventListener('click', function() {
+            alert('Starting comprehensive accessibility scan...\n\nThis would initiate:\n• WCAG 2.1 AA/AAA compliance testing\n• Automated accessibility testing with axe-core\n• Color contrast verification\n• Keyboard navigation validation\n• Screen reader compatibility check\n• Focus management analysis\n\nEstimated time: 5-10 minutes for all pages');
+        });
+
+        document.querySelector('.btn-secondary').addEventListener('click', function() {
+            alert('Generating WCAG Compliance Report...\n\nThis comprehensive report will include:\n• Executive summary of accessibility status\n• Detailed violation breakdown by severity\n• WCAG 2.1 guideline compliance matrix\n• Remediation recommendations with priority levels\n• Before/after comparison for fixes\n• Legal compliance summary\n\nReport format: PDF with interactive elements');
+        });
+    </script>
+</body>
+</html>
