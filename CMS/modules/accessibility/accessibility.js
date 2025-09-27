@@ -85,6 +85,25 @@
         return items.join('');
     }
 
+    function normalizeNumber(value) {
+        if (typeof value === 'number' && !Number.isNaN(value)) {
+            return value;
+        }
+        const parsed = parseFloat(value);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }
+
+    function compareStrings(a, b) {
+        return (a || '').toString().localeCompare((b || '').toString(), undefined, { sensitivity: 'base' });
+    }
+
+    function getViolationTotal(page) {
+        if (page && page.violations && typeof page.violations.total !== 'undefined') {
+            return normalizeNumber(page.violations.total);
+        }
+        return 0;
+    }
+
     function filterPages(data, filter, query) {
         return data.filter(function (page) {
             const matchesFilter = (function () {
@@ -120,6 +139,31 @@
             }
             return haystacks.join(' ').toLowerCase().indexOf(query) !== -1;
         });
+    }
+
+    function sortPages(pages, sortKey) {
+        const sorted = pages.slice();
+        const sorters = {
+            'score-desc': function (a, b) {
+                const diff = normalizeNumber(b.accessibilityScore) - normalizeNumber(a.accessibilityScore);
+                return diff !== 0 ? diff : compareStrings(a.title, b.title);
+            },
+            'score-asc': function (a, b) {
+                const diff = normalizeNumber(a.accessibilityScore) - normalizeNumber(b.accessibilityScore);
+                return diff !== 0 ? diff : compareStrings(a.title, b.title);
+            },
+            'violations-desc': function (a, b) {
+                const diff = getViolationTotal(b) - getViolationTotal(a);
+                return diff !== 0 ? diff : compareStrings(a.title, b.title);
+            },
+            'title-asc': function (a, b) {
+                return compareStrings(a.title, b.title) || compareStrings(a.url, b.url);
+            }
+        };
+
+        const sorter = sorters[sortKey] || sorters['score-desc'];
+        sorted.sort(sorter);
+        return sorted;
     }
 
     function updateFilterPills(data, $buttons) {
@@ -166,6 +210,7 @@
         const $empty = $('#a11yEmptyState');
         const $filterButtons = $('[data-a11y-filter]');
         const $viewButtons = $('[data-a11y-view]');
+        const $sortButtons = $('[data-a11y-sort]');
         const $searchInput = $('#a11ySearchInput');
         const $modal = $('#a11yPageDetail');
         const $modalClose = $('#a11yDetailClose');
@@ -183,6 +228,7 @@
 
         let currentFilter = 'all';
         let currentView = 'grid';
+        let currentSort = 'score-desc';
         let filteredPages = data.slice();
         let activeSlug = null;
 
@@ -316,19 +362,31 @@
 
         function applyFilters() {
             const query = ($searchInput.val() || '').toLowerCase();
-            filteredPages = filterPages(data, currentFilter, query);
+            filteredPages = sortPages(filterPages(data, currentFilter, query), currentSort);
             render();
         }
 
         if ($grid.length) {
             updateFilterPills(data, $filterButtons);
-            render();
+            applyFilters();
         }
 
         $filterButtons.on('click', function () {
             const $btn = $(this);
             currentFilter = $btn.data('a11y-filter') || 'all';
             $filterButtons.removeClass('active');
+            $btn.addClass('active');
+            applyFilters();
+        });
+
+        $sortButtons.on('click', function () {
+            const $btn = $(this);
+            const sortKey = $btn.data('a11y-sort') || 'score-desc';
+            if (sortKey === currentSort) {
+                return;
+            }
+            currentSort = sortKey;
+            $sortButtons.removeClass('active');
             $btn.addClass('active');
             applyFilters();
         });
