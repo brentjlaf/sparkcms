@@ -151,69 +151,71 @@ date_default_timezone_set('America/Los_Angeles');
         <form id="calendarEventForm" class="calendar-form">
             <input type="hidden" name="action" value="save_event">
             <input type="hidden" name="id" id="calendarEventId">
-            <div class="calendar-form__group">
-                <label for="calendarEventTitle">Title *</label>
-                <input type="text" id="calendarEventTitle" name="title" required>
-            </div>
-            <div class="calendar-form__group">
-                <label for="calendarEventDescription">Description</label>
-                <textarea id="calendarEventDescription" name="description" rows="4"></textarea>
-            </div>
-            <div class="calendar-form__row">
+            <div class="calendar-modal__body">
                 <div class="calendar-form__group">
-                    <label for="calendarEventStartDate">Start date *</label>
-                    <input type="date" id="calendarEventStartDate" name="start_date" required>
+                    <label for="calendarEventTitle">Title *</label>
+                    <input type="text" id="calendarEventTitle" name="title" required>
                 </div>
                 <div class="calendar-form__group">
-                    <label for="calendarEventStartTime">Start time</label>
-                    <input type="time" id="calendarEventStartTime" name="start_time">
+                    <label for="calendarEventDescription">Description</label>
+                    <textarea id="calendarEventDescription" name="description" rows="4"></textarea>
                 </div>
-            </div>
-            <div class="calendar-form__row">
-                <div class="calendar-form__group">
-                    <label for="calendarEventEndDate">End date *</label>
-                    <input type="date" id="calendarEventEndDate" name="end_date" required>
-                </div>
-                <div class="calendar-form__group">
-                    <label for="calendarEventEndTime">End time</label>
-                    <input type="time" id="calendarEventEndTime" name="end_time">
-                </div>
-            </div>
-            <div class="calendar-form__group calendar-form__checkbox">
-                <input type="checkbox" id="calendarEventAllDay" name="all_day" value="1">
-                <label for="calendarEventAllDay">All day event</label>
-            </div>
-            <div class="calendar-form__group">
-                <label for="calendarEventCategory">Category</label>
-                <select id="calendarEventCategory" name="category_id">
-                    <option value="">No category</option>
-                </select>
-            </div>
-            <fieldset class="calendar-form__fieldset">
-                <legend>Recurrence</legend>
                 <div class="calendar-form__row">
                     <div class="calendar-form__group">
-                        <label for="calendarEventRecurrenceType">Pattern</label>
-                        <select id="calendarEventRecurrenceType" name="recurrence_type">
-                            <option value="none">Does not repeat</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
-                        </select>
+                        <label for="calendarEventStartDate">Start date *</label>
+                        <input type="date" id="calendarEventStartDate" name="start_date" required>
                     </div>
                     <div class="calendar-form__group">
-                        <label for="calendarEventRecurrenceInterval">Interval</label>
-                        <input type="number" min="1" value="1" id="calendarEventRecurrenceInterval" name="recurrence_interval">
+                        <label for="calendarEventStartTime">Start time</label>
+                        <input type="time" id="calendarEventStartTime" name="start_time">
                     </div>
                 </div>
-                <div class="calendar-form__group">
-                    <label for="calendarEventRecurrenceEnd">Ends</label>
-                    <input type="date" id="calendarEventRecurrenceEnd" name="recurrence_end_date">
-                    <p class="calendar-form__help">Leave blank for no end date.</p>
+                <div class="calendar-form__row">
+                    <div class="calendar-form__group">
+                        <label for="calendarEventEndDate">End date *</label>
+                        <input type="date" id="calendarEventEndDate" name="end_date" required>
+                    </div>
+                    <div class="calendar-form__group">
+                        <label for="calendarEventEndTime">End time</label>
+                        <input type="time" id="calendarEventEndTime" name="end_time">
+                    </div>
                 </div>
-            </fieldset>
-            <div class="calendar-form__actions">
+                <div class="calendar-form__group calendar-form__checkbox">
+                    <input type="checkbox" id="calendarEventAllDay" name="all_day" value="1">
+                    <label for="calendarEventAllDay">All day event</label>
+                </div>
+                <div class="calendar-form__group">
+                    <label for="calendarEventCategory">Category</label>
+                    <select id="calendarEventCategory" name="category_id">
+                        <option value="">No category</option>
+                    </select>
+                </div>
+                <fieldset class="calendar-form__fieldset">
+                    <legend>Recurrence</legend>
+                    <div class="calendar-form__row">
+                        <div class="calendar-form__group">
+                            <label for="calendarEventRecurrenceType">Pattern</label>
+                            <select id="calendarEventRecurrenceType" name="recurrence_type">
+                                <option value="none">Does not repeat</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
+                        <div class="calendar-form__group">
+                            <label for="calendarEventRecurrenceInterval">Interval</label>
+                            <input type="number" min="1" value="1" id="calendarEventRecurrenceInterval" name="recurrence_interval">
+                        </div>
+                    </div>
+                    <div class="calendar-form__group">
+                        <label for="calendarEventRecurrenceEnd">Ends</label>
+                        <input type="date" id="calendarEventRecurrenceEnd" name="recurrence_end_date">
+                        <p class="calendar-form__help">Leave blank for no end date.</p>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="calendar-modal__actions calendar-form__actions">
                 <button type="button" class="calendar-btn calendar-btn--danger" id="calendarDeleteEventBtn" hidden>Delete</button>
                 <button type="button" class="calendar-btn calendar-btn--ghost" data-calendar-close>Cancel</button>
                 <button type="submit" class="calendar-btn calendar-btn--primary">Save event</button>
