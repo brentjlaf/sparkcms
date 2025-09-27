@@ -45,6 +45,7 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
     ? date('M j, Y g:i a', $lastUpdatedTimestamp)
     : null;
 ?>
+<link rel="stylesheet" href="modules/analytics/analytics.css">
 <div class="content-section" id="analytics">
     <div class="analytics-dashboard">
         <header class="a11y-hero analytics-hero">
@@ -179,9 +180,24 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
             <table class="analytics-table__table">
                 <thead>
                     <tr>
-                        <th scope="col">Title</th>
-                        <th scope="col">Slug</th>
-                        <th scope="col">Views</th>
+                        <th scope="col" aria-sort="none">
+                            <button type="button" class="analytics-table__sort" data-analytics-sort="title" data-analytics-sort-label="Title">
+                                <span class="analytics-table__sort-label">Title</span>
+                                <span class="analytics-table__sort-indicator" aria-hidden="true"></span>
+                            </button>
+                        </th>
+                        <th scope="col" aria-sort="none">
+                            <button type="button" class="analytics-table__sort" data-analytics-sort="slug" data-analytics-sort-label="Slug">
+                                <span class="analytics-table__sort-label">Slug</span>
+                                <span class="analytics-table__sort-indicator" aria-hidden="true"></span>
+                            </button>
+                        </th>
+                        <th scope="col" aria-sort="descending">
+                            <button type="button" class="analytics-table__sort" data-analytics-sort="views" data-analytics-sort-label="Views">
+                                <span class="analytics-table__sort-label">Views</span>
+                                <span class="analytics-table__sort-indicator" aria-hidden="true"></span>
+                            </button>
+                        </th>
                     </tr>
                 </thead>
                 <tbody id="analyticsTableBody"></tbody>
