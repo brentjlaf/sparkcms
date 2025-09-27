@@ -27,6 +27,10 @@ $(function () {
         socialStatus: $detailOverlay.find('[data-detail="social-status"]'),
         lastUpdated: $detailOverlay.find('[data-detail="last-updated"]'),
         issues: $detailOverlay.find('[data-detail="issues"]'),
+        wordCount: $detailOverlay.find('[data-detail="word-count"]'),
+        headingStatus: $detailOverlay.find('[data-detail="heading-status"]'),
+        imageAltStatus: $detailOverlay.find('[data-detail="image-alt-status"]'),
+        internalLinkStatus: $detailOverlay.find('[data-detail="internal-link-status"]'),
     };
 
     let activeFilter = 'all';
@@ -164,6 +168,36 @@ $(function () {
         );
 
         detailElements.lastUpdated.text(data.lastUpdated || 'Unknown');
+        const wordCount = typeof data.wordCount === 'number' ? data.wordCount : 0;
+        if (wordCount > 0) {
+            const readingTime = Math.max(1, Math.round(wordCount / 200));
+            detailElements.wordCount.text(`${wordCount} words · ~${readingTime} min read`);
+        } else {
+            detailElements.wordCount.text('No content detected');
+        }
+
+        const h1Count = typeof data.h1Count === 'number' ? data.h1Count : 0;
+        if (h1Count === 0) {
+            detailElements.headingStatus.text('No H1 heading found');
+        } else if (h1Count === 1) {
+            detailElements.headingStatus.text('Single H1 heading in place');
+        } else {
+            detailElements.headingStatus.text(`${h1Count} H1 headings detected`);
+        }
+
+        const missingAlt = typeof data.missingAltCount === 'number' ? data.missingAltCount : 0;
+        if (missingAlt === 0) {
+            detailElements.imageAltStatus.text('All images include descriptive alt text');
+        } else {
+            detailElements.imageAltStatus.text(`${missingAlt} image${missingAlt === 1 ? '' : 's'} missing alt text`);
+        }
+
+        const internalLinks = typeof data.internalLinkCount === 'number' ? data.internalLinkCount : 0;
+        if (internalLinks === 0) {
+            detailElements.internalLinkStatus.text('No internal links detected');
+        } else {
+            detailElements.internalLinkStatus.text(`${internalLinks} internal link${internalLinks === 1 ? '' : 's'} found`);
+        }
         renderIssues(detailElements.issues, data.issues || []);
     }
 

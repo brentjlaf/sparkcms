@@ -38,6 +38,81 @@ $formatDate = static function ($timestamp): ?string {
     return null;
 };
 
+$analyzeContent = static function (string $html): array {
+    $wordCount = 0;
+    $h1Count = 0;
+    $missingAlt = 0;
+    $internalLinks = 0;
+
+    if (trim($html) === '') {
+        return [
+            'word_count' => 0,
+            'h1_count' => 0,
+            'missing_alt' => 0,
+            'internal_links' => 0,
+        ];
+    }
+
+    $loaded = false;
+    $dom = null;
+    $libxmlPrevious = libxml_use_internal_errors(true);
+
+    if (class_exists('DOMDocument')) {
+        $dom = new DOMDocument();
+        try {
+            $loaded = $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        } catch (Exception $exception) {
+            $loaded = false;
+        }
+        libxml_clear_errors();
+    }
+
+    if ($loaded && $dom !== null) {
+        $textContent = (string) $dom->textContent;
+        if ($textContent !== '') {
+            if (preg_match_all('/[\p{L}\p{N}\']+/u', $textContent, $matches)) {
+                $wordCount = count($matches[0]);
+            }
+        }
+
+        $h1Count = $dom->getElementsByTagName('h1')->length ?? 0;
+
+        foreach ($dom->getElementsByTagName('img') as $img) {
+            $alt = $img->getAttribute('alt');
+            if ($alt === '') {
+                $missingAlt++;
+            }
+        }
+
+        foreach ($dom->getElementsByTagName('a') as $anchor) {
+            $href = trim($anchor->getAttribute('href'));
+            if ($href === '') {
+                continue;
+            }
+            if (preg_match('/^https?:\/\//i', $href) === 1) {
+                continue;
+            }
+            $internalLinks++;
+        }
+    } else {
+        $textContent = trim(strip_tags($html));
+        if ($textContent !== '') {
+            if (preg_match_all('/[\p{L}\p{N}\']+/u', $textContent, $matches)) {
+                $wordCount = count($matches[0]);
+            }
+        }
+    }
+
+    libxml_use_internal_errors($libxmlPrevious);
+
+    return [
+        'word_count' => $wordCount,
+        'h1_count' => $h1Count,
+        'missing_alt' => $missingAlt,
+        'internal_links' => $internalLinks,
+    ];
+};
+
 foreach ($pages as $page) {
     $summary['total_pages']++;
 
@@ -48,6 +123,12 @@ foreach ($pages as $page) {
     $ogTitle = trim((string) ($page['og_title'] ?? ''));
     $ogDescription = trim((string) ($page['og_description'] ?? ''));
     $ogImage = trim((string) ($page['og_image'] ?? ''));
+    $content = (string) ($page['content'] ?? '');
+    $contentInsights = $analyzeContent($content);
+    $wordCount = (int) $contentInsights['word_count'];
+    $h1Count = (int) $contentInsights['h1_count'];
+    $missingAltCount = (int) $contentInsights['missing_alt'];
+    $internalLinkCount = (int) $contentInsights['internal_links'];
 
     $metaTitleLength = $metaTitle !== '' ? $stringLength($metaTitle) : 0;
     $metaDescriptionLength = $metaDescription !== '' ? $stringLength($metaDescription) : 0;
@@ -104,6 +185,49 @@ foreach ($pages as $page) {
     if (!$hasSocialPreview) {
         $issues[] = [
             'message' => 'Social preview incomplete (requires OG title, description, and image)',
+            'severity' => 'warning',
+        ];
+    }
+
+    if ($wordCount > 0 && $wordCount < 150) {
+        $issues[] = [
+            'message' => 'Content length is very short (&lt;150 words)',
+            'severity' => 'critical',
+        ];
+    } elseif ($wordCount >= 150 && $wordCount < 300) {
+        $issues[] = [
+            'message' => 'Consider expanding content to at least 300 words',
+            'severity' => 'warning',
+        ];
+    } elseif ($wordCount === 0) {
+        $issues[] = [
+            'message' => 'Page content missing or empty',
+            'severity' => 'critical',
+        ];
+    }
+
+    if ($h1Count === 0) {
+        $issues[] = [
+            'message' => 'Missing H1 heading',
+            'severity' => 'critical',
+        ];
+    } elseif ($h1Count > 1) {
+        $issues[] = [
+            'message' => 'Multiple H1 headings detected',
+            'severity' => 'warning',
+        ];
+    }
+
+    if ($missingAltCount > 0) {
+        $issues[] = [
+            'message' => sprintf('%d image%s missing alt text', $missingAltCount, $missingAltCount === 1 ? '' : 's'),
+            'severity' => 'warning',
+        ];
+    }
+
+    if ($wordCount > 0 && $internalLinkCount < 2) {
+        $issues[] = [
+            'message' => 'Add more internal links to related content',
             'severity' => 'warning',
         ];
     }
@@ -165,6 +289,10 @@ foreach ($pages as $page) {
         'score_status' => $scoreStatus,
         'critical_count' => $criticalCount,
         'warning_count' => $warningCount,
+        'word_count' => $wordCount,
+        'h1_count' => $h1Count,
+        'missing_alt_count' => $missingAltCount,
+        'internal_link_count' => $internalLinkCount,
         'last_updated' => $formatDate($page['last_modified'] ?? null),
     ];
 }
@@ -658,13 +786,17 @@ $averageScore = $summary['total_pages'] > 0
                         'metaTitleLength' => $entry['meta_title_length'],
                         'metaTitleStatus' => $entry['meta_title_status'],
                         'metaDescription' => $entry['meta_description'],
-                        'metaDescriptionLength' => $entry['meta_description_length'],
-                        'metaDescriptionStatus' => $entry['meta_description_status'],
-                        'hasSocial' => $entry['has_social'],
-                        'issues' => $entry['issues'],
-                        'lastUpdated' => $entry['last_updated'],
-                        'criticalCount' => $entry['critical_count'],
-                        'warningCount' => $entry['warning_count'],
+        'metaDescriptionLength' => $entry['meta_description_length'],
+        'metaDescriptionStatus' => $entry['meta_description_status'],
+        'hasSocial' => $entry['has_social'],
+        'issues' => $entry['issues'],
+        'lastUpdated' => $entry['last_updated'],
+        'criticalCount' => $entry['critical_count'],
+        'warningCount' => $entry['warning_count'],
+        'wordCount' => $entry['word_count'],
+        'h1Count' => $entry['h1_count'],
+        'missingAltCount' => $entry['missing_alt_count'],
+        'internalLinkCount' => $entry['internal_link_count'],
                     ];
                     $jsonData = htmlspecialchars(json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
                 ?>
@@ -740,6 +872,10 @@ $averageScore = $summary['total_pages'] > 0
                                 'lastUpdated' => $entry['last_updated'],
                                 'criticalCount' => $entry['critical_count'],
                                 'warningCount' => $entry['warning_count'],
+                                'wordCount' => $entry['word_count'],
+                                'h1Count' => $entry['h1_count'],
+                                'missingAltCount' => $entry['missing_alt_count'],
+                                'internalLinkCount' => $entry['internal_link_count'],
                             ];
                             $jsonData = htmlspecialchars(json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
                         ?>
@@ -822,6 +958,27 @@ $averageScore = $summary['total_pages'] > 0
                         <div class="seo-detail-card">
                             <strong>Last Updated</strong>
                             <div data-detail="last-updated"></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="seo-detail-section">
+                    <h3>Content Insights</h3>
+                    <div class="seo-detail-grid">
+                        <div class="seo-detail-card">
+                            <strong>Word Count</strong>
+                            <div data-detail="word-count"></div>
+                        </div>
+                        <div class="seo-detail-card">
+                            <strong>Heading Structure</strong>
+                            <div data-detail="heading-status"></div>
+                        </div>
+                        <div class="seo-detail-card">
+                            <strong>Image Accessibility</strong>
+                            <div data-detail="image-alt-status"></div>
+                        </div>
+                        <div class="seo-detail-card">
+                            <strong>Internal Linking</strong>
+                            <div data-detail="internal-link-status"></div>
                         </div>
                     </div>
                 </section>
