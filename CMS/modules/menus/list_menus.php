@@ -7,5 +7,16 @@ require_login();
 $menusFile = __DIR__ . '/../../data/menus.json';
 $menus = read_json_file($menusFile);
 
-echo json_encode($menus);
+if (!is_array($menus)) {
+    $menus = [];
+}
+
+$lastUpdatedTimestamp = is_file($menusFile) ? filemtime($menusFile) : null;
+
+$response = [
+    'menus' => $menus,
+    'lastUpdated' => $lastUpdatedTimestamp ? date(DATE_ATOM, $lastUpdatedTimestamp) : null,
+];
+
+echo json_encode($response);
 ?>
