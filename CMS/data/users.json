@@ -27,24 +27,6 @@
         "last_login": null
     },
     {
-        "id": 4,
-        "username": "Charlie",
-        "password": "$2y$12$bZQja9BxSl9mw6MRCs0Um.vXqOfr67DAVqDJ3gs2yu8J1FOx1/Sdm",
-        "role": "editor",
-        "status": "active",
-        "created_at": 0,
-        "last_login": null
-    },
-    {
-        "id": 5,
-        "username": "Dave",
-        "password": "$2y$12$bZQja9BxSl9mw6MRCs0Um.vXqOfr67DAVqDJ3gs2yu8J1FOx1/Sdm",
-        "role": "editor",
-        "status": "active",
-        "created_at": 0,
-        "last_login": null
-    },
-    {
         "id": 6,
         "username": "aibotbob",
         "password": "$2y$12$eZr9T/Ok9bnxoRm8b0ZUxeSLF7mVXMHXg6N5pFecjgL60tCTNwpoC",
