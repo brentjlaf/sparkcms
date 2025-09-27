@@ -5,8 +5,9 @@
     }
 
     const endpoints = {
-        manage: 'modules/calendar/manage_data.php',
-        month: 'modules/calendar/calendar_backend.php'
+        data: 'data/calendar_data.json',
+        month: 'modules/calendar/calendar_backend.php',
+        manage: 'modules/calendar/manage_data.php'
     };
 
     const timezone = 'America/Los_Angeles';
@@ -18,7 +19,6 @@
         events: [],
         upcoming: [],
         categories: [],
-        rawEvents: [],
         filters: {
             search: '',
             category: ''
@@ -70,10 +70,10 @@
             refreshMonth();
         });
         $('#calendarNewEventBtn').on('click', function () {
-            openEventForm();
+            window.location.href = endpoints.manage + '?new_event=1';
         });
         $('#calendarManageCategoriesBtn').on('click', function () {
-            openCategoryModal();
+            window.location.href = endpoints.manage + '#manageCategories';
         });
         $('body').on('click', '[data-calendar-close]', function () {
             closeModal($(this).closest('.calendar-modal'));
@@ -83,30 +83,26 @@
                 closeModal($(this));
             }
         });
-        $('#calendarEventForm').on('submit', handleEventSave);
-        $('#calendarDeleteEventBtn').on('click', handleEventDelete);
-        $('#calendarEventDetailEditBtn').on('click', handleDetailEdit);
-        $('#calendarEventDetailDeleteBtn').on('click', handleDetailDelete);
-        $('#calendarCategoryForm').on('submit', handleCategorySave);
     }
 
     function fetchData() {
-        return $.getJSON(endpoints.manage, { action: 'fetch' })
+        const deferred = $.Deferred();
+        $.getJSON(endpoints.data)
             .done(function (response) {
-                if (!response || response.status !== 'success') {
-                    console.error(response && response.message ? response.message : 'Unable to load calendar data');
-                    return;
-                }
-                state.categories = response.categories || [];
-                state.rawEvents = response.events || [];
+                state.categories = Array.isArray(response.categories) ? response.categories : [];
+            })
+            .fail(function () {
+                state.categories = [];
+                console.error('Failed to load calendar data file');
+            })
+            .always(function () {
                 populateCategoryOptions();
                 ensureCategorySelections();
                 renderCategorySidebar();
                 updateMetrics();
-            })
-            .fail(function () {
-                console.error('Failed to load calendar data');
+                deferred.resolve();
             });
+        return deferred.promise();
     }
 
     function refreshMonth() {
@@ -123,8 +119,8 @@
         }
         $.getJSON(endpoints.month, params)
             .done(function (response) {
-                if (response.status !== 'success') {
-                    console.error(response.message || 'Unable to load events');
+                if (!response || response.status !== 'success') {
+                    console.error(response && response.message ? response.message : 'Unable to load events');
                     return;
                 }
                 state.events = response.events || [];
@@ -234,13 +230,13 @@
             }).on('click', function () {
                 openEventDetail(event);
             }).appendTo(actions);
-            $('<button>', {
-                type: 'button',
-                class: 'calendar-btn calendar-btn--ghost',
-                text: 'Edit'
-            }).on('click', function () {
-                openEventForm(event.sourceId);
-            }).appendTo(actions);
+            if (event.sourceId) {
+                $('<a>', {
+                    class: 'calendar-btn calendar-btn--ghost',
+                    text: 'Manage event',
+                    href: endpoints.manage + '?edit_event=' + encodeURIComponent(event.sourceId)
+                }).appendTo(actions);
+            }
             item.append(actions);
             list.append(item);
         });
@@ -286,14 +282,26 @@
 
     function populateCategoryOptions() {
         const selectFilter = $('#calendarCategoryFilter');
-        const selectForm = $('#calendarEventCategory');
         selectFilter.find('option:not(:first)').remove();
-        selectForm.find('option:not(:first)').remove();
         state.categories.forEach(function (category) {
-            const option = $('<option>', { value: category.id, text: category.name });
-            selectFilter.append(option.clone());
-            selectForm.append(option.clone());
+            const option = $('<option>', { value: category.name, text: category.name });
+            selectFilter.append(option);
         });
+    }
+
+    function ensureCategorySelections() {
+        if (!state.categories.length) {
+            if (state.filters.category) {
+                state.filters.category = '';
+                $('#calendarCategoryFilter').val('');
+            }
+            return;
+        }
+        const validNames = state.categories.map(function (category) { return category.name; });
+        if (state.filters.category && validNames.indexOf(state.filters.category) === -1) {
+            state.filters.category = '';
+            $('#calendarCategoryFilter').val('');
+        }
     }
 
     function formatEventRange(event) {
@@ -325,258 +333,27 @@
             $('#calendarEventDetailCategory').text('No category');
         }
         $('#calendarEventDetailGoogle').attr('href', buildGoogleCalendarLink(event));
-        const detailModal = $('#calendarEventDetailModal');
+
+        const editBtn = $('#calendarEventDetailEditBtn');
+        const deleteBtn = $('#calendarEventDetailDeleteBtn');
+        editBtn.off('click');
+        deleteBtn.off('click');
+
         if (event.sourceId) {
-            detailModal.data('eventId', event.sourceId);
+            editBtn.prop('hidden', false).on('click', function () {
+                window.location.href = endpoints.manage + '?edit_event=' + encodeURIComponent(event.sourceId);
+            });
+            deleteBtn.prop('hidden', false).on('click', function () {
+                if (confirm('Delete this event?')) {
+                    window.location.href = endpoints.manage + '?action=delete_event&evt_id=' + encodeURIComponent(event.sourceId);
+                }
+            });
         } else {
-            detailModal.removeData('eventId');
-        }
-        $('#calendarEventDetailEditBtn').prop('hidden', !event.sourceId);
-        $('#calendarEventDetailDeleteBtn').prop('hidden', !event.sourceId);
-        openModal(detailModal);
-    }
-
-    function openEventForm(eventId) {
-        const formElement = $('#calendarEventForm')[0];
-        formElement.reset();
-        $('#calendarEventId').val('');
-        $('#calendarEventRecurrenceInterval').val('1');
-        $('#calendarDeleteEventBtn').prop('hidden', true).removeData('eventId');
-        $('#calendarEventFormTitle').text(eventId ? 'Edit event' : 'New event');
-
-        if (eventId) {
-            const event = state.rawEvents.find(function (item) { return item.id === eventId; });
-            if (event) {
-                $('#calendarEventId').val(event.id);
-                $('#calendarEventTitle').val(event.title);
-                $('#calendarEventDescription').val(event.description || '');
-                $('#calendarEventStartDate').val(event.start_date);
-                $('#calendarEventStartTime').val(event.start_time || '');
-                $('#calendarEventEndDate').val(event.end_date);
-                $('#calendarEventEndTime').val(event.end_time || '');
-                $('#calendarEventAllDay').prop('checked', !!event.all_day);
-                $('#calendarEventCategory').val(event.category_id || '');
-                $('#calendarEventRecurrenceType').val(event.recurrence && event.recurrence.type ? event.recurrence.type : 'none');
-                $('#calendarEventRecurrenceInterval').val(event.recurrence && event.recurrence.interval ? event.recurrence.interval : 1);
-                $('#calendarEventRecurrenceEnd').val(event.recurrence && event.recurrence.end_date ? event.recurrence.end_date : '');
-                $('#calendarDeleteEventBtn').prop('hidden', false).data('eventId', event.id);
-            }
-        }
-        openModal($('#calendarEventFormModal'));
-    }
-
-    function handleEventSave(e) {
-        e.preventDefault();
-        const form = $(this);
-        const data = form.serialize();
-        $.ajax({
-            url: endpoints.manage,
-            method: 'POST',
-            data: data,
-            dataType: 'json'
-        }).done(function (response) {
-            if (response.status !== 'success') {
-                alert(response.message || 'Unable to save event');
-                return;
-            }
-            closeModal($('#calendarEventFormModal'));
-            fetchData().then(refreshMonth);
-        }).fail(function () {
-            alert('Unable to save event.');
-        });
-    }
-
-    function handleEventDelete() {
-        const eventId = $(this).data('eventId');
-        if (!eventId) {
-            return;
-        }
-        if (!confirm('Delete this event?')) {
-            return;
-        }
-        deleteEventById(eventId, function () {
-            closeModal($('#calendarEventFormModal'));
-        });
-    }
-
-    function handleDetailEdit() {
-        const detailModal = $('#calendarEventDetailModal');
-        const eventId = detailModal.data('eventId');
-        if (!eventId) {
-            return;
-        }
-        closeModal(detailModal);
-        openEventForm(eventId);
-    }
-
-    function handleDetailDelete() {
-        const detailModal = $('#calendarEventDetailModal');
-        const eventId = detailModal.data('eventId');
-        if (!eventId) {
-            return;
-        }
-        if (!confirm('Delete this event?')) {
-            return;
-        }
-        deleteEventById(eventId, function () {
-            closeModal(detailModal);
-        });
-    }
-
-    function deleteEventById(eventId, onSuccess) {
-        return $.ajax({
-            url: endpoints.manage,
-            method: 'POST',
-            data: { action: 'delete_event', id: eventId },
-            dataType: 'json'
-        }).done(function (response) {
-            if (response.status !== 'success') {
-                alert(response.message || 'Unable to delete event');
-                return;
-            }
-            if (typeof onSuccess === 'function') {
-                onSuccess();
-            }
-            fetchData().then(refreshMonth);
-        }).fail(function () {
-            alert('Unable to delete event.');
-        });
-    }
-
-    function openCategoryModal() {
-        $('#calendarCategoryForm')[0].reset();
-        $('#calendarCategoryId').val('');
-        $('#calendarCategoryColor').val('#2563eb');
-        renderCategoryManager();
-        openModal($('#calendarCategoryModal'));
-        $('#calendarCategoryName').trigger('focus');
-    }
-
-    function startCategoryEdit(category) {
-        if (!category) {
-            return;
-        }
-        $('#calendarCategoryId').val(category.id);
-        $('#calendarCategoryName').val(category.name);
-        $('#calendarCategoryColor').val(category.color || '#2563eb');
-        $('#calendarCategoryName').trigger('focus');
-    }
-
-    function resetCategorySelections(categoryId) {
-        const selectFilter = $('#calendarCategoryFilter');
-        if (state.filters.category && state.filters.category === categoryId) {
-            state.filters.category = '';
-            selectFilter.val('');
+            editBtn.prop('hidden', true);
+            deleteBtn.prop('hidden', true);
         }
 
-        const eventCategorySelect = $('#calendarEventCategory');
-        if (eventCategorySelect.val() === categoryId) {
-            eventCategorySelect.val('');
-        }
-    }
-
-    function ensureCategorySelections() {
-        if (!state.categories.length) {
-            resetCategorySelections(state.filters.category || '');
-            return;
-        }
-
-        const validIds = state.categories.map(function (category) { return category.id; });
-        if (state.filters.category && validIds.indexOf(state.filters.category) === -1) {
-            state.filters.category = '';
-            $('#calendarCategoryFilter').val('');
-        }
-
-        const eventCategorySelect = $('#calendarEventCategory');
-        const selectedCategory = eventCategorySelect.val();
-        if (selectedCategory && validIds.indexOf(selectedCategory) === -1) {
-            eventCategorySelect.val('');
-        }
-    }
-
-    function handleCategoryDelete(category) {
-        if (!category || !category.id) {
-            return;
-        }
-        if (!confirm('Delete this category? Events will keep their color but lose this label.')) {
-            return;
-        }
-        $.ajax({
-            url: endpoints.manage,
-            method: 'POST',
-            data: { action: 'delete_category', id: category.id },
-            dataType: 'json'
-        }).done(function (response) {
-            if (response.status !== 'success') {
-                alert(response.message || 'Unable to delete category');
-                return;
-            }
-            resetCategorySelections(category.id);
-            fetchData().then(function () {
-                renderCategoryManager();
-                refreshMonth();
-            });
-        }).fail(function () {
-            alert('Unable to delete category.');
-        });
-    }
-
-    function renderCategoryManager() {
-        const list = $('#calendarCategoryManagerList');
-        list.empty();
-        if (!state.categories.length) {
-            list.append('<li class="calendar-empty">No categories created yet.</li>');
-            return;
-        }
-        state.categories.forEach(function (category) {
-            const item = $('<li>', { class: 'calendar-category-manager__item' });
-            $('<span>', { class: 'calendar-category__marker' }).css('background-color', category.color || '#2563eb').appendTo(item);
-            $('<span>', { class: 'calendar-category-manager__name', text: category.name }).appendTo(item);
-            const actions = $('<div>', { class: 'calendar-category-manager__actions' });
-            $('<button>', {
-                type: 'button',
-                text: 'Edit',
-                class: 'calendar-btn calendar-btn--ghost',
-                'aria-label': 'Edit ' + category.name
-            }).on('click', function () {
-                startCategoryEdit(category);
-            }).appendTo(actions);
-            $('<button>', {
-                type: 'button',
-                text: 'Delete',
-                class: 'calendar-btn calendar-btn--ghost',
-                'aria-label': 'Delete ' + category.name
-            }).on('click', function () {
-                handleCategoryDelete(category);
-            }).appendTo(actions);
-            item.append(actions);
-            list.append(item);
-        });
-    }
-
-    function handleCategorySave(e) {
-        e.preventDefault();
-        const data = $(this).serialize();
-        $.ajax({
-            url: endpoints.manage,
-            method: 'POST',
-            data: data,
-            dataType: 'json'
-        }).done(function (response) {
-            if (response.status !== 'success') {
-                alert(response.message || 'Unable to save category');
-                return;
-            }
-            $('#calendarCategoryId').val('');
-            $('#calendarCategoryName').val('');
-            $('#calendarCategoryColor').val('#2563eb');
-            fetchData().then(function () {
-                renderCategoryManager();
-                refreshMonth();
-            });
-        }).fail(function () {
-            alert('Unable to save category.');
-        });
+        openModal($('#calendarEventDetailModal'));
     }
 
     function buildUpcoming(events) {

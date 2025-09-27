@@ -35,12 +35,16 @@ $upcomingEnd = $upcomingStart->modify('+30 days');
 
 $categoryMap = [];
 foreach ($categories as $category) {
-    if (!is_array($category) || empty($category['id'])) {
+    if (!is_array($category)) {
         continue;
     }
-    $categoryMap[$category['id']] = [
-        'id' => $category['id'],
-        'name' => $category['name'] ?? 'Category',
+    $name = trim((string) ($category['name'] ?? ''));
+    if ($name === '') {
+        continue;
+    }
+    $categoryMap[$name] = [
+        'id' => $category['id'] ?? null,
+        'name' => $name,
         'color' => $category['color'] ?? '#2563eb'
     ];
 }
@@ -51,15 +55,16 @@ $upcoming = [];
 $recurringSeries = 0;
 
 foreach ($events as $event) {
-    if (!is_array($event) || empty($event['id']) || empty($event['title'])) {
+    if (!is_array($event) || empty($event['title'])) {
         continue;
     }
-    $recurrenceType = normalize_recurrence_type($event['recurrence']['type'] ?? ($event['recurrence_type'] ?? 'none'));
+
+    $recurrenceType = normalize_recurrence_type($event['recurring_interval'] ?? 'none');
     if ($recurrenceType !== 'none') {
         $recurringSeries++;
     }
 
-    if ($categoryFilter !== '' && (!isset($event['category_id']) || $event['category_id'] !== $categoryFilter)) {
+    if ($categoryFilter !== '' && trim((string) ($event['category'] ?? '')) !== $categoryFilter) {
         continue;
     }
 
@@ -70,16 +75,15 @@ foreach ($events as $event) {
         }
     }
 
-    $category = null;
-    if (!empty($event['category_id']) && isset($categoryMap[$event['category_id']])) {
-        $category = $categoryMap[$event['category_id']];
+    $categoryName = trim((string) ($event['category'] ?? ''));
+    $category = $categoryName !== '' && isset($categoryMap[$categoryName]) ? $categoryMap[$categoryName] : null;
+
+    $occurrences = expand_event_occurrences($event, $monthStart, $monthEnd, $category);
+    if ($occurrences) {
+        $results = array_merge($results, $occurrences);
     }
 
-    $occurrences = generate_occurrences($event, $monthStart, $monthEnd, $category, $recurrenceType);
-    $results = array_merge($results, $occurrences);
-
-    // Build upcoming list regardless of filter window but still respecting filters
-    $upcomingOccurrences = generate_occurrences($event, $upcomingStart, $upcomingEnd, $category, $recurrenceType);
+    $upcomingOccurrences = expand_event_occurrences($event, $upcomingStart, $upcomingEnd, $category);
     if ($upcomingOccurrences) {
         $upcoming = array_merge($upcoming, $upcomingOccurrences);
     }
