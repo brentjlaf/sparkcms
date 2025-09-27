@@ -67,8 +67,9 @@ if ($slug === 'search') {
     }
     foreach ($mediaItems as $m) {
         $tags = isset($m['tags']) && is_array($m['tags']) ? implode(',', $m['tags']) : '';
-        if ($q === '' || stripos($m['name'], $lower) !== false || stripos($m['file'], $lower) !== false || stripos($tags, $lower) !== false) {
-            $results[] = ['title' => $m['name'], 'slug' => ltrim($m['file'], '/')];
+        $display = $m['title'] ?? $m['name'];
+        if ($q === '' || stripos($display ?? '', $lower) !== false || stripos($m['file'], $lower) !== false || stripos($tags, $lower) !== false) {
+            $results[] = ['title' => $display ?? $m['file'], 'slug' => ltrim($m['file'], '/')];
         }
     }
     $content = '<div class="search-results"><h1>Search Results';

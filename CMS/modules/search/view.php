@@ -29,9 +29,10 @@ if ($lower !== '') {
     }
     foreach ($media as $m) {
         $tags = isset($m['tags']) && is_array($m['tags']) ? implode(',', $m['tags']) : '';
-        if (stripos($m['name'], $lower) !== false || stripos($m['file'], $lower) !== false || stripos($tags, $lower) !== false) {
+        $display = $m['title'] ?? $m['name'];
+        if (stripos($display ?? '', $lower) !== false || stripos($m['file'], $lower) !== false || stripos($tags, $lower) !== false) {
             $m['type'] = 'Media';
-            $m['title'] = $m['name'];
+            $m['title'] = $display ?? $m['file'];
             $m['slug'] = $m['file'];
             $results[] = $m;
         }

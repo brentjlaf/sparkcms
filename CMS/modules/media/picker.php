@@ -25,8 +25,9 @@ $media = read_json_file($mediaFile);
     <div class="picker-grid">
         <?php foreach ($media as $m): if (($m['type'] ?? '') !== 'images') continue; ?>
         <div class="picker-item" data-file="<?php echo htmlspecialchars($base . '/' . $m['file'], ENT_QUOTES); ?>">
-            <img src="<?php echo htmlspecialchars($base . '/' . ($m['thumbnail'] ?: $m['file'])); ?>" alt="<?php echo htmlspecialchars($m['name']); ?>">
-            <div class="picker-name"><?php echo htmlspecialchars($m['name']); ?></div>
+            <?php $display = $m['title'] ?? ($m['name'] ?? ''); ?>
+            <img src="<?php echo htmlspecialchars($base . '/' . ($m['thumbnail'] ?: $m['file'])); ?>" alt="<?php echo htmlspecialchars($display ?: ($m['name'] ?? '')); ?>">
+            <div class="picker-name"><?php echo htmlspecialchars($display ?: ($m['name'] ?? '')); ?></div>
         </div>
         <?php endforeach; ?>
     </div>

@@ -88,7 +88,11 @@ $(function(){
         let imgs = currentImages.slice();
         switch(sortBy){
             case 'name':
-                imgs.sort((a,b)=>a.name.localeCompare(b.name));
+                imgs.sort((a,b)=>{
+                    const nameA = (a.title || a.name || '');
+                    const nameB = (b.title || b.name || '');
+                    return nameA.localeCompare(nameB);
+                });
                 break;
             case 'date':
                 imgs.sort((a,b)=>(a.modified_at||a.uploaded_at||0)-(b.modified_at||b.uploaded_at||0));
@@ -148,9 +152,10 @@ $(function(){
             images.forEach(img=>{
                 const isImage = img.type === 'images';
                 const src = img.thumbnail ? img.thumbnail : img.file;
+                const displayName = img.title || img.name;
                 let preview = '';
                 if(isImage){
-                    preview = '<img src="'+src+'" alt="'+img.name+'">';
+                    preview = '<img src="'+src+'" alt="'+(displayName||'')+'">';
                 }else{
                     const ext = img.file.split('.').pop().toLowerCase();
                     const icons = {
@@ -176,7 +181,7 @@ $(function(){
                             </div>\
                         </div>\
                         <div class="image-info">\
-                            <h4>'+img.name+'</h4>\
+                            <h4>'+(displayName||'')+'</h4>\
                             <p>'+formatFileSize(img.size)+'</p>\
                         </div>\
                     </div>');
@@ -277,9 +282,22 @@ $(function(){
         });
     }
 
-    function renameImageDirect(id, newName){
-        if(!newName) return;
-        $.post('modules/media/rename_media.php',{id:id,name:newName},function(res){
+    function renameImageDirect(id, newName, options={}){
+        const renamePhysical = options.renamePhysical !== undefined ? !!options.renamePhysical : true;
+        const payload = {id:id, renamePhysical: renamePhysical ? '1' : '0'};
+        if(options.displayName !== undefined){
+            payload.title = options.displayName;
+        }
+        if(renamePhysical){
+            if(!newName){
+                alertModal('Please provide a file name.');
+                return;
+            }
+            payload.name = newName;
+        }else if(newName){
+            payload.name = newName;
+        }
+        $.post('modules/media/rename_media.php',payload,function(res){
             if(res.status==='success'){
                 loadImages();
                 loadFolders();
@@ -300,8 +318,8 @@ $(function(){
         const img = currentImages.find(i=>i.id===id);
         if(!img) return;
         $('#infoImage').attr('src', img.thumbnail?img.thumbnail:img.file);
-        $('#edit-name').val(img.name);
-        $('#edit-fileName').val(img.name);
+        $('#edit-name').val(img.title||img.name||'');
+        $('#edit-fileName').val(img.name||'');
         $('#infoType').text(img.type||'');
         $('#infoFile').text(img.name||'');
         $('#infoSize').text(formatFileSize(parseInt(img.size)||0));
@@ -311,6 +329,7 @@ $(function(){
         $('#infoDate').text(d.toLocaleString());
         $('#infoFolder').text(img.folder||'');
         $('#imageInfoModal').data('id', id);
+        $('#renamePhysicalCheckbox').prop('checked', false);
         openModal('imageInfoModal');
     }
 
@@ -413,10 +432,21 @@ $(function(){
     $('#saveEditBtn').click(function(){
         const id = $('#imageInfoModal').data('id');
         const newName = $('#edit-fileName').val().trim();
+        const displayName = $('#edit-name').val().trim();
+        const renamePhysical = $('#renamePhysicalCheckbox').is(':checked');
         const current = currentImages.find(i=>i.id===id) || {};
-        if(newName && newName!==current.name){
-            renameImageDirect(id,newName);
+        const currentDisplay = current.title || current.name || '';
+        const hasDisplayChange = displayName !== currentDisplay;
+        const hasFileChange = renamePhysical && newName && newName !== current.name;
+        if(renamePhysical && !newName){
+            alertModal('Please provide a file name.');
+            return;
         }
+        if(!hasDisplayChange && !hasFileChange){
+            closeModal('imageInfoModal');
+            return;
+        }
+        renameImageDirect(id,newName,{renamePhysical: renamePhysical, displayName: displayName});
         closeModal('imageInfoModal');
     });
 

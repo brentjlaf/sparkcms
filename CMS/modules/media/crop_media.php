@@ -50,6 +50,7 @@ if ($newVersion) {
     $media[] = [
         'id' => uniqid(),
         'name' => $filename,
+        'title' => $filename,
         'file' => str_replace($root . '/', '', $filePath),
         'folder' => $entry['folder'],
         'size' => filesize($filePath),
@@ -69,6 +70,9 @@ if ($newVersion) {
     }
     file_put_contents($filePath, $binary);
     $entry['name'] = $filename;
+    if (empty($entry['title'])) {
+        $entry['title'] = $filename;
+    }
     $entry['file'] = str_replace($root . '/', '', $filePath);
     $entry['size'] = filesize($filePath);
     $thumbPath = $entry['thumbnail'] ? $root . '/' . $entry['thumbnail'] : ($baseDir . '/thumbs/' . basename($filePath));
