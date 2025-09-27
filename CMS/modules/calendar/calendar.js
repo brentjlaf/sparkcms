@@ -49,18 +49,6 @@
             state.currentMonth = state.currentMonth.add(1, 'month');
             refreshMonth();
         });
-        $('.calendar-toggle-btn').on('click', function () {
-            const view = $(this).data('view');
-            $('.calendar-toggle-btn').removeClass('active');
-            $(this).addClass('active');
-            if (view === 'list') {
-                $('#calendarGridView').attr('hidden', true);
-                $('#calendarListView').removeAttr('hidden');
-            } else {
-                $('#calendarListView').attr('hidden', true);
-                $('#calendarGridView').removeAttr('hidden');
-            }
-        });
         $('#calendarSearch').on('input', debounce(function () {
             state.filters.search = $(this).val().trim();
             refreshMonth();
@@ -125,7 +113,6 @@
                 }
                 state.events = response.events || [];
                 state.upcoming = response.upcoming || buildUpcoming(state.events);
-                renderCalendar();
                 renderList();
                 renderUpcoming();
                 updateMetrics(response.meta);
@@ -137,58 +124,6 @@
 
     function updateMonthLabel() {
         $('#calendarCurrentMonth').text(state.currentMonth.format('MMMM YYYY'));
-    }
-
-    function renderCalendar() {
-        const grid = $('#calendarGrid');
-        grid.empty();
-        const firstDayOfMonth = state.currentMonth.startOf('month');
-        const daysInMonth = state.currentMonth.daysInMonth();
-        const startWeekday = firstDayOfMonth.day();
-        const today = state.today.startOf('day');
-
-        for (let i = 0; i < startWeekday; i++) {
-            grid.append('<div class="calendar-cell calendar-cell--empty" role="presentation"></div>');
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-            const date = firstDayOfMonth.date(day);
-            const cell = $('<div>', {
-                class: 'calendar-cell',
-                role: 'gridcell',
-                'data-date': date.format('YYYY-MM-DD')
-            });
-            const header = $('<div>', { class: 'calendar-cell__header' });
-            const label = $('<span>', { text: day, class: 'calendar-cell__day' });
-            if (date.isSame(today, 'day')) {
-                cell.addClass('calendar-cell--today');
-                label.attr('aria-label', 'Today');
-            }
-            header.append(label);
-            cell.append(header);
-
-            const eventsForDay = state.events.filter(function (event) {
-                return dayjsLib(event.start).isSame(date, 'day');
-            });
-
-            const eventList = $('<div>', { class: 'calendar-cell__events' });
-            eventsForDay.forEach(function (event) {
-                const eventItem = $('<button>', {
-                    type: 'button',
-                    class: 'calendar-event-chip',
-                    text: event.title,
-                    css: {
-                        backgroundColor: event.category && event.category.color ? event.category.color : '#2563eb'
-                    }
-                }).on('click', function () {
-                    openEventDetail(event);
-                });
-                eventList.append(eventItem);
-            });
-
-            cell.append(eventList);
-            grid.append(cell);
-        }
     }
 
     function renderList() {
