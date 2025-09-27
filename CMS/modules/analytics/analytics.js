@@ -27,6 +27,7 @@ $(function(){
     const $viewButtons = $('[data-analytics-view]');
     const $counts = $('[data-analytics-count]');
     const $refreshBtn = $('[data-analytics-action="refresh"]');
+    const $exportBtn = $('[data-analytics-action="export"]');
     const $totalViews = $('#analyticsTotalViews');
     const $averageViews = $('#analyticsAverageViews');
     const $totalPages = $('#analyticsTotalPages');
@@ -50,6 +51,58 @@ $(function(){
     function formatAverage(value){
         const number = Number(value) || 0;
         return number.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    }
+
+    function buildDefaultExportFileName(){
+        const now = new Date();
+        const pad = function(value){
+            return String(value).padStart(2, '0');
+        };
+        return 'analytics-export-' + now.getFullYear()
+            + pad(now.getMonth() + 1)
+            + pad(now.getDate())
+            + '-' + pad(now.getHours())
+            + pad(now.getMinutes())
+            + pad(now.getSeconds())
+            + '.csv';
+    }
+
+    function parseFileNameFromHeader(disposition){
+        if (!disposition || typeof disposition !== 'string') {
+            return null;
+        }
+        const utfMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+        if (utfMatch && utfMatch[1]) {
+            try {
+                return decodeURIComponent(utfMatch[1]);
+            } catch (err) {
+                console.error('Failed to decode filename from header', err);
+            }
+        }
+        const asciiMatch = disposition.match(/filename="?([^";]+)"?/i);
+        if (asciiMatch && asciiMatch[1]) {
+            return asciiMatch[1];
+        }
+        return null;
+    }
+
+    function triggerDownloadFromBlob(blob, suggestedName){
+        const urlCreator = window.URL || window.webkitURL;
+        if (!urlCreator || typeof urlCreator.createObjectURL !== 'function') {
+            throw new Error('Browser does not support file downloads.');
+        }
+
+        const url = urlCreator.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = suggestedName || 'analytics-export.csv';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function(){
+            urlCreator.revokeObjectURL(url);
+        }, 0);
     }
 
     function setButtonLoading($button, loading){
@@ -408,6 +461,44 @@ $(function(){
     if ($refreshBtn.length) {
         $refreshBtn.on('click', function(){
             loadFromServer();
+        });
+    }
+
+    if ($exportBtn.length) {
+        $exportBtn.on('click', function(){
+            const params = {
+                filter: state.filter || 'all',
+                search: ($search.val() || '').toString().trim(),
+            };
+
+            setButtonLoading($exportBtn, true);
+
+            $.ajax({
+                url: 'modules/analytics/export.php',
+                method: 'GET',
+                data: params,
+                xhrFields: { responseType: 'blob' }
+            })
+                .done(function(blob, textStatus, jqXHR){
+                    try {
+                        const disposition = jqXHR.getResponseHeader('Content-Disposition');
+                        const fileName = parseFileNameFromHeader(disposition) || buildDefaultExportFileName();
+                        triggerDownloadFromBlob(blob, fileName);
+                    } catch (error) {
+                        console.error('Unable to trigger analytics export download', error);
+                        window.alert('The export was generated but the download could not start. Please try again.');
+                    }
+                })
+                .fail(function(jqXHR){
+                    let message = 'Unable to export analytics data right now. Please try again later.';
+                    if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                        message = jqXHR.responseJSON.error;
+                    }
+                    window.alert(message);
+                })
+                .always(function(){
+                    setButtonLoading($exportBtn, false);
+                });
         });
     }
 
