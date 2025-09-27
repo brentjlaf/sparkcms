@@ -2,6 +2,10 @@
 $(function(){
     let currentFolder = null;
     let currentImages = [];
+    let currentPage = 1;
+    let currentOffset = 0;
+    let totalImagesCount = 0;
+    let totalPages = 1;
     let cropper = null;
     let flipX = 1;
     let flipY = 1;
@@ -103,6 +107,10 @@ $(function(){
 
     function selectFolder(name){
         currentFolder = name;
+        currentPage = 1;
+        currentOffset = 0;
+        totalPages = 1;
+        totalImagesCount = 0;
         $('.folder-item').removeClass('active');
         $('.folder-item[data-folder="'+name+'"]').addClass('active');
         $('#selectedFolderName').text(name);
@@ -117,15 +125,38 @@ $(function(){
 
     function loadImages(){
         if(!currentFolder){
+            currentImages = [];
+            totalImagesCount = 0;
+            totalPages = 1;
+            currentOffset = 0;
             renderImages();
             return;
         }
-        $.getJSON('modules/media/list_media.php', {folder: currentFolder}, function(res){
+        const limit = itemsPerPage>0 ? itemsPerPage : 0;
+        const offset = limit ? (currentPage-1)*limit : 0;
+        const params = {folder: currentFolder, sort: sortBy, order: sortOrder};
+        if(limit){
+            params.limit = limit;
+            params.offset = offset;
+        }
+        $.getJSON('modules/media/list_media.php', params, function(res){
             currentImages = res.media || [];
-            const totalBytes = currentImages.reduce((s,m)=>s+parseInt(m.size||0),0);
-            const lastMod = currentImages.reduce((m,i)=>i.modified_at && i.modified_at>m?i.modified_at:m,0);
+            const parsedTotal = parseInt(res.total, 10);
+            totalImagesCount = Number.isNaN(parsedTotal) ? currentImages.length : parsedTotal;
+            const parsedBytes = parseInt(res.total_size, 10);
+            const totalBytes = Number.isNaN(parsedBytes) ? currentImages.reduce((s,m)=>s+parseInt(m.size||0),0) : parsedBytes;
+            const parsedLastMod = parseInt(res.last_modified, 10);
+            const lastMod = Number.isNaN(parsedLastMod) ? currentImages.reduce((m,i)=>i.modified_at && i.modified_at>m?i.modified_at:m,0) : parsedLastMod;
             const lastEdited = lastMod ? 'Last edited ' + new Date(lastMod*1000).toLocaleDateString() : 'No edits yet';
-            currentFolderMeta = currentImages.length+' files • '+formatFileSize(totalBytes)+' • '+lastEdited;
+            const limitPages = limit ? Math.max(1, Math.ceil(totalImagesCount/limit)) : 1;
+            if(limit && currentPage>limitPages && limitPages>0){
+                currentPage = limitPages;
+                loadImages();
+                return;
+            }
+            totalPages = limitPages;
+            currentOffset = offset;
+            currentFolderMeta = totalImagesCount+' files • '+formatFileSize(totalBytes)+' • '+lastEdited;
             $('#folderStats').text(currentFolderMeta);
             $('#mediaHeroFolderInfo').text(currentFolderMeta);
             $('#emptyFolderState h3').text(defaultEmptyFolderHeading);
@@ -184,8 +215,58 @@ $(function(){
                 imgs.sort((a,b)=>(a.order||0)-(b.order||0));
         }
         if(sortOrder==='desc') imgs.reverse();
-        if(itemsPerPage>0) imgs = imgs.slice(0, itemsPerPage);
+        if(itemsPerPage>0){
+            const startIndex = Math.max(0, (currentPage-1)*itemsPerPage - currentOffset);
+            imgs = imgs.slice(startIndex, startIndex + itemsPerPage);
+        }
         return imgs;
+    }
+
+    function renderPagination(){
+        const pagination = $('#galleryPagination');
+        if(!currentFolder || itemsPerPage<=0 || totalPages<=1){
+            pagination.hide().empty();
+            return;
+        }
+
+        pagination.empty().show();
+
+        const createButton = (label, page, disabled, active) => {
+            const btn = $('<button type="button" class="pagination-btn">'+label+'</button>');
+            if(disabled){
+                btn.prop('disabled', true).attr('aria-disabled', 'true').addClass('is-disabled');
+            }else{
+                btn.attr('data-page', page);
+            }
+            if(active){
+                btn.addClass('is-active');
+                btn.attr('aria-current', 'page');
+            }
+            if(label==='Prev'){
+                btn.attr('aria-label', 'Previous page');
+            }else if(label==='Next'){
+                btn.attr('aria-label', 'Next page');
+            }else{
+                btn.attr('aria-label', 'Go to page '+label);
+            }
+            return btn;
+        };
+
+        pagination.append(createButton('Prev', currentPage-1, currentPage===1, false));
+
+        const maxButtons = 5;
+        let start = Math.max(1, currentPage - Math.floor(maxButtons/2));
+        let end = start + maxButtons - 1;
+        if(end>totalPages){
+            end = totalPages;
+            start = Math.max(1, end - maxButtons + 1);
+        }
+
+        for(let page=start; page<=end; page++){
+            pagination.append(createButton(page, page, false, page===currentPage));
+        }
+
+        pagination.append(createButton('Next', currentPage+1, currentPage===totalPages, false));
     }
 
     function applyViewType(){
@@ -257,13 +338,18 @@ $(function(){
                     </div>');
                 grid.append(card);
             });
-            grid.sortable({
-                placeholder: 'ui-sortable-placeholder',
-                start: function(e, ui){ ui.placeholder.height(ui.item.height()); },
-                stop: function(){ updateOrder(); }
-            });
+            if(sortBy === 'custom' && totalPages <= 1){
+                grid.sortable({
+                    placeholder: 'ui-sortable-placeholder',
+                    start: function(e, ui){ ui.placeholder.height(ui.item.height()); },
+                    stop: function(){ updateOrder(); }
+                });
+            }else if(grid.hasClass('ui-sortable')){
+                grid.sortable('destroy');
+            }
         }
         applyViewType();
+        renderPagination();
     }
 
     function formatFileSize(bytes){
@@ -492,6 +578,10 @@ $(function(){
             $.post('modules/media/delete_folder.php',{folder:currentFolder},function(res){
                 if(res.status==='success'){
                     currentFolder = null;
+                    currentPage = 1;
+                    currentOffset = 0;
+                    totalPages = 1;
+                    totalImagesCount = 0;
                     $('#galleryHeader').hide();
                     loadFolders();
                     loadImages();
@@ -683,10 +773,18 @@ $(function(){
     });
     $('#saveFormat').change(updateSizeEstimate);
 
-    $('#sort-by').change(function(){ sortBy = this.value; renderImages(); });
-    $('#sort-order').change(function(){ sortOrder = this.value; renderImages(); });
+    $('#sort-by').change(function(){ sortBy = this.value; currentPage = 1; loadImages(); });
+    $('#sort-order').change(function(){ sortOrder = this.value; currentPage = 1; loadImages(); });
     $('#view-type').change(function(){ viewType = this.value; applyViewType(); });
-    $('#items-per-page').change(function(){ itemsPerPage = parseInt(this.value); renderImages(); });
+    $('#items-per-page').change(function(){ itemsPerPage = parseInt(this.value,10); currentPage = 1; loadImages(); });
+
+    $('#galleryPagination').on('click', '.pagination-btn[data-page]', function(){
+        const page = parseInt($(this).data('page'), 10);
+        if(!isNaN(page) && page>=1 && page<=totalPages && page!==currentPage){
+            currentPage = page;
+            loadImages();
+        }
+    });
 
     $(window).click(function(e){
         if(e.target.id==='createFolderModal'){
