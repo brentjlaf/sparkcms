@@ -178,9 +178,14 @@ $(function(){
         const exact = timestamp ? new Date(timestamp * 1000).toISOString() : '';
         const absolute = formatAbsolute(timestamp);
         const relative = relativeTime(timestamp);
-        const pageTitle = log.page_title || 'Unknown';
+        const context = log.context || 'page';
+        const pageTitle = log.page_title || (context === 'system' ? 'System activity' : 'Unknown');
         const user = log.user && log.user !== '' ? log.user : 'System';
-        const searchText = (user + ' ' + pageTitle + ' ' + label).toLowerCase();
+        const details = Array.isArray(log.details) ? log.details : (log.details ? [log.details] : []);
+        const detailsHtml = details.length ? '<ul class="logs-activity-details">' + details.map(function(detail){
+            return '<li>' + escapeHtml(detail) + '</li>';
+        }).join('') + '</ul>' : '';
+        const searchText = (user + ' ' + pageTitle + ' ' + label + ' ' + details.join(' ')).toLowerCase();
 
         return (
             '<article class="logs-activity-card" data-search="' + escapeHtml(searchText) + '" data-action="' + escapeHtml(slug) + '">' +
@@ -196,6 +201,7 @@ $(function(){
                     '<span class="logs-activity-divider" aria-hidden="true">•</span>' +
                     '<span class="logs-activity-action">' + escapeHtml(label) + '</span>' +
                 '</p>' +
+                detailsHtml +
             '</article>'
         );
     }
