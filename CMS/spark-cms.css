@@ -6096,10 +6096,56 @@
     z-index: 3000;
 }
 
+#uploadLoader .upload-loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 28px 32px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+}
+
 #uploadLoader .loading {
     width: 40px;
     height: 40px;
     border-width: 5px;
+}
+
+#uploadLoader .upload-progress {
+    width: 280px;
+    max-width: 80vw;
+}
+
+#uploadLoader .upload-progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+#uploadLoader .upload-progress-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
+    transition: width 0.2s ease;
+}
+
+#uploadLoader .upload-progress-percent {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    color: #1e293b;
+}
+
+#uploadStatusMessage {
+    margin-top: 4px;
+    font-size: 14px;
+    text-align: center;
+    color: #334155;
 }
 
 @media (max-width: 1200px) {

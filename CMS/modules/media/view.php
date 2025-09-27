@@ -244,6 +244,15 @@
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
                     <input type="file" id="fileInput" class="upload-input" multiple accept="image/*">
                     <div id="uploadLoader" class="upload-loader" style="display:none;">
-                        <div class="loading"></div>
+                        <div class="upload-loader-content" role="status" aria-live="polite">
+                            <div class="loading" aria-hidden="true"></div>
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar" aria-hidden="true">
+                                    <div id="uploadProgressFill" class="upload-progress-fill"></div>
+                                </div>
+                                <div id="uploadProgressPercent" class="upload-progress-percent">0%</div>
+                                <div id="uploadStatusMessage" class="upload-status-message"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
