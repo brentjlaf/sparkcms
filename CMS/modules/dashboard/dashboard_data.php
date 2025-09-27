@@ -200,6 +200,18 @@ function dashboard_format_number(int $value): string
     return number_format($value);
 }
 
+function dashboard_status_label(string $status): string
+{
+    switch ($status) {
+        case 'urgent':
+            return 'Action required';
+        case 'warning':
+            return 'Needs attention';
+        default:
+            return 'On track';
+    }
+}
+
 $libxmlPrevious = libxml_use_internal_errors(true);
 
 $accessibilitySummary = [
@@ -436,96 +448,278 @@ $analyticsSummary = [
     'topViews' => $topPage['views'] ?? 0,
 ];
 
+$pagesStatus = 'ok';
+if ($totalPages === 0) {
+    $pagesStatus = 'urgent';
+} elseif ($pagesDraft > 0) {
+    $pagesStatus = 'warning';
+}
+$pagesTrend = $pagesDraft > 0
+    ? dashboard_format_number($pagesDraft) . ' drafts awaiting review'
+    : 'All pages published';
+$pagesCta = $totalPages === 0
+    ? 'Create your first page'
+    : ($pagesDraft > 0 ? 'Review drafts' : 'Manage pages');
+
+$mediaCount = count($media);
+$mediaStatus = $mediaCount === 0 ? 'urgent' : 'ok';
+$mediaTrend = $mediaCount === 0
+    ? 'Library is empty'
+    : dashboard_format_bytes($mediaTotalSize) . ' stored';
+$mediaCta = $mediaCount === 0 ? 'Upload media' : 'Open media library';
+
+$postsTotal = count($posts);
+$postsDraft = (int)$postsByStatus['draft'];
+$postsScheduled = (int)$postsByStatus['scheduled'];
+$blogsStatus = 'ok';
+if ($postsTotal === 0) {
+    $blogsStatus = 'urgent';
+} elseif ($postsDraft > 0 || $postsScheduled > 0) {
+    $blogsStatus = 'warning';
+}
+$blogsTrend = $postsDraft > 0
+    ? dashboard_format_number($postsDraft) . ' drafts awaiting publication'
+    : ($postsScheduled > 0
+        ? dashboard_format_number($postsScheduled) . ' posts scheduled'
+        : 'Publishing cadence on track');
+$blogsCta = $postsTotal === 0 ? 'Write your first post' : ($postsDraft > 0 ? 'Publish drafts' : 'Manage posts');
+
+$formsCount = count($forms);
+$formsStatus = $formsCount === 0 ? 'urgent' : 'ok';
+$formsTrend = 'Fields configured: ' . dashboard_format_number((int)$formsFields);
+$formsCta = $formsCount === 0 ? 'Create a form' : 'Review submissions';
+
+$menusCount = count($menus);
+$menusStatus = $menuItems === 0 ? 'urgent' : 'ok';
+$menusTrend = $menuItems === 0
+    ? 'No navigation items configured'
+    : dashboard_format_number((int)$menuItems) . ' navigation items live';
+$menusCta = $menusCount === 0 ? 'Create a menu' : 'Manage navigation';
+
+$usersCount = count($users);
+$adminCount = (int)($usersByRole['admin'] ?? 0);
+$editorCount = (int)($usersByRole['editor'] ?? 0);
+$usersStatus = $adminCount === 0 ? 'urgent' : ($usersCount === 0 ? 'urgent' : 'ok');
+$usersTrend = $editorCount > 0
+    ? dashboard_format_number($editorCount) . ' editors collaborating'
+    : 'Invite collaborators to join';
+$usersCta = $adminCount === 0 ? 'Add an admin' : 'Manage team';
+
+$analyticsStatus = $analyticsSummary['totalViews'] === 0 ? 'warning' : 'ok';
+$analyticsTrend = 'Average views per page: ' . dashboard_format_number((int)$analyticsSummary['averageViews']);
+$analyticsCta = $analyticsSummary['totalViews'] === 0 ? 'Set up tracking' : 'Explore analytics';
+
+$seoStatus = 'ok';
+if ($seoSummary['needs_attention'] > 0) {
+    $seoStatus = 'warning';
+}
+if ($seoSummary['metadata_gaps'] > 0 && $seoSummary['optimized'] === 0) {
+    $seoStatus = 'urgent';
+}
+$seoTrend = $seoTotal > 0
+    ? $seoScore . '% SEO health score'
+    : 'No pages analysed yet';
+$seoCta = $seoSummary['needs_attention'] > 0 ? 'Review SEO issues' : 'Monitor SEO health';
+
+$accessibilityStatus = 'ok';
+if ($accessibilitySummary['needs_review'] > 0 || $accessibilitySummary['missing_alt'] > 0) {
+    $accessibilityStatus = 'warning';
+}
+if ($accessibilitySummary['accessible'] === 0 && ($accessibilitySummary['needs_review'] > 0 || $accessibilitySummary['missing_alt'] > 0)) {
+    $accessibilityStatus = 'urgent';
+}
+$accessibilityTrend = $accessibilitySummary['missing_alt'] > 0
+    ? dashboard_format_number($accessibilitySummary['missing_alt']) . ' images missing alt text'
+    : 'Alt text coverage looks good';
+$accessibilityCta = $accessibilitySummary['needs_review'] > 0 || $accessibilitySummary['missing_alt'] > 0
+    ? 'Audit accessibility'
+    : 'Review accessibility';
+
+$logsStatus = $logEntries === 0 ? 'warning' : 'ok';
+$logsTrend = $logsLastActivity ? 'Last activity ' . $logsLastActivity : 'No activity recorded yet';
+$logsCta = 'View history';
+
+$searchStatus = $searchIndexCount === 0 ? 'urgent' : 'ok';
+$searchTrend = 'Indexed records: ' . dashboard_format_number((int)$searchIndexCount);
+$searchCta = $searchIndexCount === 0 ? 'Build the search index' : 'Manage search index';
+
+$settingsStatus = $socialCount === 0 ? 'warning' : 'ok';
+$settingsTrend = $socialCount === 0
+    ? 'No social links configured'
+    : dashboard_format_number((int)$socialCount) . ' social links live';
+$settingsCta = $socialCount === 0 ? 'Add social links' : 'Adjust settings';
+
+$sitemapStatus = $sitemapEntries === 0 ? 'warning' : 'ok';
+$sitemapTrend = $sitemapEntries === 0
+    ? 'Publish pages to populate the sitemap'
+    : dashboard_format_number((int)$sitemapEntries) . ' URLs ready for sitemap.xml';
+$sitemapCta = $sitemapEntries === 0 ? 'Publish pages' : 'Review sitemap';
+
+$speedStatus = 'ok';
+if ($speedSummary['slow'] > 0) {
+    $speedStatus = $speedSummary['slow'] >= $speedSummary['fast'] ? 'urgent' : 'warning';
+} elseif ($speedSummary['monitor'] > 0) {
+    $speedStatus = 'warning';
+}
+$speedTrend = 'Slow pages: ' . dashboard_format_number((int)$speedSummary['slow']);
+$speedCta = $speedSummary['slow'] > 0 ? 'Optimise slow pages' : 'Review performance';
+
+$importExportStatus = 'ok';
+$importExportTrend = $dataFileCount > 0
+    ? dashboard_format_number((int)$dataFileCount) . ' data files available'
+    : 'No data files detected';
+$importExportCta = 'Open import/export';
+
 $moduleSummaries = [
     [
         'id' => 'pages',
         'module' => 'Pages',
         'primary' => dashboard_format_number($totalPages) . ' total pages',
         'secondary' => 'Published: ' . dashboard_format_number($pagesPublished) . ' • Drafts: ' . dashboard_format_number($pagesDraft),
+        'status' => $pagesStatus,
+        'statusLabel' => dashboard_status_label($pagesStatus),
+        'trend' => $pagesTrend,
+        'cta' => $pagesCta,
     ],
     [
         'id' => 'media',
         'module' => 'Media',
-        'primary' => dashboard_format_number(count($media)) . ' files',
+        'primary' => dashboard_format_number($mediaCount) . ' files',
         'secondary' => 'Library size: ' . dashboard_format_bytes($mediaTotalSize),
+        'status' => $mediaStatus,
+        'statusLabel' => dashboard_status_label($mediaStatus),
+        'trend' => $mediaTrend,
+        'cta' => $mediaCta,
     ],
     [
         'id' => 'blogs',
         'module' => 'Blogs',
-        'primary' => dashboard_format_number(count($posts)) . ' posts',
+        'primary' => dashboard_format_number($postsTotal) . ' posts',
         'secondary' => 'Published: ' . dashboard_format_number($postsByStatus['published']) . ' • Draft: ' . dashboard_format_number($postsByStatus['draft']) . ' • Scheduled: ' . dashboard_format_number($postsByStatus['scheduled']),
+        'status' => $blogsStatus,
+        'statusLabel' => dashboard_status_label($blogsStatus),
+        'trend' => $blogsTrend,
+        'cta' => $blogsCta,
     ],
     [
         'id' => 'forms',
         'module' => 'Forms',
-        'primary' => dashboard_format_number(count($forms)) . ' forms',
+        'primary' => dashboard_format_number($formsCount) . ' forms',
         'secondary' => 'Fields configured: ' . dashboard_format_number($formsFields),
+        'status' => $formsStatus,
+        'statusLabel' => dashboard_status_label($formsStatus),
+        'trend' => $formsTrend,
+        'cta' => $formsCta,
     ],
     [
         'id' => 'menus',
         'module' => 'Menus',
-        'primary' => dashboard_format_number(count($menus)) . ' menus',
+        'primary' => dashboard_format_number($menusCount) . ' menus',
         'secondary' => 'Navigation items: ' . dashboard_format_number($menuItems),
+        'status' => $menusStatus,
+        'statusLabel' => dashboard_status_label($menusStatus),
+        'trend' => $menusTrend,
+        'cta' => $menusCta,
     ],
     [
         'id' => 'users',
         'module' => 'Users',
-        'primary' => dashboard_format_number(count($users)) . ' users',
-        'secondary' => 'Admins: ' . dashboard_format_number($usersByRole['admin'] ?? 0) . ' • Editors: ' . dashboard_format_number($usersByRole['editor'] ?? 0),
+        'primary' => dashboard_format_number($usersCount) . ' users',
+        'secondary' => 'Admins: ' . dashboard_format_number($adminCount) . ' • Editors: ' . dashboard_format_number($editorCount),
+        'status' => $usersStatus,
+        'statusLabel' => dashboard_status_label($usersStatus),
+        'trend' => $usersTrend,
+        'cta' => $usersCta,
     ],
     [
         'id' => 'analytics',
         'module' => 'Analytics',
         'primary' => dashboard_format_number($analyticsSummary['totalViews']) . ' total views',
         'secondary' => $analyticsSummary['topPage'] ? 'Top page: ' . $analyticsSummary['topPage'] . ' (' . dashboard_format_number($analyticsSummary['topViews']) . ')' : 'No views recorded yet',
+        'status' => $analyticsStatus,
+        'statusLabel' => dashboard_status_label($analyticsStatus),
+        'trend' => $analyticsTrend,
+        'cta' => $analyticsCta,
     ],
     [
         'id' => 'seo',
         'module' => 'SEO',
         'primary' => dashboard_format_number($seoSummary['optimized']) . ' optimized pages',
         'secondary' => 'Needs attention: ' . dashboard_format_number($seoSummary['needs_attention']) . ' • Metadata gaps: ' . dashboard_format_number($seoSummary['metadata_gaps']),
+        'status' => $seoStatus,
+        'statusLabel' => dashboard_status_label($seoStatus),
+        'trend' => $seoTrend,
+        'cta' => $seoCta,
     ],
     [
         'id' => 'accessibility',
         'module' => 'Accessibility',
         'primary' => dashboard_format_number($accessibilitySummary['accessible']) . ' compliant pages',
         'secondary' => 'Alt text issues: ' . dashboard_format_number($accessibilitySummary['missing_alt']),
+        'status' => $accessibilityStatus,
+        'statusLabel' => dashboard_status_label($accessibilityStatus),
+        'trend' => $accessibilityTrend,
+        'cta' => $accessibilityCta,
     ],
     [
         'id' => 'logs',
         'module' => 'Logs',
         'primary' => dashboard_format_number($logEntries) . ' history entries',
         'secondary' => $logsLastActivity ? 'Last activity: ' . $logsLastActivity : 'No activity recorded yet',
+        'status' => $logsStatus,
+        'statusLabel' => dashboard_status_label($logsStatus),
+        'trend' => $logsTrend,
+        'cta' => $logsCta,
     ],
     [
         'id' => 'search',
         'module' => 'Search',
         'primary' => dashboard_format_number($searchIndexCount) . ' indexed records',
         'secondary' => 'Pages: ' . dashboard_format_number($searchBreakdown['pages']) . ' • Posts: ' . dashboard_format_number($searchBreakdown['posts']) . ' • Media: ' . dashboard_format_number($searchBreakdown['media']),
+        'status' => $searchStatus,
+        'statusLabel' => dashboard_status_label($searchStatus),
+        'trend' => $searchTrend,
+        'cta' => $searchCta,
     ],
     [
         'id' => 'settings',
         'module' => 'Settings',
         'primary' => dashboard_format_number($settingsCount) . ' configuration values',
         'secondary' => 'Social profiles: ' . dashboard_format_number($socialCount),
+        'status' => $settingsStatus,
+        'statusLabel' => dashboard_status_label($settingsStatus),
+        'trend' => $settingsTrend,
+        'cta' => $settingsCta,
     ],
     [
         'id' => 'sitemap',
         'module' => 'Sitemap',
         'primary' => dashboard_format_number($sitemapEntries) . ' published URLs',
         'secondary' => 'Ready for export to sitemap.xml',
+        'status' => $sitemapStatus,
+        'statusLabel' => dashboard_status_label($sitemapStatus),
+        'trend' => $sitemapTrend,
+        'cta' => $sitemapCta,
     ],
     [
         'id' => 'speed',
         'module' => 'Speed',
         'primary' => 'Fast: ' . dashboard_format_number($speedSummary['fast']) . ' • Monitor: ' . dashboard_format_number($speedSummary['monitor']) . ' • Slow: ' . dashboard_format_number($speedSummary['slow']),
         'secondary' => $largestPage['title'] ? 'Heaviest content: ' . $largestPage['title'] : 'Content analysis based on page length',
+        'status' => $speedStatus,
+        'statusLabel' => dashboard_status_label($speedStatus),
+        'trend' => $speedTrend,
+        'cta' => $speedCta,
     ],
     [
         'id' => 'import_export',
         'module' => 'Import/Export',
         'primary' => dashboard_format_number($dataFileCount) . ' data files detected',
         'secondary' => 'Use tools to migrate or backup your site',
+        'status' => $importExportStatus,
+        'statusLabel' => dashboard_status_label($importExportStatus),
+        'trend' => $importExportTrend,
+        'cta' => $importExportCta,
     ],
 ];
 
