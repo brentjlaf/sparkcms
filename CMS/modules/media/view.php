@@ -132,6 +132,7 @@
                                         <p>Click "Upload Media" to add new files.</p>
                                     </div>
                                     <div class="image-grid" id="imageGrid" style="display: none;"></div>
+                                    <div class="gallery-pagination" id="galleryPagination" style="display:none;"></div>
                                     <div id="dropZone" class="upload-drop">Drop images here</div>
                                 </div>
                             </div>
