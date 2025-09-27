@@ -6,6 +6,8 @@ $(function(){
     const $saveButton = $('#saveSettingsButton');
     const $logoPreview = $('#logoPreview');
     const $ogPreview = $('#ogImagePreview');
+    const $clearLogo = $('#clearLogo');
+    const $clearOgImage = $('#clearOgImage');
 
     function formatTimestamp(value){
         if(!value){
@@ -70,6 +72,27 @@ $(function(){
         }
     }
 
+    function setPreviewState($preview, $checkbox, src){
+        const hasSrc = Boolean(src);
+        $checkbox.data('previewSrc', hasSrc ? src : '');
+        $checkbox.prop('checked', false).prop('disabled', !hasSrc);
+        togglePreview($preview, src);
+    }
+
+    function bindClearToggle($checkbox, $preview){
+        $checkbox.on('change', function(){
+            if(this.checked){
+                togglePreview($preview, '');
+            } else {
+                const stored = $checkbox.data('previewSrc') || '';
+                togglePreview($preview, stored);
+            }
+        });
+    }
+
+    bindClearToggle($clearLogo, $logoPreview);
+    bindClearToggle($clearOgImage, $ogPreview);
+
     function loadSettings(){
         $.getJSON('modules/settings/list_settings.php', function(data){
             data = data || {};
@@ -77,7 +100,7 @@ $(function(){
             $('#tagline').val(data.tagline || '');
             $('#admin_email').val(data.admin_email || '');
 
-            togglePreview($logoPreview, data.logo || '');
+            setPreviewState($logoPreview, $clearLogo, data.logo || '');
 
             $('#timezone').val(data.timezone || 'America/Los_Angeles');
             $('#googleAnalytics').val(data.googleAnalytics || '');
@@ -98,7 +121,7 @@ $(function(){
             const openGraph = data.open_graph || {};
             $('#ogTitle').val(openGraph.title || '');
             $('#ogDescription').val(openGraph.description || '');
-            togglePreview($ogPreview, openGraph.image || '');
+            setPreviewState($ogPreview, $clearOgImage, openGraph.image || '');
 
             updateHeroMeta(data.last_updated || '');
             updateOverview();
@@ -110,7 +133,7 @@ $(function(){
         if(file){
             const reader = new FileReader();
             reader.onload = function(e){
-                togglePreview($logoPreview, e.target.result);
+                setPreviewState($logoPreview, $clearLogo, e.target.result);
                 updateOverview();
             };
             reader.readAsDataURL(file);
@@ -122,7 +145,7 @@ $(function(){
         if(file){
             const reader = new FileReader();
             reader.onload = function(e){
-                togglePreview($ogPreview, e.target.result);
+                setPreviewState($ogPreview, $clearOgImage, e.target.result);
             };
             reader.readAsDataURL(file);
         }

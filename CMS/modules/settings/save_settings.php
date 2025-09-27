@@ -23,18 +23,68 @@ $settings['facebookPixel'] = sanitize_text($_POST['facebookPixel'] ?? ($settings
 $settings['generateSitemap'] = isset($_POST['generateSitemap']);
 $settings['allowIndexing'] = isset($_POST['allowIndexing']);
 
+function delete_upload_file($relativePath, $uploadsRoot, $baseDir)
+{
+    if (!is_string($relativePath) || $relativePath === '') {
+        return;
+    }
+
+    $relativePath = ltrim($relativePath, '/');
+    if (strpos($relativePath, 'uploads/') !== 0) {
+        return;
+    }
+
+    if (!$uploadsRoot || !$baseDir) {
+        return;
+    }
+
+    $fullPath = $baseDir . DIRECTORY_SEPARATOR . $relativePath;
+    $realFullPath = realpath($fullPath);
+
+    if ($realFullPath === false) {
+        return;
+    }
+
+    if (strpos($realFullPath, $uploadsRoot) === 0 && is_file($realFullPath)) {
+        @unlink($realFullPath);
+    }
+}
+
 $uploadDir = __DIR__ . '/../../uploads';
 if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
+$baseDir = realpath(__DIR__ . '/../../');
+$uploadsRoot = realpath($uploadDir);
+
+$previousLogo = $settings['logo'] ?? null;
+
+$logoCleared = !empty($_POST['clear_logo']);
+$newLogo = $previousLogo;
+$logoUploaded = false;
 
 if (!empty($_FILES['logo']['name']) && is_uploaded_file($_FILES['logo']['tmp_name'])) {
     $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
     $safe = 'logo_' . uniqid('', true) . '.' . $ext;
     $dest = $uploadDir . '/' . $safe;
     if (move_uploaded_file($_FILES['logo']['tmp_name'], $dest)) {
-        $settings['logo'] = 'uploads/' . $safe;
+        $newLogo = 'uploads/' . $safe;
+        $logoUploaded = true;
     }
+}
+
+if ($logoCleared && !$logoUploaded) {
+    $newLogo = null;
+}
+
+if ($newLogo !== null) {
+    $settings['logo'] = $newLogo;
+} else {
+    unset($settings['logo']);
+}
+
+if ($previousLogo && $previousLogo !== $newLogo) {
+    delete_upload_file($previousLogo, $uploadsRoot, $baseDir);
 }
 
 $social = is_array($settings['social'] ?? null) ? $settings['social'] : [];
@@ -45,16 +95,36 @@ foreach ($socialFields as $field) {
 $settings['social'] = $social;
 
 $openGraph = is_array($settings['open_graph'] ?? null) ? $settings['open_graph'] : [];
+$previousOgImage = $openGraph['image'] ?? null;
 $openGraph['title'] = sanitize_text($_POST['ogTitle'] ?? ($openGraph['title'] ?? ''));
 $openGraph['description'] = sanitize_text($_POST['ogDescription'] ?? ($openGraph['description'] ?? ''));
+
+$ogCleared = !empty($_POST['clear_og_image']);
+$newOgImage = $previousOgImage;
+$ogUploaded = false;
 
 if (!empty($_FILES['ogImage']['name']) && is_uploaded_file($_FILES['ogImage']['tmp_name'])) {
     $ext = strtolower(pathinfo($_FILES['ogImage']['name'], PATHINFO_EXTENSION));
     $safe = 'og_' . uniqid('', true) . '.' . $ext;
     $dest = $uploadDir . '/' . $safe;
     if (move_uploaded_file($_FILES['ogImage']['tmp_name'], $dest)) {
-        $openGraph['image'] = 'uploads/' . $safe;
+        $newOgImage = 'uploads/' . $safe;
+        $ogUploaded = true;
     }
+}
+
+if ($ogCleared && !$ogUploaded) {
+    $newOgImage = null;
+}
+
+if ($newOgImage !== null) {
+    $openGraph['image'] = $newOgImage;
+} else {
+    unset($openGraph['image']);
+}
+
+if ($previousOgImage && $previousOgImage !== $newOgImage) {
+    delete_upload_file($previousOgImage, $uploadsRoot, $baseDir);
 }
 
 $settings['open_graph'] = $openGraph;

@@ -61,6 +61,12 @@
                             <input type="file" class="form-input" id="logoFile" name="logo" accept="image/*">
                             <img id="logoPreview" class="settings-file-preview" src="" alt="Logo preview" hidden>
                         </div>
+                        <div class="form-option">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="clearLogo" name="clear_logo" value="1">
+                                <span>Remove current logo</span>
+                            </label>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="timezone">Timezone</label>
@@ -152,6 +158,12 @@
                         <div class="settings-file-input">
                             <input type="file" id="ogImageFile" name="ogImage" accept="image/*">
                             <img id="ogImagePreview" class="settings-file-preview" src="" alt="Open graph image preview" hidden>
+                        </div>
+                        <div class="form-option">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="clearOgImage" name="clear_og_image" value="1">
+                                <span>Remove current image</span>
+                            </label>
                         </div>
                         <div class="form-help">Upload a 1200 × 630px image for social sharing cards.</div>
                     </div>
