@@ -106,106 +106,127 @@
     </div>
 </div>
 
-<div class="modal" id="postModal">
+<div class="modal blog-modal" id="postModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="postModalDescription">
     <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modalTitle">New Post</h2>
-            <button class="modal-close" id="closeModal" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-        </div>
-        <div class="modal-body">
-            <form id="postForm">
-                <div class="form-group">
-                    <label for="postTitle">Title *</label>
-                    <input type="text" id="postTitle" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label for="postSlug">Slug</label>
-                    <input type="text" id="postSlug" name="slug" placeholder="auto-generated-from-title">
-                </div>
-                <div class="form-group">
-                    <label for="postExcerpt">Excerpt</label>
-                    <textarea id="postExcerpt" name="excerpt" placeholder="Brief description of the post..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="postContent">Content *</label>
-                    <div class="editor-container">
-                        <div id="postContent" class="editor-content" contenteditable="true"></div>
+        <div class="blog-modal__surface">
+            <button type="button" class="blog-modal__close" id="closeModal" aria-label="Close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="blog-modal__header">
+                <span class="blog-modal__subtitle">Post settings</span>
+                <h2 class="blog-modal__title" id="modalTitle">New Post</h2>
+                <p class="blog-modal__description" id="postModalDescription">Craft your article content, assign categories, and schedule publication.</p>
+            </header>
+            <div class="blog-modal__body">
+                <form id="postForm" class="blog-modal__form">
+                    <div class="form-group blog-modal__field">
+                        <label for="postTitle">Title *</label>
+                        <input type="text" id="postTitle" name="title" required>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="postCategory">Category *</label>
-                        <select id="postCategory" name="category" required>
-                            <option value="">Select Category</option>
-                        </select>
+                    <div class="form-group blog-modal__field">
+                        <label for="postSlug">Slug</label>
+                        <input type="text" id="postSlug" name="slug" placeholder="auto-generated-from-title">
                     </div>
-                    <div class="form-group">
-                        <label for="postAuthor">Author *</label>
-                        <select id="postAuthor" name="author" required>
-                            <option value="">Select Author</option>
-                        </select>
+                    <div class="form-group blog-modal__field">
+                        <label for="postExcerpt">Excerpt</label>
+                        <textarea id="postExcerpt" name="excerpt" placeholder="Brief description of the post..."></textarea>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="postStatus">Status *</label>
-                        <select id="postStatus" name="status" required>
-                            <option value="draft">Draft</option>
-                            <option value="published">Published</option>
-                            <option value="scheduled">Scheduled</option>
-                        </select>
+                    <div class="form-group blog-modal__field">
+                        <label for="postContent">Content *</label>
+                        <div class="editor-container blog-modal__editor">
+                            <div id="postContent" class="editor-content" contenteditable="true"></div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="publishDate">Publish Date</label>
-                        <input type="datetime-local" id="publishDate" name="publishDate">
+                    <div class="blog-modal__grid">
+                        <div class="form-group blog-modal__field">
+                            <label for="postCategory">Category *</label>
+                            <select id="postCategory" name="category" required>
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        <div class="form-group blog-modal__field">
+                            <label for="postAuthor">Author *</label>
+                            <select id="postAuthor" name="author" required>
+                                <option value="">Select Author</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="postTags">Tags</label>
-                    <input type="text" id="postTags" name="tags" placeholder="Separate tags with commas">
-                </div>
-                <input type="hidden" id="postId" name="id">
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="saveBtn" form="postForm">Save Post</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="categoriesModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Manage Categories</h2>
-            <button class="modal-close" id="closeCategoriesModal" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label for="newCategoryName">Add New Category</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="newCategoryName" placeholder="Category name" style="flex: 1;">
-                    <button class="btn btn-primary" id="addCategoryBtn">Add</button>
-                </div>
+                    <div class="blog-modal__grid">
+                        <div class="form-group blog-modal__field">
+                            <label for="postStatus">Status *</label>
+                            <select id="postStatus" name="status" required>
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                                <option value="scheduled">Scheduled</option>
+                            </select>
+                        </div>
+                        <div class="form-group blog-modal__field">
+                            <label for="publishDate">Publish Date</label>
+                            <input type="datetime-local" id="publishDate" name="publishDate">
+                        </div>
+                    </div>
+                    <div class="form-group blog-modal__field">
+                        <label for="postTags">Tags</label>
+                        <input type="text" id="postTags" name="tags" placeholder="Separate tags with commas">
+                    </div>
+                    <input type="hidden" id="postId" name="id">
+                </form>
             </div>
-            <div id="categoriesList"></div>
+            <footer class="blog-modal__footer">
+                <button type="button" class="blog-modal__button blog-modal__button--secondary" id="cancelBtn">Cancel</button>
+                <button type="submit" class="blog-modal__button blog-modal__button--primary" id="saveBtn" form="postForm">Save Post</button>
+            </footer>
         </div>
     </div>
 </div>
 
-<div class="modal" id="postPreviewModal">
+<div class="modal blog-modal" id="categoriesModal" role="dialog" aria-modal="true" aria-labelledby="categoriesModalTitle" aria-describedby="categoriesModalDescription">
     <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="previewTitle"></h2>
-            <button class="modal-close" id="closePreviewModal" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        <div class="blog-modal__surface">
+            <button type="button" class="blog-modal__close" id="closeCategoriesModal" aria-label="Close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="blog-modal__header">
+                <span class="blog-modal__subtitle">Categories</span>
+                <h2 class="blog-modal__title" id="categoriesModalTitle">Manage Categories</h2>
+                <p class="blog-modal__description" id="categoriesModalDescription">Create, rename, and remove topics to keep your editorial calendar organized.</p>
+            </header>
+            <div class="blog-modal__body">
+                <div class="form-group blog-modal__field">
+                    <label for="newCategoryName">Add New Category</label>
+                    <div class="blog-modal__inline-input">
+                        <input type="text" id="newCategoryName" placeholder="Category name">
+                        <button type="button" class="blog-modal__button blog-modal__button--primary" id="addCategoryBtn">Add</button>
+                    </div>
+                </div>
+                <div id="categoriesList" class="blog-category-list" aria-live="polite"></div>
+            </div>
+            <footer class="blog-modal__footer">
+                <button type="button" class="blog-modal__button blog-modal__button--secondary" id="categoriesDoneBtn">Done</button>
+            </footer>
         </div>
-        <div class="modal-body">
-            <div id="previewMeta" style="margin-bottom:10px;"></div>
-            <div id="previewContent"></div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" id="closePreviewBtn">Close</button>
-            <button type="button" class="btn btn-primary" id="editPreviewBtn">Edit</button>
+    </div>
+</div>
+
+<div class="modal blog-modal" id="postPreviewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-content">
+        <div class="blog-modal__surface">
+            <button type="button" class="blog-modal__close" id="closePreviewModal" aria-label="Close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="blog-modal__header">
+                <span class="blog-modal__subtitle">Post preview</span>
+                <h2 class="blog-modal__title" id="previewTitle"></h2>
+                <p class="blog-modal__description">Review your content before publishing or return to make edits.</p>
+            </header>
+            <div class="blog-modal__body">
+                <div id="previewMeta" class="blog-preview-meta"></div>
+                <div id="previewContent" class="blog-preview-content"></div>
+            </div>
+            <footer class="blog-modal__footer">
+                <button type="button" class="blog-modal__button blog-modal__button--secondary" id="closePreviewBtn">Close</button>
+                <button type="button" class="blog-modal__button blog-modal__button--primary" id="editPreviewBtn">Edit</button>
+            </footer>
         </div>
     </div>
 </div>
