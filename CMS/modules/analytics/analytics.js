@@ -27,7 +27,6 @@ $(function(){
     const $viewButtons = $('[data-analytics-view]');
     const $counts = $('[data-analytics-count]');
     const $refreshBtn = $('[data-analytics-action="refresh"]');
-    const $exportBtn = $('[data-analytics-action="export"]');
     const $totalViews = $('#analyticsTotalViews');
     const $averageViews = $('#analyticsAverageViews');
     const $totalPages = $('#analyticsTotalPages');
@@ -383,28 +382,6 @@ $(function(){
             });
     }
 
-    function exportCsv(){
-        if (!state.entries.length) {
-            window.alert('No analytics data to export yet.');
-            return;
-        }
-        const rows = ['"Title","Slug","Views"'];
-        state.entries.forEach(function(item){
-            const title = '"' + String(item.title).replace(/"/g, '""') + '"';
-            const slug = '"' + String(item.slug).replace(/"/g, '""') + '"';
-            rows.push([title, slug, item.views].join(','));
-        });
-        const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'analytics-export.csv';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
-
     const initialEntries = window.analyticsInitialEntries || [];
     const initialMeta = window.analyticsInitialMeta || {};
     setData(initialEntries);
@@ -434,9 +411,4 @@ $(function(){
         });
     }
 
-    if ($exportBtn.length) {
-        $exportBtn.on('click', function(){
-            exportCsv();
-        });
-    }
 });
