@@ -38,7 +38,16 @@ $(function(){
             '#instagramLink',
             '#linkedinLink',
             '#youtubeLink',
-            '#tiktokLink'
+            '#tiktokLink',
+            '#pinterestLink',
+            '#snapchatLink',
+            '#redditLink',
+            '#threadsLink',
+            '#mastodonLink',
+            '#githubLink',
+            '#dribbbleLink',
+            '#twitchLink',
+            '#whatsappLink'
         ];
         const socialCount = socialSelectors.reduce((count, selector) => {
             return count + ($(selector).val().trim() ? 1 : 0);
@@ -117,6 +126,15 @@ $(function(){
             $('#linkedinLink').val(social.linkedin || '');
             $('#youtubeLink').val(social.youtube || '');
             $('#tiktokLink').val(social.tiktok || '');
+            $('#pinterestLink').val(social.pinterest || '');
+            $('#snapchatLink').val(social.snapchat || '');
+            $('#redditLink').val(social.reddit || '');
+            $('#threadsLink').val(social.threads || '');
+            $('#mastodonLink').val(social.mastodon || '');
+            $('#githubLink').val(social.github || '');
+            $('#dribbbleLink').val(social.dribbble || '');
+            $('#twitchLink').val(social.twitch || '');
+            $('#whatsappLink').val(social.whatsapp || '');
 
             const openGraph = data.open_graph || {};
             $('#ogTitle').val(openGraph.title || '');

@@ -166,7 +166,23 @@ if ($previousLogo && $previousLogo !== $newLogo) {
 }
 
 $social = is_array($settings['social'] ?? null) ? $settings['social'] : [];
-$socialFields = ['facebook', 'twitter', 'instagram', 'linkedin', 'youtube', 'tiktok'];
+$socialFields = [
+    'facebook',
+    'twitter',
+    'instagram',
+    'linkedin',
+    'youtube',
+    'tiktok',
+    'pinterest',
+    'snapchat',
+    'reddit',
+    'threads',
+    'mastodon',
+    'github',
+    'dribbble',
+    'twitch',
+    'whatsapp',
+];
 foreach ($socialFields as $field) {
     $social[$field] = sanitize_url($_POST[$field] ?? ($social[$field] ?? ''));
 }
