@@ -144,6 +144,62 @@
         });
     }
 
+    function getSortValue(page, key) {
+        if (!page) {
+            return 0;
+        }
+        switch (key) {
+            case 'title':
+                return (page.title || '').toLowerCase();
+            case 'alerts':
+                if (page.alerts && typeof page.alerts.total === 'number') {
+                    return page.alerts.total;
+                }
+                return page.warnings || 0;
+            case 'weight':
+                if (page.metrics && typeof page.metrics.weightKb === 'number') {
+                    return page.metrics.weightKb;
+                }
+                return 0;
+            case 'score':
+            default:
+                return typeof page.performanceScore === 'number' ? page.performanceScore : 0;
+        }
+    }
+
+    function sortPages(pages, key, direction) {
+        if (!Array.isArray(pages)) {
+            return [];
+        }
+        const dir = direction === 'asc' ? 1 : -1;
+        const items = pages.slice();
+        items.sort(function (a, b) {
+            const aVal = getSortValue(a, key);
+            const bVal = getSortValue(b, key);
+
+            if (aVal === bVal) {
+                const aTitle = (a.title || '').toLowerCase();
+                const bTitle = (b.title || '').toLowerCase();
+                if (aTitle < bTitle) {
+                    return -1;
+                }
+                if (aTitle > bTitle) {
+                    return 1;
+                }
+                return 0;
+            }
+
+            if (aVal < bVal) {
+                return -1 * dir;
+            }
+            if (aVal > bVal) {
+                return 1 * dir;
+            }
+            return 0;
+        });
+        return items;
+    }
+
     function updateFilterPills(data, $buttons) {
         const counts = {
             all: data.length,
@@ -262,6 +318,9 @@
         const $filterButtons = $('[data-speed-filter]');
         const $viewButtons = $('[data-speed-view]');
         const $searchInput = $('#speedSearchInput');
+        const $sortSelect = $('#speedSortSelect');
+        const $sortDirectionBtn = $('#speedSortDirection');
+        const $sortDirectionLabel = $('#speedSortDirectionLabel');
         const $modal = $('#speedPageDetail');
         const $modalClose = $('#speedDetailClose');
         const $modalMetrics = $('#speedDetailMetrics');
@@ -279,8 +338,45 @@
 
         let currentFilter = 'all';
         let currentView = 'grid';
+        let currentSort = 'score';
+        let sortDirection = 'desc';
         let filteredPages = data.slice();
         let activeSlug = null;
+
+        if ($sortSelect.length) {
+            currentSort = $sortSelect.val() || currentSort;
+        }
+        if ($sortDirectionBtn.length) {
+            const dir = $sortDirectionBtn.data('direction');
+            if (dir === 'asc' || dir === 'desc') {
+                sortDirection = dir;
+            }
+        }
+
+        function updateSortDirectionDisplay() {
+            if (!$sortDirectionBtn.length) {
+                return;
+            }
+            const isAsc = sortDirection === 'asc';
+            const iconClass = isAsc ? 'fas fa-sort-amount-up' : 'fas fa-sort-amount-down-alt';
+            let labelText = isAsc ? 'Low to high' : 'High to low';
+            if (currentSort === 'title') {
+                labelText = isAsc ? 'A to Z' : 'Z to A';
+            }
+            $sortDirectionBtn.attr('data-direction', sortDirection);
+            $sortDirectionBtn.attr('aria-label', 'Toggle sort direction (' + labelText + ')');
+            $sortDirectionBtn.attr('aria-pressed', isAsc ? 'false' : 'true');
+            const $icon = $sortDirectionBtn.find('i');
+            if ($icon.length) {
+                $icon.attr('class', iconClass);
+            }
+            if ($sortDirectionLabel.length) {
+                $sortDirectionLabel.text(labelText);
+            }
+        }
+
+        filteredPages = sortPages(filteredPages, currentSort, sortDirection);
+        updateSortDirectionDisplay();
 
         function closeModal() {
             activeSlug = null;
@@ -348,13 +444,30 @@
 
         function applyFilters() {
             const query = ($searchInput.val() || '').toLowerCase();
-            filteredPages = filterPages(data, currentFilter, query);
+            const filtered = filterPages(data, currentFilter, query);
+            filteredPages = sortPages(filtered, currentSort, sortDirection);
             render();
         }
 
         if ($grid.length) {
             updateFilterPills(data, $filterButtons);
             render();
+        }
+
+        if ($sortSelect.length) {
+            $sortSelect.on('change', function () {
+                currentSort = $(this).val() || 'score';
+                updateSortDirectionDisplay();
+                applyFilters();
+            });
+        }
+
+        if ($sortDirectionBtn.length) {
+            $sortDirectionBtn.on('click', function () {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                updateSortDirectionDisplay();
+                applyFilters();
+            });
         }
 
         $filterButtons.on('click', function () {

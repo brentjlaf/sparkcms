@@ -596,6 +596,19 @@ $dashboardStats = [
                 <button type="button" class="a11y-filter-btn" data-speed-filter="monitor">Needs attention <span class="a11y-filter-count" data-count="monitor"><?php echo $filterCounts['monitor']; ?></span></button>
                 <button type="button" class="a11y-filter-btn" data-speed-filter="fast">Performing well <span class="a11y-filter-count" data-count="fast"><?php echo $filterCounts['fast']; ?></span></button>
             </div>
+            <div class="a11y-sort" role="group" aria-label="Sort results">
+                <label for="speedSortSelect">Sort by</label>
+                <select id="speedSortSelect">
+                    <option value="score" selected>Performance score</option>
+                    <option value="title">Title</option>
+                    <option value="alerts">Total alerts</option>
+                    <option value="weight">Estimated weight</option>
+                </select>
+                <button type="button" class="a11y-sort-direction" id="speedSortDirection" data-direction="desc" aria-label="Sort high to low" aria-pressed="true">
+                    <i class="fas fa-sort-amount-down-alt" aria-hidden="true"></i>
+                    <span class="a11y-sort-direction__text" id="speedSortDirectionLabel">High to low</span>
+                </button>
+            </div>
             <div class="a11y-view-toggle" role="group" aria-label="Toggle layout">
                 <button type="button" class="a11y-view-btn active" data-speed-view="grid" aria-label="Grid view">
                     <i class="fas fa-th-large" aria-hidden="true"></i>
