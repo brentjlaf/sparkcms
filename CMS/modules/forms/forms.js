@@ -263,6 +263,29 @@ $(function(){
         }
     }
 
+    function focusFormBuilder(){
+        const card = document.getElementById('formBuilderCard');
+        if(card && typeof card.scrollIntoView === 'function'){
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        const nameInput = document.getElementById('formName');
+        if(nameInput){
+            try {
+                nameInput.focus({ preventScroll: true });
+            } catch (err) {
+                nameInput.focus();
+            }
+        }
+    }
+
+    function revealFormBuilder(title){
+        if(typeof title === 'string' && title){
+            $('#formBuilderTitle').text(title);
+        }
+        $('#formBuilderCard').show();
+        setTimeout(focusFormBuilder, 60);
+    }
+
     function loadForms(){
         $.getJSON('modules/forms/list_forms.php', function(data){
             const forms = Array.isArray(data) ? data : [];
@@ -344,11 +367,11 @@ $(function(){
     });
 
     $('#newFormBtn').on('click', function(){
-        $('#formBuilderTitle').text('Add Form');
         $('#formId').val('');
         $('#formName').val('');
         $('#formPreview').empty();
-        $('#formBuilderCard').show();
+        selectField(null);
+        revealFormBuilder('Add Form');
     });
 
     $('#cancelFormEdit').on('click', function(){
@@ -381,12 +404,12 @@ $(function(){
         $.getJSON('modules/forms/list_forms.php', function(forms){
             const f = forms.find(x=>x.id==id);
             if(!f) return;
-            $('#formBuilderTitle').text('Edit Form');
             $('#formId').val(f.id);
             $('#formName').val(f.name);
             $('#formPreview').empty();
+            selectField(null);
             (f.fields||[]).forEach(fd=>addField(fd.type, fd));
-            $('#formBuilderCard').show();
+            revealFormBuilder('Edit Form');
         });
     });
 
