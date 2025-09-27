@@ -139,6 +139,42 @@
                             <label class="form-label" for="tiktokLink">TikTok</label>
                             <input type="url" class="form-input" id="tiktokLink" name="tiktok" placeholder="https://tiktok.com/@youraccount">
                         </div>
+                        <div class="form-group">
+                            <label class="form-label" for="pinterestLink">Pinterest</label>
+                            <input type="url" class="form-input" id="pinterestLink" name="pinterest" placeholder="https://pinterest.com/yourprofile">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="snapchatLink">Snapchat</label>
+                            <input type="url" class="form-input" id="snapchatLink" name="snapchat" placeholder="https://snapchat.com/add/yourusername">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="redditLink">Reddit</label>
+                            <input type="url" class="form-input" id="redditLink" name="reddit" placeholder="https://reddit.com/u/yourusername">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="threadsLink">Threads</label>
+                            <input type="url" class="form-input" id="threadsLink" name="threads" placeholder="https://threads.net/@yourusername">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="mastodonLink">Mastodon</label>
+                            <input type="url" class="form-input" id="mastodonLink" name="mastodon" placeholder="https://mastodon.social/@yourusername">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="githubLink">GitHub</label>
+                            <input type="url" class="form-input" id="githubLink" name="github" placeholder="https://github.com/yourusername">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dribbbleLink">Dribbble</label>
+                            <input type="url" class="form-input" id="dribbbleLink" name="dribbble" placeholder="https://dribbble.com/yourprofile">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="twitchLink">Twitch</label>
+                            <input type="url" class="form-input" id="twitchLink" name="twitch" placeholder="https://twitch.tv/yourchannel">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="whatsappLink">WhatsApp</label>
+                            <input type="url" class="form-input" id="whatsappLink" name="whatsapp" placeholder="https://wa.me/yourphonenumber">
+                        </div>
                     </div>
                 </article>
 
