@@ -111,7 +111,7 @@ $(function(){
 
             setPreviewState($logoPreview, $clearLogo, data.logo || '');
 
-            $('#timezone').val(data.timezone || 'America/Los_Angeles');
+            $('#timezone').val(data.timezone || 'America/Denver');
             $('#googleAnalytics').val(data.googleAnalytics || '');
             $('#googleSearchConsole').val(data.googleSearchConsole || '');
             $('#facebookPixel').val(data.facebookPixel || '');
