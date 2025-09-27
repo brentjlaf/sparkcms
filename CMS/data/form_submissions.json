@@ -1,1 +1,120 @@
-[]
+[
+    {
+        "id": "a1b2c3d4e5f60708",
+        "form_id": 1,
+        "data": {
+            "name": "Alice Johnson",
+            "email": "alice@example.com"
+        },
+        "meta": {
+            "ip": "192.0.2.10",
+            "user_agent": "Mozilla/5.0",
+            "referer": "https://example.com/newsletter"
+        },
+        "submitted_at": "2024-04-01T10:15:00+00:00",
+        "source": "https://example.com/newsletter"
+    },
+    {
+        "id": "b1c2d3e4f5a60708",
+        "form_id": 1,
+        "data": {
+            "name": "Brian Lee",
+            "email": "brian.lee@example.com"
+        },
+        "meta": {
+            "ip": "192.0.2.20",
+            "user_agent": "Mozilla/5.0 (Macintosh)"
+        },
+        "submitted_at": "2024-04-05T09:45:00+00:00",
+        "source": ""
+    },
+    {
+        "id": "c1d2e3f4a5b60708",
+        "form_id": 1,
+        "data": {
+            "name": "Chen Wei",
+            "email": "chen.wei@example.org"
+        },
+        "meta": {
+            "ip": "203.0.113.5",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0)"
+        },
+        "submitted_at": "2024-04-07T18:30:00+00:00",
+        "source": "https://example.org/subscribe"
+    },
+    {
+        "id": "d1e2f3a4b5c60708",
+        "form_id": 1,
+        "data": {
+            "name": "",
+            "email": "newsletterfan@example.net"
+        },
+        "meta": {
+            "ip": "198.51.100.42",
+            "user_agent": "Mozilla/5.0 (Linux)"
+        },
+        "submitted_at": "2024-04-10T12:05:00+00:00",
+        "source": ""
+    },
+    {
+        "id": "e1f2a3b4c5d60708",
+        "form_id": 2,
+        "data": {
+            "name": "Dana Scott",
+            "email": "dana.scott@example.com",
+            "message": "I would like more information about your services."
+        },
+        "meta": {
+            "ip": "192.0.2.55",
+            "user_agent": "Mozilla/5.0",
+            "referer": "https://example.com/contact"
+        },
+        "submitted_at": "2024-05-01T14:20:00+00:00",
+        "source": "https://example.com/contact"
+    },
+    {
+        "id": "f1a2b3c4d5e60708",
+        "form_id": 2,
+        "data": {
+            "name": "Elena Petrova",
+            "email": "elena.petrova@example.org",
+            "message": "Great website!"
+        },
+        "meta": {
+            "ip": "203.0.113.77",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0)"
+        },
+        "submitted_at": "2024-05-02T08:10:00+00:00",
+        "source": ""
+    },
+    {
+        "id": "g1b2c3d4e5f60708",
+        "form_id": 2,
+        "data": {
+            "name": "Hiro Tanaka",
+            "email": "hiro.tanaka@example.jp",
+            "message": "Can we schedule a call next week?"
+        },
+        "meta": {
+            "ip": "198.51.100.88",
+            "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)"
+        },
+        "submitted_at": "2024-05-03T21:55:00+00:00",
+        "source": "https://example.jp/contact"
+    },
+    {
+        "id": "h1c2d3e4f5a60708",
+        "form_id": 2,
+        "data": {
+            "name": "Jordan Smith",
+            "email": "jordan.smith@example.net",
+            "message": "Please update me on upcoming events."
+        },
+        "meta": {
+            "ip": "192.0.2.101",
+            "user_agent": "Mozilla/5.0 (Android 14)"
+        },
+        "submitted_at": "2024-05-04T16:40:00+00:00",
+        "source": ""
+    }
+]
