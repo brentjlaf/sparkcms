@@ -4,6 +4,106 @@ $(function(){
 
     let currentField = null;
     let currentFormId = null;
+    let formsCache = [];
+
+    function formatStatValue(value){
+        if (value === null || typeof value === 'undefined') {
+            return '—';
+        }
+        if (typeof value === 'number' && Number.isNaN(value)) {
+            return '—';
+        }
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            return trimmed === '' ? '—' : trimmed;
+        }
+        return value;
+    }
+
+    function applyFormStats(stats){
+        if (Object.prototype.hasOwnProperty.call(stats, 'totalForms')) {
+            $('#formsStatForms').text(formatStatValue(stats.totalForms));
+        }
+        if (Object.prototype.hasOwnProperty.call(stats, 'activeForms')) {
+            $('#formsStatActive').text(formatStatValue(stats.activeForms));
+        }
+        if (Object.prototype.hasOwnProperty.call(stats, 'totalSubmissions')) {
+            $('#formsStatSubmissions').text(formatStatValue(stats.totalSubmissions));
+        }
+        if (Object.prototype.hasOwnProperty.call(stats, 'recentSubmissions')) {
+            $('#formsStatRecent').text(formatStatValue(stats.recentSubmissions));
+        }
+        if (Object.prototype.hasOwnProperty.call(stats, 'lastSubmission')) {
+            $('#formsLastSubmission').text(formatStatValue(stats.lastSubmission));
+        }
+    }
+
+    function bootstrapStatsFromDataset(){
+        const dashboard = $('.forms-dashboard');
+        if (!dashboard.length) {
+            return;
+        }
+        applyFormStats({
+            totalForms: Number(dashboard.data('total-forms')),
+            activeForms: Number(dashboard.data('active-forms')),
+            totalSubmissions: Number(dashboard.data('total-submissions')),
+            recentSubmissions: Number(dashboard.data('recent-submissions')),
+            lastSubmission: dashboard.data('last-submission')
+        });
+    }
+
+    function refreshSubmissionStats(){
+        $.getJSON('modules/forms/list_submissions.php', function(data){
+            const submissions = Array.isArray(data) ? data : [];
+            const activeFormIds = new Set();
+            const now = Date.now();
+            const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+            let latest = null;
+            let recent = 0;
+
+            submissions.forEach(function(entry){
+                if (entry && typeof entry === 'object') {
+                    if (entry.form_id) {
+                        activeFormIds.add(entry.form_id);
+                    }
+                    const raw = entry.submitted_at || entry.created_at || entry.timestamp;
+                    let timestamp = null;
+                    if (typeof raw === 'number') {
+                        timestamp = raw < 1e12 ? raw * 1000 : raw;
+                    } else if (typeof raw === 'string') {
+                        const parsed = Date.parse(raw);
+                        if (!Number.isNaN(parsed)) {
+                            timestamp = parsed;
+                        }
+                    }
+                    if (timestamp !== null) {
+                        if (!latest || timestamp > latest) {
+                            latest = timestamp;
+                        }
+                        if (now - timestamp <= THIRTY_DAYS) {
+                            recent++;
+                        }
+                    }
+                }
+            });
+
+            applyFormStats({
+                totalForms: formsCache.length,
+                activeForms: activeFormIds.size,
+                totalSubmissions: submissions.length,
+                recentSubmissions: recent,
+                lastSubmission: latest ? formatSubmissionDate(latest) : 'No submissions yet'
+            });
+        }).fail(function(){
+            applyFormStats({
+                totalForms: formsCache.length,
+                activeForms: '—',
+                totalSubmissions: '—',
+                recentSubmissions: '—',
+                lastSubmission: 'Unavailable'
+            });
+        });
+    }
 
     function resetSubmissionsCard(message){
         currentFormId = null;
@@ -143,16 +243,27 @@ $(function(){
     function loadForms(){
         $.getJSON('modules/forms/list_forms.php', function(data){
             const forms = Array.isArray(data) ? data : [];
+            formsCache = forms;
+            applyFormStats({ totalForms: forms.length });
             const tbody = $('#formsTable tbody').empty();
             forms.forEach(function(f){
                 tbody.append('<tr data-id="'+f.id+'">'+
                     '<td class="name">'+escapeHtml(f.name)+'</td>'+
                     '<td class="count">'+(f.fields?f.fields.length:0)+'</td>'+
-                    '<td><button class="btn btn-secondary viewSubmissions">Submissions</button> '+
-                    '<button class="btn btn-secondary editForm">Edit</button> '+
-                    '<button class="btn btn-danger deleteForm">Delete</button></td>'+
+                    '<td class="forms-actions">'+
+                        '<button type="button" class="a11y-btn a11y-btn--ghost forms-action-btn viewSubmissions">'+
+                            '<i class="fas fa-inbox" aria-hidden="true"></i><span>Submissions</span>'+
+                        '</button> '+
+                        '<button type="button" class="a11y-btn a11y-btn--secondary forms-action-btn editForm">'+
+                            '<i class="fas fa-pen" aria-hidden="true"></i><span>Edit</span>'+
+                        '</button> '+
+                        '<button type="button" class="a11y-btn a11y-btn--ghost forms-action-btn forms-action-delete deleteForm">'+
+                            '<i class="fas fa-trash" aria-hidden="true"></i><span>Delete</span>'+
+                        '</button>'+
+                    '</td>'+
                     '</tr>');
             });
+            refreshSubmissionStats();
             if(!forms.length){
                 resetSubmissionsCard('Create a form to start collecting submissions');
                 return;
@@ -306,6 +417,7 @@ $(function(){
         if(currentField) updatePreview(currentField);
     });
 
+    bootstrapStatsFromDataset();
     resetSubmissionsCard();
     loadForms();
 });
