@@ -58,10 +58,6 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
                         <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                         <span class="analytics-btn__text">Refresh data</span>
                     </button>
-                    <button type="button" class="analytics-btn analytics-btn--ghost" data-analytics-action="export">
-                        <i class="fa-solid fa-file-export" aria-hidden="true"></i>
-                        <span class="analytics-btn__text">Export CSV</span>
-                    </button>
                     <span class="analytics-hero-meta" id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
                         <?php echo $lastUpdatedDisplay
                             ? 'Data refreshed ' . htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES)
