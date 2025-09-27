@@ -1,40 +1,71 @@
 <!-- File: view.php -->
                 <div class="content-section" id="media">
-                    <div class="media-container">
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-header">
-                                    <div class="stat-icon media"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></div>
-                                    <div class="stat-content">
-                                        <div class="stat-label">Folders</div>
-                                        <div class="stat-number" id="totalFolders">0</div>
-                                    </div>
+                    <div class="media-dashboard">
+                        <header class="media-hero">
+                            <div class="media-hero-content">
+                                <div>
+                                    <h2 class="media-hero-title">Media Library</h2>
+                                    <p class="media-hero-subtitle">Keep your images, documents, and videos organised with a modern, visual workspace that mirrors the accessibility dashboard experience.</p>
+                                </div>
+                                <div class="media-hero-actions">
+                                    <button type="button" class="media-btn media-btn--ghost" id="createFolderBtn">
+                                        <i class="fa-solid fa-folder-plus" aria-hidden="true"></i>
+                                        <span>New Folder</span>
+                                    </button>
+                                    <button type="button" class="media-btn media-btn--primary is-disabled" id="uploadBtn" disabled aria-disabled="true">
+                                        <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                                        <span>Upload Media</span>
+                                    </button>
                                 </div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-header">
-                                    <div class="stat-icon media"><i class="fa-solid fa-images" aria-hidden="true"></i></div>
-                                    <div class="stat-content">
-                                        <div class="stat-label">Files</div>
-                                        <div class="stat-number" id="totalImages">0</div>
-                                    </div>
-                                </div>
+                            <div class="media-hero-meta">
+                                <span class="media-hero-chip">
+                                    <i class="fa-solid fa-photo-film" aria-hidden="true"></i>
+                                    <span>Rich asset management with previews, cropping, and tagging tools.</span>
+                                </span>
+                                <span class="media-hero-chip" id="mediaHeroFolderChip">
+                                    <i class="fa-solid fa-folder-tree" aria-hidden="true"></i>
+                                    <span id="mediaHeroFolderName">No folder selected</span>
+                                </span>
+                                <span class="media-hero-chip" id="mediaHeroFolderMeta">
+                                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                    <span id="mediaHeroFolderInfo">Select a folder to see file details</span>
+                                </span>
+                                <span class="media-hero-chip">
+                                    <i class="fa-solid fa-database" aria-hidden="true"></i>
+                                    <span id="mediaStorageSummary">0 used</span>
+                                </span>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-header">
-                                    <div class="stat-icon media"><i class="fa-solid fa-database" aria-hidden="true"></i></div>
-                                    <div class="stat-content">
-                                        <div class="stat-label">Storage Used</div>
-                                        <div class="stat-number" id="totalSize">0</div>
-                                    </div>
+                        </header>
+
+                        <div class="media-overview-grid">
+                            <article class="media-overview-card">
+                                <span class="media-overview-icon"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></span>
+                                <div class="media-overview-content">
+                                    <span class="media-overview-label">Folders</span>
+                                    <span class="media-overview-value" id="totalFolders">0</span>
                                 </div>
-                            </div>
+                            </article>
+                            <article class="media-overview-card">
+                                <span class="media-overview-icon"><i class="fa-solid fa-images" aria-hidden="true"></i></span>
+                                <div class="media-overview-content">
+                                    <span class="media-overview-label">Files</span>
+                                    <span class="media-overview-value" id="totalImages">0</span>
+                                </div>
+                            </article>
+                            <article class="media-overview-card">
+                                <span class="media-overview-icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span>
+                                <div class="media-overview-content">
+                                    <span class="media-overview-label">Storage Used</span>
+                                    <span class="media-overview-value" id="totalSize">0</span>
+                                </div>
+                            </article>
                         </div>
-                        <div class="main-layout">
+
+                        <div class="media-workspace">
                             <div class="media-sidebar">
                                 <div class="sidebar-header">
                                     <h2>Folders</h2>
-                                    <button class="btn btn-primary" id="createFolderBtn">+ New</button>
                                 </div>
                                 <div class="folder-list" id="folderList"></div>
                             </div>
@@ -45,15 +76,14 @@
                                         <div class="folder-stats" id="folderStats"></div>
                                     </div>
                                     <div class="gallery-actions">
-                                        <button class="btn btn-secondary" id="renameFolderBtn">Rename</button>
-                                        <button class="btn btn-danger" id="deleteFolderBtn">Delete</button>
-                                        <button class="btn btn-success" id="uploadBtn">Upload Images</button>
+                                        <button class="btn btn-secondary" id="renameFolderBtn"><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Rename</span></button>
+                                        <button class="btn btn-danger" id="deleteFolderBtn"><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete</span></button>
                                     </div>
                                 </div>
                                 <div class="gallery-content" id="galleryContent">
                                     <div class="form-row media-toolbar" id="mediaToolbar" style="display:none;">
                                         <div class="form-group">
-                                            <label class="form-label" for="sort-by">Sort By:</label>
+                                            <label class="form-label" for="sort-by">Sort By</label>
                                             <select id="sort-by" class="form-select w-auto">
                                                 <option value="custom">Custom (Manual)</option>
                                                 <option value="name">Name</option>
@@ -65,14 +95,14 @@
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="sort-order">Order:</label>
+                                            <label class="form-label" for="sort-order">Order</label>
                                             <select id="sort-order" class="form-select w-auto">
                                                 <option value="asc">Ascending</option>
                                                 <option value="desc">Descending</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="view-type">View:</label>
+                                            <label class="form-label" for="view-type">View</label>
                                             <select id="view-type" class="form-select w-auto">
                                                 <option value="extra-large">Extra Large</option>
                                                 <option value="large">Large</option>
@@ -82,7 +112,7 @@
                                             </select>
                                         </div>
                                         <div class="form-group">
-                                            <label class="form-label" for="items-per-page">Items/Page:</label>
+                                            <label class="form-label" for="items-per-page">Items / Page</label>
                                             <select id="items-per-page" class="form-select w-auto">
                                                 <option value="8">8</option>
                                                 <option value="12" selected>12</option>
@@ -91,13 +121,15 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="empty-state" id="selectFolderState">
+                                    <div class="media-empty-state" id="selectFolderState">
+                                        <i class="fa-solid fa-folder-tree" aria-hidden="true"></i>
                                         <h3>Select a folder to view images</h3>
-                                        <p>Choose a folder from the sidebar to manage its images</p>
+                                        <p>Choose a folder from the sidebar to manage its assets.</p>
                                     </div>
-                                    <div class="empty-state" id="emptyFolderState" style="display: none;">
-                                        <h3>No images in this folder</h3>
-                                        <p>Click "Upload Images" to add some photos</p>
+                                    <div class="media-empty-state" id="emptyFolderState" style="display: none;">
+                                        <i class="fa-solid fa-images" aria-hidden="true"></i>
+                                        <h3>No media in this folder</h3>
+                                        <p>Click "Upload Media" to add new files.</p>
                                     </div>
                                     <div class="image-grid" id="imageGrid" style="display: none;"></div>
                                     <div id="dropZone" class="upload-drop">Drop images here</div>

@@ -37,9 +37,13 @@ $(function(){
             $('#totalImages').text(media.length);
             const totalBytes = media.reduce((sum, m) => sum + (parseInt(m.size) || 0), 0);
             $('#totalSize').text(formatFileSize(totalBytes));
+            $('#mediaStorageSummary').text(formatFileSize(totalBytes) + ' used');
 
             if(currentFolder){
                 $('.folder-item[data-folder="'+currentFolder+'"]').addClass('active');
+            } else {
+                $('#mediaHeroFolderName').text('No folder selected');
+                $('#mediaHeroFolderInfo').text('Select a folder to see file details');
             }
         });
     }
@@ -52,6 +56,9 @@ $(function(){
         $('#galleryHeader').show();
         $('#renameFolderBtn').show();
         $('#deleteFolderBtn').show();
+        $('#mediaHeroFolderName').text(name);
+        $('#mediaHeroFolderInfo').text('Loading folder details…');
+        $('#uploadBtn').prop('disabled', false).removeClass('is-disabled').removeAttr('aria-disabled');
         loadImages();
     }
 
@@ -64,8 +71,10 @@ $(function(){
             currentImages = res.media || [];
             const totalBytes = currentImages.reduce((s,m)=>s+parseInt(m.size||0),0);
             const lastMod = currentImages.reduce((m,i)=>i.modified_at && i.modified_at>m?i.modified_at:m,0);
-            currentFolderMeta = currentImages.length+' files • '+formatFileSize(totalBytes)+' • Last edited '+(lastMod?new Date(lastMod*1000).toLocaleDateString():'');
+            const lastEdited = lastMod ? 'Last edited ' + new Date(lastMod*1000).toLocaleDateString() : 'No edits yet';
+            currentFolderMeta = currentImages.length+' files • '+formatFileSize(totalBytes)+' • '+lastEdited;
             $('#folderStats').text(currentFolderMeta);
+            $('#mediaHeroFolderInfo').text(currentFolderMeta);
             renderImages();
         });
     }
@@ -121,6 +130,9 @@ $(function(){
             $('#folderStats').text('');
             $('#renameFolderBtn').hide();
             $('#deleteFolderBtn').hide();
+            $('#mediaHeroFolderName').text('No folder selected');
+            $('#mediaHeroFolderInfo').text('Select a folder to see file details');
+            $('#uploadBtn').prop('disabled', true).addClass('is-disabled').attr('aria-disabled', 'true');
             return;
         }
         toolbar.show();
@@ -238,6 +250,7 @@ $(function(){
             if(res.status==='success'){
                 currentFolder = newName;
                 $('#selectedFolderName').text(newName);
+                $('#mediaHeroFolderName').text(newName);
                 loadImages();
                 loadFolders();
             }else{
