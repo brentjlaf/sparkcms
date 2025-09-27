@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/schedule_helpers.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
@@ -11,6 +12,10 @@ $settingsFile = __DIR__ . '/../../data/settings.json';
 $settings = read_json_file($settingsFile);
 $menusFile = __DIR__ . '/../../data/menus.json';
 $menus = read_json_file($menusFile);
+$scheduleFile = __DIR__ . '/../../data/speed_schedule.json';
+$scheduleRaw = read_json_file($scheduleFile);
+$scheduleData = speed_enrich_schedule($scheduleRaw);
+$cadenceOptions = speed_allowed_cadences();
 
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {
@@ -120,6 +125,34 @@ function grade_to_badge_class(string $grade): string {
         default:
             return 'grade-d';
     }
+}
+
+function speed_schedule_summary_text(array $schedule): string {
+    $status = $schedule['status'] ?? 'manual';
+    $cadenceLabel = $schedule['cadenceLabel'] ?? 'Manual';
+    $nextRun = $schedule['nextRunHuman'] ?? '';
+
+    if (($schedule['cadence'] ?? 'manual') === 'manual' || $status === 'manual') {
+        return 'Automatic scans are turned off. Use Run Speed Scan to check performance on demand.';
+    }
+
+    if ($status === 'paused') {
+        return $cadenceLabel . ' scans are paused. Reschedule the next run to resume automatic monitoring.';
+    }
+
+    if (!empty($schedule['hasNextRun']) && $nextRun !== '') {
+        return sprintf('Next %s scan queued for %s.', strtolower($cadenceLabel), $nextRun);
+    }
+
+    return sprintf('%s scans are enabled. The next run will be queued shortly.', $cadenceLabel);
+}
+
+function speed_schedule_meta_text(array $schedule): string {
+    if (!empty($schedule['hasNextRun']) && !empty($schedule['nextRunHuman'])) {
+        return 'Next scan: ' . $schedule['nextRunHuman'];
+    }
+
+    return 'Next scan: Not scheduled';
 }
 
 libxml_use_internal_errors(true);
@@ -410,6 +443,7 @@ $dashboardStats = [
     'detailBaseUrl' => $moduleUrl . '&page=',
     'lastScan' => $lastScan,
     'heaviestPage' => $heaviestPage,
+    'schedule' => $scheduleData,
 ];
 ?>
 <div class="content-section" id="performance">
@@ -546,10 +580,20 @@ $dashboardStats = [
                     <p class="a11y-hero-subtitle">Track asset weight, script usage, and rendering health across every published page.</p>
                 </div>
                 <div class="a11y-hero-actions">
-                    <button type="button" id="speedScanAllBtn" class="a11y-btn a11y-btn--primary" data-speed-action="scan-all">
-                        <i class="fas fa-gauge-high" aria-hidden="true"></i>
-                        <span>Run Speed Scan</span>
-                    </button>
+                    <div class="speed-scan-actions">
+                        <button type="button" id="speedScanAllBtn" class="a11y-btn a11y-btn--primary" data-speed-action="scan-all">
+                            <i class="fas fa-gauge-high" aria-hidden="true"></i>
+                            <span>Run Speed Scan</span>
+                        </button>
+                        <div class="speed-schedule-control">
+                            <label for="speedScheduleSelect" class="speed-schedule-control__label">Automatic scans</label>
+                            <select id="speedScheduleSelect" class="speed-schedule-control__select" aria-label="Choose automatic scan cadence">
+                                <?php foreach ($cadenceOptions as $value => $option): ?>
+                                    <option value="<?php echo htmlspecialchars($value, ENT_QUOTES); ?>"<?php echo $scheduleData['cadence'] === $value ? ' selected' : ''; ?>><?php echo htmlspecialchars($option['label'], ENT_QUOTES); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
                     <?php if (!empty($heaviestPage)): ?>
                     <button type="button" class="a11y-btn a11y-btn--ghost" data-speed-action="view-heaviest" data-speed-slug="<?php echo htmlspecialchars($heaviestPage['slug'] ?? '', ENT_QUOTES); ?>" title="Estimated weight: <?php echo isset($heaviestPage['weight']) ? htmlspecialchars(number_format((float)$heaviestPage['weight'], 1), ENT_QUOTES) . ' KB' : ''; ?>">
                         <i class="fas fa-weight-hanging" aria-hidden="true"></i>
@@ -560,10 +604,21 @@ $dashboardStats = [
                         <i class="fas fa-clock" aria-hidden="true"></i>
                         Last scan: <?php echo htmlspecialchars($dashboardStats['lastScan']); ?>
                     </span>
+                    <span class="a11y-hero-meta" id="speedNextScanMeta">
+                        <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                        <span id="speedNextScanCopy"><?php echo htmlspecialchars(speed_schedule_meta_text($scheduleData)); ?></span>
+                    </span>
                     <span class="a11y-hero-meta">
                         <i class="fas fa-bolt" aria-hidden="true"></i>
                         High-performing pages: <?php echo $dashboardStats['fastPages']; ?>
                     </span>
+                </div>
+                <div class="speed-schedule-summary" id="speedScheduleSummary">
+                    <span class="speed-schedule-summary__text" id="speedScheduleStatusText"><?php echo htmlspecialchars(speed_schedule_summary_text($scheduleData)); ?></span>
+                    <div class="speed-schedule-summary__actions">
+                        <button type="button" class="a11y-btn a11y-btn--ghost" id="speedRescheduleSchedule"<?php echo $scheduleData['cadence'] === 'manual' ? ' disabled' : ''; ?>>Reschedule next scan</button>
+                        <button type="button" class="a11y-btn a11y-btn--ghost" id="speedCancelSchedule"<?php echo !empty($scheduleData['hasNextRun']) ? '' : ' disabled'; ?>>Cancel upcoming scan</button>
+                    </div>
                 </div>
             </div>
             <div class="a11y-overview-grid">
@@ -667,4 +722,5 @@ $dashboardStats = [
 <script>
 window.speedDashboardData = <?php echo json_encode($report, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
 window.speedDashboardStats = <?php echo json_encode($dashboardStats, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
+window.speedSchedule = <?php echo json_encode($scheduleData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
 </script>

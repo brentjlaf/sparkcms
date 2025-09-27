@@ -276,11 +276,121 @@
         const $scanAllBtn = $('#speedScanAllBtn');
         const $downloadReportBtn = $('#speedDownloadReport');
         const $heroHeaviest = $('[data-speed-action="view-heaviest"]');
+        const $scheduleSelect = $('#speedScheduleSelect');
+        const $scheduleStatusText = $('#speedScheduleStatusText');
+        const $cancelScheduleBtn = $('#speedCancelSchedule');
+        const $rescheduleScheduleBtn = $('#speedRescheduleSchedule');
+        const $nextScanCopy = $('#speedNextScanCopy');
+
+        let schedule = (window.speedSchedule && typeof window.speedSchedule === 'object') ? window.speedSchedule : {};
+        let scheduleUpdating = false;
+
+        function scheduleHasAutoCadence() {
+            return schedule && typeof schedule === 'object' && schedule.cadence && schedule.cadence !== 'manual';
+        }
+
+        function formatScheduleNextRun() {
+            if (schedule && typeof schedule === 'object') {
+                if (schedule.nextRunHuman) {
+                    return schedule.nextRunHuman;
+                }
+                if (schedule.nextRun) {
+                    const date = new Date(schedule.nextRun);
+                    if (!Number.isNaN(date.getTime())) {
+                        return date.toLocaleString();
+                    }
+                }
+            }
+            return '';
+        }
+
+        function updateScheduleUI() {
+            const cadence = schedule && schedule.cadence ? schedule.cadence : 'manual';
+            const hasNextRun = Boolean(schedule && (schedule.hasNextRun || (schedule.nextRunHuman && schedule.nextRunHuman.length)));
+            const cadenceLabel = schedule && schedule.cadenceLabel ? schedule.cadenceLabel : 'Manual';
+            const status = schedule && schedule.status ? schedule.status : 'manual';
+
+            if ($scheduleSelect.length) {
+                $scheduleSelect.val(cadence);
+                $scheduleSelect.prop('disabled', scheduleUpdating);
+            }
+
+            if ($nextScanCopy.length) {
+                if (scheduleUpdating) {
+                    $nextScanCopy.text('Updating schedule...');
+                } else if (hasNextRun) {
+                    const humanReadable = schedule.nextRunHuman || formatScheduleNextRun();
+                    $nextScanCopy.text('Next scan: ' + humanReadable);
+                } else {
+                    $nextScanCopy.text('Next scan: Not scheduled');
+                }
+            }
+
+            if ($scheduleStatusText.length) {
+                if (scheduleUpdating) {
+                    $scheduleStatusText.text('Updating automatic scan schedule...');
+                } else if (cadence === 'manual' || status === 'manual') {
+                    $scheduleStatusText.text('Automatic scans are turned off. Use Run Speed Scan to check performance on demand.');
+                } else if (status === 'paused') {
+                    $scheduleStatusText.text(cadenceLabel + ' scans are paused. Reschedule the next run to resume automatic monitoring.');
+                } else if (hasNextRun) {
+                    const humanReadable = schedule.nextRunHuman || formatScheduleNextRun();
+                    $scheduleStatusText.text('Next ' + cadenceLabel.toLowerCase() + ' scan queued for ' + humanReadable + '.');
+                } else {
+                    $scheduleStatusText.text(cadenceLabel + ' scans are enabled. The next run will be queued shortly.');
+                }
+            }
+
+            if ($cancelScheduleBtn.length) {
+                const canCancel = !scheduleUpdating && scheduleHasAutoCadence() && hasNextRun;
+                $cancelScheduleBtn.prop('disabled', !canCancel);
+            }
+
+            if ($rescheduleScheduleBtn.length) {
+                const canReschedule = !scheduleUpdating && scheduleHasAutoCadence();
+                $rescheduleScheduleBtn.prop('disabled', !canReschedule);
+            }
+        }
+
+        function sendScheduleRequest(action, extraData, revertValue) {
+            scheduleUpdating = true;
+            updateScheduleUI();
+
+            const payload = $.extend({ action: action }, extraData || {});
+
+            return $.ajax({
+                url: 'modules/speed/manage_schedule.php',
+                method: 'POST',
+                dataType: 'json',
+                data: payload
+            }).done(function (response) {
+                if (response && response.success && response.schedule) {
+                    schedule = response.schedule;
+                    window.speedSchedule = schedule;
+                } else {
+                    if (typeof revertValue !== 'undefined' && $scheduleSelect.length) {
+                        $scheduleSelect.val(revertValue);
+                    }
+                    const errorMessage = response && response.error ? response.error : 'Unable to update schedule.';
+                    window.alert(errorMessage);
+                }
+            }).fail(function () {
+                if (typeof revertValue !== 'undefined' && $scheduleSelect.length) {
+                    $scheduleSelect.val(revertValue);
+                }
+                window.alert('Unable to update the scan schedule. Please try again.');
+            }).always(function () {
+                scheduleUpdating = false;
+                updateScheduleUI();
+            });
+        }
 
         let currentFilter = 'all';
         let currentView = 'grid';
         let filteredPages = data.slice();
         let activeSlug = null;
+
+        updateScheduleUI();
 
         function closeModal() {
             activeSlug = null;
@@ -355,6 +465,37 @@
         if ($grid.length) {
             updateFilterPills(data, $filterButtons);
             render();
+        }
+
+        if ($scheduleSelect.length) {
+            $scheduleSelect.on('change', function () {
+                const selectedCadence = $(this).val() || 'manual';
+                const currentCadence = schedule && schedule.cadence ? schedule.cadence : 'manual';
+                if (selectedCadence === currentCadence) {
+                    updateScheduleUI();
+                    return;
+                }
+                sendScheduleRequest('update', { cadence: selectedCadence }, currentCadence);
+            });
+        }
+
+        if ($cancelScheduleBtn.length) {
+            $cancelScheduleBtn.on('click', function () {
+                if (!scheduleHasAutoCadence() || !(schedule && (schedule.hasNextRun || schedule.nextRun))) {
+                    return;
+                }
+                sendScheduleRequest('cancel');
+            });
+        }
+
+        if ($rescheduleScheduleBtn.length) {
+            $rescheduleScheduleBtn.on('click', function () {
+                if (!scheduleHasAutoCadence()) {
+                    window.alert('Select an automatic cadence to schedule scans.');
+                    return;
+                }
+                sendScheduleRequest('reschedule');
+            });
         }
 
         $filterButtons.on('click', function () {

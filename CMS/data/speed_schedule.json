@@ -1,0 +1,9 @@
+{
+    "cadence": "manual",
+    "status": "manual",
+    "nextRun": null,
+    "queue": [],
+    "lastScheduledAt": null,
+    "updatedAt": null,
+    "cancelledAt": null
+}
