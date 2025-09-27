@@ -118,12 +118,24 @@ $(function(){
         return logs.map(function(item){
             const label = getActionLabel(item);
             const slug = item && item.action_slug ? String(item.action_slug) : slugifyAction(label);
+            const context = item && item.context ? String(item.context) : 'page';
+            const rawDetails = item && typeof item.details !== 'undefined' ? item.details : [];
+            let details = [];
+            if (Array.isArray(rawDetails)) {
+                details = rawDetails.map(function(detail){
+                    return String(detail);
+                });
+            } else if (rawDetails !== null && rawDetails !== '' && typeof rawDetails !== 'undefined') {
+                details = [String(rawDetails)];
+            }
             return {
                 time: parseInt(item.time, 10) || 0,
                 user: item && item.user ? String(item.user) : '',
-                page_title: item && item.page_title ? String(item.page_title) : 'Unknown',
+                page_title: item && item.page_title ? String(item.page_title) : (context === 'system' ? 'System activity' : 'Unknown'),
                 action: label,
-                action_slug: slug
+                action_slug: slug,
+                context: context,
+                details: details
             };
         }).sort(function(a, b){
             return b.time - a.time;
@@ -171,7 +183,7 @@ $(function(){
         });
     }
 
-    function buildCard(log) {
+    function buildRow(log) {
         const label = getActionLabel(log);
         const slug = log.action_slug || slugifyAction(label);
         const timestamp = log.time || 0;
@@ -184,25 +196,29 @@ $(function(){
         const details = Array.isArray(log.details) ? log.details : (log.details ? [log.details] : []);
         const detailsHtml = details.length ? '<ul class="logs-activity-details">' + details.map(function(detail){
             return '<li>' + escapeHtml(detail) + '</li>';
-        }).join('') + '</ul>' : '';
+        }).join('') + '</ul>' : '<span class="logs-activity-details-empty">—</span>';
         const searchText = (user + ' ' + pageTitle + ' ' + label + ' ' + details.join(' ')).toLowerCase();
 
         return (
-            '<article class="logs-activity-card" data-search="' + escapeHtml(searchText) + '" data-action="' + escapeHtml(slug) + '">' +
-                '<header class="logs-activity-card__header">' +
+            '<tr class="logs-activity-row" data-search="' + escapeHtml(searchText) + '" data-action="' + escapeHtml(slug) + '">' +
+                '<td class="logs-activity-cell logs-activity-cell--action" data-label="Action">' +
                     '<span class="logs-activity-badge">' + escapeHtml(label) + '</span>' +
+                '</td>' +
+                '<td class="logs-activity-cell logs-activity-cell--page" data-label="Page">' +
+                    '<span class="logs-activity-page">' + escapeHtml(pageTitle) + '</span>' +
+                '</td>' +
+                '<td class="logs-activity-cell logs-activity-cell--user" data-label="Editor">' +
+                    '<span class="logs-activity-user">' + escapeHtml(user) + '</span>' +
+                '</td>' +
+                '<td class="logs-activity-cell logs-activity-cell--details" data-label="Details">' +
+                    detailsHtml +
+                '</td>' +
+                '<td class="logs-activity-cell logs-activity-cell--time" data-label="When">' +
                     '<time datetime="' + exact + '" class="logs-activity-time" title="' + escapeHtml(absolute) + '">' +
                         escapeHtml(relative) +
                     '</time>' +
-                '</header>' +
-                '<h4 class="logs-activity-page">' + escapeHtml(pageTitle) + '</h4>' +
-                '<p class="logs-activity-description">' +
-                    '<span class="logs-activity-user">' + escapeHtml(user) + '</span>' +
-                    '<span class="logs-activity-divider" aria-hidden="true">•</span>' +
-                    '<span class="logs-activity-action">' + escapeHtml(label) + '</span>' +
-                '</p>' +
-                detailsHtml +
-            '</article>'
+                '</td>' +
+            '</tr>'
         );
     }
 
@@ -211,8 +227,22 @@ $(function(){
             timeline.html('<div class="logs-empty"><i class="fas fa-clipboard-list" aria-hidden="true"></i><p>No activity recorded yet.</p><p class="logs-empty-hint">Updates will appear here as your team edits content.</p></div>');
             return;
         }
-        const html = logs.map(buildCard).join('');
-        timeline.html(html);
+        const rows = logs.map(buildRow).join('');
+        const table = '<div class="logs-activity-table-scroll">' +
+            '<table class="logs-activity-table">' +
+                '<thead>' +
+                    '<tr>' +
+                        '<th scope="col">Action</th>' +
+                        '<th scope="col">Page</th>' +
+                        '<th scope="col">Editor</th>' +
+                        '<th scope="col">Details</th>' +
+                        '<th scope="col">When</th>' +
+                    '</tr>' +
+                '</thead>' +
+                '<tbody>' + rows + '</tbody>' +
+            '</table>' +
+        '</div>';
+        timeline.html(table);
     }
 
     function updateMatchCount(count) {
@@ -299,7 +329,8 @@ $(function(){
             if (!query) {
                 return true;
             }
-            const haystack = (log.user + ' ' + log.page_title + ' ' + getActionLabel(log)).toLowerCase();
+            const detailText = Array.isArray(log.details) ? log.details.join(' ') : '';
+            const haystack = (log.user + ' ' + log.page_title + ' ' + getActionLabel(log) + ' ' + detailText).toLowerCase();
             return haystack.indexOf(query) !== -1;
         });
 
