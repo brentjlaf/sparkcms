@@ -6,41 +6,41 @@ date_default_timezone_set('America/Los_Angeles');
 ?>
 <div class="content-section" id="calendar">
     <div class="calendar-dashboard" data-timezone="America/Los_Angeles">
-        <header class="calendar-hero">
-            <div class="calendar-hero__content">
+        <header class="a11y-hero calendar-hero">
+            <div class="a11y-hero-content">
                 <div>
-                    <h2 class="calendar-hero__title">Events &amp; Campaign Calendar</h2>
-                    <p class="calendar-hero__subtitle">Plan launches, keep teams aligned, and give stakeholders a single source of truth for every upcoming milestone.</p>
+                    <h2 class="a11y-hero-title calendar-hero__title">Events &amp; Campaign Calendar</h2>
+                    <p class="a11y-hero-subtitle calendar-hero__subtitle">Plan launches, keep teams aligned, and give stakeholders a single source of truth for every upcoming milestone.</p>
                 </div>
-                <div class="calendar-hero__actions">
-                    <button type="button" class="calendar-btn calendar-btn--ghost" id="calendarManageCategoriesBtn">
+                <div class="a11y-hero-actions">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" id="calendarManageCategoriesBtn">
                         <i class="fa-solid fa-palette" aria-hidden="true"></i>
                         <span>Manage categories</span>
                     </button>
-                    <button type="button" class="calendar-btn calendar-btn--primary" id="calendarNewEventBtn">
+                    <button type="button" class="a11y-btn a11y-btn--primary" id="calendarNewEventBtn">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <span>New event</span>
                     </button>
                 </div>
             </div>
-            <dl class="calendar-hero__metrics">
-                <div>
-                    <dt>Events this month</dt>
-                    <dd id="calendarMetricMonth">0</dd>
+            <div class="a11y-overview-grid calendar-hero__metrics">
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-label">Events this month</div>
+                    <div class="a11y-overview-value" id="calendarMetricMonth">0</div>
                 </div>
-                <div>
-                    <dt>Scheduled campaigns</dt>
-                    <dd id="calendarMetricCampaigns">0</dd>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-label">Scheduled campaigns</div>
+                    <div class="a11y-overview-value" id="calendarMetricCampaigns">0</div>
                 </div>
-                <div>
-                    <dt>Categories</dt>
-                    <dd id="calendarMetricCategories">0</dd>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-label">Categories</div>
+                    <div class="a11y-overview-value" id="calendarMetricCategories">0</div>
                 </div>
-                <div>
-                    <dt>Last updated</dt>
-                    <dd id="calendarMetricUpdated">Just now</dd>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-label">Last updated</div>
+                    <div class="a11y-overview-value" id="calendarMetricUpdated">Just now</div>
                 </div>
-            </dl>
+            </div>
         </header>
 
         <section class="calendar-controls" aria-label="Calendar controls">

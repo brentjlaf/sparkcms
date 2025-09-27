@@ -47,18 +47,18 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
 ?>
 <div class="content-section" id="analytics">
     <div class="analytics-dashboard">
-        <header class="analytics-hero">
-            <div class="analytics-hero-content">
+        <header class="a11y-hero analytics-hero">
+            <div class="a11y-hero-content">
                 <div class="analytics-hero-text">
-                    <h2 class="analytics-hero-title">Analytics Dashboard</h2>
-                    <p class="analytics-hero-subtitle">Monitor traffic trends, understand what resonates, and uncover pages that need promotion.</p>
+                    <h2 class="a11y-hero-title">Analytics Dashboard</h2>
+                    <p class="a11y-hero-subtitle">Monitor traffic trends, understand what resonates, and uncover pages that need promotion.</p>
                 </div>
-                <div class="analytics-hero-actions">
-                    <button type="button" class="analytics-btn analytics-btn--primary" data-analytics-action="refresh" data-loading-text="Refreshing&hellip;">
+                <div class="a11y-hero-actions">
+                    <button type="button" class="a11y-btn a11y-btn--primary" data-analytics-action="refresh" data-loading-text="Refreshing&hellip;">
                         <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                         <span class="analytics-btn__text">Refresh data</span>
                     </button>
-                    <span class="analytics-hero-meta" id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
+                    <span class="a11y-hero-meta analytics-hero-meta" id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
                         <?php echo $lastUpdatedDisplay
                             ? 'Data refreshed ' . htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES)
                             : 'Data refreshed moments ago'; ?>

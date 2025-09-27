@@ -2096,6 +2096,57 @@
             opacity: 0.8;
         }
 
+        .analytics-hero,
+        .blog-hero,
+        .calendar-hero,
+        .logs-hero,
+        .media-hero,
+        .menu-hero,
+        .pages-hero {
+            background: linear-gradient(135deg, #5b21b6, #2563eb);
+            color: #fff;
+            box-shadow: 0 20px 48px rgba(37, 99, 235, 0.35);
+        }
+
+        .analytics-hero::before,
+        .blog-hero::before,
+        .calendar-hero::before,
+        .logs-hero::before,
+        .media-hero::before,
+        .menu-hero::before,
+        .pages-hero::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 240px;
+            height: 240px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 50%;
+            filter: blur(0.5px);
+        }
+
+        .logs-hero::before,
+        .media-hero::before {
+            left: auto;
+            bottom: auto;
+        }
+
+        .blog-hero-meta,
+        .menu-hero-meta,
+        .pages-hero-meta,
+        .logs-hero-meta {
+            margin-top: 0;
+        }
+
+        .logs-hero-meta {
+            gap: 8px;
+        }
+
+        .media-hero-meta {
+            margin-top: 24px;
+        }
+
         .a11y-controls {
             display: flex;
             flex-wrap: wrap;
@@ -7264,12 +7315,7 @@
 }
 
 #calendar .calendar-hero {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-    color: #fff;
-    padding: 32px;
-    border-radius: 24px;
     margin-bottom: 32px;
-    box-shadow: 0 24px 40px -24px rgba(37, 99, 235, 0.6);
 }
 
 #calendar .calendar-hero__content {
@@ -7299,21 +7345,16 @@
 }
 
 #calendar .calendar-hero__metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
     margin-top: 28px;
 }
 
-#calendar .calendar-hero__metrics dt {
+#calendar .calendar-hero__metrics .a11y-overview-label {
     font-size: 13px;
-    text-transform: uppercase;
     opacity: 0.75;
 }
 
-#calendar .calendar-hero__metrics dd {
+#calendar .calendar-hero__metrics .a11y-overview-value {
     font-size: 24px;
-    font-weight: 600;
 }
 
 .calendar-btn {
@@ -7821,7 +7862,7 @@
             --module-radius-lg: 24px;
             --module-radius-md: 18px;
             --module-radius-sm: 12px;
-            --module-hero-gradient: linear-gradient(135deg, #312e81 0%, #6366f1 100%);
+            --module-hero-gradient: linear-gradient(135deg, #5b21b6 0%, #2563eb 100%);
             --module-hero-overlay: rgba(255, 255, 255, 0.12);
             --module-surface: #ffffff;
             --module-border: rgba(148, 163, 184, 0.28);
@@ -7870,36 +7911,16 @@
             .blog-hero,
             .logs-hero,
             .a11y-hero,
-            .dashboard-hero)::before,
-        :is(.analytics-hero,
-            .calendar-hero,
-            .menu-hero,
-            .media-hero,
-            .pages-hero,
-            .blog-hero,
-            .logs-hero,
-            .a11y-hero,
-            .dashboard-hero)::after {
+            .dashboard-hero)::before {
             content: '';
             position: absolute;
             border-radius: 50%;
             background: var(--module-hero-overlay);
-            filter: blur(1px);
-        }
-
-        :is(.analytics-hero,
-            .calendar-hero,
-            .menu-hero,
-            .media-hero,
-            .pages-hero,
-            .blog-hero,
-            .logs-hero,
-            .a11y-hero,
-            .dashboard-hero)::before {
+            filter: blur(0.5px);
             width: 240px;
             height: 240px;
-            top: -70px;
-            right: -60px;
+            top: -80px;
+            right: -80px;
         }
 
         :is(.analytics-hero,
@@ -7911,10 +7932,7 @@
             .logs-hero,
             .a11y-hero,
             .dashboard-hero)::after {
-            width: 180px;
-            height: 180px;
-            bottom: -80px;
-            left: -50px;
+            content: none;
         }
 
         :is(.analytics-hero-content,

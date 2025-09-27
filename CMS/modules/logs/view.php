@@ -162,59 +162,61 @@ if ($uniqueUsersCount === 1) {
 ?>
 <div class="content-section" id="logs">
     <div class="logs-dashboard" data-logs="<?php echo $logsJson; ?>" data-endpoint="modules/logs/list_logs.php">
-        <header class="logs-hero">
-            <div class="logs-hero-copy">
-                <h2 class="logs-hero-title">Activity Logs</h2>
-                <p class="logs-hero-subtitle">Monitor publishing events, workflow actions, and page edits from a single, friendly timeline.</p>
-                <div class="logs-hero-meta">
-                    <div>
+        <header class="a11y-hero logs-hero">
+            <div class="a11y-hero-content">
+                <div>
+                    <h2 class="a11y-hero-title">Activity Logs</h2>
+                    <p class="a11y-hero-subtitle">Monitor publishing events, workflow actions, and page edits from a single, friendly timeline.</p>
+                </div>
+                <div class="a11y-hero-actions">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" id="logsRefreshBtn">
+                        <i class="fas fa-rotate" aria-hidden="true"></i>
+                        <span>Refresh</span>
+                    </button>
+                    <span class="a11y-hero-meta logs-hero-meta">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
                         <span class="logs-hero-meta__label">Last activity</span>
                         <span class="logs-hero-meta__value" id="logsLastActivity" title="<?php echo htmlspecialchars($lastActivityExact, ENT_QUOTES, 'UTF-8'); ?>">
                             <?php echo htmlspecialchars($lastActivityLabel, ENT_QUOTES, 'UTF-8'); ?>
                         </span>
-                    </div>
-                    <div>
+                    </span>
+                    <span class="a11y-hero-meta logs-hero-meta">
+                        <i class="fas fa-chart-line" aria-hidden="true"></i>
                         <span class="logs-hero-meta__label">Past 24 hours</span>
                         <span class="logs-hero-meta__value" id="logsPast24h"><?php echo $last24Hours; ?></span>
-                    </div>
+                    </span>
                 </div>
-            </div>
-            <div class="logs-hero-actions">
-                <button type="button" class="logs-btn logs-btn--ghost" id="logsRefreshBtn">
-                    <i class="fas fa-rotate" aria-hidden="true"></i>
-                    <span>Refresh</span>
-                </button>
             </div>
         </header>
 
         <section class="logs-stats" aria-label="Activity summary">
-            <div class="logs-stats-grid">
-                <article class="logs-stat-card">
-                    <span class="logs-stat-label">Total events</span>
-                    <span class="logs-stat-value" id="logsTotalCount"><?php echo $totalLogs; ?></span>
-                    <span class="logs-stat-hint"><span id="logsLast7Days"><?php echo $last7Days; ?></span> in the last 7 days</span>
-                </article>
-                <article class="logs-stat-card">
-                    <span class="logs-stat-label">Active editors</span>
-                    <span class="logs-stat-value" id="logsUserCount"><?php echo $uniqueUsersCount; ?></span>
-                    <span class="logs-stat-hint"><?php echo htmlspecialchars($editorsHint, ENT_QUOTES, 'UTF-8'); ?></span>
-                </article>
-                <article class="logs-stat-card">
-                    <span class="logs-stat-label">Pages updated</span>
-                    <span class="logs-stat-value" id="logsPageCount"><?php echo $uniquePagesCount; ?></span>
-                    <span class="logs-stat-hint">
+            <div class="a11y-overview-grid logs-stats-grid">
+                <div class="a11y-overview-card logs-stat-card">
+                    <div class="a11y-overview-value" id="logsTotalCount"><?php echo $totalLogs; ?></div>
+                    <div class="a11y-overview-label">Total events</div>
+                    <p class="logs-stat-hint"><span id="logsLast7Days"><?php echo $last7Days; ?></span> in the last 7 days</p>
+                </div>
+                <div class="a11y-overview-card logs-stat-card">
+                    <div class="a11y-overview-value" id="logsUserCount"><?php echo $uniqueUsersCount; ?></div>
+                    <div class="a11y-overview-label">Active editors</div>
+                    <p class="logs-stat-hint"><?php echo htmlspecialchars($editorsHint, ENT_QUOTES, 'UTF-8'); ?></p>
+                </div>
+                <div class="a11y-overview-card logs-stat-card">
+                    <div class="a11y-overview-value" id="logsPageCount"><?php echo $uniquePagesCount; ?></div>
+                    <div class="a11y-overview-label">Pages updated</div>
+                    <p class="logs-stat-hint">
                         <?php if ($uniquePagesCount > 0): ?>
                             Most recent: <?php echo $recentPageTitle; ?>
                         <?php else: ?>
                             Waiting for the first edit
                         <?php endif; ?>
-                    </span>
-                </article>
-                <article class="logs-stat-card">
-                    <span class="logs-stat-label">Most common action</span>
-                    <span class="logs-stat-value" id="logsTopActionLabel"><?php echo $topActionLabel; ?></span>
-                    <span class="logs-stat-hint" id="logsTopActionCount"><?php echo htmlspecialchars($topActionCountText, ENT_QUOTES, 'UTF-8'); ?></span>
-                </article>
+                    </p>
+                </div>
+                <div class="a11y-overview-card logs-stat-card">
+                    <div class="a11y-overview-value" id="logsTopActionLabel"><?php echo $topActionLabel; ?></div>
+                    <div class="a11y-overview-label">Most common action</div>
+                    <p class="logs-stat-hint" id="logsTopActionCount"><?php echo htmlspecialchars($topActionCountText, ENT_QUOTES, 'UTF-8'); ?></p>
+                </div>
             </div>
         </section>
 

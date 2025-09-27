@@ -1,37 +1,37 @@
 <!-- File: view.php -->
                 <div class="content-section" id="media">
                     <div class="media-dashboard">
-                        <header class="media-hero">
-                            <div class="media-hero-content">
+                        <header class="a11y-hero media-hero">
+                            <div class="a11y-hero-content">
                                 <div>
-                                    <h2 class="media-hero-title">Media Library</h2>
-                                    <p class="media-hero-subtitle">Keep your images, documents, and videos organised with a modern, visual workspace that mirrors the accessibility dashboard experience.</p>
+                                    <h2 class="a11y-hero-title">Media Library</h2>
+                                    <p class="a11y-hero-subtitle">Keep your images, documents, and videos organised with a modern, visual workspace that mirrors the accessibility dashboard experience.</p>
                                 </div>
-                                <div class="media-hero-actions">
-                                    <button type="button" class="media-btn media-btn--ghost" id="createFolderBtn">
+                                <div class="a11y-hero-actions">
+                                    <button type="button" class="a11y-btn a11y-btn--ghost" id="createFolderBtn">
                                         <i class="fa-solid fa-folder-plus" aria-hidden="true"></i>
                                         <span>New Folder</span>
                                     </button>
-                                    <button type="button" class="media-btn media-btn--primary is-disabled" id="uploadBtn" disabled aria-disabled="true">
+                                    <button type="button" class="a11y-btn a11y-btn--primary is-disabled" id="uploadBtn" disabled aria-disabled="true">
                                         <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
                                         <span>Upload Media</span>
                                     </button>
                                 </div>
                             </div>
                             <div class="media-hero-meta">
-                                <span class="media-hero-chip">
+                                <span class="a11y-hero-meta media-hero-chip">
                                     <i class="fa-solid fa-photo-film" aria-hidden="true"></i>
                                     <span>Rich asset management with previews, cropping, and tagging tools.</span>
                                 </span>
-                                <span class="media-hero-chip" id="mediaHeroFolderChip">
+                                <span class="a11y-hero-meta media-hero-chip" id="mediaHeroFolderChip">
                                     <i class="fa-solid fa-folder-tree" aria-hidden="true"></i>
                                     <span id="mediaHeroFolderName">No folder selected</span>
                                 </span>
-                                <span class="media-hero-chip" id="mediaHeroFolderMeta">
+                                <span class="a11y-hero-meta media-hero-chip" id="mediaHeroFolderMeta">
                                     <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                                     <span id="mediaHeroFolderInfo">Select a folder to see file details</span>
                                 </span>
-                                <span class="media-hero-chip">
+                                <span class="a11y-hero-meta media-hero-chip">
                                     <i class="fa-solid fa-database" aria-hidden="true"></i>
                                     <span id="mediaStorageSummary">0 used</span>
                                 </span>
