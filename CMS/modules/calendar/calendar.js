@@ -100,6 +100,7 @@
                 state.categories = response.categories || [];
                 state.rawEvents = response.events || [];
                 populateCategoryOptions();
+                ensureCategorySelections();
                 renderCategorySidebar();
                 updateMetrics();
             })
@@ -445,8 +446,79 @@
     function openCategoryModal() {
         $('#calendarCategoryForm')[0].reset();
         $('#calendarCategoryId').val('');
+        $('#calendarCategoryColor').val('#2563eb');
         renderCategoryManager();
         openModal($('#calendarCategoryModal'));
+        $('#calendarCategoryName').trigger('focus');
+    }
+
+    function startCategoryEdit(category) {
+        if (!category) {
+            return;
+        }
+        $('#calendarCategoryId').val(category.id);
+        $('#calendarCategoryName').val(category.name);
+        $('#calendarCategoryColor').val(category.color || '#2563eb');
+        $('#calendarCategoryName').trigger('focus');
+    }
+
+    function resetCategorySelections(categoryId) {
+        const selectFilter = $('#calendarCategoryFilter');
+        if (state.filters.category && state.filters.category === categoryId) {
+            state.filters.category = '';
+            selectFilter.val('');
+        }
+
+        const eventCategorySelect = $('#calendarEventCategory');
+        if (eventCategorySelect.val() === categoryId) {
+            eventCategorySelect.val('');
+        }
+    }
+
+    function ensureCategorySelections() {
+        if (!state.categories.length) {
+            resetCategorySelections(state.filters.category || '');
+            return;
+        }
+
+        const validIds = state.categories.map(function (category) { return category.id; });
+        if (state.filters.category && validIds.indexOf(state.filters.category) === -1) {
+            state.filters.category = '';
+            $('#calendarCategoryFilter').val('');
+        }
+
+        const eventCategorySelect = $('#calendarEventCategory');
+        const selectedCategory = eventCategorySelect.val();
+        if (selectedCategory && validIds.indexOf(selectedCategory) === -1) {
+            eventCategorySelect.val('');
+        }
+    }
+
+    function handleCategoryDelete(category) {
+        if (!category || !category.id) {
+            return;
+        }
+        if (!confirm('Delete this category? Events will keep their color but lose this label.')) {
+            return;
+        }
+        $.ajax({
+            url: endpoints.manage,
+            method: 'POST',
+            data: { action: 'delete_category', id: category.id },
+            dataType: 'json'
+        }).done(function (response) {
+            if (response.status !== 'success') {
+                alert(response.message || 'Unable to delete category');
+                return;
+            }
+            resetCategorySelections(category.id);
+            fetchData().then(function () {
+                renderCategoryManager();
+                refreshMonth();
+            });
+        }).fail(function () {
+            alert('Unable to delete category.');
+        });
     }
 
     function renderCategoryManager() {
@@ -461,35 +533,22 @@
             $('<span>', { class: 'calendar-category__marker' }).css('background-color', category.color || '#2563eb').appendTo(item);
             $('<span>', { class: 'calendar-category-manager__name', text: category.name }).appendTo(item);
             const actions = $('<div>', { class: 'calendar-category-manager__actions' });
-            $('<button>', { type: 'button', text: 'Edit', class: 'calendar-btn calendar-btn--ghost' })
-                .on('click', function () {
-                    $('#calendarCategoryId').val(category.id);
-                    $('#calendarCategoryName').val(category.name);
-                    $('#calendarCategoryColor').val(category.color || '#2563eb');
-                }).appendTo(actions);
-            $('<button>', { type: 'button', text: 'Delete', class: 'calendar-btn calendar-btn--ghost' })
-                .on('click', function () {
-                    if (!confirm('Delete this category? Events will keep their color but lose this label.')) {
-                        return;
-                    }
-                    $.ajax({
-                        url: endpoints.manage,
-                        method: 'POST',
-                        data: { action: 'delete_category', id: category.id },
-                        dataType: 'json'
-                    }).done(function (response) {
-                        if (response.status !== 'success') {
-                            alert(response.message || 'Unable to delete category');
-                            return;
-                        }
-                        fetchData().then(function () {
-                            renderCategoryManager();
-                            refreshMonth();
-                        });
-                    }).fail(function () {
-                        alert('Unable to delete category.');
-                    });
-                }).appendTo(actions);
+            $('<button>', {
+                type: 'button',
+                text: 'Edit',
+                class: 'calendar-btn calendar-btn--ghost',
+                'aria-label': 'Edit ' + category.name
+            }).on('click', function () {
+                startCategoryEdit(category);
+            }).appendTo(actions);
+            $('<button>', {
+                type: 'button',
+                text: 'Delete',
+                class: 'calendar-btn calendar-btn--ghost',
+                'aria-label': 'Delete ' + category.name
+            }).on('click', function () {
+                handleCategoryDelete(category);
+            }).appendTo(actions);
             item.append(actions);
             list.append(item);
         });
@@ -510,6 +569,7 @@
             }
             $('#calendarCategoryId').val('');
             $('#calendarCategoryName').val('');
+            $('#calendarCategoryColor').val('#2563eb');
             fetchData().then(function () {
                 renderCategoryManager();
                 refreshMonth();
