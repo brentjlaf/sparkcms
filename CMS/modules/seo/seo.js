@@ -7,10 +7,13 @@ $(function () {
     const $searchInput = $('#seoSearchInput');
     const $filterButtons = $dashboard.find('.seo-filter-btn');
     const $viewButtons = $dashboard.find('.seo-view-btn');
+    const $sortSelect = $('#seoSortSelect');
+    const $sortStatus = $('#seoSortStatus');
     const $grid = $('#seoGrid');
-    const $cards = $grid.find('.seo-card');
+    let $cards = $grid.find('.seo-card');
     const $tableWrapper = $('#seoTableWrapper');
-    const $tableRows = $tableWrapper.find('tbody tr');
+    const $tableBody = $tableWrapper.find('tbody');
+    let $tableRows = $tableBody.find('tr');
     const $detailOverlay = $('#seoDetail');
     const $detailClose = $detailOverlay.find('.seo-detail-close');
 
@@ -33,8 +36,132 @@ $(function () {
         internalLinkStatus: $detailOverlay.find('[data-detail="internal-link-status"]'),
     };
 
+    const sortDefinitions = {
+        'score-desc': {
+            label: 'Highest score',
+            compare: (a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                if (b.updated !== a.updated) {
+                    return b.updated - a.updated;
+                }
+                return a.title.localeCompare(b.title);
+            },
+        },
+        'score-asc': {
+            label: 'Lowest score',
+            compare: (a, b) => {
+                if (a.score !== b.score) {
+                    return a.score - b.score;
+                }
+                if (a.updated !== b.updated) {
+                    return a.updated - b.updated;
+                }
+                return a.title.localeCompare(b.title);
+            },
+        },
+        'updated-desc': {
+            label: 'Most recently updated',
+            compare: (a, b) => {
+                if (b.updated !== a.updated) {
+                    return b.updated - a.updated;
+                }
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                return a.title.localeCompare(b.title);
+            },
+        },
+        'title-asc': {
+            label: 'Title (A → Z)',
+            compare: (a, b) => {
+                const result = a.title.localeCompare(b.title);
+                if (result !== 0) {
+                    return result;
+                }
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                return b.updated - a.updated;
+            },
+        },
+    };
+
     let activeFilter = 'all';
+    let activeSort = $sortSelect.length ? $sortSelect.val() : 'score-desc';
     let searchQuery = '';
+
+    if (!sortDefinitions[activeSort]) {
+        activeSort = 'score-desc';
+        if ($sortSelect.length) {
+            $sortSelect.val(activeSort);
+        }
+    }
+
+    function getTableBody() {
+        return $tableBody.length ? $tableBody : $tableWrapper.find('tbody');
+    }
+
+    function refreshCollections() {
+        $cards = $grid.find('.seo-card');
+        const $body = getTableBody();
+        $tableRows = $body.find('tr');
+    }
+
+    function getSortData(element) {
+        const $el = $(element);
+        const rawScore = Number($el.data('score'));
+        const rawUpdated = Number($el.data('updated'));
+        const rawTitle = ($el.data('title') || '').toString().toLowerCase();
+
+        return {
+            score: Number.isNaN(rawScore) ? 0 : rawScore,
+            updated: Number.isNaN(rawUpdated) ? 0 : rawUpdated,
+            title: rawTitle,
+        };
+    }
+
+    function updateSortStatus(label) {
+        if (!$sortStatus.length) {
+            return;
+        }
+        $sortStatus.text(`Sorted by ${label}`);
+    }
+
+    function sortItems(criteria) {
+        const sortKey = sortDefinitions[criteria] ? criteria : 'score-desc';
+        const definition = sortDefinitions[sortKey];
+        activeSort = sortKey;
+
+        if ($sortSelect.length && $sortSelect.val() !== sortKey) {
+            $sortSelect.val(sortKey);
+        }
+
+        refreshCollections();
+
+        const compare = definition.compare;
+        const cardElements = $cards.get();
+        cardElements.sort((a, b) => compare(getSortData(a), getSortData(b)));
+        cardElements.forEach((card) => {
+            if ($grid.length) {
+                $grid.append(card);
+            }
+        });
+
+        const $body = getTableBody();
+        const rowElements = $tableRows.get();
+        rowElements.sort((a, b) => compare(getSortData(a), getSortData(b)));
+        rowElements.forEach((row) => {
+            if ($body.length) {
+                $body.append(row);
+            }
+        });
+
+        refreshCollections();
+        updateSortStatus(definition.label);
+        applyFilters();
+    }
 
     function parsePageData(el) {
         const raw = el.getAttribute('data-page');
@@ -66,6 +193,7 @@ $(function () {
     }
 
     function applyFilters() {
+        refreshCollections();
         const items = [].concat($cards.get(), $tableRows.get());
         items.forEach((el) => {
             const $el = $(el);
@@ -87,6 +215,10 @@ $(function () {
         $filterButtons.removeClass('active');
         $button.addClass('active');
         applyFilters();
+    });
+
+    $sortSelect.on('change', function () {
+        sortItems($(this).val());
     });
 
     $viewButtons.on('click', function () {
@@ -245,5 +377,5 @@ $(function () {
         }
     });
 
-    applyFilters();
+    sortItems(activeSort);
 });

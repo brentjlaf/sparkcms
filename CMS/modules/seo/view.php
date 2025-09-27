@@ -1251,6 +1251,37 @@ if ($detailSlug !== null && $detailSlug !== '') {
             transform: translateY(-50%);
             color: #64748b;
         }
+        .seo-dashboard .seo-sort {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1 1 220px;
+        }
+        .seo-dashboard .seo-sort label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+            white-space: nowrap;
+        }
+        .seo-dashboard .seo-sort select {
+            flex: 1 1 auto;
+            border-radius: 12px;
+            border: 1px solid #dbeafe;
+            padding: 10px 14px;
+            font-size: 13px;
+            background: #f8fafc;
+            color: #1f2937;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .seo-dashboard .seo-sort select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .seo-dashboard .seo-sort-status {
+            font-size: 12px;
+            color: #475569;
+        }
         .seo-dashboard .seo-filters {
             display: flex;
             flex-wrap: wrap;
@@ -1650,6 +1681,16 @@ if ($detailSlug !== null && $detailSlug !== '') {
             <button type="button" class="seo-filter-btn" data-filter="warning">Needs Attention</button>
             <button type="button" class="seo-filter-btn" data-filter="good">Performing Well</button>
         </div>
+        <div class="seo-sort" role="group" aria-label="Sort SEO results">
+            <label for="seoSortSelect">Sort by</label>
+            <select id="seoSortSelect">
+                <option value="score-desc">Score: High to Low</option>
+                <option value="score-asc">Score: Low to High</option>
+                <option value="updated-desc">Last Updated: Newest First</option>
+                <option value="title-asc">Title: A to Z</option>
+            </select>
+            <span class="seo-sort-status" id="seoSortStatus" aria-live="polite">Sorted by Highest score</span>
+        </div>
         <div class="seo-view-toggle" role="group" aria-label="Toggle SEO view">
             <button type="button" class="seo-view-btn active" data-view="grid"><i class="fa-solid fa-grip"></i></button>
             <button type="button" class="seo-view-btn" data-view="table"><i class="fa-solid fa-list"></i></button>
@@ -1689,7 +1730,7 @@ if ($detailSlug !== null && $detailSlug !== '') {
                     ];
                     $jsonData = htmlspecialchars(json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
                 ?>
-                <article class="seo-card" data-status="<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower($entry['title'] . ' ' . $entry['slug'] . ' ' . $entry['meta_title']), ENT_QUOTES, 'UTF-8'); ?>" data-page="<?php echo $jsonData; ?>">
+                <article class="seo-card" data-status="<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower($entry['title'] . ' ' . $entry['slug'] . ' ' . $entry['meta_title']), ENT_QUOTES, 'UTF-8'); ?>" data-score="<?php echo (int) $entry['score']; ?>" data-title="<?php echo htmlspecialchars($entry['title'], ENT_QUOTES, 'UTF-8'); ?>" data-updated="<?php echo $entry['last_updated_ts'] !== null ? (int) $entry['last_updated_ts'] : 0; ?>" data-page="<?php echo $jsonData; ?>">
                     <div class="seo-card-meta">
                         <div class="seo-card-score score-<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>">
                             <?php echo (int) $entry['score']; ?>
@@ -1774,7 +1815,7 @@ if ($detailSlug !== null && $detailSlug !== '') {
                             ];
                             $jsonData = htmlspecialchars(json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
                         ?>
-                        <tr data-status="<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower($entry['title'] . ' ' . $entry['slug'] . ' ' . $entry['meta_title']), ENT_QUOTES, 'UTF-8'); ?>" data-page="<?php echo $jsonData; ?>">
+                        <tr data-status="<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower($entry['title'] . ' ' . $entry['slug'] . ' ' . $entry['meta_title']), ENT_QUOTES, 'UTF-8'); ?>" data-score="<?php echo (int) $entry['score']; ?>" data-title="<?php echo htmlspecialchars($entry['title'], ENT_QUOTES, 'UTF-8'); ?>" data-updated="<?php echo $entry['last_updated_ts'] !== null ? (int) $entry['last_updated_ts'] : 0; ?>" data-page="<?php echo $jsonData; ?>">
                             <td>
                                 <div class="seo-card-title" style="margin-bottom: 4px; font-size: 16px;">
                                     <?php echo htmlspecialchars($entry['title']); ?>
