@@ -232,13 +232,86 @@ $(function(){
         });
     }
 
+    function getCreateFolderMessageElement(){
+        let $message = $('#createFolderModal .create-folder-message');
+        if(!$message.length){
+            $message = $('<p class="create-folder-message" role="status" aria-live="polite" style="display:none;margin-top:8px;"></p>');
+            $('#createFolderModal .modal-body').append($message);
+        }
+        return $message;
+    }
+
+    function showCreateFolderMessage(text, type='error'){
+        const $message = getCreateFolderMessageElement();
+        $message
+            .text(text)
+            .attr('role', type === 'error' ? 'alert' : 'status')
+            .attr('aria-live', type === 'error' ? 'assertive' : 'polite')
+            .css({
+                color: type === 'error' ? '#c0392b' : '#1e8449',
+                'font-weight': '600'
+            })
+            .show();
+    }
+
+    function clearCreateFolderMessage(){
+        const $message = $('#createFolderModal .create-folder-message');
+        if($message.length){
+            $message.text('').hide();
+        }
+    }
+
     function createFolder(){
-        const name = $('#newFolderName').val().trim();
-        if(!name) return;
-        $.post('modules/media/create_folder.php',{folder:name},function(){
-            $('#newFolderName').val('');
-            closeModal('createFolderModal');
-            loadFolders();
+        const $input = $('#newFolderName');
+        const name = $input.val().trim();
+        $input.val(name);
+        clearCreateFolderMessage();
+
+        if(!name){
+            showCreateFolderMessage('Please enter a folder name.', 'error');
+            $input.focus();
+            return;
+        }
+
+        const reservedNames = ['.', '..', 'con', 'prn', 'aux', 'nul', 'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9'];
+        const lowerName = name.toLowerCase();
+        if(reservedNames.includes(lowerName)){
+            showCreateFolderMessage('That folder name is reserved. Please choose another.', 'error');
+            $input.focus();
+            return;
+        }
+
+        if(/[\\/]/.test(name)){
+            showCreateFolderMessage('Folder names cannot contain slashes.', 'error');
+            $input.focus();
+            return;
+        }
+
+        $('#confirmCreateBtn').prop('disabled', true);
+
+        $.ajax({
+            url: 'modules/media/create_folder.php',
+            method: 'POST',
+            data: {folder: name},
+            dataType: 'json'
+        }).done(function(res){
+            if(res && res.status === 'success'){
+                showCreateFolderMessage(res.message || 'Folder created successfully.', 'success');
+                $input.val('');
+                loadFolders();
+                setTimeout(function(){
+                    clearCreateFolderMessage();
+                    closeModal('createFolderModal');
+                }, 1000);
+            }else{
+                showCreateFolderMessage((res && res.message) || 'Error creating folder.', 'error');
+                $input.focus();
+            }
+        }).fail(function(){
+            showCreateFolderMessage('Error creating folder.', 'error');
+            $input.focus();
+        }).always(function(){
+            $('#confirmCreateBtn').prop('disabled', false);
         });
     }
 
@@ -392,8 +465,16 @@ $(function(){
 
     $('#renameFolderBtn').click(renameFolder);
     $('#deleteFolderBtn').click(deleteFolder);
-    $('#createFolderBtn').click(function(){ openModal('createFolderModal'); $('#newFolderName').focus(); });
-    $('#cancelBtn').click(function(){ closeModal('createFolderModal'); $('#newFolderName').val(''); });
+    $('#createFolderBtn').click(function(){
+        clearCreateFolderMessage();
+        openModal('createFolderModal');
+        $('#newFolderName').focus();
+    });
+    $('#cancelBtn').click(function(){
+        closeModal('createFolderModal');
+        $('#newFolderName').val('');
+        clearCreateFolderMessage();
+    });
     $('#confirmCreateBtn').click(createFolder);
     $('#newFolderName').keypress(function(e){ if(e.which===13) createFolder(); });
 
@@ -456,7 +537,11 @@ $(function(){
     $('#items-per-page').change(function(){ itemsPerPage = parseInt(this.value); renderImages(); });
 
     $(window).click(function(e){
-        if(e.target.id==='createFolderModal'){ closeModal('createFolderModal'); $('#newFolderName').val(''); }
+        if(e.target.id==='createFolderModal'){
+            closeModal('createFolderModal');
+            $('#newFolderName').val('');
+            clearCreateFolderMessage();
+        }
         if(e.target.id==='imageInfoModal'){ closeModal('imageInfoModal'); }
         if(e.target.id==='imageEditModal'){ closeModal('imageEditModal'); if(cropper){cropper.destroy(); cropper=null;} }
     });
