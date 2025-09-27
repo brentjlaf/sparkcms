@@ -119,12 +119,65 @@ $(function(){
             const secondary = module.secondary || '';
             const $row = $('<tr>');
             if (module.id) {
-                $row.attr('data-module', module.id);
+                $row
+                    .attr('data-module', module.id)
+                    .attr('tabindex', '0')
+                    .attr('role', 'button')
+                    .addClass('dashboard-module-link');
             }
             $('<td>').text(name).appendTo($row);
             $('<td>').text(primary).appendTo($row);
             $('<td>').text(secondary).appendTo($row);
             $table.append($row);
+        });
+    }
+
+    function navigateToModule(section) {
+        if (!section) {
+            return;
+        }
+
+        const target = String(section).trim();
+        if (!target) {
+            return;
+        }
+
+        const safeTarget = (typeof CSS !== 'undefined' && typeof CSS.escape === 'function')
+            ? CSS.escape(target)
+            : target.replace(/"/g, '\\"');
+        const $navItem = $(`.nav-item[data-section="${safeTarget}"]`);
+
+        if ($navItem.length) {
+            $navItem.trigger('click');
+            return;
+        }
+
+        $(document).trigger('sparkcms:navigate', { section: target });
+    }
+
+    function bindModuleNavigation() {
+        $('#dashboardQuickActions')
+            .on('click', '.dashboard-quick-card', function (event) {
+                event.preventDefault();
+                navigateToModule($(this).data('module'));
+            })
+            .on('keydown', '.dashboard-quick-card', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    navigateToModule($(this).data('module'));
+                }
+            });
+
+        $('#moduleSummaryTable').on('click', 'tbody tr[data-module]', function (event) {
+            event.preventDefault();
+            navigateToModule($(this).data('module'));
+        });
+
+        $('#moduleSummaryTable').on('keydown', 'tbody tr[data-module]', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigateToModule($(this).data('module'));
+            }
         });
     }
 
@@ -199,5 +252,6 @@ $(function(){
         });
     }
 
+    bindModuleNavigation();
     loadStats();
 });
