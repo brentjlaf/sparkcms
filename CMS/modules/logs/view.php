@@ -245,7 +245,7 @@ if ($uniqueUsersCount === 1) {
                 <?php endforeach; ?>
             </div>
 
-            <div class="logs-activity-list" id="logsTimeline">
+            <div class="logs-activity-table-wrapper" id="logsTimeline">
 <?php if (empty($logs)): ?>
                 <div class="logs-empty">
                     <i class="fas fa-clipboard-list" aria-hidden="true"></i>
@@ -253,6 +253,18 @@ if ($uniqueUsersCount === 1) {
                     <p class="logs-empty-hint">Updates will appear here as your team edits content.</p>
                 </div>
 <?php else: ?>
+                <div class="logs-activity-table-scroll">
+                    <table class="logs-activity-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Action</th>
+                                <th scope="col">Page</th>
+                                <th scope="col">Editor</th>
+                                <th scope="col">Details</th>
+                                <th scope="col">When</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 <?php foreach ($logs as $log):
     $timestamp = (int) $log['time'];
     $relative = describe_time_ago($timestamp, false);
@@ -263,28 +275,37 @@ if ($uniqueUsersCount === 1) {
     }
     $searchText = strtolower(trim(($log['user'] ?? '') . ' ' . ($log['page_title'] ?? '') . ' ' . $log['action'] . $detailsText));
 ?>
-                <article class="logs-activity-card" data-search="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>" data-action="<?php echo htmlspecialchars($log['action_slug'], ENT_QUOTES, 'UTF-8'); ?>">
-                    <header class="logs-activity-card__header">
-                        <span class="logs-activity-badge"><?php echo htmlspecialchars($log['action'], ENT_QUOTES, 'UTF-8'); ?></span>
-                        <time datetime="<?php echo $timestamp ? date('c', $timestamp) : ''; ?>" class="logs-activity-time" title="<?php echo htmlspecialchars($absolute, ENT_QUOTES, 'UTF-8'); ?>">
-                            <?php echo htmlspecialchars($relative, ENT_QUOTES, 'UTF-8'); ?>
-                        </time>
-                    </header>
-                    <h4 class="logs-activity-page"><?php echo htmlspecialchars($log['page_title'], ENT_QUOTES, 'UTF-8'); ?></h4>
-                    <p class="logs-activity-description">
-                        <span class="logs-activity-user"><?php echo $log['user'] !== '' ? htmlspecialchars($log['user'], ENT_QUOTES, 'UTF-8') : 'System'; ?></span>
-                        <span class="logs-activity-divider" aria-hidden="true">•</span>
-                        <span class="logs-activity-action"><?php echo htmlspecialchars($log['action'], ENT_QUOTES, 'UTF-8'); ?></span>
-                    </p>
+                            <tr class="logs-activity-row" data-search="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>" data-action="<?php echo htmlspecialchars($log['action_slug'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <td class="logs-activity-cell logs-activity-cell--action" data-label="Action">
+                                    <span class="logs-activity-badge"><?php echo htmlspecialchars($log['action'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                </td>
+                                <td class="logs-activity-cell logs-activity-cell--page" data-label="Page">
+                                    <span class="logs-activity-page"><?php echo htmlspecialchars($log['page_title'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                </td>
+                                <td class="logs-activity-cell logs-activity-cell--user" data-label="Editor">
+                                    <span class="logs-activity-user"><?php echo $log['user'] !== '' ? htmlspecialchars($log['user'], ENT_QUOTES, 'UTF-8') : 'System'; ?></span>
+                                </td>
+                                <td class="logs-activity-cell logs-activity-cell--details" data-label="Details">
 <?php if (!empty($log['details']) && is_array($log['details'])): ?>
-                    <ul class="logs-activity-details">
+                                    <ul class="logs-activity-details">
 <?php foreach ($log['details'] as $detail): ?>
-                        <li><?php echo htmlspecialchars($detail, ENT_QUOTES, 'UTF-8'); ?></li>
+                                        <li><?php echo htmlspecialchars($detail, ENT_QUOTES, 'UTF-8'); ?></li>
 <?php endforeach; ?>
-                    </ul>
+                                    </ul>
+<?php else: ?>
+                                    <span class="logs-activity-details-empty">—</span>
 <?php endif; ?>
-                </article>
+                                </td>
+                                <td class="logs-activity-cell logs-activity-cell--time" data-label="When">
+                                    <time datetime="<?php echo $timestamp ? date('c', $timestamp) : ''; ?>" class="logs-activity-time" title="<?php echo htmlspecialchars($absolute, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?php echo htmlspecialchars($relative, ENT_QUOTES, 'UTF-8'); ?>
+                                    </time>
+                                </td>
+                            </tr>
 <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
 <?php endif; ?>
             </div>
         </section>

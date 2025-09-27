@@ -465,33 +465,57 @@
             color: #fff;
         }
 
-        .logs-activity-list {
-            display: grid;
-            gap: 18px;
-        }
-
-        .logs-activity-card {
+        .logs-activity-table-wrapper {
             background: #fff;
             border-radius: 18px;
-            padding: 20px 24px;
             border: 1px solid rgba(226, 232, 240, 0.8);
             box-shadow: 0 18px 40px -35px rgba(30, 64, 175, 0.5);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            overflow: hidden;
         }
 
-        .logs-activity-card:hover,
-        .logs-activity-card:focus-within {
-            transform: translateY(-2px);
-            border-color: rgba(129, 140, 248, 0.6);
-            box-shadow: 0 22px 40px -28px rgba(99, 102, 241, 0.55);
+        .logs-activity-table-scroll {
+            overflow-x: auto;
         }
 
-        .logs-activity-card__header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            gap: 12px;
+        .logs-activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px;
+        }
+
+        .logs-activity-table thead {
+            background: #f8fafc;
+        }
+
+        .logs-activity-table th {
+            text-align: left;
+            padding: 16px 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+        }
+
+        .logs-activity-table td {
+            padding: 18px 20px;
+            font-size: 14px;
+            color: #1f2937;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            vertical-align: top;
+        }
+
+        .logs-activity-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .logs-activity-table tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .logs-activity-table tbody tr:hover {
+            background: rgba(238, 242, 255, 0.55);
         }
 
         .logs-activity-badge {
@@ -503,39 +527,14 @@
             color: #4338ca;
             font-size: 13px;
             font-weight: 600;
-        }
-
-        .logs-activity-time {
-            font-size: 13px;
-            color: #64748b;
+            white-space: nowrap;
         }
 
         .logs-activity-page {
-            font-size: 18px;
+            display: block;
+            font-size: 15px;
             font-weight: 600;
             color: #1f2937;
-            margin-bottom: 8px;
-        }
-
-        .logs-activity-description {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #475569;
-            font-size: 14px;
-        }
-
-        .logs-activity-details {
-            margin: 12px 0 0 18px;
-            padding: 0;
-            list-style: disc;
-            color: #475569;
-            font-size: 14px;
-        }
-
-        .logs-activity-details li {
-            margin: 4px 0;
-            line-height: 1.4;
         }
 
         .logs-activity-user {
@@ -543,8 +542,31 @@
             color: #1e293b;
         }
 
-        .logs-activity-divider {
-            opacity: 0.4;
+        .logs-activity-time {
+            font-size: 13px;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        .logs-activity-details {
+            margin: 0;
+            padding-left: 18px;
+            list-style: disc;
+            color: #475569;
+        }
+
+        .logs-activity-details li {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .logs-activity-details-empty {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .logs-activity-cell--details {
+            min-width: 220px;
         }
 
         .logs-empty {
@@ -600,18 +622,16 @@
         }
 
         @media (max-width: 600px) {
-            .logs-activity-card {
-                padding: 18px;
+            .logs-activity-table {
+                min-width: 520px;
             }
 
-            .logs-activity-description {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
+            .logs-activity-table th,
+            .logs-activity-table td {
+                padding: 14px 16px;
             }
 
             .logs-activity-details {
-                margin-left: 16px;
                 font-size: 13px;
             }
 
