@@ -3,8 +3,10 @@
     <div class="a11y-dashboard users-dashboard" data-last-refresh="">
         <header class="a11y-hero users-hero">
             <div class="a11y-hero-content">
-                <h2 class="a11y-hero-title">Team access &amp; permissions</h2>
-                <p class="a11y-hero-subtitle">Review account health, monitor roles, and invite new collaborators from a single, polished dashboard.</p>
+                <div>
+                    <h2 class="a11y-hero-title">Team access &amp; permissions</h2>
+                    <p class="a11y-hero-subtitle">Review account health, monitor roles, and invite new collaborators from a single, polished dashboard.</p>
+                </div>
                 <div class="a11y-hero-actions">
                     <button type="button" class="a11y-btn a11y-btn--primary" id="usersNewBtn">
                         <i class="fas fa-user-plus" aria-hidden="true"></i>
@@ -14,20 +16,18 @@
                         <i class="fas fa-rotate" aria-hidden="true"></i>
                         <span>Refresh</span>
                     </button>
+                    <span class="a11y-hero-meta users-last-sync">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        Last updated <span id="usersLastSync">just now</span>
+                    </span>
                 </div>
-                <span class="a11y-hero-meta users-last-sync">
-                    <i class="fas fa-clock" aria-hidden="true"></i>
-                    Last updated <span id="usersLastSync">just now</span>
-                </span>
             </div>
-        </header>
-
-        <div class="a11y-overview-grid users-overview">
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="usersStatTotal">0</div>
-                <div class="a11y-overview-label">Total members</div>
-            </div>
-            <div class="a11y-overview-card">
+            <div class="a11y-overview-grid users-overview">
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="usersStatTotal">0</div>
+                    <div class="a11y-overview-label">Total members</div>
+                </div>
+                <div class="a11y-overview-card">
                 <div class="a11y-overview-value" id="usersStatActive">0</div>
                 <div class="a11y-overview-label">Active accounts</div>
             </div>
@@ -35,11 +35,12 @@
                 <div class="a11y-overview-value" id="usersStatAdmins">0</div>
                 <div class="a11y-overview-label">Administrators</div>
             </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="usersStatRecent">0</div>
-                <div class="a11y-overview-label">New this month</div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="usersStatRecent">0</div>
+                    <div class="a11y-overview-label">New this month</div>
+                </div>
             </div>
-        </div>
+        </header>
 
         <div class="a11y-controls users-controls">
             <label class="a11y-search" for="usersSearchInput">

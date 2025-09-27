@@ -90,13 +90,13 @@ $filterCounts = [
 ?>
 <div class="content-section" id="menus">
     <div class="menu-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedIso, ENT_QUOTES); ?>">
-        <header class="menu-hero">
-            <div class="menu-hero-content">
+        <header class="a11y-hero menu-hero">
+            <div class="a11y-hero-content menu-hero-content">
                 <div>
-                    <h2 class="menu-hero-title">Navigation Menus</h2>
-                    <p class="menu-hero-subtitle">Craft intuitive navigation experiences and keep every menu in sync with your site's structure.</p>
+                    <h2 class="a11y-hero-title menu-hero-title">Navigation Menus</h2>
+                    <p class="a11y-hero-subtitle menu-hero-subtitle">Craft intuitive navigation experiences and keep every menu in sync with your site's structure.</p>
                 </div>
-                <div class="menu-hero-actions">
+                <div class="a11y-hero-actions menu-hero-actions">
                     <button type="button" class="menu-btn menu-btn--primary" id="newMenuBtn">
                         <i class="fas fa-plus" aria-hidden="true"></i>
                         <span>New Menu</span>
@@ -104,32 +104,31 @@ $filterCounts = [
                     <button type="button" class="menu-btn menu-btn--icon" id="refreshMenusBtn" aria-label="Refresh menus">
                         <i class="fas fa-rotate" aria-hidden="true"></i>
                     </button>
+                    <span class="a11y-hero-meta menu-hero-meta">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        Last updated: <span class="js-last-updated"><?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?></span>
+                    </span>
                 </div>
             </div>
-            <span class="menu-hero-meta">
-                <i class="fas fa-clock" aria-hidden="true"></i>
-                Last updated: <span class="js-last-updated"><?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?></span>
-            </span>
+            <div class="a11y-overview-grid menu-overview-grid">
+                <div class="a11y-overview-card menu-overview-card">
+                    <div class="a11y-overview-label menu-overview-label">Total Menus</div>
+                    <div class="a11y-overview-value menu-overview-value" id="menuStatTotal"><?php echo $totalMenus; ?></div>
+                </div>
+                <div class="a11y-overview-card menu-overview-card">
+                    <div class="a11y-overview-label menu-overview-label">Total Links</div>
+                    <div class="a11y-overview-value menu-overview-value" id="menuStatLinks"><?php echo $totalLinks; ?></div>
+                </div>
+                <div class="a11y-overview-card menu-overview-card">
+                    <div class="a11y-overview-label menu-overview-label">Menus with Submenus</div>
+                    <div class="a11y-overview-value menu-overview-value" id="menuStatNested"><?php echo $menusWithNested; ?></div>
+                </div>
+                <div class="a11y-overview-card menu-overview-card">
+                    <div class="a11y-overview-label menu-overview-label">Average Links per Menu</div>
+                    <div class="a11y-overview-value menu-overview-value" id="menuStatAverage"><?php echo $averageLinks; ?></div>
+                </div>
+            </div>
         </header>
-
-        <div class="menu-overview-grid">
-            <div class="menu-overview-card">
-                <div class="menu-overview-value" id="menuStatTotal"><?php echo $totalMenus; ?></div>
-                <div class="menu-overview-label">Total Menus</div>
-            </div>
-            <div class="menu-overview-card">
-                <div class="menu-overview-value" id="menuStatLinks"><?php echo $totalLinks; ?></div>
-                <div class="menu-overview-label">Total Links</div>
-            </div>
-            <div class="menu-overview-card">
-                <div class="menu-overview-value" id="menuStatNested"><?php echo $menusWithNested; ?></div>
-                <div class="menu-overview-label">Menus with Submenus</div>
-            </div>
-            <div class="menu-overview-card">
-                <div class="menu-overview-value" id="menuStatAverage"><?php echo $averageLinks; ?></div>
-                <div class="menu-overview-label">Average Links per Menu</div>
-            </div>
-        </div>
 
         <div class="menu-controls">
             <label class="menu-search" for="menuSearchInput">

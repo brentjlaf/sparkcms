@@ -1,13 +1,13 @@
 <!-- File: view.php -->
 <div class="content-section" id="blogs">
     <div class="blog-dashboard">
-        <header class="blog-hero">
-            <div class="blog-hero-content">
+        <header class="a11y-hero blog-hero">
+            <div class="a11y-hero-content blog-hero-content">
                 <div>
-                    <h2 class="blog-hero-title">Editorial Dashboard</h2>
-                    <p class="blog-hero-subtitle">Plan, publish, and measure the health of your content pipeline.</p>
+                    <h2 class="a11y-hero-title blog-hero-title">Editorial Dashboard</h2>
+                    <p class="a11y-hero-subtitle blog-hero-subtitle">Plan, publish, and measure the health of your content pipeline.</p>
                 </div>
-                <div class="blog-hero-actions">
+                <div class="a11y-hero-actions blog-hero-actions">
                     <button type="button" class="blog-btn blog-btn--ghost" id="categoriesBtn">
                         <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
                         <span>Manage Categories</span>
@@ -16,29 +16,29 @@
                         <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                         <span>New Post</span>
                     </button>
+                    <span class="a11y-hero-meta blog-hero-meta">
+                        <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                        <span id="blogsLastUpdated">No posts yet</span>
+                    </span>
                 </div>
             </div>
-            <div class="blog-hero-meta">
-                <i class="fa-regular fa-clock" aria-hidden="true"></i>
-                <span id="blogsLastUpdated">No posts yet</span>
-            </div>
-            <div class="blog-overview-grid">
-                <article class="blog-overview-card">
-                    <span class="blog-overview-label">Total Posts</span>
-                    <span class="blog-overview-value" id="totalPosts">0</span>
-                </article>
-                <article class="blog-overview-card">
-                    <span class="blog-overview-label">Published</span>
-                    <span class="blog-overview-value" id="publishedPosts">0</span>
-                </article>
-                <article class="blog-overview-card">
-                    <span class="blog-overview-label">Drafts</span>
-                    <span class="blog-overview-value" id="draftPosts">0</span>
-                </article>
-                <article class="blog-overview-card">
-                    <span class="blog-overview-label">Scheduled</span>
-                    <span class="blog-overview-value" id="scheduledPosts">0</span>
-                </article>
+            <div class="a11y-overview-grid blog-overview-grid">
+                <div class="a11y-overview-card blog-overview-card">
+                    <div class="a11y-overview-label blog-overview-label">Total Posts</div>
+                    <div class="a11y-overview-value blog-overview-value" id="totalPosts">0</div>
+                </div>
+                <div class="a11y-overview-card blog-overview-card">
+                    <div class="a11y-overview-label blog-overview-label">Published</div>
+                    <div class="a11y-overview-value blog-overview-value" id="publishedPosts">0</div>
+                </div>
+                <div class="a11y-overview-card blog-overview-card">
+                    <div class="a11y-overview-label blog-overview-label">Drafts</div>
+                    <div class="a11y-overview-value blog-overview-value" id="draftPosts">0</div>
+                </div>
+                <div class="a11y-overview-card blog-overview-card">
+                    <div class="a11y-overview-label blog-overview-label">Scheduled</div>
+                    <div class="a11y-overview-value blog-overview-value" id="scheduledPosts">0</div>
+                </div>
             </div>
         </header>
 

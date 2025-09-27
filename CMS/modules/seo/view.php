@@ -1162,7 +1162,7 @@ if ($detailSlug !== null && $detailSlug !== '') {
             font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             color: #0f172a;
         }
-        .seo-dashboard .seo-header {
+        .seo-dashboard .seo-hero {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: #fff;
             border-radius: 20px;
@@ -1171,7 +1171,7 @@ if ($detailSlug !== null && $detailSlug !== '') {
             position: relative;
             overflow: hidden;
         }
-        .seo-dashboard .seo-header::after {
+        .seo-dashboard .seo-hero::after {
             content: "";
             position: absolute;
             inset: auto -60px -90px auto;
@@ -1180,11 +1180,11 @@ if ($detailSlug !== null && $detailSlug !== '') {
             background: rgba(255,255,255,0.12);
             border-radius: 50%;
         }
-        .seo-dashboard .seo-header-content {
+        .seo-dashboard .seo-hero-content {
             position: relative;
             z-index: 1;
         }
-        .seo-dashboard h1 {
+        .seo-dashboard .seo-hero-title {
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 12px;
@@ -1606,30 +1606,38 @@ if ($detailSlug !== null && $detailSlug !== '') {
         }
     </style>
 
-    <div class="seo-header">
-        <div class="seo-header-content">
-            <h1>SEO Dashboard</h1>
-            <p class="seo-lead">Monitor SEO health across your published pages. Track metadata quality, spot urgent issues, and drill into page-level recommendations.</p>
-            <div class="seo-overview">
-                <div class="seo-overview-card">
-                    <div class="seo-overview-value"><?php echo (int) $summary['total_pages']; ?></div>
-                    <div class="seo-overview-label">Total Pages</div>
-                </div>
-                <div class="seo-overview-card">
-                    <div class="seo-overview-value"><?php echo (int) $averageScore; ?></div>
-                    <div class="seo-overview-label">Average Score</div>
-                </div>
-                <div class="seo-overview-card">
-                    <div class="seo-overview-value"><?php echo (int) $summary['attention_pages']; ?></div>
-                    <div class="seo-overview-label">Pages Needing Attention</div>
-                </div>
-                <div class="seo-overview-card">
-                    <div class="seo-overview-value"><?php echo (int) $summary['metadata_gaps']; ?></div>
-                    <div class="seo-overview-label">Metadata Gaps</div>
-                </div>
+    <header class="a11y-hero seo-hero">
+        <div class="a11y-hero-content seo-hero-content">
+            <div>
+                <h1 class="a11y-hero-title seo-hero-title">SEO Dashboard</h1>
+                <p class="a11y-hero-subtitle seo-lead">Monitor SEO health across your published pages. Track metadata quality, spot urgent issues, and drill into page-level recommendations.</p>
+            </div>
+            <div class="a11y-hero-actions seo-hero-actions">
+                <span class="a11y-hero-meta seo-hero-meta">
+                    <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                    Real-time insights from your published content
+                </span>
             </div>
         </div>
-    </div>
+        <div class="a11y-overview-grid seo-overview">
+            <div class="a11y-overview-card seo-overview-card">
+                <div class="a11y-overview-label seo-overview-label">Total Pages</div>
+                <div class="a11y-overview-value seo-overview-value"><?php echo (int) $summary['total_pages']; ?></div>
+            </div>
+            <div class="a11y-overview-card seo-overview-card">
+                <div class="a11y-overview-label seo-overview-label">Average Score</div>
+                <div class="a11y-overview-value seo-overview-value"><?php echo (int) $averageScore; ?></div>
+            </div>
+            <div class="a11y-overview-card seo-overview-card">
+                <div class="a11y-overview-label seo-overview-label">Pages Needing Attention</div>
+                <div class="a11y-overview-value seo-overview-value"><?php echo (int) $summary['attention_pages']; ?></div>
+            </div>
+            <div class="a11y-overview-card seo-overview-card">
+                <div class="a11y-overview-label seo-overview-label">Metadata Gaps</div>
+                <div class="a11y-overview-value seo-overview-value"><?php echo (int) $summary['metadata_gaps']; ?></div>
+            </div>
+        </div>
+    </header>
 
     <div class="seo-controls">
         <div class="seo-search">

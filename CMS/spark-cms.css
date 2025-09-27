@@ -213,14 +213,6 @@
 
         .logs-hero {
             position: relative;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 32px;
-            padding: 32px;
-            border-radius: 24px;
-            color: #fff;
-            overflow: hidden;
             background: linear-gradient(135deg, #312e81, #4c1d95);
             box-shadow: 0 30px 60px -40px rgba(76, 29, 149, 0.6);
         }
@@ -231,12 +223,6 @@
             inset: 0;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(147, 197, 253, 0.15));
             pointer-events: none;
-        }
-
-        .logs-hero-copy {
-            position: relative;
-            z-index: 1;
-            max-width: 640px;
         }
 
         .logs-hero-title {
@@ -251,34 +237,31 @@
             opacity: 0.9;
         }
 
-        .logs-hero-meta {
-            display: flex;
-            gap: 28px;
-            margin-top: 24px;
-            flex-wrap: wrap;
+        .logs-hero-actions {
+            position: relative;
+            z-index: 1;
         }
 
-        .logs-hero-meta > div {
-            display: flex;
+        .logs-hero-meta-item {
+            display: inline-flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.25);
+            min-width: 180px;
         }
 
         .logs-hero-meta__label {
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1.2px;
-            opacity: 0.65;
+            opacity: 0.7;
         }
 
         .logs-hero-meta__value {
             font-size: 18px;
             font-weight: 600;
-        }
-
-        .logs-hero-actions {
-            position: relative;
-            z-index: 1;
         }
 
         .logs-btn {
@@ -318,18 +301,75 @@
             animation: logs-spin 0.9s linear infinite;
         }
 
+        /* Search module */
+        #search .search-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .search-hero {
+            background: linear-gradient(135deg, #0284c7, #312e81);
+            box-shadow: 0 24px 48px rgba(8, 145, 178, 0.35);
+        }
+
+        .search-hero-meta {
+            color: rgba(226, 232, 240, 0.9);
+        }
+
+        .search-overview-grid .a11y-overview-card {
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .search-overview-grid .a11y-overview-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* Import/Export module */
+        #import .import-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .import-hero {
+            background: linear-gradient(135deg, #1e3a8a, #047857);
+            box-shadow: 0 24px 48px rgba(4, 120, 87, 0.35);
+        }
+
+        .import-overview-grid .a11y-overview-card {
+            background: rgba(15, 23, 42, 0.28);
+            border: 1px solid rgba(15, 118, 110, 0.25);
+        }
+
+        .import-overview-grid .a11y-overview-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .import-placeholder {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+            color: #475569;
+            font-size: 15px;
+        }
+
         @keyframes logs-spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
 
-        .logs-stats-grid {
+        .logs-overview-grid {
             display: grid;
             gap: 20px;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         }
 
-        .logs-stat-card {
+        .logs-overview-card {
             background: #fff;
             border-radius: 20px;
             padding: 24px;
@@ -7266,18 +7306,8 @@
 #calendar .calendar-hero {
     background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
     color: #fff;
-    padding: 32px;
-    border-radius: 24px;
     margin-bottom: 32px;
     box-shadow: 0 24px 40px -24px rgba(37, 99, 235, 0.6);
-}
-
-#calendar .calendar-hero__content {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 24px;
 }
 
 #calendar .calendar-hero__title {
@@ -7292,41 +7322,29 @@
     opacity: 0.9;
 }
 
-#calendar .calendar-dashboard__actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-}
-
-#calendar .calendar-dashboard__actions .calendar-btn--ghost {
+#calendar .calendar-hero__actions .calendar-btn--ghost {
     background: #eff6ff;
     color: #1d4ed8;
     border-color: #bfdbfe;
 }
 
-#calendar .calendar-dashboard__actions .calendar-btn--primary {
+#calendar .calendar-hero__actions .calendar-btn--primary {
     background: #2563eb;
     color: #fff;
     box-shadow: 0 16px 32px -24px rgba(37, 99, 235, 0.6);
 }
 
 #calendar .calendar-hero__metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
     margin-top: 28px;
 }
 
-#calendar .calendar-hero__metrics dt {
-    font-size: 13px;
-    text-transform: uppercase;
-    opacity: 0.75;
+#calendar .calendar-hero__metrics .a11y-overview-card {
+    background: rgba(15, 23, 42, 0.25);
+    border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
-#calendar .calendar-hero__metrics dd {
-    font-size: 24px;
+#calendar .calendar-hero__metrics .a11y-overview-value {
+    font-size: 26px;
     font-weight: 600;
 }
 
@@ -7894,6 +7912,9 @@
             .pages-hero,
             .blog-hero,
             .logs-hero,
+            .search-hero,
+            .import-hero,
+            .seo-hero,
             .a11y-hero,
             .dashboard-hero) {
             position: relative;
@@ -7915,6 +7936,9 @@
             .pages-hero,
             .blog-hero,
             .logs-hero,
+            .search-hero,
+            .import-hero,
+            .seo-hero,
             .a11y-hero,
             .dashboard-hero)::before,
         :is(.analytics-hero,
@@ -7924,6 +7948,9 @@
             .pages-hero,
             .blog-hero,
             .logs-hero,
+            .search-hero,
+            .import-hero,
+            .seo-hero,
             .a11y-hero,
             .dashboard-hero)::after {
             content: '';
@@ -7940,6 +7967,9 @@
             .pages-hero,
             .blog-hero,
             .logs-hero,
+            .search-hero,
+            .import-hero,
+            .seo-hero,
             .a11y-hero,
             .dashboard-hero)::before {
             width: 240px;
@@ -7955,6 +7985,9 @@
             .pages-hero,
             .blog-hero,
             .logs-hero,
+            .search-hero,
+            .import-hero,
+            .seo-hero,
             .a11y-hero,
             .dashboard-hero)::after {
             width: 180px;
@@ -7969,7 +8002,10 @@
             .media-hero-content,
             .pages-hero-content,
             .blog-hero-content,
-            .logs-hero-copy,
+            .logs-hero-content,
+            .search-hero-content,
+            .import-hero-content,
+            .seo-hero-content,
             .a11y-hero-content,
             .dashboard-hero-content) {
             position: relative;
@@ -7985,7 +8021,10 @@
                 .media-hero-content,
                 .pages-hero-content,
                 .blog-hero-content,
-                .logs-hero-copy,
+                .logs-hero-content,
+                .search-hero-content,
+                .import-hero-content,
+                .seo-hero-content,
                 .a11y-hero-content,
                 .dashboard-hero-content) {
                 flex-direction: row;
@@ -8002,6 +8041,9 @@
             .pages-hero-title,
             .blog-hero-title,
             .logs-hero-title,
+            .search-hero-title,
+            .import-hero-title,
+            .seo-hero-title,
             .a11y-hero-title,
             .dashboard-hero-title) {
             font-size: 32px;
@@ -8017,6 +8059,9 @@
             .pages-hero-subtitle,
             .blog-hero-subtitle,
             .logs-hero-subtitle,
+            .search-hero-subtitle,
+            .import-hero-subtitle,
+            .seo-hero-subtitle,
             .a11y-hero-subtitle,
             .dashboard-hero-subtitle) {
             margin: 0;
@@ -8033,6 +8078,9 @@
             .pages-hero-actions,
             .blog-hero-actions,
             .logs-hero-actions,
+            .search-hero-actions,
+            .import-hero-actions,
+            .seo-hero-actions,
             .a11y-hero-actions,
             .dashboard-hero-actions) {
             display: inline-flex;
@@ -8049,6 +8097,9 @@
                 .pages-hero-actions,
                 .blog-hero-actions,
                 .logs-hero-actions,
+                .search-hero-actions,
+                .import-hero-actions,
+                .seo-hero-actions,
                 .a11y-hero-actions,
                 .dashboard-hero-actions) {
                 margin-left: auto;
@@ -8060,6 +8111,9 @@
             .media-hero-meta,
             .pages-hero-meta,
             .blog-hero-meta,
+            .search-hero-meta,
+            .import-hero-meta,
+            .seo-hero-meta,
             .a11y-hero-meta) {
             display: inline-flex;
             align-items: center;
@@ -8070,44 +8124,6 @@
             color: var(--module-text-muted);
             font-size: 13px;
             letter-spacing: 0.02em;
-        }
-
-        .logs-hero-meta,
-        .calendar-hero__metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 16px;
-            padding: 20px;
-            border-radius: var(--module-radius-md);
-            background: rgba(15, 23, 42, 0.28);
-            color: #ffffff;
-        }
-
-        .calendar-hero__metrics div,
-        .logs-hero-meta > div {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        :is(.logs-hero-meta__label,
-            .calendar-hero__metrics dt) {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--module-text-muted);
-        }
-
-        :is(.logs-hero-meta__value,
-            .calendar-hero__metrics dd) {
-            font-size: 22px;
-            font-weight: 600;
-            margin: 0;
-            color: #ffffff;
-        }
-
-        .calendar-hero__metrics dd {
-            margin-top: 2px;
         }
 
         .content-section :is(article, section, div)[class*='-card'] {

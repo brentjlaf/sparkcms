@@ -47,50 +47,50 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
 ?>
 <div class="content-section" id="analytics">
     <div class="analytics-dashboard">
-        <header class="analytics-hero">
-            <div class="analytics-hero-content">
+        <header class="a11y-hero analytics-hero">
+            <div class="a11y-hero-content analytics-hero-content">
                 <div class="analytics-hero-text">
-                    <h2 class="analytics-hero-title">Analytics Dashboard</h2>
-                    <p class="analytics-hero-subtitle">Monitor traffic trends, understand what resonates, and uncover pages that need promotion.</p>
+                    <h2 class="a11y-hero-title analytics-hero-title">Analytics Dashboard</h2>
+                    <p class="a11y-hero-subtitle analytics-hero-subtitle">Monitor traffic trends, understand what resonates, and uncover pages that need promotion.</p>
                 </div>
-                <div class="analytics-hero-actions">
+                <div class="a11y-hero-actions analytics-hero-actions">
                     <button type="button" class="analytics-btn analytics-btn--primary" data-analytics-action="refresh" data-loading-text="Refreshing&hellip;">
                         <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                         <span class="analytics-btn__text">Refresh data</span>
                     </button>
-                    <span class="analytics-hero-meta" id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
+                    <span class="a11y-hero-meta analytics-hero-meta" id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
                         <?php echo $lastUpdatedDisplay
                             ? 'Data refreshed ' . htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES)
                             : 'Data refreshed moments ago'; ?>
                     </span>
                 </div>
             </div>
-            <div class="analytics-overview-grid">
-                <article class="analytics-overview-card">
-                    <div class="analytics-overview-value" id="analyticsTotalViews" data-value="<?php echo (int) $totalViews; ?>"><?php echo number_format($totalViews); ?></div>
-                    <div class="analytics-overview-label">Total Views</div>
+            <div class="a11y-overview-grid analytics-overview-grid">
+                <div class="a11y-overview-card analytics-overview-card">
+                    <div class="a11y-overview-value analytics-overview-value" id="analyticsTotalViews" data-value="<?php echo (int) $totalViews; ?>"><?php echo number_format($totalViews); ?></div>
+                    <div class="a11y-overview-label analytics-overview-label">Total Views</div>
                     <?php if (!empty($topPages)):
                         $topPage = $topPages[0]; ?>
                         <div class="analytics-overview-hint">Top page: <?php echo htmlspecialchars($topPage['title'] ?? 'Untitled', ENT_QUOTES); ?> (<?php echo number_format((int) ($topPage['views'] ?? 0)); ?>)</div>
                     <?php else: ?>
                         <div class="analytics-overview-hint">Traffic insights will appear as data arrives.</div>
                     <?php endif; ?>
-                </article>
-                <article class="analytics-overview-card">
-                    <div class="analytics-overview-value" id="analyticsAverageViews" data-value="<?php echo $averageViews; ?>"><?php echo number_format($averageViews, 1); ?></div>
-                    <div class="analytics-overview-label">Avg. views per page</div>
+                </div>
+                <div class="a11y-overview-card analytics-overview-card">
+                    <div class="a11y-overview-value analytics-overview-value" id="analyticsAverageViews" data-value="<?php echo $averageViews; ?>"><?php echo number_format($averageViews, 1); ?></div>
+                    <div class="a11y-overview-label analytics-overview-label">Avg. views per page</div>
                     <div class="analytics-overview-hint">Based on <?php echo number_format($totalPages); ?> published pages</div>
-                </article>
-                <article class="analytics-overview-card">
-                    <div class="analytics-overview-value" id="analyticsTotalPages" data-value="<?php echo $totalPages; ?>"><?php echo number_format($totalPages); ?></div>
-                    <div class="analytics-overview-label">Published pages</div>
+                </div>
+                <div class="a11y-overview-card analytics-overview-card">
+                    <div class="a11y-overview-value analytics-overview-value" id="analyticsTotalPages" data-value="<?php echo $totalPages; ?>"><?php echo number_format($totalPages); ?></div>
+                    <div class="a11y-overview-label analytics-overview-label">Published pages</div>
                     <div class="analytics-overview-hint">Includes static and dynamic content</div>
-                </article>
-                <article class="analytics-overview-card">
-                    <div class="analytics-overview-value" id="analyticsZeroPages" data-value="<?php echo $zeroViewCount; ?>"><?php echo number_format($zeroViewCount); ?></div>
-                    <div class="analytics-overview-label">Pages with no views</div>
+                </div>
+                <div class="a11y-overview-card analytics-overview-card">
+                    <div class="a11y-overview-value analytics-overview-value" id="analyticsZeroPages" data-value="<?php echo $zeroViewCount; ?>"><?php echo number_format($zeroViewCount); ?></div>
+                    <div class="a11y-overview-label analytics-overview-label">Pages with no views</div>
                     <div class="analytics-overview-hint"><?php echo $zeroViewCount > 0 ? 'Great candidates for internal promotion.' : 'Every published page has traffic.'; ?></div>
-                </article>
+                </div>
             </div>
         </header>
 

@@ -566,13 +566,12 @@ $dashboardStats = [
                     </span>
                 </div>
             </div>
-        </header>
-        <div class="a11y-overview-grid">
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="speedStatTotalPages"><?php echo $dashboardStats['totalPages']; ?></div>
-                <div class="a11y-overview-label">Total Pages</div>
-            </div>
-            <div class="a11y-overview-card">
+            <div class="a11y-overview-grid">
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="speedStatTotalPages"><?php echo $dashboardStats['totalPages']; ?></div>
+                    <div class="a11y-overview-label">Total Pages</div>
+                </div>
+                <div class="a11y-overview-card">
                 <div class="a11y-overview-value" id="speedStatAvgScore"><?php echo $dashboardStats['avgScore']; ?>%</div>
                 <div class="a11y-overview-label">Average Score</div>
             </div>
@@ -580,11 +579,12 @@ $dashboardStats = [
                 <div class="a11y-overview-value" id="speedStatCritical"><?php echo $dashboardStats['criticalAlerts']; ?></div>
                 <div class="a11y-overview-label">Critical Alerts</div>
             </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="speedStatSlow"><?php echo $dashboardStats['slowPages']; ?></div>
-                <div class="a11y-overview-label">Pages needing attention</div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="speedStatSlow"><?php echo $dashboardStats['slowPages']; ?></div>
+                    <div class="a11y-overview-label">Pages needing attention</div>
+                </div>
             </div>
-        </div>
+        </header>
         <div class="a11y-controls">
             <label class="a11y-search" for="speedSearchInput">
                 <i class="fas fa-search" aria-hidden="true"></i>

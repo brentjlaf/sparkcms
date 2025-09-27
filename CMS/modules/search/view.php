@@ -37,12 +37,54 @@ if ($lower !== '') {
         }
     }
 }
+$resultCount = count($results);
+$typeCounts = [
+    'Page' => 0,
+    'Post' => 0,
+    'Media' => 0,
+];
+foreach ($results as $entry) {
+    $type = $entry['type'] ?? '';
+    if (isset($typeCounts[$type])) {
+        $typeCounts[$type]++;
+    }
+}
 ?>
 <div class="content-section" id="search" data-query="<?php echo htmlspecialchars($q); ?>">
-    <div class="table-card">
-        <div class="table-header">
-            <div class="table-title">Search Results<?php if($q!=='') echo ' for \''.htmlspecialchars($q).'\''; ?></div>
-        </div>
+    <div class="search-dashboard">
+        <header class="a11y-hero search-hero">
+            <div class="a11y-hero-content search-hero-content">
+                <div>
+                    <h2 class="a11y-hero-title search-hero-title">Unified Search</h2>
+                    <p class="a11y-hero-subtitle search-hero-subtitle">Surface pages, posts, and media without leaving the dashboard.</p>
+                </div>
+                <div class="a11y-hero-actions search-hero-actions">
+                    <span class="a11y-hero-meta search-hero-meta">
+                        <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                        <?php echo $resultCount === 1 ? 'Showing 1 result' : 'Showing ' . number_format($resultCount) . ' results'; ?><?php if ($q !== ''): ?> for “<?php echo htmlspecialchars($q); ?>”<?php endif; ?>
+                    </span>
+                </div>
+            </div>
+            <div class="a11y-overview-grid search-overview-grid">
+                <div class="a11y-overview-card search-overview-card">
+                    <div class="a11y-overview-label">Pages</div>
+                    <div class="a11y-overview-value" id="searchCountPages"><?php echo number_format($typeCounts['Page']); ?></div>
+                </div>
+                <div class="a11y-overview-card search-overview-card">
+                    <div class="a11y-overview-label">Posts</div>
+                    <div class="a11y-overview-value" id="searchCountPosts"><?php echo number_format($typeCounts['Post']); ?></div>
+                </div>
+                <div class="a11y-overview-card search-overview-card">
+                    <div class="a11y-overview-label">Media</div>
+                    <div class="a11y-overview-value" id="searchCountMedia"><?php echo number_format($typeCounts['Media']); ?></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="table-card">
+            <div class="table-header">
+                <div class="table-title">Search Results<?php if($q!=='') echo ' for \''.htmlspecialchars($q).'\''; ?></div>
+            </div>
         <table class="data-table">
             <thead>
                 <tr><th>Type</th><th>Title</th><th>Slug</th><th>Status</th><th>Actions</th></tr>
@@ -78,5 +120,6 @@ if ($lower !== '') {
                 <?php endif; ?>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
