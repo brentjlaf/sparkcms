@@ -8,6 +8,8 @@ $(function(){
     const timeline = $('#logsTimeline');
     const matchCountEl = $('#logsMatchCount');
     const searchInput = $('#logsSearch');
+    const startDateInput = $('#logsStartDate');
+    const endDateInput = $('#logsEndDate');
     const filterContainer = $('#logsFilters');
     const refreshBtn = $('#logsRefreshBtn');
     const endpoint = dashboard.data('endpoint');
@@ -245,17 +247,73 @@ $(function(){
         timeline.html(table);
     }
 
-    function updateMatchCount(count) {
+    function updateMatchCount(count, rangeLabel, hasRange) {
         if (!matchCountEl.length) {
             return;
         }
         if (count === 0) {
-            matchCountEl.text('No entries to display');
-        } else if (count === 1) {
-            matchCountEl.text('1 entry');
-        } else {
-            matchCountEl.text(count + ' entries');
+            matchCountEl.text(hasRange ? 'No entries to display for selected range' : 'No entries to display');
+            return;
         }
+        if (count === 1) {
+            matchCountEl.text(rangeLabel ? '1 entry · ' + rangeLabel : '1 entry');
+            return;
+        }
+        const baseLabel = count + ' entries';
+        matchCountEl.text(rangeLabel ? baseLabel + ' · ' + rangeLabel : baseLabel);
+    }
+
+    function parseDateValue(value, endOfDay) {
+        if (!value) {
+            return null;
+        }
+        const parts = value.split('-');
+        if (parts.length !== 3) {
+            return null;
+        }
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+            return null;
+        }
+        const date = new Date(year, month, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0);
+        if (Number.isNaN(date.getTime())) {
+            return null;
+        }
+        return {
+            seconds: Math.floor(date.getTime() / 1000),
+            labelDate: new Date(year, month, day)
+        };
+    }
+
+    function formatRangeLabel(startDate, endDate) {
+        const formatter = new Intl.DateTimeFormat(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        if (startDate && endDate) {
+            return formatter.format(startDate) + ' – ' + formatter.format(endDate);
+        }
+        if (startDate) {
+            return 'From ' + formatter.format(startDate);
+        }
+        if (endDate) {
+            return 'Through ' + formatter.format(endDate);
+        }
+        return '';
+    }
+
+    function getSelectedRange() {
+        const start = parseDateValue(startDateInput.val(), false);
+        const end = parseDateValue(endDateInput.val(), true);
+        return {
+            start: start ? start.seconds : null,
+            end: end ? end.seconds : null,
+            label: formatRangeLabel(start ? start.labelDate : null, end ? end.labelDate : null),
+            hasRange: Boolean(start || end)
+        };
     }
 
     function updateStats(logs) {
@@ -320,10 +378,17 @@ $(function(){
 
     function applyFilters() {
         const query = searchInput.val() ? searchInput.val().toLowerCase().trim() : '';
+        const range = getSelectedRange();
         const filtered = allLogs.filter(function(log){
             const slug = log.action_slug || slugifyAction(getActionLabel(log));
             const matchesAction = currentAction === 'all' || slug === currentAction;
             if (!matchesAction) {
+                return false;
+            }
+            if (range.start && log.time < range.start) {
+                return false;
+            }
+            if (range.end && log.time > range.end) {
                 return false;
             }
             if (!query) {
@@ -335,7 +400,7 @@ $(function(){
         });
 
         updateTimeline(filtered);
-        updateMatchCount(filtered.length);
+        updateMatchCount(filtered.length, range.label, range.hasRange);
     }
 
     function setLogs(logs) {
@@ -357,6 +422,14 @@ $(function(){
     });
 
     searchInput.on('input', function(){
+        applyFilters();
+    });
+
+    startDateInput.on('change', function(){
+        applyFilters();
+    });
+
+    endDateInput.on('change', function(){
         applyFilters();
     });
 
