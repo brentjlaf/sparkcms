@@ -1,45 +1,51 @@
 <?php
-// Shared helper functions for calendar data processing.
-// Extracted to support both administrative and front-end calendar endpoints.
+// Shared helper functions for calendar data processing tailored to the
+// simplified calendar data structure managed via manage_data.php.
 
 declare(strict_types=1);
 
-function generate_occurrences(array $event, DateTimeImmutable $rangeStart, DateTimeImmutable $rangeEnd, ?array $category, string $recurrenceType): array
-{
+/**
+ * Normalize an event into a list of occurrences within the requested range.
+ */
+function expand_event_occurrences(
+    array $event,
+    DateTimeImmutable $rangeStart,
+    DateTimeImmutable $rangeEnd,
+    ?array $category
+): array {
     $base = normalize_event_dates($event);
     if (!$base) {
         return [];
     }
     [$start, $end, $allDay] = $base;
-    $duration = max(60, $end->getTimestamp() - $start->getTimestamp());
 
-    $occurrences = [];
-    $interval = max(1, (int) ($event['recurrence']['interval'] ?? 1));
-    $recurrenceEnd = !empty($event['recurrence']['end_date'])
-        ? DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $event['recurrence']['end_date'] . ' 23:59:59')
-        : null;
-
-    $id = $event['id'];
-    $title = $event['title'];
-    $description = $event['description'] ?? '';
-
-    $limit = min_date($rangeEnd, $recurrenceEnd);
-
-    if ($recurrenceType === 'none') {
-        if (date_ranges_overlap($start, $end, $rangeStart, $rangeEnd)) {
-            $occurrences[] = format_occurrence($id, $start, $end, $title, $description, $category, $allDay, $event, $recurrenceType, $interval, $recurrenceEnd);
-        }
-        return $occurrences;
+    // Extend end when it's earlier than start (minimum duration 1 hour)
+    if ($end < $start) {
+        $end = $start->modify('+1 hour');
     }
 
-    $intervalSpec = build_interval_spec($recurrenceType, $interval);
+    $duration = max(60, $end->getTimestamp() - $start->getTimestamp());
+
+    $recurrenceType = normalize_recurrence_type($event['recurring_interval'] ?? 'none');
+    $recurrenceEnd = parse_calendar_datetime($event['recurring_end_date'] ?? '', true);
+
+    if ($recurrenceType === 'none') {
+        if (!date_ranges_overlap($start, $end, $rangeStart, $rangeEnd)) {
+            return [];
+        }
+        return [format_occurrence($event, $start, $end, $allDay, $category, $recurrenceType, $recurrenceEnd)];
+    }
+
+    $intervalSpec = build_interval_spec($recurrenceType);
     if (!$intervalSpec) {
-        return $occurrences;
+        return [];
     }
 
     $periodInterval = new DateInterval($intervalSpec);
-    $periodEnd = ($limit ?? $rangeEnd)->modify('+1 day');
-    $period = new DatePeriod($start, $periodInterval, $periodEnd);
+    $limit = $recurrenceEnd && $recurrenceEnd < $rangeEnd ? $recurrenceEnd : $rangeEnd;
+    $period = new DatePeriod($start, $periodInterval, $limit->modify('+1 day'));
+
+    $occurrences = [];
     $count = 0;
     foreach ($period as $occurrenceStart) {
         if ($recurrenceEnd && $occurrenceStart > $recurrenceEnd) {
@@ -54,7 +60,7 @@ function generate_occurrences(array $event, DateTimeImmutable $rangeStart, DateT
                 break;
             }
         }
-        $occurrences[] = format_occurrence($id, $occurrenceStart, $occurrenceEnd, $title, $description, $category, $allDay, $event, $recurrenceType, $interval, $recurrenceEnd);
+        $occurrences[] = format_occurrence($event, $occurrenceStart, $occurrenceEnd, $allDay, $category, $recurrenceType, $recurrenceEnd);
         $count++;
         if ($count >= 500) {
             break;
@@ -66,76 +72,122 @@ function generate_occurrences(array $event, DateTimeImmutable $rangeStart, DateT
 
 function normalize_event_dates(array $event): ?array
 {
-    $allDay = !empty($event['all_day']);
-    $startDate = $event['start_date'] ?? '';
-    $endDate = $event['end_date'] ?? $startDate;
-    $startTime = $allDay ? '00:00' : ($event['start_time'] ?? '00:00');
-    $endTime = $allDay ? '23:59' : ($event['end_time'] ?? $startTime);
+    $startRaw = (string) ($event['start_date'] ?? '');
+    if ($startRaw === '') {
+        return null;
+    }
+    $endRaw = (string) ($event['end_date'] ?? '');
 
-    $start = DateTimeImmutable::createFromFormat('Y-m-d H:i', $startDate . ' ' . $startTime);
-    $end = DateTimeImmutable::createFromFormat('Y-m-d H:i', $endDate . ' ' . $endTime);
-
+    $start = parse_calendar_datetime($startRaw, false);
     if (!$start) {
         return null;
     }
-    if (!$end || $end < $start) {
-        $end = $start->modify('+1 hour');
+    $end = $endRaw !== '' ? parse_calendar_datetime($endRaw, true) : null;
+    if (!$end) {
+        $end = $start;
     }
 
+    $allDay = is_all_day_value($startRaw) && ($endRaw === '' || is_all_day_value($endRaw));
     if ($allDay) {
         $start = $start->setTime(0, 0, 0);
-        $end = $end->setTime(23, 59, 59);
+        $end = $end->setTime(23, 59, 0);
     }
 
     return [$start, $end, $allDay];
 }
 
-function format_occurrence(string $id, DateTimeImmutable $start, DateTimeImmutable $end, string $title, string $description, ?array $category, bool $allDay, array $event, string $recurrenceType, int $interval, ?DateTimeImmutable $recurrenceEnd): array
+function parse_calendar_datetime(?string $value, bool $isEnd): ?DateTimeImmutable
 {
-    $occurrenceId = $id . '_' . $start->format('YmdHis');
+    $value = trim((string) $value);
+    if ($value === '') {
+        return null;
+    }
+
+    $value = str_replace('T', ' ', $value);
+    $formats = ['Y-m-d H:i', 'Y-m-d H:i:s', 'Y-m-d'];
+    foreach ($formats as $format) {
+        $dt = DateTimeImmutable::createFromFormat($format, $value);
+        if ($dt instanceof DateTimeImmutable) {
+            if ($format === 'Y-m-d' && $isEnd) {
+                $dt = $dt->setTime(23, 59, 0);
+            }
+            return $dt;
+        }
+    }
+
+    try {
+        $dt = new DateTimeImmutable($value);
+        if ($isEnd && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            $dt = $dt->setTime(23, 59, 0);
+        }
+        return $dt;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+function is_all_day_value(string $value): bool
+{
+    return !preg_match('/\d{2}:\d{2}/', $value);
+}
+
+function format_occurrence(
+    array $event,
+    DateTimeImmutable $start,
+    DateTimeImmutable $end,
+    bool $allDay,
+    ?array $category,
+    string $recurrenceType,
+    ?DateTimeImmutable $recurrenceEnd
+): array {
+    $sourceId = (string) ($event['id'] ?? '');
+    if ($sourceId === '') {
+        $sourceId = uniqid('evt_', true);
+    }
+
     return [
-        'id' => $occurrenceId,
-        'sourceId' => $id,
-        'title' => $title,
-        'description' => $description,
+        'id' => $sourceId . '_' . $start->format('YmdHis'),
+        'sourceId' => $sourceId,
+        'title' => (string) ($event['title'] ?? 'Event'),
+        'description' => (string) ($event['description'] ?? ''),
         'start' => $start->format(DateTime::ATOM),
         'end' => $end->format(DateTime::ATOM),
         'allDay' => $allDay,
-        'category' => $category,
+        'category' => $category ? [
+            'id' => $category['id'] ?? null,
+            'name' => $category['name'] ?? '',
+            'color' => $category['color'] ?? '#2563eb',
+        ] : null,
         'recurrence' => [
             'type' => $recurrenceType,
-            'interval' => $interval,
+            'interval' => 1,
             'endDate' => $recurrenceEnd ? $recurrenceEnd->format('Y-m-d') : null,
         ],
     ];
 }
 
-function build_interval_spec(string $type, int $interval): ?string
+function build_interval_spec(string $type): ?string
 {
     switch ($type) {
         case 'daily':
-            return 'P' . $interval . 'D';
+            return 'P1D';
         case 'weekly':
-            return 'P' . ($interval * 7) . 'D';
+            return 'P7D';
         case 'monthly':
-            return 'P' . $interval . 'M';
+            return 'P1M';
         case 'yearly':
-            return 'P' . $interval . 'Y';
+            return 'P1Y';
         default:
             return null;
     }
 }
 
-function min_date(DateTimeImmutable $a, ?DateTimeImmutable $b): DateTimeImmutable
-{
-    if (!$b) {
-        return $a;
-    }
-    return $a < $b ? $a : $b;
-}
-
-function date_ranges_overlap(DateTimeImmutable $startA, DateTimeImmutable $endA, DateTimeImmutable $startB, DateTimeImmutable $endB): bool
-{
+function date_ranges_overlap(
+    DateTimeImmutable $startA,
+    DateTimeImmutable $endA,
+    DateTimeImmutable $startB,
+    DateTimeImmutable $endB
+): bool {
     return $startA < $endB && $endA > $startB;
 }
 
