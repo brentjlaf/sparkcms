@@ -5,10 +5,10 @@ $(function(){
         filter: 'all',
         view: 'grid',
         summary: {
-            totalViews: 0,
-            averageViews: 0,
-            totalPages: 0,
-            zeroViews: 0,
+            totalViews: { current: 0, previous: 0, difference: 0, percent: null },
+            averageViews: { current: 0, previous: 0, difference: 0, percent: null },
+            totalPages: { current: 0, previous: 0, difference: 0, percent: null },
+            zeroViews: { current: 0, previous: 0, difference: 0, percent: null },
         },
         counts: {
             all: 0,
@@ -31,6 +31,10 @@ $(function(){
     const $averageViews = $('#analyticsAverageViews');
     const $totalPages = $('#analyticsTotalPages');
     const $zeroPages = $('#analyticsZeroPages');
+    const $totalViewsDelta = $('#analyticsTotalViewsDelta');
+    const $averageViewsDelta = $('#analyticsAverageViewsDelta');
+    const $totalPagesDelta = $('#analyticsTotalPagesDelta');
+    const $zeroPagesDelta = $('#analyticsZeroPagesDelta');
     const $lastUpdated = $('#analyticsLastUpdated');
     const $topList = $('#analyticsTopList');
     const $topEmpty = $('#analyticsTopEmpty');
@@ -75,14 +79,28 @@ $(function(){
         }
     }
 
+    function createSummary(current, previous){
+        const safeCurrent = Number.isFinite(current) ? current : 0;
+        const safePrevious = Number.isFinite(previous) ? previous : 0;
+        const difference = safeCurrent - safePrevious;
+        return {
+            current: safeCurrent,
+            previous: safePrevious,
+            difference: difference,
+            percent: safePrevious === 0 ? null : (difference / Math.abs(safePrevious)) * 100,
+        };
+    }
+
     function deriveState(rawEntries){
         const entries = Array.isArray(rawEntries) ? rawEntries.slice() : [];
         const sanitized = entries.map(function(entry){
             const views = Number(entry && entry.views != null ? entry.views : 0);
+            const previousViews = Number(entry && entry.previousViews != null ? entry.previousViews : entry.views);
             return {
                 title: entry && entry.title ? String(entry.title) : 'Untitled',
                 slug: entry && entry.slug ? String(entry.slug) : '',
                 views: views < 0 ? 0 : views,
+                previousViews: previousViews < 0 ? 0 : previousViews,
             };
         });
 
@@ -92,19 +110,25 @@ $(function(){
 
         const totals = {
             totalViews: 0,
+            previousViews: 0,
             totalPages: sanitized.length,
             zeroViews: 0,
-            averageViews: 0,
+            previousZeroViews: 0,
         };
 
         sanitized.forEach(function(entry){
             totals.totalViews += entry.views;
+            totals.previousViews += entry.previousViews;
             if (entry.views === 0) {
                 totals.zeroViews++;
             }
+            if (entry.previousViews === 0) {
+                totals.previousZeroViews++;
+            }
         });
 
-        totals.averageViews = totals.totalPages > 0 ? totals.totalViews / totals.totalPages : 0;
+        const averageViews = totals.totalPages > 0 ? totals.totalViews / totals.totalPages : 0;
+        const previousAverageViews = totals.totalPages > 0 ? totals.previousViews / totals.totalPages : 0;
 
         const counts = {
             all: sanitized.length,
@@ -132,16 +156,141 @@ $(function(){
 
         return {
             entries: sanitized,
-            totals: totals,
+            summary: {
+                totalViews: createSummary(totals.totalViews, totals.previousViews),
+                averageViews: createSummary(averageViews, previousAverageViews),
+                totalPages: createSummary(totals.totalPages, totals.totalPages),
+                zeroViews: createSummary(totals.zeroViews, totals.previousZeroViews),
+            },
             counts: counts,
         };
     }
 
+    function updateMetric($valueElement, $deltaElement, summary, options){
+        if (!summary) {
+            return;
+        }
+        const formatter = options && options.formatter ? options.formatter : formatNumber;
+        if ($valueElement && $valueElement.length) {
+            const formattedValue = formatter(summary.current);
+            $valueElement.text(formattedValue);
+            if ($valueElement.attr('data-value') !== undefined) {
+                $valueElement.attr('data-value', summary.current);
+            }
+        }
+        updateDelta($deltaElement, summary, options);
+    }
+
+    function updateDelta($deltaElement, summary, options){
+        if (!$deltaElement || !$deltaElement.length) {
+            return;
+        }
+
+        const $text = $deltaElement.find('.analytics-overview-delta__text');
+        const $sr = $deltaElement.find('.analytics-overview-delta__sr');
+        const $icon = $deltaElement.find('.analytics-overview-delta__icon');
+
+        const current = Number(summary.current || 0);
+        const previous = Number(summary.previous || 0);
+        const difference = Number(summary.difference != null ? summary.difference : current - previous);
+        const hasPrevious = summary.previous != null;
+        const absoluteChange = Math.abs(difference);
+        const formatter = options && options.formatter ? options.formatter : formatNumber;
+        const diffFormatter = options && options.differenceFormatter ? options.differenceFormatter : formatter;
+        const unit = options && options.unit ? options.unit : 'value';
+        const positiveWhenHigher = !(options && options.reverse);
+
+        let percentLabel = 'No change';
+        if (hasPrevious && previous !== 0) {
+            const percent = (absoluteChange / Math.abs(previous)) * 100;
+            const decimals = percent < 10 ? 1 : 0;
+            percentLabel = (difference > 0 ? '+' : '-') + percent.toFixed(decimals) + '%';
+        } else if (!hasPrevious || previous === 0) {
+            if (current === 0) {
+                percentLabel = 'No change';
+            } else {
+                percentLabel = 'New';
+            }
+        }
+
+        let visibleText;
+        if (percentLabel === 'New') {
+            visibleText = 'New vs previous period';
+        } else if (percentLabel === 'No change') {
+            visibleText = 'No change vs previous';
+        } else {
+            visibleText = percentLabel + ' vs previous period';
+        }
+
+        if ($text.length) {
+            $text.text(visibleText);
+        }
+
+        let srText;
+        if (!hasPrevious) {
+            srText = 'No previous period data. Current period reports ' + formatter(current) + ' ' + unit + '.';
+        } else if (previous === 0 && current !== 0) {
+            srText = 'Increased by ' + diffFormatter(absoluteChange) + ' ' + unit + ' compared to zero previously.';
+        } else if (previous === 0 && current === 0) {
+            srText = 'No change from the previous period.';
+        } else if (difference > 0) {
+            srText = 'Increased by ' + diffFormatter(absoluteChange) + ' ' + unit + ' compared to ' + formatter(previous) + ' previously.';
+        } else if (difference < 0) {
+            srText = 'Decreased by ' + diffFormatter(absoluteChange) + ' ' + unit + ' compared to ' + formatter(previous) + ' previously.';
+        } else {
+            srText = 'No change from the previous period.';
+        }
+
+        if ($sr.length) {
+            $sr.text(srText);
+        }
+
+        let directionClass = 'neutral';
+        if (difference > 0) {
+            directionClass = positiveWhenHigher ? 'positive' : 'negative';
+        } else if (difference < 0) {
+            directionClass = positiveWhenHigher ? 'negative' : 'positive';
+        }
+
+        $deltaElement
+            .removeClass('analytics-overview-delta--positive analytics-overview-delta--negative analytics-overview-delta--neutral')
+            .addClass('analytics-overview-delta--' + directionClass);
+
+        if ($icon.length) {
+            let iconClass = 'fa-minus';
+            if (difference > 0) {
+                iconClass = positiveWhenHigher ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+            } else if (difference < 0) {
+                iconClass = positiveWhenHigher ? 'fa-arrow-trend-down' : 'fa-arrow-trend-up';
+            } else if (percentLabel === 'New') {
+                iconClass = positiveWhenHigher ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+            }
+            $icon.attr('class', 'fa-solid analytics-overview-delta__icon ' + iconClass);
+        }
+    }
+
     function updateSummary(){
-        $totalViews.text(formatNumber(state.summary.totalViews));
-        $averageViews.text(formatAverage(state.summary.averageViews));
-        $totalPages.text(formatNumber(state.summary.totalPages));
-        $zeroPages.text(formatNumber(state.summary.zeroViews));
+        updateMetric($totalViews, $totalViewsDelta, state.summary.totalViews, {
+            unit: 'views',
+            formatter: formatNumber,
+            differenceFormatter: formatNumber,
+        });
+        updateMetric($averageViews, $averageViewsDelta, state.summary.averageViews, {
+            unit: 'views per page',
+            formatter: formatAverage,
+            differenceFormatter: formatAverage,
+        });
+        updateMetric($totalPages, $totalPagesDelta, state.summary.totalPages, {
+            unit: 'pages',
+            formatter: formatNumber,
+            differenceFormatter: formatNumber,
+        });
+        updateMetric($zeroPages, $zeroPagesDelta, state.summary.zeroViews, {
+            unit: 'pages with no views',
+            formatter: formatNumber,
+            differenceFormatter: formatNumber,
+            reverse: true,
+        });
     }
 
     function updateFilterCounts(){
@@ -156,7 +305,7 @@ $(function(){
         });
     }
 
-    function updateLastUpdatedDisplay(value){
+    function updateLastUpdatedDisplay(value, isoString){
         if (!$lastUpdated.length) {
             return;
         }
@@ -166,6 +315,9 @@ $(function(){
             $lastUpdated.attr('data-timestamp', value.toISOString());
         } else if (typeof value === 'string' && value.trim() !== '') {
             label = value;
+            if (isoString) {
+                $lastUpdated.attr('data-timestamp', isoString);
+            }
         }
         $lastUpdated.text(label);
     }
@@ -214,7 +366,7 @@ $(function(){
                 $zeroList.removeAttr('hidden');
                 $zeroEmpty.attr('hidden', true);
                 if ($zeroSummary.length) {
-                    const total = state.summary.zeroViews;
+                    const total = state.summary.zeroViews ? state.summary.zeroViews.current : 0;
                     $zeroSummary.text(total === 1
                         ? 'You have 1 page with no recorded views.'
                         : 'You have ' + formatNumber(total) + ' pages with no recorded views.');
@@ -356,7 +508,7 @@ $(function(){
     function setData(rawEntries){
         const derived = deriveState(rawEntries);
         state.entries = derived.entries;
-        state.summary = derived.totals;
+        state.summary = derived.summary;
         state.counts = derived.counts;
         updateSummary();
         updateFilterCounts();
@@ -385,7 +537,7 @@ $(function(){
     const initialEntries = window.analyticsInitialEntries || [];
     const initialMeta = window.analyticsInitialMeta || {};
     setData(initialEntries);
-    updateLastUpdatedDisplay(initialMeta.lastUpdated);
+    updateLastUpdatedDisplay(initialMeta.lastUpdated, initialMeta.lastUpdatedIso);
 
     $filterButtons.on('click', function(){
         const filter = $(this).data('analyticsFilter');
