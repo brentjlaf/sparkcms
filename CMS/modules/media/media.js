@@ -244,19 +244,43 @@ $(function(){
 
     function renameFolder(){
         if(!currentFolder) return;
-        promptModal('Enter new folder name', currentFolder).then(newName => {
-            if(!newName || newName === currentFolder) return;
-        $.post('modules/media/rename_folder.php',{old:currentFolder,new:newName},function(res){
-            if(res.status==='success'){
-                currentFolder = newName;
-                $('#selectedFolderName').text(newName);
-                $('#mediaHeroFolderName').text(newName);
-                loadImages();
-                loadFolders();
-            }else{
-                alertModal(res.message||'Error renaming folder');
+        const previousFolder = currentFolder;
+        const restoreSelection = () => {
+            currentFolder = previousFolder;
+            $('#selectedFolderName').text(previousFolder);
+            $('#mediaHeroFolderName').text(previousFolder);
+            $('.folder-item').removeClass('active');
+            $('.folder-item[data-folder="'+previousFolder+'"]').addClass('active');
+        };
+        promptModal('Enter new folder name', previousFolder).then(newName => {
+            if(newName === undefined || newName === null) return;
+            const trimmedName = newName.trim();
+            if(!trimmedName){
+                alertModal('Folder name cannot be empty.');
+                restoreSelection();
+                return;
             }
-        },'json');
+            if(trimmedName === previousFolder){
+                alertModal('Folder name is unchanged.');
+                restoreSelection();
+                return;
+            }
+            $.post('modules/media/rename_folder.php',{old:previousFolder,new:trimmedName},function(res){
+                if(res.status==='success'){
+                    currentFolder = trimmedName;
+                    $('#selectedFolderName').text(trimmedName);
+                    $('#mediaHeroFolderName').text(trimmedName);
+                    loadImages();
+                    loadFolders();
+                }else{
+                    alertModal(res && res.message ? res.message : 'Error renaming folder');
+                    restoreSelection();
+                }
+            },'json').fail(function(xhr){
+                const message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error renaming folder';
+                alertModal(message);
+                restoreSelection();
+            });
         });
     }
 

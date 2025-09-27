@@ -22,8 +22,28 @@ if (!is_dir($oldDir)) {
     exit;
 }
 
-if (!rename($oldDir, $newDir)) {
-    echo json_encode(['status' => 'error', 'message' => 'Rename failed']);
+if ($oldDir === $newDir) {
+    echo json_encode(['status' => 'error', 'message' => 'The folder name is unchanged.']);
+    exit;
+}
+
+if (file_exists($newDir)) {
+    echo json_encode(['status' => 'error', 'message' => 'A folder with that name already exists.']);
+    exit;
+}
+
+error_clear_last();
+if (!@rename($oldDir, $newDir)) {
+    $error = error_get_last();
+    $details = $error['message'] ?? 'Rename failed due to an unknown error.';
+    $details = preg_replace('/^warning:\s*/i', '', $details);
+    if (strpos($details, 'rename(') !== false) {
+        $details = preg_replace('/rename\([^)]*\):\s*/i', '', $details);
+    }
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Rename failed: ' . $details,
+    ]);
     exit;
 }
 
