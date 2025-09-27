@@ -5,11 +5,59 @@ $(function () {
     let searchTerm = '';
     let activeFilter = 'all';
 
+    const $menuDashboard = $('.menu-dashboard');
     const $menuTable = $('#menuTable');
     const $menuTableBody = $('#menuTableBody');
     const $menuEmptyState = $('#menuEmptyState');
     const $menuNoResults = $('#menuNoResults');
     const $filterButtons = $('.menu-filter-btn');
+    const $lastUpdatedLabel = $menuDashboard.find('.js-last-updated');
+
+    function normalizeMenuResponse(response) {
+        if (Array.isArray(response)) {
+            return { menus: response, lastUpdated: null };
+        }
+
+        if (response && typeof response === 'object') {
+            const menus = Array.isArray(response.menus) ? response.menus : [];
+            const lastUpdated = typeof response.lastUpdated === 'string' && response.lastUpdated.trim()
+                ? response.lastUpdated
+                : null;
+
+            return { menus, lastUpdated };
+        }
+
+        return { menus: [], lastUpdated: null };
+    }
+
+    function formatLastUpdated(timestamp) {
+        if (!timestamp) {
+            return 'Not available';
+        }
+
+        const date = new Date(timestamp);
+        if (Number.isNaN(date.getTime())) {
+            return 'Not available';
+        }
+
+        return new Intl.DateTimeFormat(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        }).format(date);
+    }
+
+    function updateLastUpdatedLabel(timestamp) {
+        const formatted = formatLastUpdated(timestamp);
+        $lastUpdatedLabel.text(formatted);
+        if (timestamp) {
+            $menuDashboard.attr('data-last-updated', timestamp);
+        } else {
+            $menuDashboard.removeAttr('data-last-updated');
+        }
+    }
 
     function escapeHtml(value) {
         return $('<div>').text(value == null ? '' : value).html();
@@ -221,7 +269,9 @@ $(function () {
             $refreshBtn.addClass('is-loading');
         }
         $.getJSON('modules/menus/list_menus.php', function (data) {
-            setMenuData(data);
+            const response = normalizeMenuResponse(data);
+            setMenuData(response.menus);
+            updateLastUpdatedLabel(response.lastUpdated);
         }).always(function () {
             $refreshBtn.removeClass('is-loading');
         });
@@ -377,7 +427,8 @@ $(function () {
     $menuTableBody.on('click', '.editMenu', function () {
         const id = $(this).closest('.menu-table-row').data('id');
         $.getJSON('modules/menus/list_menus.php', function (data) {
-            menuData = Array.isArray(data) ? data : [];
+            const response = normalizeMenuResponse(data);
+            menuData = response.menus;
             const menu = menuData.find((m) => String(m.id) === String(id));
             if (!menu) {
                 return;
@@ -392,6 +443,7 @@ $(function () {
             }
             openMenuEditor('Edit Menu');
             setMenuData(menuData);
+            updateLastUpdatedLabel(response.lastUpdated);
         });
     });
 
@@ -439,6 +491,7 @@ $(function () {
         loadMenus();
     });
 
+    updateLastUpdatedLabel($menuDashboard.attr('data-last-updated'));
     setMenuData(menuData);
     loadPages(function () {
         setMenuData(menuData);

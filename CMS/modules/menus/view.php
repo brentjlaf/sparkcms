@@ -10,6 +10,10 @@ if (!is_array($menus)) {
     $menus = [];
 }
 
+$lastUpdatedTimestamp = is_file($menusFile) ? filemtime($menusFile) : null;
+$lastUpdatedIso = $lastUpdatedTimestamp ? date(DATE_ATOM, $lastUpdatedTimestamp) : '';
+$lastUpdatedDisplay = $lastUpdatedTimestamp ? date('M j, Y g:i A', $lastUpdatedTimestamp) : 'Not available';
+
 function count_menu_items_recursive(?array $items): int
 {
     if (empty($items)) {
@@ -78,8 +82,6 @@ foreach ($menus as $menu) {
 
 $singleLevelMenus = max(0, $totalMenus - $menusWithNested);
 $averageLinks = $totalMenus > 0 ? round($totalLinks / $totalMenus, 1) : 0;
-$lastUpdated = date('M j, Y g:i A');
-
 $filterCounts = [
     'all' => $totalMenus,
     'nested' => $menusWithNested,
@@ -87,7 +89,7 @@ $filterCounts = [
 ];
 ?>
 <div class="content-section" id="menus">
-    <div class="menu-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdated, ENT_QUOTES); ?>">
+    <div class="menu-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedIso, ENT_QUOTES); ?>">
         <header class="menu-hero">
             <div class="menu-hero-content">
                 <div>
@@ -106,7 +108,7 @@ $filterCounts = [
             </div>
             <span class="menu-hero-meta">
                 <i class="fas fa-clock" aria-hidden="true"></i>
-                Last updated: <?php echo htmlspecialchars($lastUpdated); ?>
+                Last updated: <span class="js-last-updated"><?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?></span>
             </span>
         </header>
 
