@@ -132,6 +132,11 @@ date_default_timezone_set('America/Los_Angeles');
                 <span>Add to Google Calendar</span>
             </a>
         </div>
+        <div class="calendar-modal__actions" id="calendarEventDetailActions">
+            <button type="button" class="calendar-btn calendar-btn--ghost" data-calendar-close>Close</button>
+            <button type="button" class="calendar-btn calendar-btn--ghost" id="calendarEventDetailEditBtn">Edit</button>
+            <button type="button" class="calendar-btn calendar-btn--danger" id="calendarEventDetailDeleteBtn">Delete</button>
+        </div>
     </div>
 </div>
 

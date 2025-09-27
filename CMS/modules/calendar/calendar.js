@@ -85,6 +85,8 @@
         });
         $('#calendarEventForm').on('submit', handleEventSave);
         $('#calendarDeleteEventBtn').on('click', handleEventDelete);
+        $('#calendarEventDetailEditBtn').on('click', handleDetailEdit);
+        $('#calendarEventDetailDeleteBtn').on('click', handleDetailDelete);
         $('#calendarCategoryForm').on('submit', handleCategorySave);
     }
 
@@ -322,7 +324,15 @@
             $('#calendarEventDetailCategory').text('No category');
         }
         $('#calendarEventDetailGoogle').attr('href', buildGoogleCalendarLink(event));
-        openModal($('#calendarEventDetailModal'));
+        const detailModal = $('#calendarEventDetailModal');
+        if (event.sourceId) {
+            detailModal.data('eventId', event.sourceId);
+        } else {
+            detailModal.removeData('eventId');
+        }
+        $('#calendarEventDetailEditBtn').prop('hidden', !event.sourceId);
+        $('#calendarEventDetailDeleteBtn').prop('hidden', !event.sourceId);
+        openModal(detailModal);
     }
 
     function openEventForm(eventId) {
@@ -383,7 +393,37 @@
         if (!confirm('Delete this event?')) {
             return;
         }
-        $.ajax({
+        deleteEventById(eventId, function () {
+            closeModal($('#calendarEventFormModal'));
+        });
+    }
+
+    function handleDetailEdit() {
+        const detailModal = $('#calendarEventDetailModal');
+        const eventId = detailModal.data('eventId');
+        if (!eventId) {
+            return;
+        }
+        closeModal(detailModal);
+        openEventForm(eventId);
+    }
+
+    function handleDetailDelete() {
+        const detailModal = $('#calendarEventDetailModal');
+        const eventId = detailModal.data('eventId');
+        if (!eventId) {
+            return;
+        }
+        if (!confirm('Delete this event?')) {
+            return;
+        }
+        deleteEventById(eventId, function () {
+            closeModal(detailModal);
+        });
+    }
+
+    function deleteEventById(eventId, onSuccess) {
+        return $.ajax({
             url: endpoints.manage,
             method: 'POST',
             data: { action: 'delete_event', id: eventId },
@@ -393,7 +433,9 @@
                 alert(response.message || 'Unable to delete event');
                 return;
             }
-            closeModal($('#calendarEventFormModal'));
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
             fetchData().then(refreshMonth);
         }).fail(function () {
             alert('Unable to delete event.');
