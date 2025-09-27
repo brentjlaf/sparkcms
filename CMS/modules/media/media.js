@@ -285,25 +285,78 @@ $(function(){
         }, mime, quality);
     }
 
+    function updateUploadProgress(percent){
+        const value = Math.max(0, Math.min(100, Math.round(percent || 0)));
+        $('#uploadProgressFill').css('width', value + '%');
+        $('#uploadProgressPercent').text(value + '%');
+    }
+
+    function startUploadUI(){
+        updateUploadProgress(0);
+        $('#uploadStatusMessage').text('Uploading files…');
+        $('#uploadLoader').show();
+    }
+
+    function resetUploadUI(){
+        $('#fileInput').val('');
+        $('#uploadLoader').hide();
+        updateUploadProgress(0);
+        $('#uploadStatusMessage').text('');
+    }
+
     function uploadFiles(files){
         if(!currentFolder || !files.length) return;
         const fd = new FormData();
         Array.from(files).forEach(f => fd.append('files[]', f));
         fd.append('folder', currentFolder);
         fd.append('tags','');
-        $('#uploadLoader').show();
+        startUploadUI();
         $.ajax({
             url: 'modules/media/upload_media.php',
             method: 'POST',
             data: fd,
             processData: false,
-            contentType: false
-        }).done(function(){
-            $('#fileInput').val('');
-            loadImages();
-            loadFolders();
+            contentType: false,
+            dataType: 'json',
+            xhr: function(){
+                const xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function(e){
+                    if(e.lengthComputable){
+                        const percent = (e.loaded / e.total) * 100;
+                        updateUploadProgress(percent);
+                    }
+                });
+                return xhr;
+            }
+        }).done(function(res){
+            const response = res || {};
+            if(response.status === 'success'){
+                updateUploadProgress(100);
+                loadImages();
+                loadFolders();
+            }
+            const errors = Array.isArray(response.errors) ? response.errors : [];
+            if(errors.length){
+                alertModal(errors.join('\n'));
+            } else if(response.status !== 'success'){
+                const message = response.message || 'Error uploading files.';
+                alertModal(message);
+            }
+        }).fail(function(jqXHR){
+            let message = 'Error uploading files.';
+            if(jqXHR.responseJSON){
+                const json = jqXHR.responseJSON;
+                if(Array.isArray(json.errors) && json.errors.length){
+                    message = json.errors.join('\n');
+                }else if(json.message){
+                    message = json.message;
+                }
+            }else if(jqXHR.responseText){
+                message = jqXHR.responseText;
+            }
+            alertModal(message);
         }).always(function(){
-            $('#uploadLoader').hide();
+            resetUploadUI();
         });
     }
 
