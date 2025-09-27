@@ -7,8 +7,38 @@ require_login();
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = read_json_file($pagesFile);
 
+$startParam = isset($_GET['start']) ? (string) $_GET['start'] : null;
+$endParam = isset($_GET['end']) ? (string) $_GET['end'] : null;
+
+$startTimestamp = null;
+$endTimestamp = null;
+
+if ($startParam) {
+    $startTime = strtotime($startParam . ' 00:00:00');
+    if ($startTime !== false) {
+        $startTimestamp = $startTime;
+    }
+}
+
+if ($endParam) {
+    $endTime = strtotime($endParam . ' 23:59:59');
+    if ($endTime !== false) {
+        $endTimestamp = $endTime;
+    }
+}
+
 $data = [];
 foreach ($pages as $p) {
+    $lastModified = isset($p['last_modified']) ? (int) $p['last_modified'] : 0;
+
+    if ($startTimestamp !== null && $lastModified > 0 && $lastModified < $startTimestamp) {
+        continue;
+    }
+
+    if ($endTimestamp !== null && $lastModified > 0 && $lastModified > $endTimestamp) {
+        continue;
+    }
+
     $data[] = [
         'title' => $p['title'],
         'slug' => $p['slug'],

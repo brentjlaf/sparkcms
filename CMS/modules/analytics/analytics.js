@@ -15,7 +15,18 @@ $(function(){
             top: 0,
             growing: 0,
             'no-views': 0,
-        }
+        },
+        dateRange: {
+            start: null,
+            end: null,
+        },
+        activePreset: null,
+    };
+
+    const PRESET_LABELS = {
+        '7': 'Last 7 days',
+        '30': 'Last 30 days',
+        '90': 'Last 90 days',
     };
 
     const $grid = $('#analyticsGrid');
@@ -37,6 +48,10 @@ $(function(){
     const $zeroList = $('#analyticsZeroList');
     const $zeroEmpty = $('#analyticsZeroEmpty');
     const $zeroSummary = $('#analyticsZeroSummary');
+    const $dateStart = $('#analyticsDateStart');
+    const $dateEnd = $('#analyticsDateEnd');
+    const $rangePresets = $('[data-analytics-range]');
+    const $rangeLabel = $('#analyticsRangeLabel');
 
     function escapeHtml(str){
         return $('<div>').text(str == null ? '' : String(str)).html();
@@ -168,6 +183,127 @@ $(function(){
             label = value;
         }
         $lastUpdated.text(label);
+    }
+
+    function parseDateValue(value){
+        if (!value) {
+            return null;
+        }
+        const date = new Date(value + 'T00:00:00');
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function formatDateValue(date){
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+            return null;
+        }
+        return date.toISOString().slice(0, 10);
+    }
+
+    function normalizeRange(start, end){
+        let startDate = parseDateValue(start);
+        let endDate = parseDateValue(end);
+
+        if (startDate && endDate && startDate.getTime() > endDate.getTime()) {
+            endDate = new Date(startDate.getTime());
+        } else if (startDate && !endDate) {
+            endDate = new Date(startDate.getTime());
+        } else if (!startDate && endDate) {
+            startDate = new Date(endDate.getTime());
+        }
+
+        return {
+            start: startDate ? formatDateValue(startDate) : null,
+            end: endDate ? formatDateValue(endDate) : null,
+        };
+    }
+
+    function formatDisplayDate(value){
+        const date = parseDateValue(value);
+        if (!date) {
+            return '';
+        }
+        return date.toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    }
+
+    function formatRangeLabel(range, preset){
+        const presetKey = preset != null ? String(preset) : null;
+        if (presetKey && PRESET_LABELS[presetKey]) {
+            return PRESET_LABELS[presetKey];
+        }
+
+        const startLabel = range && range.start ? formatDisplayDate(range.start) : '';
+        const endLabel = range && range.end ? formatDisplayDate(range.end) : '';
+
+        if (startLabel && endLabel) {
+            if (startLabel === endLabel) {
+                return startLabel;
+            }
+            return startLabel + ' – ' + endLabel;
+        }
+        if (startLabel) {
+            return 'Since ' + startLabel;
+        }
+        if (endLabel) {
+            return 'Through ' + endLabel;
+        }
+        return 'All time';
+    }
+
+    function updateRangeLabel(){
+        if (!$rangeLabel.length) {
+            return;
+        }
+        const label = formatRangeLabel(state.dateRange, state.activePreset);
+        $rangeLabel.text(label);
+    }
+
+    function updatePresetButtons(activePreset){
+        if (!$rangePresets.length) {
+            return;
+        }
+        $rangePresets.removeClass('is-active');
+        if (activePreset == null) {
+            return;
+        }
+        const key = String(activePreset);
+        $rangePresets.filter('[data-analytics-range="' + key + '"]').addClass('is-active');
+    }
+
+    function applyDateRange(start, end, preset, options){
+        const normalized = normalizeRange(start, end);
+        const currentStart = state.dateRange.start;
+        const currentEnd = state.dateRange.end;
+        const previousPreset = state.activePreset;
+        const presetValue = preset != null ? String(preset) : null;
+
+        state.dateRange = normalized;
+        state.activePreset = presetValue;
+
+        if ($dateStart.length) {
+            $dateStart.val(normalized.start || '');
+        }
+        if ($dateEnd.length) {
+            $dateEnd.val(normalized.end || '');
+        }
+
+        updatePresetButtons(state.activePreset);
+        updateRangeLabel();
+
+        const shouldFetch = (options && options.fetch === false) ? false : (
+            normalized.start !== currentStart ||
+            normalized.end !== currentEnd ||
+            state.activePreset !== previousPreset ||
+            (options && options.force === true)
+        );
+
+        if (shouldFetch) {
+            loadFromServer();
+        }
     }
 
     function renderInsights(){
@@ -365,11 +501,16 @@ $(function(){
     }
 
     function loadFromServer(){
-        if (!$refreshBtn.length) {
-            return;
-        }
         setButtonLoading($refreshBtn, true);
-        $.getJSON('modules/analytics/analytics_data.php')
+        const params = {};
+        if (state.dateRange.start) {
+            params.start = state.dateRange.start;
+        }
+        if (state.dateRange.end) {
+            params.end = state.dateRange.end;
+        }
+
+        $.getJSON('modules/analytics/analytics_data.php', params)
             .done(function(data){
                 setData(data || []);
                 updateLastUpdatedDisplay(new Date());
@@ -384,6 +525,18 @@ $(function(){
 
     const initialEntries = window.analyticsInitialEntries || [];
     const initialMeta = window.analyticsInitialMeta || {};
+    const initialRange = initialMeta.range || {};
+    const initialPreset = initialMeta.preset != null ? String(initialMeta.preset) : null;
+
+    applyDateRange(initialRange.start, initialRange.end, initialPreset, { fetch: false, force: true });
+    if ($rangeLabel.length) {
+        if (initialMeta.rangeLabel) {
+            $rangeLabel.text(initialMeta.rangeLabel);
+        } else {
+            updateRangeLabel();
+        }
+    }
+
     setData(initialEntries);
     updateLastUpdatedDisplay(initialMeta.lastUpdated);
 
@@ -409,6 +562,36 @@ $(function(){
         $refreshBtn.on('click', function(){
             loadFromServer();
         });
+    }
+
+    if ($rangePresets.length) {
+        $rangePresets.on('click', function(){
+            const preset = $(this).data('analyticsRange');
+            const days = parseInt(preset, 10);
+            if (!days) {
+                return;
+            }
+            const endDate = state.dateRange.end ? parseDateValue(state.dateRange.end) : new Date();
+            const normalizedEnd = endDate && !Number.isNaN(endDate.getTime()) ? new Date(endDate.getTime()) : new Date();
+            const startDate = new Date(normalizedEnd.getTime());
+            startDate.setDate(normalizedEnd.getDate() - (days - 1));
+            applyDateRange(formatDateValue(startDate), formatDateValue(normalizedEnd), String(days));
+        });
+    }
+
+    if ($dateStart.length || $dateEnd.length) {
+        const updateRangeFromInputs = debounce(function(){
+            const startValue = $dateStart.length ? $dateStart.val() : null;
+            const endValue = $dateEnd.length ? $dateEnd.val() : null;
+            applyDateRange(startValue, endValue, null);
+        }, 200);
+
+        if ($dateStart.length) {
+            $dateStart.on('change', updateRangeFromInputs);
+        }
+        if ($dateEnd.length) {
+            $dateEnd.on('change', updateRangeFromInputs);
+        }
     }
 
 });

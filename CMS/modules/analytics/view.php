@@ -44,6 +44,16 @@ foreach ($sortedPages as $page) {
 $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
     ? date('M j, Y g:i a', $lastUpdatedTimestamp)
     : null;
+
+$rangeEndTimestamp = $lastUpdatedTimestamp > 0 ? $lastUpdatedTimestamp : time();
+$rangeStartTimestamp = strtotime('-29 days', $rangeEndTimestamp);
+if ($rangeStartTimestamp === false) {
+    $rangeStartTimestamp = $rangeEndTimestamp;
+}
+$defaultRangeStart = date('Y-m-d', $rangeStartTimestamp);
+$defaultRangeEnd = date('Y-m-d', $rangeEndTimestamp);
+$defaultRangePreset = '30';
+$defaultRangeLabel = 'Last 30 days';
 ?>
 <div class="content-section" id="analytics">
     <div class="analytics-dashboard">
@@ -54,14 +64,36 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
                     <p class="a11y-hero-subtitle analytics-hero-subtitle">Monitor traffic trends, understand what resonates, and uncover pages that need promotion.</p>
                 </div>
                 <div class="a11y-hero-actions analytics-hero-actions">
+                    <div class="analytics-range-picker" role="group" aria-label="Select analytics date range">
+                        <div class="analytics-range-picker__inputs">
+                            <label class="analytics-range-picker__field" for="analyticsDateStart">
+                                <span>Start</span>
+                                <input type="date" id="analyticsDateStart" value="<?php echo htmlspecialchars($defaultRangeStart, ENT_QUOTES); ?>" aria-label="Select start date">
+                            </label>
+                            <span class="analytics-range-picker__separator" aria-hidden="true">to</span>
+                            <label class="analytics-range-picker__field" for="analyticsDateEnd">
+                                <span>End</span>
+                                <input type="date" id="analyticsDateEnd" value="<?php echo htmlspecialchars($defaultRangeEnd, ENT_QUOTES); ?>" aria-label="Select end date">
+                            </label>
+                        </div>
+                        <div class="analytics-range-picker__presets" role="group" aria-label="Quick date presets">
+                            <button type="button" class="analytics-range-picker__preset" data-analytics-range="7">Last 7 days</button>
+                            <button type="button" class="analytics-range-picker__preset is-active" data-analytics-range="30">Last 30 days</button>
+                            <button type="button" class="analytics-range-picker__preset" data-analytics-range="90">Last 90 days</button>
+                        </div>
+                    </div>
                     <button type="button" class="analytics-btn analytics-btn--primary" data-analytics-action="refresh" data-loading-text="Refreshing&hellip;">
                         <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                         <span class="analytics-btn__text">Refresh data</span>
                     </button>
-                    <span class="a11y-hero-meta analytics-hero-meta" id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
-                        <?php echo $lastUpdatedDisplay
-                            ? 'Data refreshed ' . htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES)
-                            : 'Data refreshed moments ago'; ?>
+                    <span class="a11y-hero-meta analytics-hero-meta" id="analyticsMeta">
+                        <span id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
+                            <?php echo $lastUpdatedDisplay
+                                ? 'Data refreshed ' . htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES)
+                                : 'Data refreshed moments ago'; ?>
+                        </span>
+                        <span class="analytics-hero-meta__divider" aria-hidden="true">&bull;</span>
+                        <span id="analyticsRangeLabel"><?php echo htmlspecialchars($defaultRangeLabel, ENT_QUOTES); ?></span>
                     </span>
                 </div>
             </div>
@@ -199,5 +231,11 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
     window.analyticsInitialMeta = <?php echo json_encode([
         'lastUpdated' => $lastUpdatedDisplay ? 'Data refreshed ' . $lastUpdatedDisplay : 'Data refreshed moments ago',
         'lastUpdatedIso' => $lastUpdatedTimestamp > 0 ? date(DATE_ATOM, $lastUpdatedTimestamp) : null,
+        'range' => [
+            'start' => $defaultRangeStart,
+            'end' => $defaultRangeEnd,
+        ],
+        'preset' => $defaultRangePreset,
+        'rangeLabel' => $defaultRangeLabel,
     ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
 </script>
