@@ -7918,10 +7918,10 @@
         }
 
         .content-section :is(article, section, div)[class*='-card'] {
-            background: var(--module-surface);
+            background: none;
             border: 1px solid var(--module-border);
             border-radius: var(--module-radius-md);
-            box-shadow: var(--module-shadow-card);
+            box-shadow: none;
             padding: 24px;
         }
 
