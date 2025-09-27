@@ -94,42 +94,132 @@ $(function(){
         $lastUpdated.text(`Last updated ${formatted}`);
     }
 
-    function renderModuleSummaries(modules) {
-        const $table = $('#moduleSummaryTable tbody');
-        if (!$table.length) {
+    const statusClassMap = {
+        urgent: 'status-urgent',
+        warning: 'status-warning',
+        ok: 'status-ok'
+    };
+
+    const statusLabelFallback = {
+        urgent: 'Action required',
+        warning: 'Needs attention',
+        ok: 'On track'
+    };
+
+    function renderModuleSummaries(modules, options) {
+        const $grid = $('#dashboardModuleCards');
+        if (!$grid.length) {
             return;
         }
-        $table.empty();
+
+        const settings = options || {};
+        $grid.empty();
+
+        const message = settings.message || 'No module data available';
 
         if (!Array.isArray(modules) || modules.length === 0) {
-            $table.append(
-                $('<tr>').append(
-                    $('<td>', {
-                        text: 'No module data available',
-                        colspan: 3
+            $grid.append(
+                $('<article>', {
+                    class: 'dashboard-module-card empty',
+                    role: 'listitem',
+                    tabindex: 0,
+                    'aria-label': message
+                }).append(
+                    $('<header>', { class: 'dashboard-module-card-header' }).append(
+                        $('<div>', { class: 'dashboard-module-card-title' }).append(
+                            $('<span>', {
+                                class: 'dashboard-module-name',
+                                text: 'No insights available'
+                            })
+                        )
+                    )
+                ).append(
+                    $('<p>', {
+                        class: 'dashboard-module-secondary',
+                        text: message
                     })
                 )
             );
+            $grid.attr('aria-busy', 'false');
             return;
         }
 
         modules.forEach(function (module) {
-            const name = module.module || module.name || module.id || '';
+            const id = module.id || module.module || module.name || '';
+            const name = module.module || module.name || id || '';
             const primary = module.primary || '—';
             const secondary = module.secondary || '';
-            const $row = $('<tr>');
-            if (module.id) {
-                $row
-                    .attr('data-module', module.id)
-                    .attr('tabindex', '0')
-                    .attr('role', 'button')
-                    .addClass('dashboard-module-link');
+            const trend = module.trend || '';
+            const statusKey = String(module.status || 'ok').toLowerCase();
+            const statusClass = statusClassMap[statusKey] || statusClassMap.ok;
+            const statusLabel = module.statusLabel || statusLabelFallback[statusKey] || statusLabelFallback.ok;
+            const cta = module.cta || `Open ${name}`;
+
+            const $card = $('<article>', {
+                class: `dashboard-module-card ${statusClass}`,
+                role: 'listitem',
+                tabindex: module.id ? 0 : -1,
+                'data-module': module.id || '',
+                'aria-label': `${name} module – ${statusLabel}`
+            });
+
+            const $header = $('<header>', { class: 'dashboard-module-card-header' });
+            const $title = $('<div>', { class: 'dashboard-module-card-title' });
+            $title.append(
+                $('<span>', {
+                    class: 'dashboard-module-name',
+                    text: name
+                })
+            );
+            $title.append(
+                $('<span>', {
+                    class: 'dashboard-module-status',
+                    text: statusLabel,
+                    'aria-live': 'polite'
+                })
+            );
+            $header.append($title);
+            $header.append(
+                $('<p>', {
+                    class: 'dashboard-module-primary',
+                    text: primary
+                })
+            );
+
+            $card.append($header);
+
+            if (secondary) {
+                $card.append(
+                    $('<p>', {
+                        class: 'dashboard-module-secondary',
+                        text: secondary
+                    })
+                );
             }
-            $('<td>').text(name).appendTo($row);
-            $('<td>').text(primary).appendTo($row);
-            $('<td>').text(secondary).appendTo($row);
-            $table.append($row);
+
+            const $footer = $('<footer>', { class: 'dashboard-module-card-footer' });
+            if (trend) {
+                $footer.append(
+                    $('<span>', {
+                        class: 'dashboard-module-trend',
+                        text: trend
+                    })
+                );
+            }
+
+            const $ctaButton = $('<button>', {
+                type: 'button',
+                class: 'dashboard-module-cta',
+                text: cta
+            });
+
+            $footer.append($ctaButton);
+            $card.append($footer);
+
+            $grid.append($card);
         });
+
+        $grid.attr('aria-busy', 'false');
     }
 
     function navigateToModule(section) {
@@ -168,21 +258,40 @@ $(function(){
                 }
             });
 
-        $('#moduleSummaryTable').on('click', 'tbody tr[data-module]', function (event) {
-            event.preventDefault();
-            navigateToModule($(this).data('module'));
-        });
+        $('#dashboardModuleCards')
+            .on('click', '.dashboard-module-card', function (event) {
+                if ($(event.target).closest('.dashboard-module-cta').length) {
+                    return;
+                }
 
-        $('#moduleSummaryTable').on('keydown', 'tbody tr[data-module]', function (event) {
-            if (event.key === 'Enter' || event.key === ' ') {
+                const moduleId = $(this).data('module');
+                if (moduleId) {
+                    event.preventDefault();
+                    navigateToModule(moduleId);
+                }
+            })
+            .on('keydown', '.dashboard-module-card', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    const moduleId = $(this).data('module');
+                    if (moduleId) {
+                        event.preventDefault();
+                        navigateToModule(moduleId);
+                    }
+                }
+            })
+            .on('click', '.dashboard-module-cta', function (event) {
                 event.preventDefault();
-                navigateToModule($(this).data('module'));
-            }
-        });
+                const $card = $(this).closest('.dashboard-module-card');
+                const moduleId = $card.data('module');
+                if (moduleId) {
+                    navigateToModule(moduleId);
+                }
+            });
     }
 
     function loadStats(){
         setRefreshState(true);
+        $('#dashboardModuleCards').attr('aria-busy', 'true');
 
         return $.getJSON('modules/dashboard/dashboard_data.php', function(data){
             updateText('#statPages', data.pages);
@@ -240,6 +349,7 @@ $(function(){
             })
             .fail(function(){
                 updateLastUpdated(0);
+                renderModuleSummaries([], { message: 'Unable to load module data' });
             })
             .always(function(){
                 setRefreshState(false);

@@ -189,27 +189,21 @@
                                     <p class="dashboard-section-description">Understand where attention is needed across features.</p>
                                 </div>
                             </div>
-                            <div class="dashboard-table-card">
-                                <div class="dashboard-table-header">
-                                    <h4 class="dashboard-table-title">Latest signals</h4>
-                                    <p class="dashboard-table-subtitle">Primary metrics from each module are refreshed alongside the dashboard.</p>
-                                </div>
-                                <div class="dashboard-table-wrapper">
-                                    <table class="data-table" id="moduleSummaryTable">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Module</th>
-                                                <th scope="col">Primary Metric</th>
-                                                <th scope="col">Details</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td colspan="3">Loading module data…</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div class="dashboard-module-card-grid" aria-live="polite" aria-busy="true" id="dashboardModuleCards" role="list">
+                                <article class="dashboard-module-card placeholder" role="listitem" tabindex="0" aria-label="Module data loading">
+                                    <header class="dashboard-module-card-header">
+                                        <div class="dashboard-module-card-title">
+                                            <span class="dashboard-module-name">Loading…</span>
+                                            <span class="dashboard-module-status" aria-hidden="true">Please wait</span>
+                                        </div>
+                                        <p class="dashboard-module-primary">Fetching module insights</p>
+                                    </header>
+                                    <p class="dashboard-module-secondary">Module metrics will appear here once data is available.</p>
+                                    <footer class="dashboard-module-card-footer">
+                                        <span class="dashboard-module-trend" aria-hidden="true">Preparing data</span>
+                                        <button type="button" class="dashboard-module-cta" disabled aria-disabled="true">Loading</button>
+                                    </footer>
+                                </article>
                             </div>
                         </section>
                     </div>
