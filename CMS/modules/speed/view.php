@@ -19,6 +19,8 @@ if (substr($scriptBase, -4) === '/CMS') {
 $scriptBase = rtrim($scriptBase, '/');
 
 $templateDir = realpath(__DIR__ . '/../../../theme/templates/pages');
+$projectRoot = realpath(__DIR__ . '/../../..');
+$projectRoot = $projectRoot !== false ? $projectRoot : null;
 
 function capture_template_html(string $templateFile, array $settings, array $menus, string $scriptBase): string {
     $page = ['content' => '{{CONTENT}}'];
@@ -122,6 +124,236 @@ function grade_to_badge_class(string $grade): string {
     }
 }
 
+function format_weight_label(float $weight): string {
+    return number_format($weight, 1, '.', ',') . ' KB';
+}
+
+function should_skip_asset_reference(string $url): bool {
+    $url = trim($url);
+    if ($url === '') {
+        return true;
+    }
+
+    if ($url[0] === '#') {
+        return true;
+    }
+
+    $lower = strtolower($url);
+    return strpos($lower, 'data:') === 0 || strpos($lower, 'javascript:') === 0 || strpos($lower, 'mailto:') === 0;
+}
+
+function resolve_asset_file_path(string $url, ?string $projectRoot): ?string {
+    if ($projectRoot === null) {
+        return null;
+    }
+
+    $cleanUrl = trim($url);
+    if ($cleanUrl === '') {
+        return null;
+    }
+
+    if (preg_match('#^(?:[a-z]+:)?//#i', $cleanUrl)) {
+        return null;
+    }
+
+    $cleanUrl = strtok($cleanUrl, '?#');
+    if ($cleanUrl === false || $cleanUrl === null) {
+        return null;
+    }
+
+    $normalized = str_replace(['\\', '//'], '/', $cleanUrl);
+    if ($normalized === '') {
+        return null;
+    }
+
+    if ($normalized[0] === '/') {
+        $candidate = $projectRoot . $normalized;
+    } else {
+        $candidate = $projectRoot . '/' . $normalized;
+    }
+
+    $real = realpath($candidate);
+    if ($real && strpos($real, $projectRoot) === 0 && is_file($real)) {
+        return $real;
+    }
+
+    return null;
+}
+
+function estimate_asset_weight(string $type, ?string $filePath, string $url): float {
+    if ($filePath && is_file($filePath)) {
+        $bytes = filesize($filePath);
+        if ($bytes !== false && $bytes > 0) {
+            return max(0.1, round($bytes / 1024, 1));
+        }
+    }
+
+    $path = strtolower(parse_url($url, PHP_URL_PATH) ?? $url);
+    switch ($type) {
+        case 'image':
+            if (substr($path, -4) === '.svg') {
+                return 12.0;
+            }
+            if (substr($path, -4) === '.gif') {
+                return 80.0;
+            }
+            if (substr($path, -5) === '.webp') {
+                return 35.0;
+            }
+            return 48.0;
+        case 'stylesheet':
+            if (strpos($path, '.min.') !== false) {
+                return 6.0;
+            }
+            return 9.5;
+        case 'script':
+        default:
+            if (strpos($path, '.min.') !== false) {
+                return 9.0;
+            }
+            return 13.5;
+    }
+}
+
+function build_asset_link(string $url, string $scriptBase): string {
+    $trimmed = trim($url);
+    if ($trimmed === '') {
+        return '';
+    }
+
+    if (preg_match('#^https?://#i', $trimmed)) {
+        return $trimmed;
+    }
+
+    if (strpos($trimmed, '//') === 0) {
+        return 'https:' . $trimmed;
+    }
+
+    if ($trimmed[0] === '/') {
+        $normalized = $trimmed;
+    } elseif (strpos($trimmed, './') === 0 || strpos($trimmed, '../') === 0) {
+        $normalized = $trimmed;
+    } else {
+        $normalized = '/' . ltrim($trimmed, '/');
+    }
+
+    if ($normalized[0] !== '/') {
+        return $normalized;
+    }
+
+    $base = rtrim($scriptBase, '/');
+    return ($base !== '' ? $base : '') . $normalized;
+}
+
+function build_media_manager_link(?string $relativePath): ?string {
+    if ($relativePath === null || $relativePath === '') {
+        return null;
+    }
+
+    $normalized = str_replace('\\', '/', $relativePath);
+    $folder = trim(str_replace('\\', '/', dirname($normalized)), '.');
+    $query = [];
+    if ($folder !== '' && $folder !== '/') {
+        $query[] = 'folder=' . rawurlencode($folder);
+    }
+    $query[] = 'highlight=' . rawurlencode($normalized);
+    return $_SERVER['PHP_SELF'] . '?module=media&' . implode('&', $query);
+}
+
+function collect_page_assets(DOMDocument $doc, ?string $projectRoot, string $scriptBase): array {
+    $assetMap = [];
+
+    $register = static function (string $type, string $url, ?string $projectRoot, string $scriptBase) use (&$assetMap): void {
+        if (should_skip_asset_reference($url)) {
+            return;
+        }
+
+        $key = strtolower($type) . '|' . strtolower(trim($url));
+        $filePath = resolve_asset_file_path($url, $projectRoot);
+        $weight = estimate_asset_weight($type, $filePath, $url);
+        $managerUrl = null;
+
+        if ($filePath && $projectRoot) {
+            $relativePath = ltrim(str_replace('\\', '/', substr($filePath, strlen($projectRoot))), '/');
+            if ($relativePath !== '') {
+                $managerUrl = build_media_manager_link($relativePath);
+            }
+        }
+
+        if (!isset($assetMap[$key])) {
+            $assetMap[$key] = [
+                'type' => ucfirst($type),
+                'rawType' => $type,
+                'url' => trim($url),
+                'link' => build_asset_link($url, $scriptBase),
+                'weightKb' => $weight,
+                'weightLabel' => format_weight_label($weight),
+                'totalWeightKb' => $weight,
+                'totalWeightLabel' => format_weight_label($weight),
+                'count' => 1,
+                'origin' => $filePath ? 'local' : 'external',
+                'managerUrl' => $managerUrl,
+            ];
+            return;
+        }
+
+        $assetMap[$key]['count']++;
+        $totalWeight = $assetMap[$key]['weightKb'] * $assetMap[$key]['count'];
+        $totalWeight = round($totalWeight, 1);
+        $assetMap[$key]['totalWeightKb'] = $totalWeight;
+        $assetMap[$key]['totalWeightLabel'] = format_weight_label($totalWeight);
+        if ($assetMap[$key]['managerUrl'] === null && $managerUrl !== null) {
+            $assetMap[$key]['managerUrl'] = $managerUrl;
+        }
+    };
+
+    foreach ($doc->getElementsByTagName('img') as $image) {
+        if ($image->hasAttribute('src')) {
+            $register('image', $image->getAttribute('src'), $projectRoot, $scriptBase);
+        }
+    }
+
+    foreach ($doc->getElementsByTagName('script') as $script) {
+        if ($script->hasAttribute('src')) {
+            $register('script', $script->getAttribute('src'), $projectRoot, $scriptBase);
+        }
+    }
+
+    foreach ($doc->getElementsByTagName('link') as $link) {
+        $rel = strtolower($link->getAttribute('rel'));
+        if ($rel === 'stylesheet' && $link->hasAttribute('href')) {
+            $register('stylesheet', $link->getAttribute('href'), $projectRoot, $scriptBase);
+        }
+    }
+
+    $assets = array_values($assetMap);
+    usort($assets, static function (array $a, array $b): int {
+        if ($b['totalWeightKb'] === $a['totalWeightKb']) {
+            return strcasecmp($a['url'], $b['url']);
+        }
+        return $b['totalWeightKb'] <=> $a['totalWeightKb'];
+    });
+
+    $totals = [
+        'image' => 0.0,
+        'script' => 0.0,
+        'stylesheet' => 0.0,
+    ];
+
+    foreach ($assets as $asset) {
+        $type = $asset['rawType'];
+        $contribution = $asset['weightKb'] * max(1, (int)$asset['count']);
+        if (!isset($totals[$type])) {
+            $totals[$type] = 0.0;
+        }
+        $totals[$type] += $contribution;
+    }
+
+    return [
+        'assets' => $assets,
+        'totals' => $totals,
+    ];
+}
 libxml_use_internal_errors(true);
 
 $report = [];
@@ -196,8 +428,16 @@ foreach ($pages as $page) {
         $iframeCount = substr_count(strtolower($pageHtml), '<iframe');
     }
 
-    $estimatedWeightKb = round($htmlSizeKb + ($imageCount * 45) + ($scriptCount * 12) + ($stylesheetCount * 8), 1);
-    $avgImageWeight = $imageCount > 0 ? round($estimatedWeightKb / $imageCount, 1) : 0;
+    $assetAnalysis = $loaded ? collect_page_assets($doc, $projectRoot, $scriptBase) : ['assets' => [], 'totals' => []];
+    $pageAssetsFull = $assetAnalysis['assets'] ?? [];
+    $assetTotals = $assetAnalysis['totals'] ?? [];
+
+    $imageWeightTotal = isset($assetTotals['image']) && $assetTotals['image'] > 0 ? $assetTotals['image'] : ($imageCount * 45);
+    $scriptWeightTotal = isset($assetTotals['script']) && $assetTotals['script'] > 0 ? $assetTotals['script'] : ($scriptCount * 12);
+    $styleWeightTotal = isset($assetTotals['stylesheet']) && $assetTotals['stylesheet'] > 0 ? $assetTotals['stylesheet'] : ($stylesheetCount * 8);
+
+    $estimatedWeightKb = round($htmlSizeKb + $imageWeightTotal + $scriptWeightTotal + $styleWeightTotal, 1);
+    $avgImageWeight = $imageCount > 0 ? round($imageWeightTotal / $imageCount, 1) : 0;
 
     $issues = [];
     $addIssue = static function (array &$issues, string $impact, string $description, string $recommendation): void {
@@ -333,6 +573,8 @@ foreach ($pages as $page) {
         ];
     }
 
+    $topAssets = array_slice($pageAssetsFull, 0, 8);
+
     $issuePreview = array_slice(array_map(static function ($detail) {
         return $detail['description'];
     }, $issues), 0, 4);
@@ -359,6 +601,7 @@ foreach ($pages as $page) {
             'preview' => $issuePreview,
             'details' => $issues,
         ],
+        'assets' => $topAssets,
         'metrics' => [
             'weightKb' => $estimatedWeightKb,
             'htmlSizeKb' => $htmlSizeKb,
@@ -371,6 +614,11 @@ foreach ($pages as $page) {
             'wordCount' => $wordCount,
             'avgImageWeight' => $avgImageWeight,
             'iframeCount' => $iframeCount,
+            'assetBreakdown' => [
+                'images' => round($imageWeightTotal, 1),
+                'scripts' => round($scriptWeightTotal, 1),
+                'stylesheets' => round($styleWeightTotal, 1),
+            ],
         ],
     ];
 
@@ -489,6 +737,37 @@ $dashboardStats = [
                         <span class="a11y-detail-metric__hint">Keep below 1,500 for optimal rendering.</span>
                     </div>
                 </div>
+            </article>
+            <article class="a11y-detail-card">
+                <h2>Heaviest resources</h2>
+                <p class="a11y-detail-card__intro">Largest assets contributing to the page payload.</p>
+                <?php if (!empty($selectedPage['assets'])): ?>
+                    <ul class="a11y-resource-list">
+                        <?php foreach ($selectedPage['assets'] as $asset): ?>
+                            <li class="a11y-resource-item">
+                                <div class="a11y-resource-meta">
+                                    <span class="a11y-resource-type"><?php echo htmlspecialchars($asset['type']); ?></span>
+                                    <span class="a11y-resource-weight"><?php echo htmlspecialchars($asset['totalWeightLabel'] ?? $asset['weightLabel'] ?? ''); ?></span>
+                                    <?php if (!empty($asset['count']) && (int)$asset['count'] > 1): ?>
+                                        <span class="a11y-resource-count">×<?php echo (int)$asset['count']; ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="a11y-resource-links">
+                                    <?php if (!empty($asset['link'])): ?>
+                                        <a href="<?php echo htmlspecialchars($asset['link'], ENT_QUOTES); ?>" target="_blank" rel="noopener noreferrer"><?php echo htmlspecialchars($asset['url']); ?></a>
+                                    <?php else: ?>
+                                        <span class="a11y-resource-url"><?php echo htmlspecialchars($asset['url']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($asset['managerUrl'])): ?>
+                                        <a class="a11y-resource-manager" href="<?php echo htmlspecialchars($asset['managerUrl'], ENT_QUOTES); ?>" target="_blank" rel="noopener noreferrer">Open in media manager</a>
+                                    <?php endif; ?>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="a11y-detail-success">No linked assets beyond the base HTML were detected.</p>
+                <?php endif; ?>
             </article>
             <article class="a11y-detail-card">
                 <h2>Alert breakdown</h2>
@@ -649,6 +928,14 @@ $dashboardStats = [
                     <span class="a11y-detail-violations" id="speedDetailAlerts"></span>
                 </div>
                 <ul class="a11y-detail-metric-list" id="speedDetailMetrics"></ul>
+                <section class="a11y-detail-assets" id="speedDetailAssetsSection" hidden aria-labelledby="speedDetailAssetsHeading">
+                    <div class="a11y-detail-assets__header">
+                        <h3 id="speedDetailAssetsHeading">Top resource weight</h3>
+                        <p>Largest assets identified during the scan with estimated transfer sizes.</p>
+                    </div>
+                    <ul class="a11y-detail-assets-list" id="speedDetailAssets"></ul>
+                    <p class="a11y-detail-empty" id="speedDetailAssetsEmpty" hidden>No external assets detected beyond the base HTML.</p>
+                </section>
                 <div class="a11y-detail-issues-list">
                     <h3>Key findings</h3>
                     <ul id="speedDetailIssues"></ul>

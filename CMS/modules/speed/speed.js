@@ -43,6 +43,27 @@
         }
     }
 
+    function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) {
+            switch (char) {
+                case '&':
+                    return '&amp;';
+                case '<':
+                    return '&lt;';
+                case '>':
+                    return '&gt;';
+                case '"':
+                    return '&quot;';
+                default:
+                    return '&#39;';
+            }
+        });
+    }
+
+    function escapeAttribute(value) {
+        return escapeHtml(value);
+    }
+
     function getImpactLabel(impact) {
         switch (impact) {
             case 'critical':
@@ -272,6 +293,9 @@
         const $modalTitle = $('#speedDetailTitle');
         const $modalUrl = $('#speedDetailUrl');
         const $modalDescription = $('#speedDetailDescription');
+        const $modalAssetsSection = $('#speedDetailAssetsSection');
+        const $modalAssets = $('#speedDetailAssets');
+        const $modalAssetsEmpty = $('#speedDetailAssetsEmpty');
         const $fullAuditBtn = $modal.find('[data-speed-action="full-diagnose"]');
         const $scanAllBtn = $('#speedScanAllBtn');
         const $downloadReportBtn = $('#speedDownloadReport');
@@ -282,9 +306,70 @@
         let filteredPages = data.slice();
         let activeSlug = null;
 
+        function renderAssetList(assets) {
+            if (!$modalAssets.length) {
+                return;
+            }
+
+            if (!Array.isArray(assets) || !assets.length) {
+                $modalAssets.empty();
+                if ($modalAssetsEmpty.length) {
+                    $modalAssetsEmpty.attr('hidden', false);
+                }
+                if ($modalAssetsSection.length) {
+                    $modalAssetsSection.attr('hidden', false);
+                }
+                return;
+            }
+
+            const items = assets.map(function (asset) {
+                const type = escapeHtml(asset.type || asset.rawType || 'Resource');
+                const weight = escapeHtml(asset.totalWeightLabel || asset.weightLabel || '');
+                const count = asset.count && asset.count > 1 ? '<span class="asset-count">×' + asset.count + '</span>' : '';
+                const displayLabel = escapeHtml(asset.url || asset.link || 'Asset');
+                let linkHtml = '<span class="asset-url">' + displayLabel + '</span>';
+                if (asset.link) {
+                    linkHtml = '<a href="' + escapeAttribute(asset.link) + '" target="_blank" rel="noopener noreferrer">' + displayLabel + '</a>';
+                }
+                let managerHtml = '';
+                if (asset.managerUrl) {
+                    managerHtml = '<a class="asset-manager" href="' + escapeAttribute(asset.managerUrl) + '" target="_blank" rel="noopener noreferrer">Media manager</a>';
+                }
+                const metaPieces = [
+                    '<span class="asset-type">' + type + '</span>',
+                    '<span class="asset-weight">' + weight + '</span>'
+                ];
+                if (count) {
+                    metaPieces.push(count);
+                }
+                const linkPieces = [linkHtml];
+                if (managerHtml) {
+                    linkPieces.push(managerHtml);
+                }
+                return '<li class="a11y-detail-asset"><div class="asset-meta">' + metaPieces.join('') + '</div><div class="asset-links">' + linkPieces.join('<span class="asset-separator">&middot;</span>') + '</div></li>';
+            });
+
+            $modalAssets.html(items.join(''));
+            if ($modalAssetsEmpty.length) {
+                $modalAssetsEmpty.attr('hidden', true);
+            }
+            if ($modalAssetsSection.length) {
+                $modalAssetsSection.attr('hidden', false);
+            }
+        }
+
         function closeModal() {
             activeSlug = null;
             $modal.attr('hidden', true).removeClass('is-visible');
+            if ($modalAssets.length) {
+                $modalAssets.empty();
+            }
+            if ($modalAssetsEmpty.length) {
+                $modalAssetsEmpty.attr('hidden', true);
+            }
+            if ($modalAssetsSection.length) {
+                $modalAssetsSection.attr('hidden', true);
+            }
         }
 
         function openModal(page) {
@@ -301,6 +386,7 @@
             $modalGrade.removeClass('grade-a grade-b grade-c grade-d').addClass(getGradeBadge(page.grade));
             $modalAlerts.text(formatAlertSummary(page.alerts));
             $modalMetrics.html(renderMetricList(page.metrics));
+            renderAssetList(Array.isArray(page.assets) ? page.assets : []);
 
             if (page.issues && Array.isArray(page.issues.details) && page.issues.details.length) {
                 const issueItems = page.issues.details.map(function (issue) {
