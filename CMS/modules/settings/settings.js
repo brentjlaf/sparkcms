@@ -102,6 +102,17 @@ $(function(){
     bindClearToggle($clearLogo, $logoPreview);
     bindClearToggle($clearOgImage, $ogPreview);
 
+    function getDefaultOgTitle(settings){
+        const siteName = (settings.site_name || '').trim() || 'SparkCMS';
+        const tagline = (settings.tagline || '').trim();
+        return tagline ? `${siteName} | ${tagline}` : siteName;
+    }
+
+    function getDefaultOgDescription(settings){
+        const siteName = (settings.site_name || '').trim() || 'SparkCMS';
+        return `Stay up to date with the latest updates from ${siteName}.`;
+    }
+
     function loadSettings(){
         $.getJSON('modules/settings/list_settings.php', function(data){
             data = data || {};
@@ -137,8 +148,10 @@ $(function(){
             $('#whatsappLink').val(social.whatsapp || '');
 
             const openGraph = data.open_graph || {};
-            $('#ogTitle').val(openGraph.title || '');
-            $('#ogDescription').val(openGraph.description || '');
+            const ogTitleValue = (openGraph.title || '').trim();
+            const ogDescriptionValue = (openGraph.description || '').trim();
+            $('#ogTitle').val(ogTitleValue || getDefaultOgTitle(data));
+            $('#ogDescription').val(ogDescriptionValue || getDefaultOgDescription(data));
             setPreviewState($ogPreview, $clearOgImage, openGraph.image || '');
 
             updateHeroMeta(data.last_updated || '');
