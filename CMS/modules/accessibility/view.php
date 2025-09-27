@@ -481,15 +481,60 @@ $dashboardStats = [
             </article>
         </section>
 
+        <?php
+            $issueDetails = isset($selectedPage['issues']['details']) && is_array($selectedPage['issues']['details'])
+                ? $selectedPage['issues']['details']
+                : [];
+            $issueDetailCount = count($issueDetails);
+        ?>
         <section class="a11y-detail-issues">
             <div class="a11y-detail-issues__header">
                 <h2>Accessibility issues</h2>
-                <span><?php echo $selectedPage['violations']['total']; ?> total</span>
+                <span id="a11yIssueCount">
+                    <?php echo $issueDetailCount; ?> <?php echo $issueDetailCount === 1 ? 'issue' : 'issues'; ?>
+                </span>
             </div>
-            <?php if (!empty($selectedPage['issues']['details'])): ?>
+            <?php if ($issueDetailCount > 0): ?>
+                <?php
+                    $impactCounts = [
+                        'critical' => 0,
+                        'serious' => 0,
+                        'moderate' => 0,
+                        'minor' => 0,
+                        'review' => 0,
+                    ];
+                    foreach ($issueDetails as $detail) {
+                        $impactKey = strtolower((string)($detail['impact'] ?? ''));
+                        if (!array_key_exists($impactKey, $impactCounts)) {
+                            $impactCounts[$impactKey] = 0;
+                        }
+                        $impactCounts[$impactKey]++;
+                    }
+                ?>
+                <div class="a11y-severity-filters" role="group" aria-label="Filter issues by severity">
+                    <button type="button" class="a11y-severity-btn active" data-a11y-severity="all" aria-pressed="true" aria-label="Show all issues (<?php echo $issueDetailCount; ?>)">
+                        All <span aria-hidden="true">(<?php echo $issueDetailCount; ?>)</span>
+                    </button>
+                    <button type="button" class="a11y-severity-btn" data-a11y-severity="critical" aria-pressed="false" aria-label="Show critical issues (<?php echo $impactCounts['critical']; ?>)">
+                        Critical <span aria-hidden="true">(<?php echo $impactCounts['critical']; ?>)</span>
+                    </button>
+                    <button type="button" class="a11y-severity-btn" data-a11y-severity="serious" aria-pressed="false" aria-label="Show serious issues (<?php echo $impactCounts['serious']; ?>)">
+                        Serious <span aria-hidden="true">(<?php echo $impactCounts['serious']; ?>)</span>
+                    </button>
+                    <button type="button" class="a11y-severity-btn" data-a11y-severity="moderate" aria-pressed="false" aria-label="Show moderate issues (<?php echo $impactCounts['moderate']; ?>)">
+                        Moderate <span aria-hidden="true">(<?php echo $impactCounts['moderate']; ?>)</span>
+                    </button>
+                    <button type="button" class="a11y-severity-btn" data-a11y-severity="minor" aria-pressed="false" aria-label="Show minor issues (<?php echo $impactCounts['minor']; ?>)">
+                        Minor <span aria-hidden="true">(<?php echo $impactCounts['minor']; ?>)</span>
+                    </button>
+                    <button type="button" class="a11y-severity-btn" data-a11y-severity="review" aria-pressed="false" aria-label="Show review issues (<?php echo $impactCounts['review']; ?>)">
+                        Review <span aria-hidden="true">(<?php echo $impactCounts['review']; ?>)</span>
+                    </button>
+                </div>
+                <div class="sr-only" id="a11yIssueFilterStatus" role="status" aria-live="polite"></div>
                 <div class="a11y-issue-list">
-                    <?php foreach ($selectedPage['issues']['details'] as $issue): ?>
-                        <article class="a11y-issue-card impact-<?php echo htmlspecialchars($issue['impact']); ?>">
+                    <?php foreach ($issueDetails as $issue): ?>
+                        <article class="a11y-issue-card impact-<?php echo htmlspecialchars($issue['impact']); ?>" data-impact="<?php echo htmlspecialchars(strtolower($issue['impact'])); ?>">
                             <header>
                                 <h3><?php echo htmlspecialchars($issue['description']); ?></h3>
                                 <span class="a11y-impact-badge impact-<?php echo htmlspecialchars($issue['impact']); ?>"><?php echo ucfirst($issue['impact']); ?></span>
@@ -498,6 +543,7 @@ $dashboardStats = [
                         </article>
                     <?php endforeach; ?>
                 </div>
+                <p class="a11y-detail-empty" id="a11yNoIssuesMessage" hidden>No issues match this severity filter.</p>
             <?php else: ?>
                 <p class="a11y-detail-success">This page passed the automated checks with no remaining issues.</p>
             <?php endif; ?>

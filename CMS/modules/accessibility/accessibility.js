@@ -525,6 +525,76 @@
                 }, 900);
             });
 
+            const $severityButtons = $detailPage.find('[data-a11y-severity]');
+            const $issueCards = $detailPage.find('.a11y-issue-card');
+            const $issueCount = $detailPage.find('#a11yIssueCount');
+            const $issueStatus = $detailPage.find('#a11yIssueFilterStatus');
+            const $emptyMessage = $detailPage.find('#a11yNoIssuesMessage');
+            const severityLabels = {
+                all: 'all severities',
+                critical: 'critical severity',
+                serious: 'serious severity',
+                moderate: 'moderate severity',
+                minor: 'minor severity',
+                review: 'review status'
+            };
+            let activeSeverity = 'all';
+
+            function updateIssueVisibility(severity) {
+                if (!$issueCards.length) {
+                    return;
+                }
+
+                let visibleCount = 0;
+                $issueCards.each(function () {
+                    const $card = $(this);
+                    const impact = ($card.data('impact') || '').toString().toLowerCase();
+                    const matches = severity === 'all' || impact === severity;
+                    if (matches) {
+                        $card.removeAttr('hidden');
+                        visibleCount++;
+                    } else {
+                        $card.attr('hidden', 'hidden');
+                    }
+                });
+
+                if ($emptyMessage.length) {
+                    if (visibleCount === 0) {
+                        $emptyMessage.removeAttr('hidden');
+                    } else {
+                        $emptyMessage.attr('hidden', 'hidden');
+                    }
+                }
+
+                if ($issueCount.length) {
+                    const issueWord = visibleCount === 1 ? 'issue' : 'issues';
+                    $issueCount.text(visibleCount + ' ' + issueWord);
+                }
+
+                if ($issueStatus.length) {
+                    const label = severityLabels[severity] || (severity + ' severity');
+                    if (visibleCount === 0) {
+                        $issueStatus.text('No issues match the ' + label + ' filter.');
+                    } else {
+                        const issueWord = visibleCount === 1 ? 'issue' : 'issues';
+                        $issueStatus.text('Showing ' + visibleCount + ' ' + issueWord + ' for ' + label + '.');
+                    }
+                }
+            }
+
+            if ($severityButtons.length && $issueCards.length) {
+                $severityButtons.on('click', function () {
+                    const $btn = $(this);
+                    const severity = ($btn.data('a11y-severity') || 'all').toString().toLowerCase();
+
+                    activeSeverity = severity;
+                    $severityButtons.removeClass('active').attr('aria-pressed', 'false');
+                    $btn.addClass('active').attr('aria-pressed', 'true');
+                    updateIssueVisibility(activeSeverity);
+                });
+
+                updateIssueVisibility(activeSeverity);
+            }
         }
 
         applyFilters();
