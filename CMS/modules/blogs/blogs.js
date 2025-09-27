@@ -11,6 +11,7 @@ $(document).ready(function(){
             author: "John Doe",
             status: "published",
             publishDate: "2024-01-15T10:00:00",
+            image: "https://picsum.photos/seed/webdev/800/480",
             tags: "web development, beginner, tutorial",
             createdAt: new Date("2024-01-15T10:00:00")
         },
@@ -24,6 +25,7 @@ $(document).ready(function(){
             author: "Jane Smith",
             status: "draft",
             publishDate: "",
+            image: "https://picsum.photos/seed/javascript/800/480",
             tags: "javascript, advanced, programming",
             createdAt: new Date("2024-01-20T14:30:00")
         },
@@ -37,6 +39,7 @@ $(document).ready(function(){
             author: "Mike Johnson",
             status: "scheduled",
             publishDate: "2024-02-01T09:00:00",
+            image: "https://picsum.photos/seed/ai-design/800/480",
             tags: "ai, web design, future, ux",
             createdAt: new Date("2024-01-25T16:45:00")
         }
@@ -45,6 +48,7 @@ $(document).ready(function(){
     let categories = ["Technology", "Programming", "Design", "Marketing", "Business"];
     let authors = [];
     let nextPostId = 4;
+    let currentImageData = null;
 
     function loadTinyMCE(cb){
         if(window.tinymce){
@@ -138,6 +142,31 @@ $(document).ready(function(){
         }
     });
 
+    $('#postImage').on('change', function(){
+        const file = this.files && this.files[0];
+        if(file){
+            if(!file.type.startsWith('image/')){
+                alert('Please select an image file.');
+                this.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e){
+                currentImageData = e.target.result;
+                updateImagePreview(currentImageData);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            currentImageData = null;
+            updateImagePreview(null);
+        }
+    });
+
+    $('#removeImageBtn').click(function(){
+        currentImageData = null;
+        updateImagePreview(null);
+    });
+
 
     function updateStats(){
         const total = posts.length;
@@ -178,11 +207,17 @@ $(document).ready(function(){
         const tbody = $('#postsTableBody');
         tbody.empty();
         filtered.forEach(post=>{
+            const thumbnail = post.image ? `<div class="post-thumbnail-wrapper"><img src="${post.image}" alt="Featured blog image thumbnail"></div>` : '';
             const row = $(
                 `<tr>
                     <td>
-                        <div class="post-title">${post.title}</div>
-                        <div class="post-excerpt">${post.excerpt}</div>
+                        <div class="post-main">
+                            ${thumbnail}
+                            <div class="post-text">
+                                <div class="post-title">${post.title}</div>
+                                <div class="post-excerpt">${post.excerpt}</div>
+                            </div>
+                        </div>
                     </td>
                     <td>
                         <div class="author-info">
@@ -237,6 +272,9 @@ $(document).ready(function(){
             $('#postAuthor').val(post.author);
             $('#postStatus').val(post.status);
             $('#postTags').val(post.tags);
+            currentImageData = post.image || null;
+            updateImagePreview(currentImageData);
+            $('#postImage').val('');
             if(post.publishDate){
                 $('#publishDate').val(new Date(post.publishDate).toISOString().slice(0,16));
             } else {
@@ -251,6 +289,8 @@ $(document).ready(function(){
             }else{
                 $('#postContent').html('');
             }
+            currentImageData = null;
+            updateImagePreview(null);
             $('#publishDate').val('');
         }
         openModal('postModal');
@@ -269,7 +309,11 @@ $(document).ready(function(){
             <span class="status-badge status-${post.status}">${post.status}</span>
             <span style="margin-left:5px;">${formatDate(post.publishDate || post.createdAt)}</span>`;
         $('#previewMeta').html(metaHtml);
-        $('#previewContent').html(post.content);
+        let contentHtml = post.content;
+        if(post.image){
+            contentHtml = `<div class="post-image-preview"><img src="${post.image}" alt="Featured blog image"></div>` + contentHtml;
+        }
+        $('#previewContent').html(contentHtml);
         $('#editPreviewBtn').data('id', post.id);
         openModal('postPreviewModal');
     }
@@ -298,6 +342,7 @@ $(document).ready(function(){
             category: formData.get('category'),
             author: formData.get('author'),
             status: formData.get('status'),
+            image: currentImageData,
             tags: formData.get('tags'),
             publishDate: formData.get('publishDate')
         };
@@ -391,6 +436,18 @@ $(document).ready(function(){
             hour: '2-digit',
             minute: '2-digit'
         });
+    }
+
+    function updateImagePreview(image){
+        const preview = $('#postImagePreview');
+        if(!preview.length) return;
+        if(image){
+            preview.addClass('has-image').html(`<img src="${image}" alt="Featured blog image preview">`);
+        } else {
+            preview.removeClass('has-image').html('<span class="image-preview-placeholder">No image selected</span>');
+            $('#postImage').val('');
+        }
+        $('#removeImageBtn').toggle(!!image);
     }
 
     $(window).click(function(e){

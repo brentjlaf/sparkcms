@@ -4618,6 +4618,36 @@
     font-size: 13px;
 }
 
+.blog-table .post-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.blog-table .post-thumbnail-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.blog-table .post-thumbnail-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.blog-table .post-text {
+    display: flex;
+    flex-direction: column;
+}
+
 .post-title {
     font-weight: 600;
 }
@@ -4684,6 +4714,66 @@
 .editor-content {
     min-height: 150px;
     padding: 8px;
+}
+
+#postModal .image-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#postModal .image-upload input[type="file"] {
+    width: 100%;
+}
+
+#postModal .image-preview {
+    border: 1px dashed #cbd5f5;
+    border-radius: 10px;
+    padding: 16px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    color: #64748b;
+    text-align: center;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+#postModal .image-preview.has-image {
+    border-style: solid;
+    border-color: #3b82f6;
+    background: #fff;
+    padding: 0;
+}
+
+#postModal .image-preview img {
+    max-height: 260px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.image-preview-placeholder {
+    font-size: 14px;
+}
+
+#postModal .image-remove-btn {
+    align-self: flex-start;
+    display: none;
+}
+
+#postPreviewModal .post-image-preview {
+    margin-bottom: 18px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #f1f5f9;
+}
+
+#postPreviewModal .post-image-preview img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
 }
 
 /* Improved styling for blog post modals */

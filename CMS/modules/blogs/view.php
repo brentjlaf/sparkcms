@@ -127,6 +127,16 @@
                     <textarea id="postExcerpt" name="excerpt" placeholder="Brief description of the post..."></textarea>
                 </div>
                 <div class="form-group">
+                    <label for="postImage">Featured Image</label>
+                    <div class="image-upload">
+                        <input type="file" id="postImage" name="image" accept="image/*">
+                        <div class="image-preview" id="postImagePreview" aria-live="polite">
+                            <span class="image-preview-placeholder">No image selected</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-secondary image-remove-btn" id="removeImageBtn">Remove image</button>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="postContent">Content *</label>
                     <div class="editor-container">
                         <div id="postContent" class="editor-content" contenteditable="true"></div>

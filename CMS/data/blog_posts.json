@@ -9,6 +9,7 @@
     "author": "John Doe",
     "status": "published",
     "publishDate": "2024-01-15T10:00:00",
+    "image": "https://picsum.photos/seed/webdev/800/480",
     "tags": "web development, beginner, tutorial",
     "createdAt": "2024-01-15T10:00:00"
   },
@@ -22,6 +23,7 @@
     "author": "Jane Smith",
     "status": "draft",
     "publishDate": "",
+    "image": "https://picsum.photos/seed/javascript/800/480",
     "tags": "javascript, advanced, programming",
     "createdAt": "2024-01-20T14:30:00"
   },
@@ -35,6 +37,7 @@
     "author": "Mike Johnson",
     "status": "scheduled",
     "publishDate": "2024-02-01T09:00:00",
+    "image": "https://picsum.photos/seed/ai-design/800/480",
     "tags": "ai, web design, future, ux",
     "createdAt": "2024-01-25T16:45:00"
   }
