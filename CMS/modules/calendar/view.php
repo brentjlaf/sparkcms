@@ -6,21 +6,21 @@ date_default_timezone_set('America/Los_Angeles');
 ?>
 <div class="content-section" id="calendar">
     <div class="calendar-dashboard" data-timezone="America/Los_Angeles">
+        <div class="calendar-dashboard__actions">
+            <button type="button" class="calendar-btn calendar-btn--ghost" id="calendarManageCategoriesBtn">
+                <i class="fa-solid fa-palette" aria-hidden="true"></i>
+                <span>Manage categories</span>
+            </button>
+            <button type="button" class="calendar-btn calendar-btn--primary" id="calendarNewEventBtn">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                <span>New event</span>
+            </button>
+        </div>
         <header class="calendar-hero">
             <div class="calendar-hero__content">
                 <div>
                     <h2 class="calendar-hero__title">Events &amp; Campaign Calendar</h2>
                     <p class="calendar-hero__subtitle">Plan launches, keep teams aligned, and give stakeholders a single source of truth for every upcoming milestone.</p>
-                </div>
-                <div class="calendar-hero__actions">
-                    <button type="button" class="calendar-btn calendar-btn--ghost" id="calendarManageCategoriesBtn">
-                        <i class="fa-solid fa-palette" aria-hidden="true"></i>
-                        <span>Manage categories</span>
-                    </button>
-                    <button type="button" class="calendar-btn calendar-btn--primary" id="calendarNewEventBtn">
-                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                        <span>New event</span>
-                    </button>
                 </div>
             </div>
             <dl class="calendar-hero__metrics">
@@ -43,54 +43,34 @@ date_default_timezone_set('America/Los_Angeles');
             </dl>
         </header>
 
-        <section class="calendar-controls" aria-label="Calendar controls">
-            <div class="calendar-controls__primary">
-                <div class="calendar-month-nav" role="group" aria-label="Month navigation">
-                    <button type="button" id="calendarPrevMonth" class="calendar-icon-btn" aria-label="Previous month">
-                        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
-                    </button>
-                    <div class="calendar-month-label" id="calendarCurrentMonth">Month YYYY</div>
-                    <button type="button" id="calendarNextMonth" class="calendar-icon-btn" aria-label="Next month">
-                        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-                    </button>
-                </div>
-                <div class="calendar-view-toggle" role="group" aria-label="View mode">
-                    <button type="button" class="calendar-toggle-btn active" data-view="grid">Calendar</button>
-                    <button type="button" class="calendar-toggle-btn" data-view="list">List</button>
-                </div>
-            </div>
-            <div class="calendar-controls__filters">
-                <label class="calendar-search" for="calendarSearch">
-                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                    <input type="search" id="calendarSearch" placeholder="Search events, launches, campaigns" aria-label="Search events">
-                </label>
-                <label class="calendar-filter">
-                    <span>Category</span>
-                    <select id="calendarCategoryFilter">
-                        <option value="">All categories</option>
-                    </select>
-                </label>
-            </div>
-        </section>
-
         <div class="calendar-layout">
-            <section class="calendar-view" id="calendarGridView" aria-label="Calendar view">
-                <div class="calendar-weekdays" role="row">
-                    <span role="columnheader">Sun</span>
-                    <span role="columnheader">Mon</span>
-                    <span role="columnheader">Tue</span>
-                    <span role="columnheader">Wed</span>
-                    <span role="columnheader">Thu</span>
-                    <span role="columnheader">Fri</span>
-                    <span role="columnheader">Sat</span>
-                </div>
-                <div class="calendar-grid" id="calendarGrid" role="grid" aria-live="polite"></div>
-            </section>
-
-            <section class="calendar-list" id="calendarListView" aria-label="List view" hidden>
+            <section class="calendar-list" id="calendarListView" aria-label="Event list">
                 <header class="calendar-list__header">
-                    <h3>Timeline</h3>
-                    <p>Every event across categories in chronological order.</p>
+                    <div class="calendar-list__intro">
+                        <h3>Timeline</h3>
+                        <p>Every event across categories in chronological order.</p>
+                    </div>
+                    <div class="calendar-list__tools" aria-label="Calendar tools">
+                        <div class="calendar-month-nav" role="group" aria-label="Month navigation">
+                            <button type="button" id="calendarPrevMonth" class="calendar-icon-btn" aria-label="Previous month">
+                                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            </button>
+                            <div class="calendar-month-label" id="calendarCurrentMonth">Month YYYY</div>
+                            <button type="button" id="calendarNextMonth" class="calendar-icon-btn" aria-label="Next month">
+                                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <label class="calendar-search" for="calendarSearch">
+                            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                            <input type="search" id="calendarSearch" placeholder="Search events, launches, campaigns" aria-label="Search events">
+                        </label>
+                        <label class="calendar-filter">
+                            <span>Category</span>
+                            <select id="calendarCategoryFilter">
+                                <option value="">All categories</option>
+                            </select>
+                        </label>
+                    </div>
                 </header>
                 <div class="calendar-list__container" id="calendarList"></div>
             </section>

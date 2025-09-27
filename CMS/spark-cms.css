@@ -7292,10 +7292,24 @@
     opacity: 0.9;
 }
 
-#calendar .calendar-hero__actions {
+#calendar .calendar-dashboard__actions {
     display: flex;
+    justify-content: flex-end;
     gap: 12px;
     flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+#calendar .calendar-dashboard__actions .calendar-btn--ghost {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+#calendar .calendar-dashboard__actions .calendar-btn--primary {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 16px 32px -24px rgba(37, 99, 235, 0.6);
 }
 
 #calendar .calendar-hero__metrics {
@@ -7536,6 +7550,27 @@
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 12px;
     margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.calendar-list__intro {
+    max-width: 460px;
+}
+
+.calendar-list__tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    justify-content: flex-start;
+}
+
+.calendar-list__tools .calendar-filter {
+    margin-bottom: 0;
 }
 
 .calendar-list__container {
@@ -7794,12 +7829,6 @@
 }
 
 @media (max-width: 768px) {
-    .calendar-controls__primary,
-    .calendar-controls__filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
     .calendar-layout {
         padding: 16px;
     }
@@ -7810,6 +7839,23 @@
 
     .calendar-weekdays {
         display: none;
+    }
+
+    #calendar .calendar-dashboard__actions {
+        justify-content: flex-start;
+    }
+
+    .calendar-list__header {
+        align-items: stretch;
+    }
+
+    .calendar-list__tools {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .calendar-list__tools .calendar-search {
+        flex: 1 1 100%;
     }
 }
 
