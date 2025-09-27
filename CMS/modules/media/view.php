@@ -7,16 +7,6 @@
                                     <h2 class="media-hero-title">Media Library</h2>
                                     <p class="media-hero-subtitle">Keep your images, documents, and videos organised with a modern, visual workspace that mirrors the accessibility dashboard experience.</p>
                                 </div>
-                                <div class="media-hero-actions">
-                                    <button type="button" class="media-btn media-btn--ghost" id="createFolderBtn">
-                                        <i class="fa-solid fa-folder-plus" aria-hidden="true"></i>
-                                        <span>New Folder</span>
-                                    </button>
-                                    <button type="button" class="media-btn media-btn--primary is-disabled" id="uploadBtn" disabled aria-disabled="true">
-                                        <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
-                                        <span>Upload Media</span>
-                                    </button>
-                                </div>
                             </div>
                             <div class="media-hero-meta">
                                 <span class="media-hero-chip">
@@ -70,14 +60,22 @@
                                 <div class="folder-list" id="folderList"></div>
                             </div>
                             <div class="media-gallery">
-                                <div class="gallery-header" id="galleryHeader" style="display: none;">
+                                <div class="gallery-header" id="galleryHeader">
                                     <div>
                                         <h2 id="selectedFolderName">Select a folder</h2>
                                         <div class="folder-stats" id="folderStats"></div>
                                     </div>
                                     <div class="gallery-actions">
-                                        <button class="btn btn-secondary" id="renameFolderBtn"><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Rename</span></button>
-                                        <button class="btn btn-danger" id="deleteFolderBtn"><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete</span></button>
+                                        <button type="button" class="btn btn-secondary" id="createFolderBtn">
+                                            <i class="fa-solid fa-folder-plus" aria-hidden="true"></i>
+                                            <span>New Folder</span>
+                                        </button>
+                                        <button type="button" class="btn btn-primary is-disabled" id="uploadBtn" disabled aria-disabled="true">
+                                            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+                                            <span>Upload Media</span>
+                                        </button>
+                                        <button class="btn btn-secondary" id="renameFolderBtn" style="display: none;"><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Rename</span></button>
+                                        <button class="btn btn-danger" id="deleteFolderBtn" style="display: none;"><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete</span></button>
                                     </div>
                                 </div>
                                 <div class="gallery-content" id="galleryContent">
