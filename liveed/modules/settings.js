@@ -158,35 +158,34 @@ export function initSettings(options = {}) {
       }
     });
 
-    settingsPanel.addEventListener('input', (e) => {
+    const handleSettingsInput = (e) => {
       const input = e.target.closest('input[name], textarea[name], select[name]');
       const block = settingsPanel.block;
-      if (input && block) {
-        let val;
-        if (input.type === 'checkbox') {
-          val = input.checked ? (input.value || 'on') : '';
-        } else {
-          val = input.value;
-        }
-        setSetting(block, input.name, val);
-        if (input.name === 'custom_src') {
-          suggestAltText(block, 'custom_alt', 'custom_src', true);
-        } else if (/^custom_img(\d+)$/.test(input.name)) {
-          const idx = input.name.match(/^custom_img(\d+)$/)[1];
-          suggestAltText(
-            block,
-            `custom_alt${idx}`,
-            `custom_img${idx}`,
-            true
-          );
-        }
-        scheduleRender(block);
-        // Automatically schedule a save whenever a setting changes so that
-        // media selections are persisted even if the user forgets to press
-        // the "Apply" button.
-        if (typeof savePageFn === 'function') savePageFn();
+      if (!input || !block) return;
+      if (e.type === 'change' && input.tagName !== 'SELECT') return;
+
+      let val;
+      if (input.type === 'checkbox') {
+        val = input.checked ? (input.value || 'on') : '';
+      } else {
+        val = input.value;
       }
-    });
+      setSetting(block, input.name, val);
+      if (input.name === 'custom_src') {
+        suggestAltText(block, 'custom_alt', 'custom_src', true);
+      } else if (/^custom_img(\d+)$/.test(input.name)) {
+        const idx = input.name.match(/^custom_img(\d+)$/)[1];
+        suggestAltText(block, `custom_alt${idx}`, `custom_img${idx}`, true);
+      }
+      scheduleRender(block);
+      // Automatically schedule a save whenever a setting changes so that
+      // media selections are persisted even if the user forgets to press
+      // the "Apply" button.
+      if (typeof savePageFn === 'function') savePageFn();
+    };
+
+    settingsPanel.addEventListener('input', handleSettingsInput);
+    settingsPanel.addEventListener('change', handleSettingsInput);
   }
 }
 
