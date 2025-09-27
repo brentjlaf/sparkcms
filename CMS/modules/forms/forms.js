@@ -116,13 +116,36 @@ $(function(){
 
     function formatSubmissionDate(value){
         if(!value) return 'Unknown';
+
+        function formatDate(date){
+            if(Number.isNaN(date.getTime())){
+                return null;
+            }
+            try {
+                return date.toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            } catch (err) {
+                return date.toString();
+            }
+        }
+
         const numeric = Number(value);
         if(!Number.isNaN(numeric) && numeric > 0){
-            return new Date(numeric * (numeric < 1e12 ? 1000 : 1)).toLocaleString();
+            const date = new Date(numeric * (numeric < 1e12 ? 1000 : 1));
+            const formatted = formatDate(date);
+            if(formatted){
+                return formatted;
+            }
         }
         const date = new Date(value);
-        if(!Number.isNaN(date.getTime())){
-            return date.toLocaleString();
+        const formatted = formatDate(date);
+        if(formatted){
+            return formatted;
         }
         return String(value);
     }
