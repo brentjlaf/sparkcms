@@ -98,6 +98,9 @@ $(document).ready(function(){
     $('#closeCategoriesModal').click(function(){
         closeModal('categoriesModal');
     });
+    $('#categoriesDoneBtn').click(function(){
+        closeModal('categoriesModal');
+    });
     $('#closePreviewModal, #closePreviewBtn').click(function(){
         closeModal('postPreviewModal');
     });
@@ -261,13 +264,19 @@ $(document).ready(function(){
         if(!post) return;
         $('#previewTitle').text(post.title);
         const metaHtml = `
-            <div class="author-info" style="margin-bottom:8px;">
-                <div class="author-avatar">${post.author.split(' ').map(n=>n[0]).join('')}</div>
-                <span>${post.author}</span>
-            </div>
-            <span class="category-tag">${post.category}</span>
-            <span class="status-badge status-${post.status}">${post.status}</span>
-            <span style="margin-left:5px;">${formatDate(post.publishDate || post.createdAt)}</span>`;
+            <div class="blog-preview-meta__row">
+                <div class="author-info blog-preview-author">
+                    <div class="author-avatar">${post.author.split(' ').map(n=>n[0]).join('')}</div>
+                    <div class="blog-preview-author__details">
+                        <span class="blog-preview-author__name">${post.author}</span>
+                        <span class="blog-preview-date">${formatDate(post.publishDate || post.createdAt)}</span>
+                    </div>
+                </div>
+                <div class="blog-preview-labels">
+                    <span class="category-tag">${post.category}</span>
+                    <span class="status-badge status-${post.status}">${post.status}</span>
+                </div>
+            </div>`;
         $('#previewMeta').html(metaHtml);
         $('#previewContent').html(post.content);
         $('#editPreviewBtn').data('id', post.id);
@@ -323,12 +332,21 @@ $(document).ready(function(){
     function renderCategories(){
         const list = $('#categoriesList');
         list.empty();
+        if (!categories.length) {
+            list.html('<p class="blog-category-empty">No categories yet. Create your first topic above.</p>');
+            return;
+        }
+
         const items = categories.map(cat=>{
             const count = posts.filter(p=>p.category===cat).length;
+            const countLabel = count === 1 ? 'post' : 'posts';
             return `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #e2e8f0;">
-                    <span>${cat} (${count} posts)</span>
-                    <button class="btn btn-sm btn-danger delete-category-btn" data-category="${cat}">Delete</button>
+                <div class="blog-category-item">
+                    <div class="blog-category-item__info">
+                        <span class="blog-category-item__name">${cat}</span>
+                        <span class="blog-category-item__count">${count} ${countLabel}</span>
+                    </div>
+                    <button type="button" class="blog-modal__button blog-modal__button--danger delete-category-btn" data-category="${cat}">Delete</button>
                 </div>`;
         }).join('');
         list.html(items);
