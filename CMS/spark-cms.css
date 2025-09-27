@@ -6868,6 +6868,23 @@
     gap: 16px;
 }
 
+.calendar-modal__actions {
+    padding: 0 24px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.calendar-modal__actions .calendar-btn--ghost {
+    background: transparent;
+    color: #1e293b;
+    border-color: #cbd5f5;
+}
+
+.calendar-modal__actions .calendar-btn--ghost:hover {
+    background: #f1f5f9;
+}
+
 .calendar-modal__close {
     border: none;
     background: transparent;
