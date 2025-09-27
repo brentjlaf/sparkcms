@@ -8,6 +8,11 @@ $(function(){
     const $ogPreview = $('#ogImagePreview');
     const $clearLogo = $('#clearLogo');
     const $clearOgImage = $('#clearOgImage');
+    const $socialPreviewImage = $('#socialPreviewImage');
+    const $socialPreviewFallback = $('#socialPreviewImageFallback');
+    const $socialPreviewTitle = $('#socialPreviewTitle');
+    const $socialPreviewDescription = $('#socialPreviewDescription');
+    const $socialPreviewDomain = $('#socialPreviewDomain');
 
     function formatTimestamp(value){
         if(!value){
@@ -73,11 +78,24 @@ $(function(){
         $('#settingsOverviewVisibility').text(visibility).attr('title', details.join(' • '));
     }
 
+    function setSocialPreviewImage(src){
+        if(src){
+            $socialPreviewImage.attr('src', src).removeAttr('hidden');
+            $socialPreviewFallback.attr('hidden', true);
+        } else {
+            $socialPreviewImage.attr('src', '').attr('hidden', true);
+            $socialPreviewFallback.removeAttr('hidden');
+        }
+    }
+
     function togglePreview($img, src){
         if(src){
             $img.attr('src', src).removeAttr('hidden');
         } else {
             $img.attr('src', '').attr('hidden', true);
+        }
+        if($img.is($ogPreview)){
+            setSocialPreviewImage(src);
         }
     }
 
@@ -111,6 +129,32 @@ $(function(){
     function getDefaultOgDescription(settings){
         const siteName = (settings.site_name || '').trim() || 'SparkCMS';
         return `Stay up to date with the latest updates from ${siteName}.`;
+    }
+
+    function resolveOgTitle(){
+        const ogTitleInput = $('#ogTitle').val().trim();
+        if(ogTitleInput){
+            return ogTitleInput;
+        }
+        return getDefaultOgTitle({
+            site_name: $('#site_name').val(),
+            tagline: $('#tagline').val()
+        });
+    }
+
+    function resolveOgDescription(){
+        const ogDescriptionInput = $('#ogDescription').val().trim();
+        if(ogDescriptionInput){
+            return ogDescriptionInput;
+        }
+        return getDefaultOgDescription({
+            site_name: $('#site_name').val()
+        });
+    }
+
+    function updateSocialPreviewText(){
+        $socialPreviewTitle.text(resolveOgTitle());
+        $socialPreviewDescription.text(resolveOgDescription());
     }
 
     function loadSettings(){
@@ -154,6 +198,10 @@ $(function(){
             $('#ogDescription').val(ogDescriptionValue || getDefaultOgDescription(data));
             setPreviewState($ogPreview, $clearOgImage, openGraph.image || '');
 
+            const hostname = (window.location && window.location.hostname) ? window.location.hostname : 'yourdomain.com';
+            $socialPreviewDomain.text(hostname);
+            updateSocialPreviewText();
+
             updateHeroMeta(data.last_updated || '');
             updateOverview();
         });
@@ -184,6 +232,10 @@ $(function(){
 
     $form.on('input change', 'input, textarea, select', function(){
         updateOverview();
+    });
+
+    $form.on('input change', '#ogTitle, #ogDescription, #site_name, #tagline', function(){
+        updateSocialPreviewText();
     });
 
     $form.on('submit', function(e){
