@@ -6,6 +6,22 @@ $(function(){
     const $saveButton = $('#saveSettingsButton');
     const $logoPreview = $('#logoPreview');
     const $ogPreview = $('#ogImagePreview');
+    const socialFieldSelectors = {
+        facebook: '#facebookLink',
+        twitter: '#twitterLink',
+        instagram: '#instagramLink',
+        linkedin: '#linkedinLink',
+        youtube: '#youtubeLink',
+        tiktok: '#tiktokLink'
+    };
+    const socialFieldLabels = {
+        facebook: 'Facebook',
+        twitter: 'Twitter',
+        instagram: 'Instagram',
+        linkedin: 'LinkedIn',
+        youtube: 'YouTube',
+        tiktok: 'TikTok'
+    };
 
     function formatTimestamp(value){
         if(!value){
@@ -68,6 +84,22 @@ $(function(){
         } else {
             $img.attr('src', '').attr('hidden', true);
         }
+    }
+
+    function setSocialFieldValidity(invalidFields){
+        invalidFields = invalidFields || [];
+        Object.keys(socialFieldSelectors).forEach(function(field){
+            const selector = socialFieldSelectors[field];
+            const $input = $(selector);
+            if(!$input.length){
+                return;
+            }
+            if(invalidFields.includes(field)){
+                $input.addClass('is-danger').attr('aria-invalid', 'true');
+            } else {
+                $input.removeClass('is-danger').removeAttr('aria-invalid');
+            }
+        });
     }
 
     function loadSettings(){
@@ -149,10 +181,20 @@ $(function(){
                 $saveButton.removeClass('is-loading').prop('disabled', false);
             },
             success: function(response){
-                alertModal('Settings saved');
+                let message = 'Settings saved';
                 if(response && response.last_updated){
                     updateHeroMeta(response.last_updated);
                 }
+                if(response && Array.isArray(response.invalid_social_fields) && response.invalid_social_fields.length){
+                    setSocialFieldValidity(response.invalid_social_fields);
+                    const invalidNames = response.invalid_social_fields.map(function(field){
+                        return socialFieldLabels[field] || field;
+                    });
+                    message += '.\nSome social links were not saved. Please enter valid HTTPS URLs for: ' + invalidNames.join(', ');
+                } else {
+                    setSocialFieldValidity([]);
+                }
+                alertModal(message);
                 loadSettings();
             },
             error: function(){

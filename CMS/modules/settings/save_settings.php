@@ -39,8 +39,18 @@ if (!empty($_FILES['logo']['name']) && is_uploaded_file($_FILES['logo']['tmp_nam
 
 $social = is_array($settings['social'] ?? null) ? $settings['social'] : [];
 $socialFields = ['facebook', 'twitter', 'instagram', 'linkedin', 'youtube', 'tiktok'];
+$invalidSocialFields = [];
 foreach ($socialFields as $field) {
-    $social[$field] = sanitize_url($_POST[$field] ?? ($social[$field] ?? ''));
+    if (array_key_exists($field, $_POST)) {
+        $rawValue = is_string($_POST[$field]) ? $_POST[$field] : '';
+        $validatedValue = validate_social_url($rawValue);
+        if ($validatedValue === '' && trim($rawValue) !== '') {
+            $invalidSocialFields[] = $field;
+        }
+        $social[$field] = $validatedValue;
+    } else {
+        $social[$field] = validate_social_url($social[$field] ?? '');
+    }
 }
 $settings['social'] = $social;
 
@@ -69,4 +79,5 @@ echo json_encode([
     'open_graph' => [
         'image' => $openGraph['image'] ?? null,
     ],
+    'invalid_social_fields' => $invalidSocialFields,
 ]);
