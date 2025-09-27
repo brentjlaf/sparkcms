@@ -12,6 +12,8 @@ $(document).ready(function(){
             status: "published",
             publishDate: "2024-01-15T10:00:00",
             tags: "web development, beginner, tutorial",
+            image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=900&q=80",
+            imageAlt: "Developer workstation with laptop and code editor",
             createdAt: new Date("2024-01-15T10:00:00")
         },
         {
@@ -25,6 +27,8 @@ $(document).ready(function(){
             status: "draft",
             publishDate: "",
             tags: "javascript, advanced, programming",
+            image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=900&q=80",
+            imageAlt: "Code snippets on a computer screen with notes",
             createdAt: new Date("2024-01-20T14:30:00")
         },
         {
@@ -38,6 +42,8 @@ $(document).ready(function(){
             status: "scheduled",
             publishDate: "2024-02-01T09:00:00",
             tags: "ai, web design, future, ux",
+            image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80",
+            imageAlt: "Abstract illustration of artificial intelligence concept",
             createdAt: new Date("2024-01-25T16:45:00")
         }
     ];
@@ -45,6 +51,48 @@ $(document).ready(function(){
     let categories = ["Technology", "Programming", "Design", "Marketing", "Business"];
     let authors = [];
     let nextPostId = 4;
+
+    function escapeAttribute(value){
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function getPostInitial(post){
+        const source = (post.title || post.slug || '?').trim();
+        return source ? source.charAt(0).toUpperCase() : '?';
+    }
+
+    function updateImagePreview(url, altText){
+        const preview = $('#postImagePreview');
+        if(url){
+            const safeAlt = escapeAttribute(altText || 'Featured blog image');
+            preview
+                .html(`<img src="${url}" alt="${safeAlt}">`)
+                .addClass('has-image');
+        } else {
+            preview.empty().removeClass('has-image');
+        }
+    }
+
+    function getPreviewAltText(){
+        const explicit = $('#postImageAlt').val();
+        if(explicit && explicit.trim()){
+            return explicit.trim();
+        }
+        const title = $('#postTitle').val();
+        if(title && title.trim()){
+            return title.trim();
+        }
+        return 'Featured blog image';
+    }
+
+    function setImagePreviewFromPost(post){
+        updateImagePreview(post.image || '', post.imageAlt || post.title || '');
+    }
 
     function loadTinyMCE(cb){
         if(window.tinymce){
@@ -133,11 +181,30 @@ $(document).ready(function(){
         renderPosts();
     });
     $('#postTitle').on('input', function(){
+        const value = $(this).val();
         if(!$('#postId').val()){
-            const slug = $(this).val().toLowerCase()
+            const slug = value.toLowerCase()
                 .replace(/[^a-z0-9]+/g,'-')
                 .replace(/^-+|-+$/g,'');
             $('#postSlug').val(slug);
+        }
+        const imageUrl = $('#postImage').val().trim();
+        if(imageUrl && !$('#postImageAlt').val().trim()){
+            updateImagePreview(imageUrl, value.trim());
+        }
+    });
+
+    $('#postImage').on('input change', function(){
+        const url = $(this).val().trim();
+        const alt = getPreviewAltText();
+        updateImagePreview(url, alt);
+    });
+
+    $('#postImageAlt').on('input change', function(){
+        const url = $('#postImage').val().trim();
+        if(url){
+            const alt = getPreviewAltText();
+            updateImagePreview(url, alt);
         }
     });
 
@@ -181,11 +248,21 @@ $(document).ready(function(){
         const tbody = $('#postsTableBody');
         tbody.empty();
         filtered.forEach(post=>{
-            const row = $(
-                `<tr>
+            const safeAlt = escapeAttribute(post.imageAlt || `Featured image for ${post.title || 'blog post'}`);
+            const thumbnail = post.image
+                ? `<div class="blog-table-thumb"><img src="${post.image}" alt="${safeAlt}"></div>`
+                : `<div class="blog-table-thumb blog-table-thumb--empty" aria-hidden="true"><span>${getPostInitial(post)}</span></div>`;
+            const row = $(`
+                <tr>
                     <td>
-                        <div class="post-title">${post.title}</div>
-                        <div class="post-excerpt">${post.excerpt}</div>
+                        <div class="blog-post-cell">
+                            ${thumbnail}
+                            <div>
+                                <div class="post-title">${post.title}</div>
+                                <div class="post-excerpt">${post.excerpt}</div>
+                            </div>
+                        </div>
+                        ${post.image ? '' : '<span class="sr-only">No featured image</span>'}
                     </td>
                     <td>
                         <div class="author-info">
@@ -231,6 +308,8 @@ $(document).ready(function(){
             $('#postTitle').val(post.title);
             $('#postSlug').val(post.slug);
             $('#postExcerpt').val(post.excerpt);
+            $('#postImage').val(post.image || '');
+            $('#postImageAlt').val(post.imageAlt || '');
             if(window.tinymce){
                 tinymce.get('postContent').setContent(post.content);
             }else{
@@ -245,6 +324,7 @@ $(document).ready(function(){
             } else {
                 $('#publishDate').val('');
             }
+            setImagePreviewFromPost(post);
         } else {
             $('#modalTitle').text('New Post');
             $('#postForm')[0].reset();
@@ -255,6 +335,7 @@ $(document).ready(function(){
                 $('#postContent').html('');
             }
             $('#publishDate').val('');
+            setImagePreviewFromPost({});
         }
         openModal('postModal');
     }
@@ -278,6 +359,12 @@ $(document).ready(function(){
                 </div>
             </div>`;
         $('#previewMeta').html(metaHtml);
+        if(post.image){
+            const previewAlt = escapeAttribute(post.imageAlt || `Featured image for ${post.title || 'blog post'}`);
+            $('#previewImage').html(`<figure class="blog-preview-image"><img src="${post.image}" alt="${previewAlt}"></figure>`);
+        } else {
+            $('#previewImage').empty();
+        }
         $('#previewContent').html(post.content);
         $('#editPreviewBtn').data('id', post.id);
         openModal('postPreviewModal');
@@ -299,6 +386,8 @@ $(document).ready(function(){
 
     function savePost(){
         const formData = new FormData($('#postForm')[0]);
+        const imageUrl = (formData.get('image') || '').trim();
+        const imageAlt = (formData.get('imageAlt') || '').trim();
         const data = {
             title: formData.get('title'),
             slug: formData.get('slug'),
@@ -308,7 +397,9 @@ $(document).ready(function(){
             author: formData.get('author'),
             status: formData.get('status'),
             tags: formData.get('tags'),
-            publishDate: formData.get('publishDate')
+            publishDate: formData.get('publishDate'),
+            image: imageUrl,
+            imageAlt
         };
         const id = $('#postId').val();
         if(id){

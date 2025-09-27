@@ -132,6 +132,18 @@
                         <textarea id="postExcerpt" name="excerpt" placeholder="Brief description of the post..."></textarea>
                     </div>
                     <div class="form-group blog-modal__field">
+                        <label for="postImage">Featured Image</label>
+                        <div class="blog-image-input">
+                            <input type="url" id="postImage" name="image" placeholder="https://example.com/featured-image.jpg" aria-describedby="postImageHint">
+                        </div>
+                        <p class="blog-modal__hint" id="postImageHint">Paste an image URL from the Media Library or another trusted source to highlight this post.</p>
+                        <div class="blog-image-preview" id="postImagePreview" aria-live="polite"></div>
+                    </div>
+                    <div class="form-group blog-modal__field">
+                        <label for="postImageAlt">Image alternative text</label>
+                        <input type="text" id="postImageAlt" name="imageAlt" placeholder="Describe the featured image for screen readers">
+                    </div>
+                    <div class="form-group blog-modal__field">
                         <label for="postContent">Content *</label>
                         <div class="editor-container blog-modal__editor">
                             <div id="postContent" class="editor-content" contenteditable="true"></div>
@@ -221,6 +233,7 @@
             </header>
             <div class="blog-modal__body">
                 <div id="previewMeta" class="blog-preview-meta"></div>
+                <div id="previewImage"></div>
                 <div id="previewContent" class="blog-preview-content"></div>
             </div>
             <footer class="blog-modal__footer">
