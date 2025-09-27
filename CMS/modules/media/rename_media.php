@@ -18,6 +18,7 @@ $root = dirname(__DIR__, 2);
 $found = false;
 foreach ($media as &$item) {
     if ($item['id'] === $id) {
+        $existingName = $item['name'];
         $oldPath = $root . '/' . $item['file'];
         $ext = pathinfo($oldPath, PATHINFO_EXTENSION);
         $safe = preg_replace('/[^A-Za-z0-9._-]/', '_', pathinfo($newName, PATHINFO_FILENAME)) . '.' . $ext;
@@ -46,8 +47,14 @@ foreach ($media as &$item) {
             @touch($thumbNew);
             $item['thumbnail'] = $thumbNewRel;
         }
+        $previousTitle = $item['title'] ?? '';
         $item['name'] = $safe;
         $item['file'] = $newRel;
+        if ($previousTitle === '' || $previousTitle === sanitize_text(pathinfo($existingName, PATHINFO_FILENAME))) {
+            $item['title'] = sanitize_text(pathinfo($safe, PATHINFO_FILENAME));
+        } else {
+            $item['title'] = $previousTitle;
+        }
         $found = true;
         break;
     }

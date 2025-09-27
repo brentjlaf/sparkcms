@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $media[] = [
             'id' => uniqid(),
             'name' => $name,
+            'title' => sanitize_text(pathinfo($name, PATHINFO_FILENAME)),
             'file' => str_replace($root . '/', '', $dest),
             'folder' => $folder,
             'size' => $size,

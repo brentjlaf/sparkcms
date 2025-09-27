@@ -172,7 +172,7 @@
                                         <p><strong>Folder:</strong> <span id="infoFolder"></span></p>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label" for="edit-name">Name/Title</label>
+                                        <label class="form-label" for="edit-name">Display Title</label>
                                         <input type="text" id="edit-name" class="form-input">
                                     </div>
                                     <div class="form-group" id="rename-file-group">

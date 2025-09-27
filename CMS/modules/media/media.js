@@ -148,9 +148,10 @@ $(function(){
             images.forEach(img=>{
                 const isImage = img.type === 'images';
                 const src = img.thumbnail ? img.thumbnail : img.file;
+                const displayTitle = (img.title && img.title.trim() !== '') ? img.title : (img.name || '');
                 let preview = '';
                 if(isImage){
-                    preview = '<img src="'+src+'" alt="'+img.name+'">';
+                    preview = '<img src="'+src+'" alt="'+displayTitle+'">';
                 }else{
                     const ext = img.file.split('.').pop().toLowerCase();
                     const icons = {
@@ -176,7 +177,7 @@ $(function(){
                             </div>\
                         </div>\
                         <div class="image-info">\
-                            <h4>'+img.name+'</h4>\
+                            <h4>'+displayTitle+'</h4>\
                             <p>'+formatFileSize(img.size)+'</p>\
                         </div>\
                     </div>');
@@ -277,16 +278,47 @@ $(function(){
         });
     }
 
-    function renameImageDirect(id, newName){
-        if(!newName) return;
+    function updateImageTitle(id, title){
+        const deferred = $.Deferred();
+        $.post('modules/media/update_title.php',{id:id,title:title},function(res){
+            if(res.status==='success'){
+                deferred.resolve(res);
+            }else{
+                alertModal(res.message||'Error updating title');
+                deferred.reject(res);
+            }
+        },'json').fail(function(){
+            alertModal('Error updating title');
+            deferred.reject();
+        });
+        return deferred.promise();
+    }
+
+    function renameImageOnDisk(id, newName){
+        if(!newName){
+            return $.Deferred(function(def){ def.reject(); }).promise();
+        }
+        const deferred = $.Deferred();
         $.post('modules/media/rename_media.php',{id:id,name:newName},function(res){
             if(res.status==='success'){
-                loadImages();
-                loadFolders();
+                deferred.resolve(res);
             }else{
                 alertModal(res.message||'Error renaming file');
+                deferred.reject(res);
             }
-        },'json');
+        },'json').fail(function(){
+            alertModal('Error renaming file');
+            deferred.reject();
+        });
+        return deferred.promise();
+    }
+
+    function renameImageDirect(id, newName){
+        if(!newName) return;
+        renameImageOnDisk(id,newName).done(function(){
+            loadImages();
+            loadFolders();
+        });
     }
 
     function renameImage(id,name){
@@ -299,9 +331,12 @@ $(function(){
     function showImageInfo(id){
         const img = currentImages.find(i=>i.id===id);
         if(!img) return;
-        $('#infoImage').attr('src', img.thumbnail?img.thumbnail:img.file);
-        $('#edit-name').val(img.name);
-        $('#edit-fileName').val(img.name);
+        const displayTitle = (img.title && img.title.trim() !== '') ? img.title : '';
+        const previewSrc = img.thumbnail?img.thumbnail:img.file;
+        $('#infoImage').attr('src', previewSrc).attr('alt', displayTitle || img.name || '');
+        $('#edit-name').val(displayTitle || (img.name || ''));
+        $('#edit-fileName').val(img.name).prop('disabled', true);
+        $('#renamePhysicalCheckbox').prop('checked', false);
         $('#infoType').text(img.type||'');
         $('#infoFile').text(img.name||'');
         $('#infoSize').text(formatFileSize(parseInt(img.size)||0));
@@ -410,14 +445,39 @@ $(function(){
         deleteImage(id);
         closeModal('imageInfoModal');
     });
+    $('#renamePhysicalCheckbox').change(function(){
+        $('#edit-fileName').prop('disabled', !this.checked);
+    });
     $('#saveEditBtn').click(function(){
         const id = $('#imageInfoModal').data('id');
-        const newName = $('#edit-fileName').val().trim();
         const current = currentImages.find(i=>i.id===id) || {};
-        if(newName && newName!==current.name){
-            renameImageDirect(id,newName);
+        const newTitle = $('#edit-name').val().trim();
+        const newFileName = $('#edit-fileName').val().trim();
+        const renamePhysical = $('#renamePhysicalCheckbox').is(':checked');
+        const requests = [];
+
+        if(newTitle !== (current.title || '')){
+            requests.push(updateImageTitle(id, newTitle));
         }
-        closeModal('imageInfoModal');
+
+        if(renamePhysical && newFileName && newFileName!==current.name){
+            requests.push(renameImageOnDisk(id, newFileName));
+        }
+
+        if(requests.length === 0){
+            closeModal('imageInfoModal');
+            return;
+        }
+
+        $.when.apply($, requests)
+            .done(function(){
+                closeModal('imageInfoModal');
+                loadImages();
+                loadFolders();
+            })
+            .fail(function(){
+                // Errors are surfaced via alertModal; keep modal open for corrections.
+            });
     });
 
     $('#imageEditCancel').click(function(){

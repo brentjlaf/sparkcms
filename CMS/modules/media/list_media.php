@@ -7,6 +7,12 @@ require_login();
 
 $mediaFile = __DIR__ . '/../../data/media.json';
 $media = read_json_file($mediaFile);
+foreach ($media as &$entry) {
+    $entry['title'] = isset($entry['title']) && $entry['title'] !== ''
+        ? $entry['title']
+        : sanitize_text(pathinfo($entry['name'] ?? '', PATHINFO_FILENAME));
+}
+unset($entry);
 $query = strtolower(sanitize_text($_GET['q'] ?? ''));
 $folder = sanitize_text($_GET['folder'] ?? '');
 
@@ -16,7 +22,8 @@ usort($media, function($a,$b){
 
 $results = array_filter($media, function($item) use ($query, $folder) {
     if ($folder !== '' && $item['folder'] !== $folder) return false;
-    if ($query && stripos($item['name'], $query) === false &&
+    if ($query && stripos($item['name'] ?? '', $query) === false &&
+        stripos($item['title'] ?? '', $query) === false &&
         (!isset($item['tags']) || stripos(implode(',', $item['tags']), $query) === false)) return false;
     return true;
 });
