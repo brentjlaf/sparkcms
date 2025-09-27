@@ -213,6 +213,10 @@ $(function () {
     }
 
     function handleItemClick(event) {
+        if ($(event.target).closest('.seo-open-detail-page').length) {
+            return;
+        }
+
         const el = event.currentTarget;
         const data = parsePageData(el);
         if (!data) {
@@ -220,6 +224,10 @@ $(function () {
         }
         openDetail(data);
     }
+
+    $dashboard.on('click', '.seo-open-detail-page', function (event) {
+        event.stopPropagation();
+    });
 
     $cards.on('click', handleItemClick);
     $tableRows.on('click', handleItemClick);

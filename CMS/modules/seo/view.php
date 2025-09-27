@@ -1,12 +1,96 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/../../includes/sanitize.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = read_json_file($pagesFile);
 if (!is_array($pages)) {
     $pages = [];
+}
+
+function seo_pluralize(int $count, string $singular, ?string $plural = null): string
+{
+    if ($count === 1) {
+        return $singular;
+    }
+
+    return $plural ?? ($singular . 's');
+}
+
+function seo_status_label(string $status): string
+{
+    switch ($status) {
+        case 'excellent':
+            return 'Excellent';
+        case 'good':
+            return 'Good';
+        case 'warning':
+            return 'Needs Attention';
+        case 'critical':
+            return 'Critical';
+        default:
+            return ucfirst($status);
+    }
+}
+
+function seo_score_gradient(string $status): string
+{
+    switch ($status) {
+        case 'excellent':
+            return 'linear-gradient(135deg, #10b981, #059669)';
+        case 'good':
+            return 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+        case 'warning':
+            return 'linear-gradient(135deg, #f59e0b, #d97706)';
+        case 'critical':
+            return 'linear-gradient(135deg, #ef4444, #dc2626)';
+        default:
+            return 'linear-gradient(135deg, #64748b, #475569)';
+    }
+}
+
+function seo_score_summary(array $entry): string
+{
+    $issues = isset($entry['issues']) && is_array($entry['issues']) ? count($entry['issues']) : 0;
+    $critical = (int) ($entry['critical_count'] ?? 0);
+    $warnings = (int) ($entry['warning_count'] ?? 0);
+
+    switch ($entry['score_status'] ?? '') {
+        case 'excellent':
+            if ($issues === 0) {
+                return 'All SEO fundamentals look great. Keep content fresh to maintain this performance.';
+            }
+
+            return sprintf(
+                'Strong SEO coverage with %d minor %s to monitor.',
+                $warnings,
+                seo_pluralize($warnings, 'opportunity', 'opportunities')
+            );
+        case 'good':
+            return sprintf(
+                'Healthy performance overall. Address %d outstanding %s to push this page into the excellent range.',
+                $issues,
+                seo_pluralize($issues, 'issue')
+            );
+        case 'warning':
+            return sprintf(
+                'Several improvements detected. Resolve %d critical %s and review the remaining warnings to protect rankings.',
+                $critical,
+                seo_pluralize($critical, 'item')
+            );
+        case 'critical':
+            return sprintf(
+                'This page is at risk with %d critical %s and %d additional %s. Prioritize fixes immediately.',
+                $critical,
+                seo_pluralize($critical, 'issue'),
+                $warnings,
+                seo_pluralize($warnings, 'warning')
+            );
+        default:
+            return 'Review the detected items to improve overall SEO quality.';
+    }
 }
 
 $stringLength = function (string $value): int {
@@ -113,7 +197,9 @@ $analyzeContent = static function (string $html): array {
     ];
 };
 
-foreach ($pages as $page) {
+$identifierCounts = [];
+
+foreach ($pages as $pageIndex => $page) {
     $summary['total_pages']++;
 
     $title = isset($page['title']) ? (string) $page['title'] : 'Untitled';
@@ -273,9 +359,18 @@ foreach ($pages as $page) {
 
     $summary['score_sum'] += $score;
 
+    $identifierBase = $slug !== '' ? $slug : 'page-' . ($pageIndex + 1);
+    $identifierCounts[$identifierBase] = ($identifierCounts[$identifierBase] ?? 0) + 1;
+    $identifier = $identifierBase;
+    if ($identifierCounts[$identifierBase] > 1) {
+        $identifier .= '-' . $identifierCounts[$identifierBase];
+    }
+
     $report[] = [
+        'identifier' => $identifier,
         'title' => $title,
         'slug' => $slug,
+        'path' => $slug !== '' ? '/' . ltrim($slug, '/') : '/',
         'meta_title' => $metaTitle,
         'meta_title_length' => $metaTitleLength,
         'meta_title_status' => $metaTitleStatus,
@@ -284,6 +379,7 @@ foreach ($pages as $page) {
         'meta_description_status' => $metaDescriptionStatus,
         'has_social' => $hasSocialPreview,
         'issues' => $issues,
+        'slug_issues' => $slugIssues,
         'score' => $score,
         'score_label' => $scoreLabel,
         'score_status' => $scoreStatus,
@@ -294,6 +390,9 @@ foreach ($pages as $page) {
         'missing_alt_count' => $missingAltCount,
         'internal_link_count' => $internalLinkCount,
         'last_updated' => $formatDate($page['last_modified'] ?? null),
+        'last_updated_ts' => isset($page['last_modified']) && is_numeric($page['last_modified'])
+            ? (int) $page['last_modified']
+            : null,
     ];
 }
 
@@ -301,8 +400,873 @@ $averageScore = $summary['total_pages'] > 0
     ? (int) round($summary['score_sum'] / $summary['total_pages'])
     : 0;
 
+$pageEntryMap = [];
+foreach ($report as $entry) {
+    $pageEntryMap[$entry['identifier']] = $entry;
+}
+
+$moduleUrl = $_SERVER['PHP_SELF'] . '?module=seo';
+$detailBaseUrl = $moduleUrl . '&page=';
+$detailSlug = isset($_GET['page']) ? sanitize_text($_GET['page']) : null;
+$selectedPage = null;
+
+if ($detailSlug !== null && $detailSlug !== '') {
+    $selectedPage = $pageEntryMap[$detailSlug] ?? null;
+}
+
 ?>
 <div class="seo-dashboard" id="seo" data-total-pages="<?php echo (int) $summary['total_pages']; ?>">
+    <?php if ($selectedPage): ?>
+        <?php
+            $issueCount = isset($selectedPage['issues']) ? count($selectedPage['issues']) : 0;
+            $detailSummary = seo_score_summary($selectedPage);
+            $scoreGradient = seo_score_gradient($selectedPage['score_status']);
+            $scoreStatusLabel = seo_status_label($selectedPage['score_status']);
+            $scoreStatusHeadline = [
+                'excellent' => 'Excellent Performance',
+                'good' => 'Good Performance',
+                'warning' => 'Needs Attention',
+                'critical' => 'Critical Risk',
+            ][$selectedPage['score_status']] ?? $scoreStatusLabel;
+
+            $lastUpdatedDisplay = $selectedPage['last_updated'] ?? '—';
+            $lastUpdatedTs = $selectedPage['last_updated_ts'] ?? null;
+            $ageDays = null;
+            if ($lastUpdatedTs !== null) {
+                $ageDays = (int) floor((time() - $lastUpdatedTs) / 86400);
+            }
+
+            $quickStats = [
+                ['label' => 'Issues Found', 'value' => $issueCount],
+                ['label' => 'Critical Issues', 'value' => (int) $selectedPage['critical_count']],
+                ['label' => 'Warnings', 'value' => (int) $selectedPage['warning_count']],
+                ['label' => 'Word Count', 'value' => (int) $selectedPage['word_count']],
+            ];
+
+            $onPageMetrics = [];
+
+            $metaTitleStatus = $selectedPage['meta_title_status'];
+            $metaTitleLength = (int) $selectedPage['meta_title_length'];
+            $onPageMetrics[] = [
+                'icon' => 'fas fa-heading',
+                'label' => 'Meta Title',
+                'description' => $selectedPage['meta_title'] !== ''
+                    ? sprintf('%s (%d characters)', $selectedPage['meta_title'], $metaTitleLength)
+                    : 'Add a concise meta title between 30 and 60 characters.',
+                'status' => $metaTitleStatus,
+                'badge' => $selectedPage['meta_title'] !== ''
+                    ? ($metaTitleStatus === 'good' ? 'Optimized' : 'Adjust Length')
+                    : 'Missing',
+                'impact' => $metaTitleStatus === 'critical' ? 'high' : ($metaTitleStatus === 'warning' ? 'medium' : 'low'),
+            ];
+
+            $metaDescriptionStatus = $selectedPage['meta_description_status'];
+            $metaDescriptionLength = (int) $selectedPage['meta_description_length'];
+            $onPageMetrics[] = [
+                'icon' => 'fas fa-file-alt',
+                'label' => 'Meta Description',
+                'description' => $selectedPage['meta_description'] !== ''
+                    ? sprintf('%s (%d characters)', $selectedPage['meta_description'], $metaDescriptionLength)
+                    : 'Write a compelling summary between 50 and 160 characters to improve click-through rates.',
+                'status' => $metaDescriptionStatus,
+                'badge' => $selectedPage['meta_description'] !== ''
+                    ? ($metaDescriptionStatus === 'good' ? 'Optimized' : 'Adjust Length')
+                    : 'Missing',
+                'impact' => $metaDescriptionStatus === 'critical' ? 'high' : ($metaDescriptionStatus === 'warning' ? 'medium' : 'low'),
+            ];
+
+            $slugStatus = empty($selectedPage['slug_issues']) ? 'good' : 'warning';
+            $onPageMetrics[] = [
+                'icon' => 'fas fa-link',
+                'label' => 'URL Slug',
+                'description' => $selectedPage['slug'] !== ''
+                    ? '/' . ltrim($selectedPage['slug'], '/')
+                    : 'No slug assigned to this page yet.',
+                'status' => $slugStatus,
+                'badge' => $slugStatus === 'good' ? 'Clean' : 'Review',
+                'impact' => $slugStatus === 'good' ? 'low' : 'medium',
+            ];
+
+            $contentMetrics = [];
+            $wordCount = (int) $selectedPage['word_count'];
+            if ($wordCount === 0) {
+                $contentStatus = 'critical';
+                $contentBadge = 'No Content';
+                $contentDescription = 'Add meaningful body copy to help search engines understand this page.';
+            } elseif ($wordCount < 150) {
+                $contentStatus = 'critical';
+                $contentBadge = 'Too Thin';
+                $contentDescription = sprintf('%d words detected. Expand content to at least 300 words for better coverage.', $wordCount);
+            } elseif ($wordCount < 300) {
+                $contentStatus = 'warning';
+                $contentBadge = 'Could Improve';
+                $contentDescription = sprintf('%d words detected. Consider expanding the page to deepen topical relevance.', $wordCount);
+            } else {
+                $contentStatus = 'good';
+                $contentBadge = 'Healthy';
+                $contentDescription = sprintf('%d words detected. Content depth looks solid.', $wordCount);
+            }
+            $contentMetrics[] = [
+                'icon' => 'fas fa-align-left',
+                'label' => 'Content Depth',
+                'description' => $contentDescription,
+                'status' => $contentStatus,
+                'badge' => $contentBadge,
+                'impact' => $contentStatus === 'good' ? 'medium' : 'high',
+            ];
+
+            $h1Count = (int) $selectedPage['h1_count'];
+            if ($h1Count === 0) {
+                $headingStatus = 'critical';
+                $headingBadge = 'Missing';
+                $headingDescription = 'No H1 heading found. Add a single descriptive H1 to anchor the page.';
+            } elseif ($h1Count === 1) {
+                $headingStatus = 'good';
+                $headingBadge = 'In Place';
+                $headingDescription = 'Single H1 heading detected with a clear structure.';
+            } else {
+                $headingStatus = 'warning';
+                $headingBadge = 'Multiple';
+                $headingDescription = sprintf('%d H1 headings detected. Keep only one primary H1 for clarity.', $h1Count);
+            }
+            $contentMetrics[] = [
+                'icon' => 'fas fa-heading',
+                'label' => 'Heading Structure',
+                'description' => $headingDescription,
+                'status' => $headingStatus,
+                'badge' => $headingBadge,
+                'impact' => $headingStatus === 'good' ? 'medium' : 'high',
+            ];
+
+            $missingAlt = (int) $selectedPage['missing_alt_count'];
+            if ($missingAlt === 0) {
+                $altStatus = 'good';
+                $altBadge = 'Complete';
+                $altDescription = 'All images include descriptive alternative text.';
+            } elseif ($missingAlt < 5) {
+                $altStatus = 'warning';
+                $altBadge = 'Add Alt Text';
+                $altDescription = sprintf('%d image%s missing alt text. Add short descriptive text for each image.', $missingAlt, $missingAlt === 1 ? '' : 's');
+            } else {
+                $altStatus = 'critical';
+                $altBadge = 'Missing';
+                $altDescription = sprintf('%d images missing alt text. This impacts accessibility and SEO.', $missingAlt);
+            }
+            $contentMetrics[] = [
+                'icon' => 'fas fa-image',
+                'label' => 'Image Alt Text',
+                'description' => $altDescription,
+                'status' => $altStatus,
+                'badge' => $altBadge,
+                'impact' => $altStatus === 'good' ? 'medium' : 'high',
+            ];
+
+            $internalLinks = (int) $selectedPage['internal_link_count'];
+            if ($internalLinks === 0) {
+                $linkStatus = 'critical';
+                $linkBadge = 'Add Links';
+                $linkDescription = 'No internal links found. Add links to related pages to improve crawlability.';
+            } elseif ($internalLinks < 3) {
+                $linkStatus = 'warning';
+                $linkBadge = 'Low';
+                $linkDescription = sprintf('%d internal link%s detected. Add more contextual links to strengthen site architecture.', $internalLinks, $internalLinks === 1 ? '' : 's');
+            } else {
+                $linkStatus = 'good';
+                $linkBadge = 'Healthy';
+                $linkDescription = sprintf('%d internal links detected. Linking looks balanced.', $internalLinks);
+            }
+            $contentMetrics[] = [
+                'icon' => 'fas fa-sitemap',
+                'label' => 'Internal Linking',
+                'description' => $linkDescription,
+                'status' => $linkStatus,
+                'badge' => $linkBadge,
+                'impact' => $linkStatus === 'good' ? 'medium' : 'high',
+            ];
+
+            $technicalMetrics = [];
+            $technicalMetrics[] = [
+                'icon' => 'fas fa-share-alt',
+                'label' => 'Social Preview',
+                'description' => $selectedPage['has_social']
+                    ? 'OG title, description, and image detected. Social sharing is ready to go.'
+                    : 'Add OG title, description, and image to control how the page appears on social platforms.',
+                'status' => $selectedPage['has_social'] ? 'good' : 'warning',
+                'badge' => $selectedPage['has_social'] ? 'Complete' : 'Incomplete',
+                'impact' => $selectedPage['has_social'] ? 'low' : 'medium',
+            ];
+
+            if ($ageDays !== null) {
+                if ($ageDays <= 90) {
+                    $freshnessStatus = 'good';
+                    $freshnessBadge = 'Fresh';
+                    $freshnessDescription = sprintf('Updated %d day%s ago.', $ageDays, $ageDays === 1 ? '' : 's');
+                } elseif ($ageDays <= 180) {
+                    $freshnessStatus = 'warning';
+                    $freshnessBadge = 'Stale Soon';
+                    $freshnessDescription = sprintf('Updated %d days ago. Plan a refresh to keep content relevant.', $ageDays);
+                } else {
+                    $freshnessStatus = 'warning';
+                    $freshnessBadge = 'Review';
+                    $freshnessDescription = sprintf('Last updated %d days ago. Consider refreshing content and metadata.', $ageDays);
+                }
+            } else {
+                $freshnessStatus = 'warning';
+                $freshnessBadge = 'Unknown';
+                $freshnessDescription = 'No last updated timestamp recorded. Track edits to monitor freshness.';
+            }
+            $technicalMetrics[] = [
+                'icon' => 'fas fa-clock',
+                'label' => 'Content Freshness',
+                'description' => $freshnessDescription,
+                'status' => $freshnessStatus,
+                'badge' => $freshnessBadge,
+                'impact' => 'medium',
+            ];
+
+            $issuesBySeverity = [
+                'critical' => 0,
+                'warning' => 0,
+            ];
+            foreach ($selectedPage['issues'] as $issue) {
+                $severity = $issue['severity'] ?? 'warning';
+                if (isset($issuesBySeverity[$severity])) {
+                    $issuesBySeverity[$severity]++;
+                }
+            }
+        ?>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            .seo-detail-page {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                color: #334155;
+                background: #f8fafc;
+                min-height: 100%;
+            }
+
+            .seo-detail-page a {
+                text-decoration: none;
+            }
+
+            .seo-detail-page .header-section {
+                background: #fff;
+                border-bottom: 1px solid #e2e8f0;
+                padding: 20px 30px;
+            }
+
+            .seo-detail-page .back-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                color: #3b82f6;
+                font-weight: 600;
+                margin-bottom: 15px;
+                padding: 8px 12px;
+                border-radius: 6px;
+                transition: background 0.2s ease;
+            }
+
+            .seo-detail-page .back-btn:hover {
+                background: #eff6ff;
+            }
+
+            .seo-detail-page .page-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+
+            .seo-detail-page .page-info h1 {
+                color: #1e293b;
+                font-size: 24px;
+                margin-bottom: 5px;
+            }
+
+            .seo-detail-page .page-info .url {
+                font-size: 14px;
+                color: #64748b;
+                font-family: monospace;
+            }
+
+            .seo-detail-page .main-content {
+                padding: 30px;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+
+            .seo-detail-page .health-indicator {
+                background: <?php echo $scoreGradient; ?>;
+                color: #fff;
+                padding: 40px;
+                border-radius: 16px;
+                margin-bottom: 30px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .seo-detail-page .health-indicator::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 200px;
+                height: 200px;
+                background: rgba(255, 255, 255, 0.12);
+                border-radius: 50%;
+                transform: translate(50%, -50%);
+            }
+
+            .seo-detail-page .health-content {
+                position: relative;
+                z-index: 1;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .seo-detail-page .health-score {
+                text-align: center;
+            }
+
+            .seo-detail-page .health-score .score-display {
+                font-size: 64px;
+                font-weight: 700;
+            }
+
+            .seo-detail-page .health-score .score-label {
+                font-size: 18px;
+                opacity: 0.9;
+            }
+
+            .seo-detail-page .health-score .score-status {
+                margin-top: 10px;
+                padding: 8px 18px;
+                border-radius: 999px;
+                background: rgba(15, 23, 42, 0.18);
+                font-weight: 600;
+            }
+
+            .seo-detail-page .health-summary h2 {
+                font-size: 28px;
+                margin-bottom: 12px;
+                color: #fff;
+            }
+
+            .seo-detail-page .health-summary p {
+                margin-bottom: 20px;
+                font-size: 16px;
+                color: rgba(255, 255, 255, 0.92);
+            }
+
+            .seo-detail-page .quick-stats {
+                display: flex;
+                gap: 24px;
+                flex-wrap: wrap;
+            }
+
+            .seo-detail-page .quick-stat {
+                text-align: center;
+            }
+
+            .seo-detail-page .quick-stat-value {
+                font-size: 24px;
+                font-weight: 600;
+            }
+
+            .seo-detail-page .quick-stat-label {
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                opacity: 0.85;
+            }
+
+            .seo-detail-page .action-bar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px 24px;
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+                margin-bottom: 30px;
+            }
+
+            .seo-detail-page .action-bar .actions {
+                display: flex;
+                gap: 12px;
+            }
+
+            .seo-detail-page .btn {
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                border: none;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .seo-detail-page .btn-primary {
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                color: #fff;
+            }
+
+            .seo-detail-page .btn-secondary {
+                background: #e2e8f0;
+                color: #1e293b;
+            }
+
+            .seo-detail-page .content-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+
+            .seo-detail-page .section {
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+                overflow: hidden;
+            }
+
+            .seo-detail-page .section-header {
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                color: #fff;
+                padding: 20px 24px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .seo-detail-page .section-header.content-seo {
+                background: linear-gradient(135deg, #10b981, #059669);
+            }
+
+            .seo-detail-page .section-header.technical-seo {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+            }
+
+            .seo-detail-page .section-content {
+                padding: 22px;
+            }
+
+            .seo-detail-page .metric-row {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                padding: 16px 0;
+                border-bottom: 1px solid #f1f5f9;
+            }
+
+            .seo-detail-page .metric-row:last-child {
+                border-bottom: none;
+            }
+
+            .seo-detail-page .metric-icon {
+                width: 44px;
+                height: 44px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+            }
+
+            .seo-detail-page .metric-icon.excellent {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .seo-detail-page .metric-icon.good {
+                background: #dbeafe;
+                color: #1d4ed8;
+            }
+
+            .seo-detail-page .metric-icon.warning {
+                background: #fef3c7;
+                color: #b45309;
+            }
+
+            .seo-detail-page .metric-icon.critical {
+                background: #fee2e2;
+                color: #b91c1c;
+            }
+
+            .seo-detail-page .metric-label {
+                font-weight: 600;
+                color: #1e293b;
+            }
+
+            .seo-detail-page .metric-description {
+                color: #64748b;
+                font-size: 14px;
+            }
+
+            .seo-detail-page .metric-value {
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .seo-detail-page .status-badge {
+                padding: 6px 14px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .seo-detail-page .status-excellent {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .seo-detail-page .status-good {
+                background: #dbeafe;
+                color: #1d4ed8;
+            }
+
+            .seo-detail-page .status-warning {
+                background: #fef3c7;
+                color: #b45309;
+            }
+
+            .seo-detail-page .status-critical {
+                background: #fee2e2;
+                color: #b91c1c;
+            }
+
+            .seo-detail-page .impact-indicator {
+                padding: 4px 10px;
+                border-radius: 999px;
+                font-size: 10px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+            }
+
+            .seo-detail-page .impact-high {
+                background: #fee2e2;
+                color: #b91c1c;
+            }
+
+            .seo-detail-page .impact-medium {
+                background: #fef3c7;
+                color: #b45309;
+            }
+
+            .seo-detail-page .impact-low {
+                background: #e0f2fe;
+                color: #0369a1;
+            }
+
+            .seo-detail-page .issues-section {
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+                padding: 24px;
+            }
+
+            .seo-detail-page .issues-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .seo-detail-page .issues-header h3 {
+                font-size: 20px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                color: #1e293b;
+            }
+
+            .seo-detail-page .issues-list {
+                display: grid;
+                gap: 16px;
+            }
+
+            .seo-detail-page .issue-item {
+                display: flex;
+                gap: 16px;
+                padding: 16px;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                align-items: flex-start;
+            }
+
+            .seo-detail-page .issue-severity {
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+            }
+
+            .seo-detail-page .issue-severity.severity-critical {
+                background: #ef4444;
+            }
+
+            .seo-detail-page .issue-severity.severity-warning {
+                background: #f59e0b;
+            }
+
+            .seo-detail-page .issue-content {
+                flex: 1;
+            }
+
+            .seo-detail-page .issue-title {
+                font-weight: 600;
+                margin-bottom: 6px;
+                color: #1e293b;
+            }
+
+            .seo-detail-page .issue-description {
+                font-size: 14px;
+                color: #475569;
+            }
+
+            .seo-detail-page .issue-badges {
+                margin-top: 10px;
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .seo-detail-page .issue-badge {
+                background: #f1f5f9;
+                padding: 6px 10px;
+                border-radius: 999px;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                color: #475569;
+            }
+
+            .seo-detail-page .issues-empty {
+                text-align: center;
+                padding: 40px 20px;
+                color: #64748b;
+            }
+
+            @media (max-width: 768px) {
+                .seo-detail-page .main-content {
+                    padding: 20px;
+                }
+
+                .seo-detail-page .content-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .seo-detail-page .action-bar {
+                    flex-direction: column;
+                    gap: 16px;
+                    align-items: flex-start;
+                }
+            }
+        </style>
+
+        <div class="seo-detail-page">
+            <header class="header-section">
+                <a class="back-btn" href="<?php echo htmlspecialchars($moduleUrl, ENT_QUOTES, 'UTF-8'); ?>">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Overview
+                </a>
+                <div class="page-header">
+                    <div class="page-info">
+                        <h1><?php echo htmlspecialchars($selectedPage['title'], ENT_QUOTES, 'UTF-8'); ?></h1>
+                        <div class="url"><?php echo htmlspecialchars($selectedPage['slug'] !== '' ? '/' . ltrim($selectedPage['slug'], '/') : 'No slug assigned', ENT_QUOTES, 'UTF-8'); ?></div>
+                    </div>
+                    <div class="header-actions">
+                        <button type="button" class="btn btn-primary">
+                            <i class="fas fa-sync"></i>
+                            Re-analyze Page
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <section class="health-indicator">
+                    <div class="health-content">
+                        <div class="health-score">
+                            <div class="score-display"><?php echo (int) $selectedPage['score']; ?></div>
+                            <div class="score-label">SEO Health Score</div>
+                            <div class="score-status"><?php echo htmlspecialchars($scoreStatusHeadline, ENT_QUOTES, 'UTF-8'); ?></div>
+                        </div>
+                        <div class="health-summary">
+                            <h2>SEO Analysis</h2>
+                            <p><?php echo htmlspecialchars($detailSummary, ENT_QUOTES, 'UTF-8'); ?></p>
+                            <div class="quick-stats">
+                                <?php foreach ($quickStats as $stat): ?>
+                                    <div class="quick-stat">
+                                        <div class="quick-stat-value"><?php echo htmlspecialchars((string) $stat['value'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="quick-stat-label"><?php echo htmlspecialchars($stat['label'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="action-bar">
+                    <div>
+                        <span style="color: #64748b; font-size: 13px;">Last updated: <?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES, 'UTF-8'); ?></span>
+                    </div>
+                    <div class="actions">
+                        <a class="btn btn-secondary" href="<?php echo htmlspecialchars($selectedPage['path'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
+                            <i class="fas fa-external-link-alt"></i>
+                            View Live Page
+                        </a>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <?php if (!empty($onPageMetrics)): ?>
+                        <section class="section">
+                            <div class="section-header">
+                                <i class="fas fa-search"></i>
+                                On-Page SEO Essentials
+                            </div>
+                            <div class="section-content">
+                                <?php foreach ($onPageMetrics as $metric): ?>
+                                    <div class="metric-row">
+                                        <div class="metric-icon <?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
+                                            <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                                        </div>
+                                        <div class="metric-info">
+                                            <div class="metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        </div>
+                                        <div class="metric-value">
+                                            <span class="status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <?php if (!empty($metric['impact'])): ?>
+                                                <span class="impact-indicator impact-<?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </section>
+                    <?php endif; ?>
+
+                    <?php if (!empty($contentMetrics)): ?>
+                        <section class="section">
+                            <div class="section-header content-seo">
+                                <i class="fas fa-file-text"></i>
+                                Content &amp; Structure
+                            </div>
+                            <div class="section-content">
+                                <?php foreach ($contentMetrics as $metric): ?>
+                                    <div class="metric-row">
+                                        <div class="metric-icon <?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
+                                            <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                                        </div>
+                                        <div class="metric-info">
+                                            <div class="metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        </div>
+                                        <div class="metric-value">
+                                            <span class="status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <?php if (!empty($metric['impact'])): ?>
+                                                <span class="impact-indicator impact-<?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </section>
+                    <?php endif; ?>
+
+                    <?php if (!empty($technicalMetrics)): ?>
+                        <section class="section">
+                            <div class="section-header technical-seo">
+                                <i class="fas fa-cogs"></i>
+                                Technical SEO
+                            </div>
+                            <div class="section-content">
+                                <?php foreach ($technicalMetrics as $metric): ?>
+                                    <div class="metric-row">
+                                        <div class="metric-icon <?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
+                                            <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                                        </div>
+                                        <div class="metric-info">
+                                            <div class="metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        </div>
+                                        <div class="metric-value">
+                                            <span class="status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <?php if (!empty($metric['impact'])): ?>
+                                                <span class="impact-indicator impact-<?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </section>
+                    <?php endif; ?>
+                </div>
+
+                <section class="issues-section">
+                    <div class="issues-header">
+                        <h3>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Priority Issues &amp; Recommendations
+                        </h3>
+                        <span class="status-badge status-<?php echo $issueCount === 0 ? 'excellent' : ($issuesBySeverity['critical'] > 0 ? 'critical' : 'warning'); ?>"><?php echo htmlspecialchars($issueCount . ' ' . seo_pluralize($issueCount, 'Issue'), ENT_QUOTES, 'UTF-8'); ?></span>
+                    </div>
+                    <?php if ($issueCount === 0): ?>
+                        <div class="issues-empty">
+                            <i class="fas fa-check-circle" style="font-size: 40px; color: #10b981; margin-bottom: 10px;"></i>
+                            <h4>Nothing critical found</h4>
+                            <p>Great work! Keep monitoring this page for future improvements.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="issues-list">
+                            <?php foreach ($selectedPage['issues'] as $issue): ?>
+                                <?php $severity = $issue['severity'] ?? 'warning'; ?>
+                                <div class="issue-item">
+                                    <div class="issue-severity severity-<?php echo htmlspecialchars($severity, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <i class="fas fa-exclamation"></i>
+                                    </div>
+                                    <div class="issue-content">
+                                        <div class="issue-title"><?php echo htmlspecialchars($issue['message'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="issue-description">
+                                            <?php
+                                                if ($severity === 'critical') {
+                                                    echo 'Resolve this immediately to avoid search visibility losses.';
+                                                } else {
+                                                    echo 'Review and fix to strengthen overall optimization.';
+                                                }
+                                            ?>
+                                        </div>
+                                        <div class="issue-badges">
+                                            <span class="issue-badge"><?php echo htmlspecialchars(seo_status_label($severity), ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </section>
+            </main>
+        </div>
+    <?php else: ?>
     <style>
         .seo-dashboard {
             font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -523,6 +1487,22 @@ $averageScore = $summary['total_pages'] > 0
             flex-wrap: wrap;
             gap: 8px;
         }
+        .seo-dashboard .seo-card-actions {
+            margin-top: 16px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .seo-dashboard .seo-card-action-link {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4f46e5;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .seo-dashboard .seo-card-action-link:hover {
+            text-decoration: underline;
+        }
         .seo-dashboard .seo-tag {
             font-size: 11px;
             font-weight: 600;
@@ -562,6 +1542,17 @@ $averageScore = $summary['total_pages'] > 0
             text-align: left;
             vertical-align: top;
             font-size: 14px;
+        }
+        .seo-dashboard .seo-table-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #4f46e5;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .seo-dashboard .seo-table-link:hover {
+            text-decoration: underline;
         }
         .seo-dashboard tbody tr {
             cursor: pointer;
@@ -834,6 +1825,12 @@ $averageScore = $summary['total_pages'] > 0
                             <?php endif; ?>
                         </div>
                     </div>
+                    <div class="seo-card-actions">
+                        <a class="seo-card-action-link seo-open-detail-page" href="<?php echo htmlspecialchars($detailBaseUrl . rawurlencode($entry['identifier']), ENT_QUOTES, 'UTF-8'); ?>">
+                            View full report
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
                 </article>
             <?php endforeach; ?>
         </div>
@@ -885,6 +1882,12 @@ $averageScore = $summary['total_pages'] > 0
                                     <?php echo htmlspecialchars($entry['title']); ?>
                                 </div>
                                 <div class="seo-card-url" style="margin-bottom: 0;">/<?php echo htmlspecialchars($entry['slug']); ?></div>
+                                <div>
+                                    <a class="seo-table-link seo-open-detail-page" href="<?php echo htmlspecialchars($detailBaseUrl . rawurlencode($entry['identifier']), ENT_QUOTES, 'UTF-8'); ?>">
+                                        View full report
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </div>
                             </td>
                             <td>
                                 <span class="seo-status-badge <?php echo htmlspecialchars($entry['score_status']); ?>"><?php echo (int) $entry['score']; ?> &bull; <?php echo htmlspecialchars($entry['score_label']); ?></span>
@@ -989,4 +1992,5 @@ $averageScore = $summary['total_pages'] > 0
             </div>
         </div>
     </div>
+    <?php endif; ?>
 </div>
