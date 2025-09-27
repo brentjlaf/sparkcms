@@ -1,8 +1,10 @@
 <?php
-require_once __DIR__ . '/../../includes/auth.php';
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/calendar_helpers.php';
-require_login();
+
+header('Content-Type: application/json');
 
 date_default_timezone_set('America/Los_Angeles');
 
@@ -15,6 +17,16 @@ $month = isset($_GET['month']) ? (int) $_GET['month'] : (int) date('n');
 $year = isset($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
 $search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
 $categoryFilter = isset($_GET['category']) ? trim((string) $_GET['category']) : '';
+$timezone = isset($_GET['timezone']) ? trim((string) $_GET['timezone']) : '';
+
+if ($timezone !== '') {
+    try {
+        $tz = new DateTimeZone($timezone);
+        date_default_timezone_set($tz->getName());
+    } catch (Exception $e) {
+        // Ignore invalid timezone values and continue with default.
+    }
+}
 
 if ($month < 1 || $month > 12) {
     http_response_code(400);
@@ -41,7 +53,7 @@ foreach ($categories as $category) {
     $categoryMap[$category['id']] = [
         'id' => $category['id'],
         'name' => $category['name'] ?? 'Category',
-        'color' => $category['color'] ?? '#2563eb'
+        'color' => $category['color'] ?? '#2563eb',
     ];
 }
 
@@ -54,6 +66,7 @@ foreach ($events as $event) {
     if (!is_array($event) || empty($event['id']) || empty($event['title'])) {
         continue;
     }
+
     $recurrenceType = normalize_recurrence_type($event['recurrence']['type'] ?? ($event['recurrence_type'] ?? 'none'));
     if ($recurrenceType !== 'none') {
         $recurringSeries++;
@@ -78,7 +91,6 @@ foreach ($events as $event) {
     $occurrences = generate_occurrences($event, $monthStart, $monthEnd, $category, $recurrenceType);
     $results = array_merge($results, $occurrences);
 
-    // Build upcoming list regardless of filter window but still respecting filters
     $upcomingOccurrences = generate_occurrences($event, $upcomingStart, $upcomingEnd, $category, $recurrenceType);
     if ($upcomingOccurrences) {
         $upcoming = array_merge($upcoming, $upcomingOccurrences);
@@ -97,13 +109,14 @@ $meta = [
     'eventsThisMonth' => count($results),
     'recurringSeries' => $recurringSeries,
     'categories' => count($categoryMap),
-    'lastUpdated' => date('M j, Y g:i A')
+    'lastUpdated' => date('M j, Y g:i A'),
 ];
 
 echo json_encode([
     'status' => 'success',
     'events' => $results,
     'upcoming' => array_slice($upcoming, 0, 10),
-    'meta' => $meta
+    'categories' => array_values($categoryMap),
+    'meta' => $meta,
 ]);
 exit;
