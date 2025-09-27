@@ -6,6 +6,105 @@ $(function(){
     let currentFormId = null;
     let formsCache = [];
 
+    const FIELD_TYPE_LABELS = {
+        text: 'Text input',
+        email: 'Email',
+        password: 'Password',
+        number: 'Number',
+        date: 'Date',
+        textarea: 'Textarea',
+        select: 'Select',
+        checkbox: 'Checkbox',
+        radio: 'Radio',
+        file: 'File upload',
+        submit: 'Submit button'
+    };
+
+    const FIELD_DEFAULT_LABELS = {
+        text: 'Text input',
+        email: 'Email address',
+        password: 'Password',
+        number: 'Number',
+        date: 'Date',
+        textarea: 'Message',
+        select: 'Select an option',
+        checkbox: 'Checkbox',
+        radio: 'Radio choice',
+        file: 'File upload',
+        submit: 'Submit'
+    };
+
+    function slugifyName(value){
+        return String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
+    }
+
+    function ensureUniqueName(base, $input){
+        const existing = new Set();
+        $('#formPreview .field-name').each(function(){
+            if($input && this === $input[0]) return;
+            const val = $(this).val().trim();
+            if(val){
+                existing.add(val);
+            }
+        });
+        let candidate = base || 'field';
+        if(!existing.has(candidate)){
+            return candidate;
+        }
+        let counter = 2;
+        let suffixless = candidate.replace(/_\d+$/, '');
+        if(!suffixless){
+            suffixless = 'field';
+        }
+        candidate = suffixless + '_' + counter;
+        while(existing.has(candidate)){
+            counter++;
+            candidate = suffixless + '_' + counter;
+        }
+        return candidate;
+    }
+
+    function generateAutoName(label, $input){
+        const base = slugifyName(label);
+        return ensureUniqueName(base || 'field', $input);
+    }
+
+    function setManualNameFlag($input, manual){
+        if(!$input || !$input.length) return;
+        $input.data('manual', manual === true);
+        if(manual){
+            $input.attr('data-manual', 'true');
+        } else {
+            $input.removeAttr('data-manual');
+        }
+    }
+
+    function isManualName($input){
+        if(!$input || !$input.length) return false;
+        return $input.data('manual') === true;
+    }
+
+    function showBuilderAlert(message, tone){
+        const $alert = $('#formBuilderAlert');
+        if(!$alert.length) return;
+        const typeClass = tone === 'success' ? 'form-alert--success' : 'form-alert--error';
+        $alert
+            .removeClass('form-alert--error form-alert--success')
+            .addClass(typeClass)
+            .text(message)
+            .show();
+    }
+
+    function hideBuilderAlert(){
+        const $alert = $('#formBuilderAlert');
+        if(!$alert.length) return;
+        $alert.removeClass('form-alert--error form-alert--success').hide().text('');
+    }
+
     function formatStatValue(value){
         if (value === null || typeof value === 'undefined') {
             return '—';
@@ -216,33 +315,44 @@ $(function(){
 
     function updatePreview($li){
         const type = $li.data('type');
-        const label = $li.find('.field-label').val() || '';
-        const name = $li.find('.field-name').val() || '';
-        const required = $li.find('.field-required').is(':checked') ? ' required' : '';
-        const options = $li.find('.field-options-input').val() || '';
+        const labelValue = ($li.find('.field-label').val() || '').trim();
+        const nameValue = ($li.find('.field-name').val() || '').trim();
+        const hasRequiredToggle = $li.find('.field-required').length > 0;
+        const required = hasRequiredToggle && $li.find('.field-required').is(':checked') ? ' required' : '';
+        const options = ($li.find('.field-options-input').val() || '').trim();
+        const labelHtml = labelValue ? escapeHtml(labelValue) : '<span class="field-placeholder">Label</span>';
+        const nameAttr = nameValue ? ' name="'+escapeHtml(nameValue)+'"' : '';
         let html = '';
         switch(type){
             case 'textarea':
-                html = '<div class="form-group"><label>'+label+'</label><textarea name="'+name+'"'+required+'></textarea></div>'; break;
+                html = '<div class="form-group"><label>'+labelHtml+'</label><textarea'+nameAttr+required+'></textarea></div>';
+                break;
             case 'select':
                 const opts = options.split(',').map(o=>o.trim()).filter(Boolean);
-                html = '<div class="form-group"><label>'+label+'</label><select name="'+name+'"'+required+'>'+opts.map(o=>'<option>'+o+'</option>').join('')+'</select></div>'; break;
+                html = '<div class="form-group"><label>'+labelHtml+'</label><select'+nameAttr+required+'>'+opts.map(o=>'<option>'+escapeHtml(o)+'</option>').join('')+'</select></div>';
+                break;
             case 'checkbox':
             case 'radio':
                 const optList = options.split(',').map(o=>o.trim()).filter(Boolean);
                 if(optList.length){
-                    html = '<div class="form-group"><label>'+label+'</label><div>';
-                    optList.forEach(o=>{ html += '<label><input type="'+type+'" name="'+name+'" value="'+o+'"> '+o+'</label> '; });
+                    html = '<div class="form-group"><label>'+labelHtml+'</label><div>';
+                    optList.forEach(o=>{
+                        const optionHtml = escapeHtml(o);
+                        const valueAttr = ' value="'+optionHtml+'"';
+                        html += '<label><input type="'+type+'"'+nameAttr+valueAttr+'> '+optionHtml+'</label> ';
+                    });
                     html += '</div></div>';
                 } else {
-                    html = '<div class="form-group"><label><input type="'+type+'" name="'+name+'"'+required+'> '+label+'</label></div>';
+                    html = '<div class="form-group"><label><input type="'+type+'"'+nameAttr+required+'> '+labelHtml+'</label></div>';
                 }
                 break;
             case 'submit':
-                html = '<div class="form-group"><button type="submit">'+(label||'Submit')+'</button></div>'; break;
+                html = '<div class="form-group"><button type="submit">'+(labelValue ? escapeHtml(labelValue) : 'Submit')+'</button></div>';
+                break;
             default:
                 const inputType = type === 'date' ? 'date' : type;
-                html = '<div class="form-group"><label>'+label+'</label><input type="'+inputType+'" name="'+name+'"'+required+'></div>'; break;
+                html = '<div class="form-group"><label>'+labelHtml+'</label><input type="'+inputType+'"'+nameAttr+required+'></div>';
+                break;
         }
         $li.find('.field-preview').html(html);
     }
@@ -259,7 +369,7 @@ $(function(){
             currentField.addClass('selected');
             $('#fieldSettings').append(currentField.find('.field-body').show());
         } else {
-            $('#fieldSettings').html('<p>Select a field to edit</p>');
+            $('#fieldSettings').html('<p>Select a field in the preview to edit its settings.</p>');
         }
     }
 
@@ -282,6 +392,7 @@ $(function(){
         if(typeof title === 'string' && title){
             $('#formBuilderTitle').text(title);
         }
+        hideBuilderAlert();
         $('#formBuilderCard').show();
         setTimeout(focusFormBuilder, 60);
     }
@@ -334,51 +445,180 @@ $(function(){
         });
     }
 
-    function addField(type, field){
+    function addField(type, field, options){
         field = field || {};
+        options = options || {};
+        const suppressSelect = options.suppressSelect === true;
+        const isNew = options.isNew === true;
+        const typeLabel = FIELD_TYPE_LABELS[type] || (type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Field');
         const $li = $('<li class="field-item" data-type="'+type+'"></li>');
-        $li.append('<div class="field-bar"><span class="drag-handle">&#9776;</span> <span class="field-type">'+type+'</span> <button type="button" class="btn btn-danger btn-sm removeField">X</button></div>');
+        const $bar = $('<div class="field-bar"></div>');
+        $bar.append('<span class="drag-handle" aria-hidden="true">&#9776;</span>');
+        $bar.append('<span class="field-type">'+escapeHtml(typeLabel)+'</span>');
+        $bar.append('<button type="button" class="btn btn-danger btn-sm removeField" aria-label="Remove '+escapeHtml(typeLabel)+'">×</button>');
         const preview = $('<div class="field-preview"></div>');
         const body = $('<div class="field-body"></div>');
-        body.append('<div class="form-group"><label class="form-label">Label</label><input type="text" class="form-input field-label"></div>');
-        body.append('<div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input field-name"></div>');
+
+        const labelGroup = $('<div class="form-group"></div>');
+        labelGroup.append('<label class="form-label">Label</label>');
+        const labelInput = $('<input type="text" class="form-input field-label" placeholder="Field label">');
+        labelGroup.append(labelInput);
+        body.append(labelGroup);
+
+        const nameGroup = $('<div class="form-group"></div>');
+        nameGroup.append('<label class="form-label">Name</label>');
+        const nameInput = $('<input type="text" class="form-input field-name" placeholder="e.g. email_address">');
+        nameGroup.append(nameInput);
+        nameGroup.append('<p class="field-help">Used in submissions and embeds. Letters, numbers, underscores, and hyphens work best.</p>');
+        body.append(nameGroup);
+
+        let requiredInput = null;
         if(type !== 'submit'){
-            body.append('<div class="form-group"><label><input type="checkbox" class="field-required"> Required</label></div>');
+            const requiredGroup = $('<div class="form-group"></div>');
+            requiredGroup.append('<label><input type="checkbox" class="field-required"> Required</label>');
+            body.append(requiredGroup);
+            requiredInput = requiredGroup.find('.field-required');
         }
+
+        let optionsInput = null;
         if(['select','radio','checkbox'].includes(type)){
-            body.append('<div class="form-group field-options"><label class="form-label">Options (comma separated)</label><input type="text" class="form-input field-options-input"></div>');
+            const optionsGroup = $('<div class="form-group field-options"></div>');
+            optionsGroup.append('<label class="form-label">Options</label>');
+            optionsInput = $('<input type="text" class="form-input field-options-input" placeholder="Option 1, Option 2">');
+            optionsGroup.append(optionsInput);
+            optionsGroup.append('<p class="field-help">Separate each choice with a comma.</p>');
+            body.append(optionsGroup);
         }
-        $li.append(preview).append(body.hide());
+
+        $li.append($bar).append(preview).append(body.hide());
+
+        const initialLabel = (typeof field.label === 'string' && field.label !== '')
+            ? field.label
+            : (isNew ? (FIELD_DEFAULT_LABELS[type] || '') : (field.label || ''));
+        if(initialLabel){
+            labelInput.val(initialLabel);
+        }
+
+        if(field.name){
+            nameInput.val(String(field.name));
+            setManualNameFlag(nameInput, true);
+        } else {
+            const autoName = generateAutoName(labelInput.val() || typeLabel, nameInput);
+            nameInput.val(autoName);
+            setManualNameFlag(nameInput, false);
+        }
+
+        if(requiredInput && field.required){
+            requiredInput.prop('checked', true);
+        }
+        if(optionsInput){
+            if(Array.isArray(field.options)){
+                optionsInput.val(field.options.join(', '));
+            } else if(typeof field.options === 'string'){
+                optionsInput.val(field.options);
+            }
+        }
+
+        labelInput.on('input', function(){
+            if(!isManualName(nameInput)){
+                const autoName = generateAutoName($(this).val() || typeLabel, nameInput);
+                nameInput.val(autoName);
+                setManualNameFlag(nameInput, false);
+            }
+            updatePreview($li);
+        });
+
+        labelInput.on('blur', function(){
+            if(!isManualName(nameInput)){
+                const autoName = generateAutoName($(this).val() || typeLabel, nameInput);
+                nameInput.val(autoName);
+                setManualNameFlag(nameInput, false);
+            }
+            updatePreview($li);
+        });
+
+        nameInput.on('input', function(){
+            const value = $(this).val();
+            if(value.trim() === ''){
+                setManualNameFlag(nameInput, false);
+            } else {
+                setManualNameFlag(nameInput, true);
+            }
+            updatePreview($li);
+        });
+
+        nameInput.on('blur', function(){
+            if($(this).val().trim() === ''){
+                const autoName = generateAutoName(labelInput.val() || typeLabel, nameInput);
+                $(this).val(autoName);
+                setManualNameFlag(nameInput, false);
+                updatePreview($li);
+            }
+        });
+
         body.on('input change', 'input, textarea', function(){ updatePreview($li); });
-        if(field.label) $li.find('.field-label').val(field.label);
-        if(field.name) $li.find('.field-name').val(field.name);
-        if(field.required && type !== 'submit') $li.find('.field-required').prop('checked', true);
-        if(field.options) $li.find('.field-options-input').val(field.options);
+
         $li.on('click', function(){ selectField($li); });
+
         updatePreview($li);
         $('#formPreview').append($li);
+        if(!suppressSelect){
+            selectField($li);
+        }
+        hideBuilderAlert();
     }
+
+    $('#fieldPalette').on('click', '.palette-item', function(e){
+        e.preventDefault();
+        const type = $(this).data('type');
+        if(type){
+            addField(type, {}, { isNew: true });
+        }
+    });
+
+    $('#fieldPalette').on('keydown', '.palette-item', function(e){
+        if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+            e.preventDefault();
+            const type = $(this).data('type');
+            if(type){
+                addField(type, {}, { isNew: true });
+            }
+        }
+    });
 
     $('.palette-item').draggable({ helper:'clone', revert:'invalid' });
 
     $('#formPreview').sortable({ placeholder:'ui-sortable-placeholder' }).droppable({
         accept:'.palette-item',
-        drop:function(e,ui){ addField(ui.draggable.data('type')); }
+        drop:function(e,ui){
+            const type = ui.draggable.data('type');
+            if(type){
+                addField(type, {}, { isNew: true });
+            }
+        }
     });
 
     $('#newFormBtn').on('click', function(){
+        const form = document.getElementById('formBuilderForm');
+        if(form){
+            form.reset();
+        }
         $('#formId').val('');
-        $('#formName').val('');
         $('#formPreview').empty();
         selectField(null);
+        hideBuilderAlert();
         revealFormBuilder('Add Form');
     });
 
     $('#cancelFormEdit').on('click', function(){
         $('#formBuilderCard').hide();
-        $('#formBuilderForm')[0].reset();
+        const form = document.getElementById('formBuilderForm');
+        if(form){
+            form.reset();
+        }
         $('#formPreview').empty();
         selectField(null);
+        hideBuilderAlert();
     });
 
     $('#formsTable').on('click', '.viewSubmissions', function(){
@@ -404,11 +644,22 @@ $(function(){
         $.getJSON('modules/forms/list_forms.php', function(forms){
             const f = forms.find(x=>x.id==id);
             if(!f) return;
+            const form = document.getElementById('formBuilderForm');
+            if(form){
+                form.reset();
+            }
             $('#formId').val(f.id);
             $('#formName').val(f.name);
             $('#formPreview').empty();
             selectField(null);
-            (f.fields||[]).forEach(fd=>addField(fd.type, fd));
+            hideBuilderAlert();
+            (f.fields||[]).forEach(fd=>addField(fd.type, fd, { suppressSelect: true }));
+            const firstField = $('#formPreview > li').first();
+            if(firstField.length){
+                selectField(firstField);
+            } else {
+                selectField(null);
+            }
             revealFormBuilder('Edit Form');
         });
     });
@@ -424,32 +675,127 @@ $(function(){
 
     $('#formBuilderForm').on('submit', function(e){
         e.preventDefault();
+        hideBuilderAlert();
         selectField(null);
-        const fields = [];
-        $('#formPreview > li').each(function(){
+
+        const formName = ($('#formName').val() || '').trim();
+        if(!formName){
+            showBuilderAlert('Give your form a name before saving.');
+            $('#formName').focus();
+            return;
+        }
+
+        const $items = $('#formPreview > li');
+        if(!$items.length){
+            showBuilderAlert('Add at least one field before saving.');
+            return;
+        }
+
+        let missingLabels = 0;
+        let missingNames = 0;
+        const nameCounts = {};
+        $items.removeClass('field-error');
+
+        $items.each(function(){
             const $li = $(this);
-            const f = {
-                type: $li.data('type'),
-                label: $li.find('.field-label').val(),
-                name: $li.find('.field-name').val()
-            };
-            if(f.type !== 'submit'){
-                f.required = $li.find('.field-required').is(':checked');
+            const labelVal = ($li.find('.field-label').val() || '').trim();
+            const nameVal = ($li.find('.field-name').val() || '').trim();
+            if(!labelVal){
+                missingLabels++;
+                $li.addClass('field-error');
             }
-            if(['select','radio','checkbox'].includes(f.type)) f.options = $li.find('.field-options-input').val();
-            fields.push(f);
+            if(!nameVal){
+                missingNames++;
+                $li.addClass('field-error');
+            } else {
+                nameCounts[nameVal] = (nameCounts[nameVal] || 0) + 1;
+            }
         });
-        $.post('modules/forms/save_form.php',{
+
+        const duplicateNames = Object.keys(nameCounts).filter(function(name){
+            return nameCounts[name] > 1;
+        });
+
+        if(duplicateNames.length){
+            $items.each(function(){
+                const $li = $(this);
+                const nameVal = ($li.find('.field-name').val() || '').trim();
+                if(duplicateNames.includes(nameVal)){
+                    $li.addClass('field-error');
+                }
+            });
+        }
+
+        const errors = [];
+        if(missingLabels){
+            errors.push(missingLabels === 1 ? 'One field is missing a label.' : missingLabels + ' fields are missing labels.');
+        }
+        if(missingNames){
+            errors.push(missingNames === 1 ? 'One field needs a field name.' : missingNames + ' fields need field names.');
+        }
+        if(duplicateNames.length){
+            errors.push('Field names must be unique. Duplicate names: ' + duplicateNames.join(', ') + '.');
+        }
+
+        if(errors.length){
+            showBuilderAlert(errors.join(' '));
+            const $firstError = $('#formPreview > li.field-error').first();
+            if($firstError.length){
+                selectField($firstError);
+                try {
+                    $firstError[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (err) {
+                    // ignore scroll errors
+                }
+            }
+            return;
+        }
+
+        const fields = [];
+        $items.each(function(){
+            const $li = $(this);
+            const type = $li.data('type');
+            const labelVal = ($li.find('.field-label').val() || '').trim();
+            const nameVal = ($li.find('.field-name').val() || '').trim();
+            const fieldData = {
+                type: type,
+                label: labelVal,
+                name: nameVal
+            };
+            if(type !== 'submit'){
+                fieldData.required = $li.find('.field-required').is(':checked');
+            }
+            if(['select','radio','checkbox'].includes(type)){
+                const rawOptions = ($li.find('.field-options-input').val() || '')
+                    .split(',')
+                    .map(function(opt){ return opt.trim(); })
+                    .filter(Boolean);
+                fieldData.options = rawOptions.join(', ');
+            }
+            fields.push(fieldData);
+        });
+
+        const payload = {
             id: $('#formId').val(),
-            name: $('#formName').val(),
+            name: formName,
             fields: JSON.stringify(fields)
-        }, function(){
-            $('#formBuilderCard').hide();
-            $('#formBuilderForm')[0].reset();
-            $('#formPreview').empty();
-            selectField(null);
-            loadForms();
-        });
+        };
+
+        $.post('modules/forms/save_form.php', payload)
+            .done(function(){
+                $('#formBuilderCard').hide();
+                const form = document.getElementById('formBuilderForm');
+                if(form){
+                    form.reset();
+                }
+                $('#formPreview').empty();
+                selectField(null);
+                hideBuilderAlert();
+                loadForms();
+            })
+            .fail(function(){
+                showBuilderAlert('Unable to save the form. Please try again.');
+            });
     });
 
     $('#formPreview').on('click','.removeField',function(e){
@@ -457,6 +803,10 @@ $(function(){
         const li = $(this).closest('li');
         if(currentField && currentField[0] === li[0]) selectField(null);
         li.remove();
+        if(!$('#formPreview > li').length){
+            selectField(null);
+        }
+        hideBuilderAlert();
     });
 
     $('#fieldSettings').on('input change', '.field-body input, .field-body textarea', function(){

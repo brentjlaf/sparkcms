@@ -176,8 +176,11 @@ $lastSubmissionLabel = $latestSubmission > 0
                 <input type="hidden" name="id" id="formId">
                 <div class="form-group">
                     <label class="form-label" for="formName">Form name</label>
-                    <input type="text" class="form-input" id="formName" name="name" required>
+                    <input type="text" class="form-input" id="formName" name="name" required aria-describedby="formNameHint">
+                    <p class="form-hint" id="formNameHint">Use a descriptive name so teammates can quickly identify the form.</p>
                 </div>
+                <div class="form-alert" id="formBuilderAlert" role="alert" aria-live="assertive" style="display:none;"></div>
+                <p class="builder-tip">Drag inputs from the palette or press Enter on a field type to add it instantly.</p>
                 <div class="builder-container">
                     <div id="fieldPalette" aria-label="Form fields palette">
                         <div class="palette-heading">Field types</div>
@@ -196,7 +199,7 @@ $lastSubmissionLabel = $latestSubmission > 0
                     <div class="builder-columns">
                         <ul id="formPreview" class="field-list" aria-label="Form preview" data-placeholder="Drop fields here"></ul>
                         <div id="fieldSettings" class="field-settings">
-                            <p>Select a field to edit</p>
+                            <p>Select a field in the preview to edit its settings.</p>
                         </div>
                     </div>
                 </div>

@@ -4125,6 +4125,43 @@
             border-radius: 6px;
             cursor: grab;
             text-align: center;
+            transition: background 0.2s ease;
+        }
+        .palette-item:focus,
+        .palette-item:hover {
+            background: #cbd5f5;
+            outline: none;
+        }
+        .palette-item:focus-visible {
+            outline: 3px solid #63b3ed;
+            outline-offset: 2px;
+        }
+        .builder-tip {
+            margin: 0 0 16px;
+            font-size: 0.95rem;
+            color: #4a5568;
+        }
+        .form-alert {
+            margin-bottom: 16px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            border: 1px solid transparent;
+        }
+        .form-alert--error {
+            background: #fff5f5;
+            border-color: #feb2b2;
+            color: #c53030;
+        }
+        .form-alert--success {
+            background: #f0fff4;
+            border-color: #9ae6b4;
+            color: #2f855a;
+        }
+        .form-hint {
+            margin-top: 6px;
+            font-size: 0.85rem;
+            color: #718096;
         }
         .field-list {
             list-style: none;
@@ -4153,6 +4190,10 @@
         .field-item.selected {
             border-color: #4299e1;
         }
+        .field-item.field-error {
+            border-color: #e53e3e;
+            box-shadow: 0 0 0 1px rgba(229, 62, 62, 0.3);
+        }
         #fieldSettings {
             width: 260px;
             border: 1px solid #e2e8f0;
@@ -4160,6 +4201,15 @@
             padding: 10px;
             background: #fff;
             height: fit-content;
+        }
+        .field-placeholder {
+            color: #a0aec0;
+            font-style: italic;
+        }
+        .field-help {
+            margin-top: 4px;
+            font-size: 0.8rem;
+            color: #718096;
         }
         .field-bar {
             display: flex;
