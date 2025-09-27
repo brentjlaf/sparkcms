@@ -553,6 +553,24 @@ $dashboardStats = [
                 <button type="button" class="a11y-filter-btn" data-a11y-filter="partial">Needs Work <span class="a11y-filter-count" data-count="partial"><?php echo $filterCounts['partial']; ?></span></button>
                 <button type="button" class="a11y-filter-btn" data-a11y-filter="compliant">WCAG Compliant <span class="a11y-filter-count" data-count="compliant"><?php echo $filterCounts['compliant']; ?></span></button>
             </div>
+            <div class="a11y-sort-group" role="group" aria-label="Sort pages">
+                <button type="button" class="a11y-sort-btn active" data-a11y-sort="score-desc">
+                    <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
+                    <span>Score (High–Low)</span>
+                </button>
+                <button type="button" class="a11y-sort-btn" data-a11y-sort="score-asc">
+                    <i class="fas fa-sort-amount-up" aria-hidden="true"></i>
+                    <span>Score (Low–High)</span>
+                </button>
+                <button type="button" class="a11y-sort-btn" data-a11y-sort="violations-desc">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    <span>Most Issues</span>
+                </button>
+                <button type="button" class="a11y-sort-btn" data-a11y-sort="title-asc">
+                    <i class="fas fa-sort-alpha-down" aria-hidden="true"></i>
+                    <span>Title (A–Z)</span>
+                </button>
+            </div>
             <div class="a11y-view-toggle" role="group" aria-label="Toggle layout">
                 <button type="button" class="a11y-view-btn active" data-a11y-view="grid" aria-label="Grid view">
                     <i class="fas fa-th-large" aria-hidden="true"></i>
