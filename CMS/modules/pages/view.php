@@ -54,25 +54,27 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
 ?>
 <div class="content-section" id="pages">
     <div class="pages-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?>">
-        <header class="pages-hero">
-            <div class="pages-hero-content">
-                <span class="pages-hero-label">Content</span>
-                <h2 class="pages-hero-title">Pages</h2>
-                <p class="pages-hero-subtitle">Keep your site structure organised and publish updates with confidence.</p>
-                <div class="pages-hero-actions">
-                    <button type="button" class="pages-btn pages-btn--primary" id="newPageBtn">
+        <header class="a11y-hero pages-hero">
+            <div class="a11y-hero-content pages-hero-content">
+                <div>
+                    <span class="a11y-hero-label pages-hero-label">Content</span>
+                    <h2 class="a11y-hero-title pages-hero-title">Pages</h2>
+                    <p class="a11y-hero-subtitle pages-hero-subtitle">Keep your site structure organised and publish updates with confidence.</p>
+                </div>
+                <div class="a11y-hero-actions pages-hero-actions">
+                    <button type="button" class="a11y-btn a11y-btn--primary" id="newPageBtn">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <span>New Page</span>
                     </button>
-                    <a class="pages-btn pages-btn--ghost" href="../" target="_blank" rel="noopener">
+                    <a class="a11y-btn a11y-btn--ghost" href="../" target="_blank" rel="noopener">
                         <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
                         <span>View Site</span>
                     </a>
+                    <span class="a11y-hero-meta pages-hero-meta">
+                        <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                        Last edit: <?php echo htmlspecialchars($lastUpdatedDisplay); ?>
+                    </span>
                 </div>
-                <span class="pages-hero-meta">
-                    <i class="fa-solid fa-clock" aria-hidden="true"></i>
-                    Last edit: <?php echo htmlspecialchars($lastUpdatedDisplay); ?>
-                </span>
             </div>
             <div class="pages-overview-grid">
                 <div class="pages-overview-card">

@@ -1,24 +1,24 @@
 <!-- File: view.php -->
 <div class="content-section" id="blogs">
     <div class="blog-dashboard">
-        <header class="blog-hero">
-            <div class="blog-hero-content">
+        <header class="a11y-hero blog-hero">
+            <div class="a11y-hero-content blog-hero-content">
                 <div>
-                    <h2 class="blog-hero-title">Editorial Dashboard</h2>
-                    <p class="blog-hero-subtitle">Plan, publish, and measure the health of your content pipeline.</p>
+                    <h2 class="a11y-hero-title blog-hero-title">Editorial Dashboard</h2>
+                    <p class="a11y-hero-subtitle blog-hero-subtitle">Plan, publish, and measure the health of your content pipeline.</p>
                 </div>
-                <div class="blog-hero-actions">
-                    <button type="button" class="blog-btn blog-btn--ghost" id="categoriesBtn">
+                <div class="a11y-hero-actions blog-hero-actions">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" id="categoriesBtn">
                         <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
                         <span>Manage Categories</span>
                     </button>
-                    <button type="button" class="blog-btn blog-btn--primary" id="newPostBtn">
+                    <button type="button" class="a11y-btn a11y-btn--primary" id="newPostBtn">
                         <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                         <span>New Post</span>
                     </button>
                 </div>
             </div>
-            <div class="blog-hero-meta">
+            <div class="a11y-hero-meta blog-hero-meta">
                 <i class="fa-regular fa-clock" aria-hidden="true"></i>
                 <span id="blogsLastUpdated">No posts yet</span>
             </div>

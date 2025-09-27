@@ -90,23 +90,23 @@ $filterCounts = [
 ?>
 <div class="content-section" id="menus">
     <div class="menu-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedIso, ENT_QUOTES); ?>">
-        <header class="menu-hero">
-            <div class="menu-hero-content">
+        <header class="a11y-hero menu-hero">
+            <div class="a11y-hero-content menu-hero-content">
                 <div>
-                    <h2 class="menu-hero-title">Navigation Menus</h2>
-                    <p class="menu-hero-subtitle">Craft intuitive navigation experiences and keep every menu in sync with your site's structure.</p>
+                    <h2 class="a11y-hero-title menu-hero-title">Navigation Menus</h2>
+                    <p class="a11y-hero-subtitle menu-hero-subtitle">Craft intuitive navigation experiences and keep every menu in sync with your site's structure.</p>
                 </div>
-                <div class="menu-hero-actions">
-                    <button type="button" class="menu-btn menu-btn--primary" id="newMenuBtn">
+                <div class="a11y-hero-actions menu-hero-actions">
+                    <button type="button" class="a11y-btn a11y-btn--primary" id="newMenuBtn">
                         <i class="fas fa-plus" aria-hidden="true"></i>
                         <span>New Menu</span>
                     </button>
-                    <button type="button" class="menu-btn menu-btn--icon" id="refreshMenusBtn" aria-label="Refresh menus">
+                    <button type="button" class="a11y-btn a11y-btn--icon" id="refreshMenusBtn" aria-label="Refresh menus">
                         <i class="fas fa-rotate" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
-            <span class="menu-hero-meta">
+            <span class="a11y-hero-meta menu-hero-meta">
                 <i class="fas fa-clock" aria-hidden="true"></i>
                 Last updated: <span class="js-last-updated"><?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?></span>
             </span>

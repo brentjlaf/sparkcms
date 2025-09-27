@@ -1,25 +1,27 @@
 <!-- File: view.php -->
                 <div class="content-section active" id="dashboard">
                     <div class="dashboard-shell">
-                        <header class="dashboard-hero">
-                            <div class="dashboard-hero-content">
-                                <span class="dashboard-hero-label">Control centre</span>
-                                <h2 class="dashboard-hero-title">Dashboard overview</h2>
-                                <p class="dashboard-hero-subtitle">
+                        <header class="a11y-hero dashboard-hero">
+                            <div class="a11y-hero-content dashboard-hero-content">
+                                <div>
+                                    <span class="a11y-hero-label dashboard-hero-label">Control centre</span>
+                                    <h2 class="a11y-hero-title dashboard-hero-title">Dashboard overview</h2>
+                                    <p class="a11y-hero-subtitle dashboard-hero-subtitle">
                                     Monitor the health of your content, media, and optimisation efforts from one unified view.
-                                </p>
-                                <div class="dashboard-hero-actions">
-                                    <button type="button" class="dashboard-btn dashboard-btn--primary" id="dashboardRefresh">
+                                    </p>
+                                </div>
+                                <div class="a11y-hero-actions dashboard-hero-actions">
+                                    <button type="button" class="a11y-btn a11y-btn--primary" id="dashboardRefresh">
                                         <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                                         <span>Refresh insights</span>
                                     </button>
-                                    <a class="dashboard-btn dashboard-btn--ghost" href="../" target="_blank" rel="noopener">
+                                    <a class="a11y-btn a11y-btn--ghost" href="../" target="_blank" rel="noopener">
                                         <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
                                         <span>View site</span>
                                     </a>
                                 </div>
                             </div>
-                            <div class="dashboard-hero-meta" id="dashboardLastUpdated" aria-live="polite">
+                            <div class="a11y-hero-meta dashboard-hero-meta" id="dashboardLastUpdated" aria-live="polite">
                                 Insights update automatically every few moments.
                             </div>
                         </header>

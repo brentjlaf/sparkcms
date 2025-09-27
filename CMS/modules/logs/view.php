@@ -162,28 +162,30 @@ if ($uniqueUsersCount === 1) {
 ?>
 <div class="content-section" id="logs">
     <div class="logs-dashboard" data-logs="<?php echo $logsJson; ?>" data-endpoint="modules/logs/list_logs.php">
-        <header class="logs-hero">
-            <div class="logs-hero-copy">
-                <h2 class="logs-hero-title">Activity Logs</h2>
-                <p class="logs-hero-subtitle">Monitor publishing events, workflow actions, and page edits from a single, friendly timeline.</p>
-                <div class="logs-hero-meta">
-                    <div>
-                        <span class="logs-hero-meta__label">Last activity</span>
-                        <span class="logs-hero-meta__value" id="logsLastActivity" title="<?php echo htmlspecialchars($lastActivityExact, ENT_QUOTES, 'UTF-8'); ?>">
-                            <?php echo htmlspecialchars($lastActivityLabel, ENT_QUOTES, 'UTF-8'); ?>
-                        </span>
+        <header class="a11y-hero logs-hero">
+            <div class="a11y-hero-content logs-hero-content">
+                <div class="logs-hero-copy">
+                    <h2 class="a11y-hero-title logs-hero-title">Activity Logs</h2>
+                    <p class="a11y-hero-subtitle logs-hero-subtitle">Monitor publishing events, workflow actions, and page edits from a single, friendly timeline.</p>
+                    <div class="logs-hero-meta">
+                        <div>
+                            <span class="logs-hero-meta__label">Last activity</span>
+                            <span class="logs-hero-meta__value" id="logsLastActivity" title="<?php echo htmlspecialchars($lastActivityExact, ENT_QUOTES, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($lastActivityLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </span>
                     </div>
                     <div>
                         <span class="logs-hero-meta__label">Past 24 hours</span>
                         <span class="logs-hero-meta__value" id="logsPast24h"><?php echo $last24Hours; ?></span>
                     </div>
+                    </div>
                 </div>
-            </div>
-            <div class="logs-hero-actions">
-                <button type="button" class="logs-btn logs-btn--ghost" id="logsRefreshBtn">
-                    <i class="fas fa-rotate" aria-hidden="true"></i>
-                    <span>Refresh</span>
-                </button>
+                <div class="a11y-hero-actions logs-hero-actions">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" id="logsRefreshBtn">
+                        <i class="fas fa-rotate" aria-hidden="true"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
             </div>
         </header>
 

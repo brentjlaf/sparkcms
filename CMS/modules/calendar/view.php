@@ -6,18 +6,18 @@ date_default_timezone_set('America/Los_Angeles');
 ?>
 <div class="content-section" id="calendar">
     <div class="calendar-dashboard" data-timezone="America/Los_Angeles">
-        <header class="calendar-hero">
-            <div class="calendar-hero__content">
+        <header class="a11y-hero calendar-hero">
+            <div class="a11y-hero-content calendar-hero__content">
                 <div>
-                    <h2 class="calendar-hero__title">Events &amp; Campaign Calendar</h2>
-                    <p class="calendar-hero__subtitle">Plan launches, keep teams aligned, and give stakeholders a single source of truth for every upcoming milestone.</p>
+                    <h2 class="a11y-hero-title calendar-hero__title">Events &amp; Campaign Calendar</h2>
+                    <p class="a11y-hero-subtitle calendar-hero__subtitle">Plan launches, keep teams aligned, and give stakeholders a single source of truth for every upcoming milestone.</p>
                 </div>
-                <div class="calendar-hero__actions">
-                    <button type="button" class="calendar-btn calendar-btn--ghost" id="calendarManageCategoriesBtn">
+                <div class="a11y-hero-actions calendar-hero__actions">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" id="calendarManageCategoriesBtn">
                         <i class="fa-solid fa-palette" aria-hidden="true"></i>
                         <span>Manage categories</span>
                     </button>
-                    <button type="button" class="calendar-btn calendar-btn--primary" id="calendarNewEventBtn">
+                    <button type="button" class="a11y-btn a11y-btn--primary" id="calendarNewEventBtn">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <span>New event</span>
                     </button>
