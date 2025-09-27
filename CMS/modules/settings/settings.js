@@ -149,14 +149,32 @@ $(function(){
                 $saveButton.removeClass('is-loading').prop('disabled', false);
             },
             success: function(response){
-                alertModal('Settings saved');
-                if(response && response.last_updated){
-                    updateHeroMeta(response.last_updated);
+                if(response && response.status === 'ok'){
+                    alertModal('Settings saved');
+                    if(response.last_updated){
+                        updateHeroMeta(response.last_updated);
+                    }
+                    loadSettings();
+                } else {
+                    const message = (response && response.message) ? response.message : 'Unable to save settings';
+                    alertModal(message);
                 }
-                loadSettings();
             },
-            error: function(){
-                alertModal('Unable to save settings');
+            error: function(xhr){
+                let message = 'Unable to save settings';
+                if(xhr && xhr.responseJSON && xhr.responseJSON.message){
+                    message = xhr.responseJSON.message;
+                } else if(xhr && xhr.responseText){
+                    try {
+                        const parsed = JSON.parse(xhr.responseText);
+                        if(parsed && parsed.message){
+                            message = parsed.message;
+                        }
+                    } catch (e) {
+                        // ignore JSON parse errors
+                    }
+                }
+                alertModal(message);
             }
         });
     });

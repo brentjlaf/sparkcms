@@ -28,6 +28,84 @@ if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
 
+$allowedImageTypes = [
+    'image/gif',
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+];
+$maxUploadSize = 5 * 1024 * 1024; // 5 MB
+
+function validate_image_upload(array $file, array $allowedTypes, int $maxSize, string $fieldLabel)
+{
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE || empty($file['tmp_name'])) {
+        return ['valid' => true];
+    }
+
+    if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+        return [
+            'valid' => false,
+            'message' => sprintf('%s upload failed. Please try again.', $fieldLabel),
+        ];
+    }
+
+    if (!is_uploaded_file($file['tmp_name'])) {
+        return [
+            'valid' => false,
+            'message' => sprintf('%s upload failed validation.', $fieldLabel),
+        ];
+    }
+
+    if (isset($file['size']) && $file['size'] > $maxSize) {
+        return [
+            'valid' => false,
+            'message' => sprintf('%s must be smaller than %d MB.', $fieldLabel, (int) ($maxSize / (1024 * 1024))),
+        ];
+    }
+
+    $mime = null;
+    if (class_exists('finfo')) {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']);
+    }
+
+    if (!$mime && function_exists('getimagesize')) {
+        $imageInfo = @getimagesize($file['tmp_name']);
+        if ($imageInfo && isset($imageInfo['mime'])) {
+            $mime = $imageInfo['mime'];
+        }
+    }
+
+    if (!$mime || !in_array($mime, $allowedTypes, true)) {
+        return [
+            'valid' => false,
+            'message' => sprintf('%s must be a valid image (PNG, JPG, GIF, or WebP).', $fieldLabel),
+        ];
+    }
+
+    return ['valid' => true];
+}
+
+$logoValidation = validate_image_upload($_FILES['logo'] ?? [], $allowedImageTypes, $maxUploadSize, 'Logo');
+if (!$logoValidation['valid']) {
+    http_response_code(400);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $logoValidation['message'],
+    ]);
+    exit;
+}
+
+$ogValidation = validate_image_upload($_FILES['ogImage'] ?? [], $allowedImageTypes, $maxUploadSize, 'Open graph image');
+if (!$ogValidation['valid']) {
+    http_response_code(400);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $ogValidation['message'],
+    ]);
+    exit;
+}
+
 if (!empty($_FILES['logo']['name']) && is_uploaded_file($_FILES['logo']['tmp_name'])) {
     $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
     $safe = 'logo_' . uniqid('', true) . '.' . $ext;
