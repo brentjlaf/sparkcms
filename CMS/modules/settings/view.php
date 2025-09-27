@@ -203,6 +203,27 @@
                         </div>
                         <div class="form-help">Upload a 1200 × 630px image for social sharing cards.</div>
                     </div>
+
+                    <div class="social-preview" id="socialSharePreview">
+                        <div class="social-preview-header">
+                            <h3 class="social-preview-heading">Live Share Preview</h3>
+                            <p class="social-preview-subheading">See how your default Open Graph content appears on social platforms.</p>
+                        </div>
+                        <div class="social-preview-card" role="presentation">
+                            <div class="social-preview-media">
+                                <img id="socialPreviewImage" alt="Social share image preview" hidden>
+                                <div class="social-preview-media__fallback" id="socialPreviewImageFallback">
+                                    <span class="social-preview-media__icon"><i class="fas fa-image" aria-hidden="true"></i></span>
+                                    <span class="social-preview-media__text">1200 × 630</span>
+                                </div>
+                            </div>
+                            <div class="social-preview-body">
+                                <span class="social-preview-domain" id="socialPreviewDomain"></span>
+                                <h4 class="social-preview-title" id="socialPreviewTitle">My Awesome Website</h4>
+                                <p class="social-preview-description" id="socialPreviewDescription">Give people a compelling reason to click.</p>
+                            </div>
+                        </div>
+                    </div>
                 </article>
             </section>
         </div>
