@@ -20,6 +20,37 @@ $settings['timezone'] = sanitize_text($_POST['timezone'] ?? ($settings['timezone
 $settings['googleAnalytics'] = sanitize_text($_POST['googleAnalytics'] ?? ($settings['googleAnalytics'] ?? ''));
 $settings['googleSearchConsole'] = sanitize_text($_POST['googleSearchConsole'] ?? ($settings['googleSearchConsole'] ?? ''));
 $settings['facebookPixel'] = sanitize_text($_POST['facebookPixel'] ?? ($settings['facebookPixel'] ?? ''));
+$validationErrors = [];
+
+if ($settings['googleAnalytics'] !== '') {
+    $gaId = $settings['googleAnalytics'];
+    if (!preg_match('/^(G-[A-Z0-9]{6,}|UA-\d{4,10}-\d{1,4})$/i', $gaId)) {
+        $validationErrors['googleAnalytics'] = 'Invalid Google Analytics ID. Use formats like G-XXXXXXXXXX or UA-XXXXXXXX-X.';
+    }
+}
+
+if ($settings['googleSearchConsole'] !== '') {
+    $gscToken = $settings['googleSearchConsole'];
+    if (!preg_match('/^google-site-verification=[A-Za-z0-9_-]{10,100}$/i', $gscToken)) {
+        $validationErrors['googleSearchConsole'] = 'Invalid Google Search Console verification token. Paste the value exactly as provided (e.g. google-site-verification=...).';
+    }
+}
+
+if ($settings['facebookPixel'] !== '') {
+    $pixelId = $settings['facebookPixel'];
+    if (!preg_match('/^\d{7,20}$/', $pixelId)) {
+        $validationErrors['facebookPixel'] = 'Invalid Facebook Pixel ID. Pixel IDs should be numeric, typically 15-16 digits.';
+    }
+}
+
+if (!empty($validationErrors)) {
+    http_response_code(422);
+    echo json_encode([
+        'status' => 'error',
+        'errors' => $validationErrors,
+    ]);
+    exit;
+}
 $settings['generateSitemap'] = isset($_POST['generateSitemap']);
 $settings['allowIndexing'] = isset($_POST['allowIndexing']);
 

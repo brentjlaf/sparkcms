@@ -7,6 +7,48 @@ $(function(){
     const $logoPreview = $('#logoPreview');
     const $ogPreview = $('#ogImagePreview');
 
+    function clearValidationErrors(){
+        $form.find('.form-group').removeClass('has-error');
+        $form.find('.form-error-message').remove();
+        $form.find('[aria-invalid="true"]').removeAttr('aria-invalid');
+    }
+
+    function applyValidationErrors(errors){
+        if(!errors) {
+            return;
+        }
+        let $firstInvalid = null;
+        Object.keys(errors).forEach(function(field){
+            const message = errors[field];
+            const $input = $('#' + field);
+            if(!$input.length){
+                return;
+            }
+            const $group = $input.closest('.form-group');
+            if(!$group.length){
+                return;
+            }
+            $group.addClass('has-error');
+            $input.attr('aria-invalid', 'true');
+            const $message = $('<div>', {
+                class: 'form-error-message',
+                text: message
+            });
+            const $help = $group.find('.form-help').last();
+            if($help.length){
+                $help.after($message);
+            } else {
+                $group.append($message);
+            }
+            if(!$firstInvalid){
+                $firstInvalid = $input;
+            }
+        });
+        if($firstInvalid){
+            $firstInvalid.trigger('focus');
+        }
+    }
+
     function formatTimestamp(value){
         if(!value){
             return 'Not saved yet';
@@ -143,19 +185,37 @@ $(function(){
             contentType: false,
             dataType: 'json',
             beforeSend: function(){
+                clearValidationErrors();
                 $saveButton.addClass('is-loading').prop('disabled', true);
             },
             complete: function(){
                 $saveButton.removeClass('is-loading').prop('disabled', false);
             },
             success: function(response){
+                if(response && response.status === 'error' && response.errors){
+                    clearValidationErrors();
+                    applyValidationErrors(response.errors);
+                    const firstMessage = Object.keys(response.errors)
+                        .map(function(key){ return response.errors[key]; })[0];
+                    alertModal(firstMessage || 'Unable to save settings');
+                    return;
+                }
+                clearValidationErrors();
                 alertModal('Settings saved');
                 if(response && response.last_updated){
                     updateHeroMeta(response.last_updated);
                 }
                 loadSettings();
             },
-            error: function(){
+            error: function(jqXHR){
+                const response = jqXHR.responseJSON;
+                if(response && response.errors){
+                    applyValidationErrors(response.errors);
+                    const firstMessage = Object.keys(response.errors)
+                        .map(function(key){ return response.errors[key]; })[0];
+                    alertModal(firstMessage || 'Unable to save settings');
+                    return;
+                }
                 alertModal('Unable to save settings');
             }
         });
