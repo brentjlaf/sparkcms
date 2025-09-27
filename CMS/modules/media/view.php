@@ -1,13 +1,13 @@
 <!-- File: view.php -->
                 <div class="content-section" id="media">
                     <div class="media-dashboard">
-                        <header class="media-hero">
-                            <div class="media-hero-content">
+                        <header class="a11y-hero media-hero">
+                            <div class="a11y-hero-content media-hero-content">
                                 <div>
-                                    <h2 class="media-hero-title">Media Library</h2>
-                                    <p class="media-hero-subtitle">Keep your images, documents, and videos organised with a modern, visual workspace that mirrors the accessibility dashboard experience.</p>
+                                    <h2 class="a11y-hero-title media-hero-title">Media Library</h2>
+                                    <p class="a11y-hero-subtitle media-hero-subtitle">Keep your images, documents, and videos organised with a modern, visual workspace that mirrors the accessibility dashboard experience.</p>
                                 </div>
-                                <div class="media-hero-actions">
+                                <div class="a11y-hero-actions media-hero-actions">
                                     <button type="button" class="media-btn media-btn--ghost" id="createFolderBtn">
                                         <i class="fa-solid fa-folder-plus" aria-hidden="true"></i>
                                         <span>New Folder</span>
@@ -36,31 +36,30 @@
                                     <span id="mediaStorageSummary">0 used</span>
                                 </span>
                             </div>
+                            <div class="a11y-overview-grid media-overview-grid">
+                                <div class="a11y-overview-card media-overview-card">
+                                    <span class="media-overview-icon"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></span>
+                                    <div class="media-overview-content">
+                                        <span class="a11y-overview-label media-overview-label">Folders</span>
+                                        <span class="a11y-overview-value media-overview-value" id="totalFolders">0</span>
+                                    </div>
+                                </div>
+                                <div class="a11y-overview-card media-overview-card">
+                                    <span class="media-overview-icon"><i class="fa-solid fa-images" aria-hidden="true"></i></span>
+                                    <div class="media-overview-content">
+                                        <span class="a11y-overview-label media-overview-label">Files</span>
+                                        <span class="a11y-overview-value media-overview-value" id="totalImages">0</span>
+                                    </div>
+                                </div>
+                                <div class="a11y-overview-card media-overview-card">
+                                    <span class="media-overview-icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span>
+                                    <div class="media-overview-content">
+                                        <span class="a11y-overview-label media-overview-label">Storage Used</span>
+                                        <span class="a11y-overview-value media-overview-value" id="totalSize">0</span>
+                                    </div>
+                                </div>
+                            </div>
                         </header>
-
-                        <div class="media-overview-grid">
-                            <article class="media-overview-card">
-                                <span class="media-overview-icon"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></span>
-                                <div class="media-overview-content">
-                                    <span class="media-overview-label">Folders</span>
-                                    <span class="media-overview-value" id="totalFolders">0</span>
-                                </div>
-                            </article>
-                            <article class="media-overview-card">
-                                <span class="media-overview-icon"><i class="fa-solid fa-images" aria-hidden="true"></i></span>
-                                <div class="media-overview-content">
-                                    <span class="media-overview-label">Files</span>
-                                    <span class="media-overview-value" id="totalImages">0</span>
-                                </div>
-                            </article>
-                            <article class="media-overview-card">
-                                <span class="media-overview-icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span>
-                                <div class="media-overview-content">
-                                    <span class="media-overview-label">Storage Used</span>
-                                    <span class="media-overview-value" id="totalSize">0</span>
-                                </div>
-                            </article>
-                        </div>
 
                         <div class="media-workspace">
                             <div class="media-sidebar">

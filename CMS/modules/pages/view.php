@@ -54,12 +54,14 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
 ?>
 <div class="content-section" id="pages">
     <div class="pages-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?>">
-        <header class="pages-hero">
-            <div class="pages-hero-content">
-                <span class="pages-hero-label">Content</span>
-                <h2 class="pages-hero-title">Pages</h2>
-                <p class="pages-hero-subtitle">Keep your site structure organised and publish updates with confidence.</p>
-                <div class="pages-hero-actions">
+        <header class="a11y-hero pages-hero">
+            <div class="a11y-hero-content pages-hero-content">
+                <div>
+                    <span class="pages-hero-label">Content</span>
+                    <h2 class="a11y-hero-title pages-hero-title">Pages</h2>
+                    <p class="a11y-hero-subtitle pages-hero-subtitle">Keep your site structure organised and publish updates with confidence.</p>
+                </div>
+                <div class="a11y-hero-actions pages-hero-actions">
                     <button type="button" class="pages-btn pages-btn--primary" id="newPageBtn">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <span>New Page</span>
@@ -68,28 +70,28 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                         <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
                         <span>View Site</span>
                     </a>
+                    <span class="a11y-hero-meta pages-hero-meta">
+                        <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                        Last edit: <?php echo htmlspecialchars($lastUpdatedDisplay); ?>
+                    </span>
                 </div>
-                <span class="pages-hero-meta">
-                    <i class="fa-solid fa-clock" aria-hidden="true"></i>
-                    Last edit: <?php echo htmlspecialchars($lastUpdatedDisplay); ?>
-                </span>
             </div>
-            <div class="pages-overview-grid">
-                <div class="pages-overview-card">
-                    <div class="pages-overview-value"><?php echo $totalPages; ?></div>
-                    <div class="pages-overview-label">Total Pages</div>
+            <div class="a11y-overview-grid pages-overview-grid">
+                <div class="a11y-overview-card pages-overview-card">
+                    <div class="a11y-overview-label pages-overview-label">Total Pages</div>
+                    <div class="a11y-overview-value pages-overview-value"><?php echo $totalPages; ?></div>
                 </div>
-                <div class="pages-overview-card">
-                    <div class="pages-overview-value"><?php echo $publishedPages; ?></div>
-                    <div class="pages-overview-label">Published</div>
+                <div class="a11y-overview-card pages-overview-card">
+                    <div class="a11y-overview-label pages-overview-label">Published</div>
+                    <div class="a11y-overview-value pages-overview-value"><?php echo $publishedPages; ?></div>
                 </div>
-                <div class="pages-overview-card">
-                    <div class="pages-overview-value"><?php echo $draftPages; ?></div>
-                    <div class="pages-overview-label">Drafts</div>
+                <div class="a11y-overview-card pages-overview-card">
+                    <div class="a11y-overview-label pages-overview-label">Drafts</div>
+                    <div class="a11y-overview-value pages-overview-value"><?php echo $draftPages; ?></div>
                 </div>
-                <div class="pages-overview-card">
-                    <div class="pages-overview-value"><?php echo $totalViews; ?></div>
-                    <div class="pages-overview-label">Total Views</div>
+                <div class="a11y-overview-card pages-overview-card">
+                    <div class="a11y-overview-label pages-overview-label">Total Views</div>
+                    <div class="a11y-overview-value pages-overview-value"><?php echo $totalViews; ?></div>
                 </div>
             </div>
         </header>

@@ -97,26 +97,25 @@ $lastSubmissionLabel = $latestSubmission > 0
                     </span>
                 </div>
             </div>
+            <div class="a11y-overview-grid forms-overview">
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="formsStatForms"><?php echo (int) $totalForms; ?></div>
+                    <div class="a11y-overview-label">Published forms</div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="formsStatActive"><?php echo (int) $activeFormsCount; ?></div>
+                    <div class="a11y-overview-label">Collecting responses</div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="formsStatSubmissions"><?php echo (int) $totalSubmissions; ?></div>
+                    <div class="a11y-overview-label">Total submissions</div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="formsStatRecent"><?php echo (int) $recentSubmissions; ?></div>
+                    <div class="a11y-overview-label">Last 30 days</div>
+                </div>
+            </div>
         </header>
-
-        <div class="a11y-overview-grid forms-overview">
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="formsStatForms"><?php echo (int) $totalForms; ?></div>
-                <div class="a11y-overview-label">Published forms</div>
-            </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="formsStatActive"><?php echo (int) $activeFormsCount; ?></div>
-                <div class="a11y-overview-label">Collecting responses</div>
-            </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="formsStatSubmissions"><?php echo (int) $totalSubmissions; ?></div>
-                <div class="a11y-overview-label">Total submissions</div>
-            </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="formsStatRecent"><?php echo (int) $recentSubmissions; ?></div>
-                <div class="a11y-overview-label">Last 30 days</div>
-            </div>
-        </div>
 
         <div class="forms-main-grid">
             <section class="a11y-detail-card forms-table-card">
