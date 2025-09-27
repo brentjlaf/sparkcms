@@ -63,12 +63,28 @@ $logs = [];
 foreach ($historyData as $pid => $entries) {
     foreach ($entries as $entry) {
         $actionLabel = normalize_action_label($entry['action'] ?? '');
+        $context = $entry['context'] ?? (is_numeric($pid) ? 'page' : 'system');
+        $details = $entry['details'] ?? [];
+        if (!is_array($details)) {
+            $details = $details !== '' ? [$details] : [];
+        }
+        $pageTitle = $entry['page_title'] ?? null;
+        if ($pageTitle === null) {
+            if ($context === 'system') {
+                $pageTitle = 'System activity';
+            } else {
+                $pageTitle = $pageLookup[$pid] ?? 'Unknown';
+            }
+        }
         $logs[] = [
             'time' => (int)($entry['time'] ?? 0),
             'user' => $entry['user'] ?? '',
-            'page_title' => $pageLookup[$pid] ?? 'Unknown',
+            'page_title' => $pageTitle,
             'action' => $actionLabel,
             'action_slug' => slugify_action_label($actionLabel),
+            'details' => $details,
+            'context' => $context,
+            'meta' => $entry['meta'] ?? new stdClass(),
         ];
     }
 }
@@ -241,7 +257,11 @@ if ($uniqueUsersCount === 1) {
     $timestamp = (int) $log['time'];
     $relative = describe_time_ago($timestamp, false);
     $absolute = $timestamp ? date('M j, Y g:i A', $timestamp) : 'Unknown time';
-    $searchText = strtolower(trim(($log['user'] ?? '') . ' ' . ($log['page_title'] ?? '') . ' ' . $log['action']));
+    $detailsText = '';
+    if (!empty($log['details']) && is_array($log['details'])) {
+        $detailsText = ' ' . implode(' ', $log['details']);
+    }
+    $searchText = strtolower(trim(($log['user'] ?? '') . ' ' . ($log['page_title'] ?? '') . ' ' . $log['action'] . $detailsText));
 ?>
                 <article class="logs-activity-card" data-search="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>" data-action="<?php echo htmlspecialchars($log['action_slug'], ENT_QUOTES, 'UTF-8'); ?>">
                     <header class="logs-activity-card__header">
@@ -256,6 +276,13 @@ if ($uniqueUsersCount === 1) {
                         <span class="logs-activity-divider" aria-hidden="true">•</span>
                         <span class="logs-activity-action"><?php echo htmlspecialchars($log['action'], ENT_QUOTES, 'UTF-8'); ?></span>
                     </p>
+<?php if (!empty($log['details']) && is_array($log['details'])): ?>
+                    <ul class="logs-activity-details">
+<?php foreach ($log['details'] as $detail): ?>
+                        <li><?php echo htmlspecialchars($detail, ENT_QUOTES, 'UTF-8'); ?></li>
+<?php endforeach; ?>
+                    </ul>
+<?php endif; ?>
                 </article>
 <?php endforeach; ?>
 <?php endif; ?>

@@ -68,15 +68,47 @@ if ($id) {
         }
     }
     $changes = [];
+    $details = [];
     if ($old) {
+        if ($old['title'] !== $title) {
+            $details[] = 'Title: "' . $old['title'] . '" → "' . $title . '"';
+        }
+        if ($old['slug'] !== $slug) {
+            $details[] = 'Slug: ' . $old['slug'] . ' → ' . $slug;
+        }
         if ($old['template'] !== $template) {
-            $changes[] = 'changed template from ' . $old['template'] . ' to ' . $template;
+            $details[] = 'Template: ' . $old['template'] . ' → ' . $template;
+            $changes[] = 'Changed template';
         }
         if ($old['published'] != $published) {
-            $changes[] = $published ? 'published page' : 'unpublished page';
+            $details[] = 'Visibility: ' . ($old['published'] ? 'Published' : 'Unpublished') . ' → ' . ($published ? 'Published' : 'Unpublished');
+            $changes[] = $published ? 'Published page' : 'Unpublished page';
+        }
+        if ($old['meta_title'] !== $meta_title) {
+            $details[] = 'Meta title updated';
+        }
+        if ($old['meta_description'] !== $meta_description) {
+            $details[] = 'Meta description updated';
+        }
+        if ($old['og_title'] !== $og_title) {
+            $details[] = 'OG title: "' . $old['og_title'] . '" → "' . $og_title . '"';
+        }
+        if ($old['og_description'] !== $og_description) {
+            $details[] = 'OG description updated';
+        }
+        if ($old['og_image'] !== $og_image) {
+            $details[] = 'OG image: ' . ($old['og_image'] !== '' ? $old['og_image'] : 'none') . ' → ' . ($og_image !== '' ? $og_image : 'none');
+        }
+        if ($old['access'] !== $access) {
+            $details[] = 'Access: ' . $old['access'] . ' → ' . $access;
         }
     }
-    if (!$changes) $changes[] = 'updated page';
+    if (!$changes) {
+        $changes[] = 'Updated page settings';
+    }
+    if (!$details) {
+        $details[] = 'Saved without changing any settings.';
+    }
     $action = implode('; ', $changes);
     unset($p);
 } else {
@@ -84,7 +116,7 @@ if ($id) {
     foreach ($pages as $p) {
         if ($p['id'] >= $id) $id = $p['id'] + 1;
     }
-$pages[] = [
+    $pages[] = [
         'id' => $id,
         'title' => $title,
         'slug' => $slug,
@@ -101,6 +133,11 @@ $pages[] = [
         'last_modified' => time()
     ];
     $timestamp = $pages[array_key_last($pages)]['last_modified'];
+    $details = [
+        'Initial template: ' . $template,
+        'Visibility: ' . ($published ? 'Published' : 'Unpublished'),
+        'Access: ' . $access,
+    ];
     $action = 'created page with template ' . $template;
 }
 
@@ -108,8 +145,34 @@ $historyFile = __DIR__ . '/../../data/page_history.json';
 $historyData = read_json_file($historyFile);
 if (!isset($historyData[$id])) $historyData[$id] = [];
 $user = $_SESSION['user']['username'] ?? 'Unknown';
-$historyData[$id][] = ['time' => $timestamp, 'user' => $user, 'action' => $action];
+$historyData[$id][] = [
+    'time' => $timestamp,
+    'user' => $user,
+    'action' => $action,
+    'details' => $details,
+    'context' => 'page',
+    'page_id' => $id,
+];
 $historyData[$id] = array_slice($historyData[$id], -20);
+
+if (!isset($historyData['__system__'])) {
+    $historyData['__system__'] = [];
+}
+$historyData['__system__'][] = [
+    'time' => time(),
+    'user' => '',
+    'action' => 'Regenerated sitemap',
+    'details' => [
+        'Automatic sitemap refresh after updating "' . $title . '" (' . $slug . ')',
+    ],
+    'context' => 'system',
+    'meta' => [
+        'trigger' => 'sitemap_regeneration',
+        'page_id' => $id,
+    ],
+    'page_title' => 'CMS Backend',
+];
+$historyData['__system__'] = array_slice($historyData['__system__'], -50);
 file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 
 file_put_contents($pagesFile, json_encode($pages, JSON_PRETTY_PRINT));

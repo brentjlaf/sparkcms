@@ -30,12 +30,28 @@ function slugify_action_label(string $label): string {
 foreach ($historyData as $pid => $entries) {
     foreach ($entries as $entry) {
         $actionLabel = normalize_action_label($entry['action'] ?? '');
+        $context = $entry['context'] ?? (is_numeric($pid) ? 'page' : 'system');
+        $details = $entry['details'] ?? [];
+        if (!is_array($details)) {
+            $details = $details !== '' ? [$details] : [];
+        }
+        $pageTitle = $entry['page_title'] ?? null;
+        if ($pageTitle === null) {
+            if ($context === 'system') {
+                $pageTitle = 'System activity';
+            } else {
+                $pageTitle = $pageLookup[$pid] ?? 'Unknown';
+            }
+        }
         $logs[] = [
             'time' => (int)($entry['time'] ?? 0),
             'user' => $entry['user'] ?? '',
-            'page_title' => $pageLookup[$pid] ?? 'Unknown',
+            'page_title' => $pageTitle,
             'action' => $actionLabel,
             'action_slug' => slugify_action_label($actionLabel),
+            'details' => $details,
+            'context' => $context,
+            'meta' => $entry['meta'] ?? new stdClass(),
         ];
     }
 }

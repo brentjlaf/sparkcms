@@ -24,11 +24,46 @@ $historyData = read_json_file($historyFile);
 if (!isset($historyData[$id])) $historyData[$id] = [];
 $user = $_SESSION['user']['username'] ?? 'Unknown';
 $action = 'deleted page';
+$details = [];
+if ($deletedPage) {
+    $details[] = 'Title: ' . ($deletedPage['title'] ?? 'Unknown');
+    $details[] = 'Slug: ' . ($deletedPage['slug'] ?? '');
+    if (!empty($deletedPage['template'])) {
+        $details[] = 'Template: ' . $deletedPage['template'];
+    }
+    $details[] = 'Previous visibility: ' . (!empty($deletedPage['published']) ? 'Published' : 'Unpublished');
+}
 if ($deletedPage && !empty($deletedPage['template'])) {
     $action .= ' (' . $deletedPage['template'] . ')';
 }
-$historyData[$id][] = ['time' => time(), 'user' => $user, 'action' => $action];
+$historyData[$id][] = [
+    'time' => time(),
+    'user' => $user,
+    'action' => $action,
+    'details' => $details,
+    'context' => 'page',
+    'page_id' => $id,
+];
 $historyData[$id] = array_slice($historyData[$id], -20);
+
+if (!isset($historyData['__system__'])) {
+    $historyData['__system__'] = [];
+}
+$historyData['__system__'][] = [
+    'time' => time(),
+    'user' => '',
+    'action' => 'Regenerated sitemap',
+    'details' => [
+        'Automatic sitemap refresh after deleting page ID ' . $id,
+    ],
+    'context' => 'system',
+    'meta' => [
+        'trigger' => 'sitemap_regeneration',
+        'page_id' => $id,
+    ],
+    'page_title' => 'CMS Backend',
+];
+$historyData['__system__'] = array_slice($historyData['__system__'], -50);
 file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 
 echo 'OK';
