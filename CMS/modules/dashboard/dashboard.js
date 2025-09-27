@@ -294,49 +294,49 @@ $(function(){
         $('#dashboardModuleCards').attr('aria-busy', 'true');
 
         return $.getJSON('modules/dashboard/dashboard_data.php', function(data){
-            updateText('#statPages', data.pages);
-            updateText('#statPagesBreakdown', [data.pagesPublished, data.pagesDraft], function(values){
+            updateText('#statPages, [data-stat="pages"]', data.pages);
+            updateText('#statPagesBreakdown, [data-stat="pages-breakdown"]', [data.pagesPublished, data.pagesDraft], function(values){
                 const published = formatNumber(values[0] || 0);
                 const drafts = formatNumber(values[1] || 0);
                 return `Published: ${published} • Drafts: ${drafts}`;
             });
-            updateText('#statMedia', data.media);
-            updateText('#statMediaSize', data.mediaSize, function(value){
+            updateText('#statMedia, [data-stat="media"]', data.media);
+            updateText('#statMediaSize, [data-stat="media-size"]', data.mediaSize, function(value){
                 return `Library size: ${formatBytes(value)}`;
             });
-            updateText('#statUsers', data.users);
-            updateText('#statUsersBreakdown', [data.usersAdmins, data.usersEditors], function(values){
+            updateText('#statUsers, [data-stat="users"]', data.users);
+            updateText('#statUsersBreakdown, [data-stat="users-breakdown"]', [data.usersAdmins, data.usersEditors], function(values){
                 const admins = formatNumber(values[0] || 0);
                 const editors = formatNumber(values[1] || 0);
                 return `Admins: ${admins} • Editors: ${editors}`;
             });
-            updateText('#statViews', data.views);
-            updateText('#statViewsAverage', data.analyticsAvgViews, function(value){
+            updateText('#statViews, [data-stat="views"]', data.views);
+            updateText('#statViewsAverage, [data-stat="views-average"]', data.analyticsAvgViews, function(value){
                 return `Average per page: ${formatNumber(value || 0)}`;
             });
 
-            updateText('#statSeoScore', data.seoScore, formatPercent);
-            updateText('#statSeoBreakdown', [data.seoOptimized, data.seoNeedsAttention], function(values){
+            updateText('#statSeoScore, [data-stat="seo-score"]', data.seoScore, formatPercent);
+            updateText('#statSeoBreakdown, [data-stat="seo-breakdown"]', [data.seoOptimized, data.seoNeedsAttention], function(values){
                 const optimized = formatNumber(values[0]);
                 const attention = formatNumber(values[1]);
                 return `Optimized: ${optimized} • Needs attention: ${attention}`;
             });
-            updateText('#statSeoMetadata', data.seoMetadataGaps, function(value){
+            updateText('#statSeoMetadata, [data-stat="seo-metadata"]', data.seoMetadataGaps, function(value){
                 return `Metadata gaps: ${formatNumber(value)}`;
             });
 
-            updateText('#statAccessibilityScore', data.accessibilityScore, formatPercent);
-            updateText('#statAccessibilityBreakdown', [data.accessibilityCompliant, data.accessibilityNeedsReview], function(values){
+            updateText('#statAccessibilityScore, [data-stat="accessibility-score"]', data.accessibilityScore, formatPercent);
+            updateText('#statAccessibilityBreakdown, [data-stat="accessibility-breakdown"]', [data.accessibilityCompliant, data.accessibilityNeedsReview], function(values){
                 const compliant = formatNumber(values[0]);
                 const review = formatNumber(values[1]);
                 return `Compliant: ${compliant} • Needs review: ${review}`;
             });
-            updateText('#statAccessibilityAlt', data.accessibilityMissingAlt, function(value){
+            updateText('#statAccessibilityAlt, [data-stat="accessibility-alt"]', data.accessibilityMissingAlt, function(value){
                 return `Alt text issues: ${formatNumber(value)}`;
             });
 
-            updateText('#statAlerts', data.openAlerts);
-            updateText('#statAlertsBreakdown', [data.alertsSeo, data.alertsAccessibility], function(values){
+            updateText('#statAlerts, [data-stat="alerts"]', data.openAlerts);
+            updateText('#statAlertsBreakdown, [data-stat="alerts-breakdown"]', [data.alertsSeo, data.alertsAccessibility], function(values){
                 const seo = formatNumber(values[0]);
                 const accessibility = formatNumber(values[1]);
                 return `SEO: ${seo} • Accessibility: ${accessibility}`;
