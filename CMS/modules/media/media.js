@@ -10,6 +10,8 @@ $(function(){
     let sortOrder = 'asc';
     let viewType = 'medium';
     let itemsPerPage = 12;
+    let searchTerm = '';
+    let searchDebounce = null;
 
     function loadFolders(){
         $.getJSON('modules/media/list_media.php', function(res){
@@ -63,11 +65,15 @@ $(function(){
     }
 
     function loadImages(){
+        const currentQuery = searchTerm;
         if(!currentFolder){
             renderImages();
             return;
         }
-        $.getJSON('modules/media/list_media.php', {folder: currentFolder}, function(res){
+        $.getJSON('modules/media/list_media.php', {folder: currentFolder, q: currentQuery}, function(res){
+            if(currentQuery !== searchTerm){
+                return;
+            }
             currentImages = res.media || [];
             const totalBytes = currentImages.reduce((s,m)=>s+parseInt(m.size||0),0);
             const lastMod = currentImages.reduce((m,i)=>i.modified_at && i.modified_at>m?i.modified_at:m,0);
@@ -127,6 +133,7 @@ $(function(){
             $('#selectFolderState').show();
             grid.hide();
             $('#emptyFolderState').hide();
+            $('#emptySearchState').hide();
             $('#folderStats').text('');
             $('#renameFolderBtn').hide();
             $('#deleteFolderBtn').hide();
@@ -139,11 +146,14 @@ $(function(){
         $('#selectFolderState').hide();
         const images = getSortedImages();
         grid.empty();
-        if(images.length===0){
-            $('#emptyFolderState').show();
+        const hasSearch = searchTerm.trim().length>0;
+        if(currentImages.length===0){
+            $('#emptyFolderState').toggle(!hasSearch);
+            $('#emptySearchState').toggle(hasSearch);
             grid.hide();
         }else{
             $('#emptyFolderState').hide();
+            $('#emptySearchState').hide();
             grid.show();
             images.forEach(img=>{
                 const isImage = img.type === 'images';
@@ -189,6 +199,14 @@ $(function(){
             });
         }
         applyViewType();
+    }
+
+    function updateSearchControls(){
+        const hasSearch = searchTerm.trim().length>0;
+        $('#clear-media-search').toggle(hasSearch);
+        if(!hasSearch){
+            $('#emptySearchState').hide();
+        }
     }
 
     function formatFileSize(bytes){
@@ -455,11 +473,37 @@ $(function(){
     $('#view-type').change(function(){ viewType = this.value; applyViewType(); });
     $('#items-per-page').change(function(){ itemsPerPage = parseInt(this.value); renderImages(); });
 
+    $('#media-search').on('input', function(){
+        searchTerm = $(this).val().trim();
+        updateSearchControls();
+        if(searchDebounce){
+            clearTimeout(searchDebounce);
+        }
+        searchDebounce = setTimeout(function(){
+            searchDebounce = null;
+            loadImages();
+        }, 300);
+    });
+
+    $('#clear-media-search, #empty-search-clear').on('click', function(){
+        if(!searchTerm) return;
+        $('#media-search').val('');
+        searchTerm = '';
+        updateSearchControls();
+        if(searchDebounce){
+            clearTimeout(searchDebounce);
+            searchDebounce = null;
+        }
+        loadImages();
+        $('#media-search').focus();
+    });
+
     $(window).click(function(e){
         if(e.target.id==='createFolderModal'){ closeModal('createFolderModal'); $('#newFolderName').val(''); }
         if(e.target.id==='imageInfoModal'){ closeModal('imageInfoModal'); }
         if(e.target.id==='imageEditModal'){ closeModal('imageEditModal'); if(cropper){cropper.destroy(); cropper=null;} }
     });
 
+    updateSearchControls();
     loadFolders();
 });

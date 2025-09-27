@@ -120,21 +120,36 @@
                                                 <option value="48">48</option>
                                             </select>
                                         </div>
+                                        <div class="form-group media-search-group">
+                                            <label class="form-label" for="media-search">Search</label>
+                                            <div class="media-search-control">
+                                                <input type="search" id="media-search" class="form-input" placeholder="Search media">
+                                                <button type="button" class="clear-search" id="clear-media-search" aria-label="Clear search" style="display: none;">
+                                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="media-empty-state" id="selectFolderState">
-                                        <i class="fa-solid fa-folder-tree" aria-hidden="true"></i>
-                                        <h3>Select a folder to view images</h3>
-                                        <p>Choose a folder from the sidebar to manage its assets.</p>
-                                    </div>
-                                    <div class="media-empty-state" id="emptyFolderState" style="display: none;">
-                                        <i class="fa-solid fa-images" aria-hidden="true"></i>
-                                        <h3>No media in this folder</h3>
-                                        <p>Click "Upload Media" to add new files.</p>
-                                    </div>
-                                    <div class="image-grid" id="imageGrid" style="display: none;"></div>
-                                    <div id="dropZone" class="upload-drop">Drop images here</div>
+                                <div class="media-empty-state" id="selectFolderState">
+                                    <i class="fa-solid fa-folder-tree" aria-hidden="true"></i>
+                                    <h3>Select a folder to view images</h3>
+                                    <p>Choose a folder from the sidebar to manage its assets.</p>
                                 </div>
+                                <div class="media-empty-state" id="emptyFolderState" style="display: none;">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>
+                                    <h3>No media in this folder</h3>
+                                    <p>Click "Upload Media" to add new files.</p>
+                                </div>
+                                <div class="media-empty-state" id="emptySearchState" style="display: none;">
+                                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                    <h3>No media match your search</h3>
+                                    <p>Try a different keyword or clear the filter to see everything in this folder.</p>
+                                    <button type="button" class="media-btn media-btn--primary" id="empty-search-clear">Clear search</button>
+                                </div>
+                                <div class="image-grid" id="imageGrid" style="display: none;"></div>
+                                <div id="dropZone" class="upload-drop">Drop images here</div>
                             </div>
+                        </div>
                         </div>
                     </div>
 

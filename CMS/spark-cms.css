@@ -5572,6 +5572,39 @@
     min-width: 160px;
 }
 
+.media-toolbar .media-search-group {
+    flex: 1 1 260px;
+    min-width: 220px;
+}
+
+.media-search-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.media-search-control .form-input {
+    flex: 1;
+}
+
+.media-search-control .clear-search {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #1e293b;
+    font-size: 14px;
+    cursor: pointer;
+    min-height: 46px;
+}
+
+.media-search-control .clear-search:hover {
+    background: #f1f5f9;
+}
+
 .media-toolbar .form-label {
     font-size: 11px;
     text-transform: uppercase;
