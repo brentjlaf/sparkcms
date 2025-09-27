@@ -1638,6 +1638,183 @@ section.container-fluid {
     font-size: 20px;
     cursor: pointer;
     color: #475569;
+    transition: color 0.2s ease;
+}
+
+.calendar-modal__close:hover,
+.calendar-modal__close:focus-visible {
+    color: #1d4ed8;
+}
+
+.calendar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.calendar-btn:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.35);
+    outline-offset: 2px;
+}
+
+.calendar-btn--primary {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff;
+    box-shadow: 0 14px 30px -16px rgba(37, 99, 235, 0.8);
+}
+
+.calendar-btn--primary:hover,
+.calendar-btn--primary:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 32px -18px rgba(67, 56, 202, 0.65);
+}
+
+.calendar-btn--ghost {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    box-shadow: none;
+}
+
+.calendar-btn--ghost:hover,
+.calendar-btn--ghost:focus-visible {
+    background: rgba(37, 99, 235, 0.18);
+    transform: translateY(-1px);
+}
+
+.calendar-btn--danger {
+    background: rgba(239, 68, 68, 0.16);
+    color: #b91c1c;
+}
+
+.calendar-btn--danger:hover,
+.calendar-btn--danger:focus-visible {
+    background: rgba(239, 68, 68, 0.25);
+    transform: translateY(-1px);
+}
+
+.calendar-form {
+    display: grid;
+    gap: 20px;
+    padding: 12px 24px 24px;
+}
+
+.calendar-form__row {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.calendar-form__group {
+    display: grid;
+    gap: 8px;
+}
+
+.calendar-form__group label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.calendar-form__group input,
+.calendar-form__group select,
+.calendar-form__group textarea {
+    border-radius: 12px;
+    border: 1px solid #cbd5f5;
+    padding: 10px 14px;
+    font-size: 15px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calendar-form__group input:focus,
+.calendar-form__group select:focus,
+.calendar-form__group textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    outline: none;
+}
+
+.calendar-form__checkbox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.calendar-form__fieldset {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px;
+    display: grid;
+    gap: 18px;
+}
+
+.calendar-form__help {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.calendar-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.calendar-category-manager {
+    list-style: none;
+    padding: 0;
+    margin: 24px 0 0;
+    display: grid;
+    gap: 14px;
+}
+
+.calendar-category-manager li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.calendar-category-manager strong {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.calendar-category-manager .calendar-category__marker {
+    flex-shrink: 0;
+}
+
+.calendar-category-manager button {
+    border: none;
+    background: transparent;
+    color: #1d4ed8;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 10px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.calendar-category-manager button:hover,
+.calendar-category-manager button:focus-visible {
+    background: rgba(37, 99, 235, 0.1);
+    color: #1e3a8a;
+}
+
+.calendar-empty + .calendar-btn {
+    align-self: flex-start;
 }
 
 @media (max-width: 1200px) {
@@ -1677,5 +1854,14 @@ section.container-fluid {
 
     .calendar-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .calendar-form {
+        padding: 12px;
+    }
+
+    .calendar-form__actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
     }
 }
