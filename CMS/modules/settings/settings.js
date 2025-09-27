@@ -6,6 +6,32 @@ $(function(){
     const $saveButton = $('#saveSettingsButton');
     const $logoPreview = $('#logoPreview');
     const $ogPreview = $('#ogImagePreview');
+    const $adminEmail = $('#admin_email');
+    const $adminEmailGroup = $adminEmail.closest('.form-group');
+    let $adminEmailError = $adminEmailGroup.find('.form-error-message');
+
+    if(!$adminEmailError.length){
+        $adminEmailError = $('<div>', {
+            class: 'form-error-message',
+            id: 'adminEmailError',
+            role: 'alert'
+        }).css({
+            color: '#b91c1c',
+            marginTop: '6px',
+            fontSize: '13px'
+        }).hide();
+        $adminEmailGroup.append($adminEmailError);
+    }
+
+    function clearAdminEmailError(){
+        $adminEmailError.text('').hide();
+        $adminEmail.removeAttr('aria-invalid');
+    }
+
+    function showAdminEmailError(message){
+        $adminEmail.attr('aria-invalid', 'true');
+        $adminEmailError.text(message).show();
+    }
 
     function formatTimestamp(value){
         if(!value){
@@ -144,19 +170,32 @@ $(function(){
             dataType: 'json',
             beforeSend: function(){
                 $saveButton.addClass('is-loading').prop('disabled', true);
+                clearAdminEmailError();
             },
             complete: function(){
                 $saveButton.removeClass('is-loading').prop('disabled', false);
             },
             success: function(response){
+                clearAdminEmailError();
+                if(response && response.status === 'error'){
+                    showAdminEmailError(response.message || 'Unable to save settings.');
+                    return;
+                }
+
                 alertModal('Settings saved');
                 if(response && response.last_updated){
                     updateHeroMeta(response.last_updated);
                 }
                 loadSettings();
             },
-            error: function(){
-                alertModal('Unable to save settings');
+            error: function(jqXHR){
+                const response = jqXHR.responseJSON || {};
+                if(response.message){
+                    showAdminEmailError(response.message);
+                    $adminEmail.trigger('focus');
+                } else {
+                    alertModal('Unable to save settings');
+                }
             }
         });
     });

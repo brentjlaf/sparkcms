@@ -15,7 +15,18 @@ if (!is_array($settings)) {
 
 $settings['site_name'] = sanitize_text($_POST['site_name'] ?? ($settings['site_name'] ?? ''));
 $settings['tagline'] = sanitize_text($_POST['tagline'] ?? ($settings['tagline'] ?? ''));
-$settings['admin_email'] = sanitize_text($_POST['admin_email'] ?? ($settings['admin_email'] ?? ''));
+
+$adminEmailInput = sanitize_text($_POST['admin_email'] ?? ($settings['admin_email'] ?? ''));
+if (!filter_var($adminEmailInput, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Please enter a valid admin email address.',
+    ]);
+    exit;
+}
+
+$settings['admin_email'] = $adminEmailInput;
 $settings['timezone'] = sanitize_text($_POST['timezone'] ?? ($settings['timezone'] ?? 'America/Los_Angeles'));
 $settings['googleAnalytics'] = sanitize_text($_POST['googleAnalytics'] ?? ($settings['googleAnalytics'] ?? ''));
 $settings['googleSearchConsole'] = sanitize_text($_POST['googleSearchConsole'] ?? ($settings['googleSearchConsole'] ?? ''));
