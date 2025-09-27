@@ -132,6 +132,138 @@ $(function(){
         });
     }
 
+    function renderActionCenter(seoIssues, accessibilityIssues, attentionItems) {
+        const $issuesList = $('#dashboardActionList');
+        const $issuesEmpty = $('#dashboardActionEmpty');
+        const $attentionList = $('#dashboardAttentionList');
+        const $attentionEmpty = $('#dashboardAttentionEmpty');
+
+        if ($issuesList.length) {
+            $issuesList.empty();
+            const combinedIssues = []
+                .concat(Array.isArray(seoIssues) ? seoIssues : [])
+                .concat(Array.isArray(accessibilityIssues) ? accessibilityIssues : []);
+
+            if (!combinedIssues.length) {
+                if ($issuesEmpty.length) {
+                    $issuesEmpty.prop('hidden', false);
+                }
+            } else {
+                if ($issuesEmpty.length) {
+                    $issuesEmpty.prop('hidden', true);
+                }
+
+                combinedIssues.forEach(function (issue) {
+                    const severity = (issue && issue.severity) ? String(issue.severity) : 'low';
+                    const category = issue && issue.category ? String(issue.category) : '';
+                    const title = issue && issue.title ? String(issue.title) : 'Untitled item';
+                    const moduleTarget = issue && issue.moduleTarget ? String(issue.moduleTarget) : '';
+                    const actionUrl = issue && issue.actionUrl ? String(issue.actionUrl) : '';
+                    const issueTypes = Array.isArray(issue && issue.issueTypes) ? issue.issueTypes : [];
+
+                    const $item = $('<li>', {
+                        class: 'dashboard-action-item',
+                        'data-module': moduleTarget,
+                        'data-category': category
+                    });
+
+                    const $header = $('<div>', { class: 'dashboard-action-item-header' });
+                    if (category) {
+                        $('<span>', {
+                            class: 'dashboard-action-category',
+                            text: category.toUpperCase()
+                        }).appendTo($header);
+                    }
+                    $('<span>', {
+                        class: 'dashboard-action-item-title',
+                        text: title
+                    }).appendTo($header);
+                    $('<span>', {
+                        class: 'dashboard-action-severity severity-' + severity,
+                        text: severity.charAt(0).toUpperCase() + severity.slice(1)
+                    }).appendTo($header);
+                    $item.append($header);
+
+                    if (issueTypes.length) {
+                        const $details = $('<ul>', { class: 'dashboard-action-issues' });
+                        issueTypes.forEach(function (label) {
+                            $('<li>', { text: label }).appendTo($details);
+                        });
+                        $item.append($details);
+                    }
+
+                    const $actions = $('<div>', { class: 'dashboard-action-item-actions' });
+                    const $button = $('<button>', {
+                        type: 'button',
+                        class: 'dashboard-action-button',
+                        text: 'Go fix it'
+                    })
+                        .data('module', moduleTarget)
+                        .data('actionUrl', actionUrl);
+                    $actions.append($button);
+                    $item.append($actions);
+
+                    $issuesList.append($item);
+                });
+            }
+        }
+
+        if ($attentionList.length) {
+            $attentionList.empty();
+            const items = Array.isArray(attentionItems) ? attentionItems : [];
+            if (!items.length) {
+                if ($attentionEmpty.length) {
+                    $attentionEmpty.prop('hidden', false);
+                }
+            } else {
+                if ($attentionEmpty.length) {
+                    $attentionEmpty.prop('hidden', true);
+                }
+
+                items.forEach(function (item) {
+                    const count = formatNumber(item && item.count ? item.count : 0);
+                    const label = item && item.label ? String(item.label) : 'Needs attention';
+                    const description = item && item.description ? String(item.description) : '';
+                    const moduleTarget = item && item.moduleTarget ? String(item.moduleTarget) : '';
+                    const actionUrl = item && item.actionUrl ? String(item.actionUrl) : '';
+
+                    const $row = $('<li>', {
+                        class: 'dashboard-attention-item'
+                    });
+
+                    $('<span>', {
+                        class: 'dashboard-attention-count',
+                        text: count
+                    }).appendTo($row);
+
+                    const $text = $('<div>', { class: 'dashboard-attention-text' });
+                    $('<span>', {
+                        class: 'dashboard-attention-label',
+                        text: label
+                    }).appendTo($text);
+                    if (description) {
+                        $('<span>', {
+                            class: 'dashboard-attention-description',
+                            text: description
+                        }).appendTo($text);
+                    }
+                    $row.append($text);
+
+                    const $button = $('<button>', {
+                        type: 'button',
+                        class: 'dashboard-attention-button',
+                        text: 'Review'
+                    })
+                        .data('module', moduleTarget)
+                        .data('actionUrl', actionUrl);
+                    $row.append($button);
+
+                    $attentionList.append($row);
+                });
+            }
+        }
+    }
+
     function navigateToModule(section) {
         if (!section) {
             return;
@@ -178,6 +310,30 @@ $(function(){
                 event.preventDefault();
                 navigateToModule($(this).data('module'));
             }
+        });
+
+        $('#dashboardActionList').on('click', '.dashboard-action-button', function (event) {
+            event.preventDefault();
+            const $button = $(this);
+            const actionUrl = $button.data('actionurl');
+            const module = $button.data('module');
+            if (actionUrl) {
+                window.location.href = actionUrl;
+                return;
+            }
+            navigateToModule(module);
+        });
+
+        $('#dashboardAttentionList').on('click', '.dashboard-attention-button', function (event) {
+            event.preventDefault();
+            const $button = $(this);
+            const actionUrl = $button.data('actionurl');
+            const module = $button.data('module');
+            if (actionUrl) {
+                window.location.href = actionUrl;
+                return;
+            }
+            navigateToModule(module);
         });
     }
 
@@ -234,6 +390,7 @@ $(function(){
             });
 
             renderModuleSummaries(data.moduleSummaries || data.modules || []);
+            renderActionCenter(data.seoIssues || [], data.accessibilityIssues || [], data.attentionItems || []);
         })
             .done(function(){
                 updateLastUpdated(Date.now());

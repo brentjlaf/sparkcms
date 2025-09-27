@@ -58,6 +58,7 @@ $seoSummary = [
     'needs_attention' => 0,
     'metadata_gaps' => 0,
 ];
+$seoIssuesList = [];
 
 $stringLength = function (string $value): int {
     if (function_exists('mb_strlen')) {
@@ -102,6 +103,40 @@ foreach ($pages as $page) {
 
     if ($ogTitle === '' || $ogDescription === '' || $ogImage === '') {
         $issues[] = 'social_preview';
+    }
+
+    $pageId = isset($page['id']) ? (int)$page['id'] : null;
+    $pageTitle = trim((string)($page['title'] ?? ''));
+    if ($pageTitle === '') {
+        $pageTitle = 'Untitled page';
+    }
+
+    $seoIssueLabels = [];
+    $seoSeverityScore = 0;
+    if (in_array('meta_title_missing', $issues, true)) {
+        $seoIssueLabels[] = 'Missing meta title';
+        $seoSeverityScore += 2;
+    }
+    if (in_array('meta_description_missing', $issues, true)) {
+        $seoIssueLabels[] = 'Missing meta description';
+        $seoSeverityScore += 2;
+    }
+    if (in_array('slug_format', $issues, true)) {
+        $seoIssueLabels[] = 'Invalid slug formatting';
+        $seoSeverityScore += 3;
+    }
+
+    if (!empty($seoIssueLabels)) {
+        $seoIssuesList[] = [
+            'id' => $pageId,
+            'title' => $pageTitle,
+            'issueTypes' => $seoIssueLabels,
+            'severity' => dashboard_issue_severity($seoSeverityScore),
+            'moduleTarget' => 'seo',
+            'category' => 'seo',
+            'actionUrl' => $pageId ? 'index.php?module=pages&action=edit&id=' . $pageId : null,
+            'score' => $seoSeverityScore,
+        ];
     }
 
     if (empty($issues)) {
@@ -200,6 +235,17 @@ function dashboard_format_number(int $value): string
     return number_format($value);
 }
 
+function dashboard_issue_severity(int $score): string
+{
+    if ($score >= 5) {
+        return 'high';
+    }
+    if ($score >= 3) {
+        return 'medium';
+    }
+    return 'low';
+}
+
 $libxmlPrevious = libxml_use_internal_errors(true);
 
 $accessibilitySummary = [
@@ -208,6 +254,7 @@ $accessibilitySummary = [
     'missing_alt' => 0,
     'issues' => 0,
 ];
+$accessibilityIssuesList = [];
 
 $genericLinkTerms = [
     'click here',
@@ -278,6 +325,40 @@ foreach ($pages as $page) {
         $issues[] = 'landmarks';
     }
 
+    $pageId = isset($page['id']) ? (int)$page['id'] : null;
+    $pageTitle = trim((string)($page['title'] ?? ''));
+    if ($pageTitle === '') {
+        $pageTitle = 'Untitled page';
+    }
+
+    $accessibilityIssueLabels = [];
+    $accessibilitySeverityScore = 0;
+    if ($missingAlt > 0) {
+        $label = $missingAlt === 1 ? 'Image missing alt text' : $missingAlt . ' images missing alt text';
+        $accessibilityIssueLabels[] = $label;
+        $accessibilitySeverityScore += $missingAlt >= 5 ? 4 : 3;
+    }
+    if ($h1Count === 0) {
+        $accessibilityIssueLabels[] = 'Missing H1 heading';
+        $accessibilitySeverityScore += 3;
+    } elseif ($h1Count > 1) {
+        $accessibilityIssueLabels[] = $h1Count . ' H1 headings detected';
+        $accessibilitySeverityScore += 2;
+    }
+
+    if (!empty($accessibilityIssueLabels)) {
+        $accessibilityIssuesList[] = [
+            'id' => $pageId,
+            'title' => $pageTitle,
+            'issueTypes' => $accessibilityIssueLabels,
+            'severity' => dashboard_issue_severity($accessibilitySeverityScore),
+            'moduleTarget' => 'accessibility',
+            'category' => 'accessibility',
+            'actionUrl' => $pageId ? 'index.php?module=pages&action=edit&id=' . $pageId : null,
+            'score' => $accessibilitySeverityScore,
+        ];
+    }
+
     if (empty($issues)) {
         $accessibilitySummary['accessible']++;
     } else {
@@ -285,6 +366,26 @@ foreach ($pages as $page) {
     }
 
     $accessibilitySummary['issues'] += count($issues);
+}
+
+if (!empty($seoIssuesList)) {
+    usort($seoIssuesList, function (array $a, array $b): int {
+        return ($b['score'] ?? 0) <=> ($a['score'] ?? 0);
+    });
+    $seoIssuesList = array_map(function (array $item): array {
+        unset($item['score']);
+        return $item;
+    }, array_slice($seoIssuesList, 0, 5));
+}
+
+if (!empty($accessibilityIssuesList)) {
+    usort($accessibilityIssuesList, function (array $a, array $b): int {
+        return ($b['score'] ?? 0) <=> ($a['score'] ?? 0);
+    });
+    $accessibilityIssuesList = array_map(function (array $item): array {
+        unset($item['score']);
+        return $item;
+    }, array_slice($accessibilityIssuesList, 0, 5));
 }
 
 libxml_clear_errors();
@@ -375,6 +476,41 @@ foreach ($menus as $menu) {
     if (!empty($menu['items']) && is_array($menu['items'])) {
         $menuItems += dashboard_count_menu_items($menu['items']);
     }
+}
+
+$attentionItems = [];
+if ($pagesDraft > 0) {
+    $attentionItems[] = [
+        'id' => 'pages_draft',
+        'label' => 'Draft pages ready to publish',
+        'count' => $pagesDraft,
+        'moduleTarget' => 'pages',
+        'category' => 'content',
+        'actionUrl' => 'index.php?module=pages',
+        'description' => 'Review drafts and publish updates when ready.',
+    ];
+}
+if ($postsByStatus['draft'] > 0) {
+    $attentionItems[] = [
+        'id' => 'posts_draft',
+        'label' => 'Blog drafts awaiting review',
+        'count' => $postsByStatus['draft'],
+        'moduleTarget' => 'blogs',
+        'category' => 'content',
+        'actionUrl' => 'index.php?module=blogs',
+        'description' => 'Polish drafts and move them into the publishing queue.',
+    ];
+}
+if ($postsByStatus['scheduled'] > 0) {
+    $attentionItems[] = [
+        'id' => 'posts_scheduled',
+        'label' => 'Scheduled posts going live soon',
+        'count' => $postsByStatus['scheduled'],
+        'moduleTarget' => 'blogs',
+        'category' => 'content',
+        'actionUrl' => 'index.php?module=blogs',
+        'description' => 'Confirm timing and make final edits before launch.',
+    ];
 }
 
 $logEntries = 0;
@@ -575,6 +711,9 @@ $data = [
     'speedHeaviestPageLength' => $largestPage['length'],
     'dataFileCount' => $dataFileCount,
     'moduleSummaries' => $moduleSummaries,
+    'seoIssues' => $seoIssuesList,
+    'accessibilityIssues' => $accessibilityIssuesList,
+    'attentionItems' => $attentionItems,
 ];
 
 header('Content-Type: application/json');

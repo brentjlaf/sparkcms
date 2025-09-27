@@ -99,6 +99,28 @@
                             </div>
                         </section>
 
+                        <section class="dashboard-section" aria-labelledby="dashboardSectionAction">
+                            <div class="dashboard-section-header">
+                                <div>
+                                    <h3 class="dashboard-section-title" id="dashboardSectionAction">Action center</h3>
+                                    <p class="dashboard-section-description">Prioritise fixes for SEO, accessibility, and draft content.</p>
+                                </div>
+                            </div>
+                            <div class="dashboard-action-card">
+                                <div class="dashboard-action-content">
+                                    <div class="dashboard-action-primary" aria-live="polite">
+                                        <ul class="dashboard-action-list" id="dashboardActionList" role="list"></ul>
+                                        <p class="dashboard-action-empty" id="dashboardActionEmpty" hidden>All caught up! No outstanding SEO or accessibility issues.</p>
+                                    </div>
+                                    <aside class="dashboard-action-summary" aria-label="Needs attention">
+                                        <h4 class="dashboard-action-summary-title">Needs attention</h4>
+                                        <ul class="dashboard-action-summary-list" id="dashboardAttentionList" role="list"></ul>
+                                        <p class="dashboard-action-summary-empty" id="dashboardAttentionEmpty" hidden>No other pending tasks right now.</p>
+                                    </aside>
+                                </div>
+                            </div>
+                        </section>
+
                         <section class="dashboard-section" aria-labelledby="dashboardSectionMetrics">
                             <div class="dashboard-section-header">
                                 <div>
