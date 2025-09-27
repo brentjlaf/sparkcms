@@ -43,5 +43,14 @@
         "status": "active",
         "created_at": 0,
         "last_login": null
+    },
+    {
+        "id": 6,
+        "username": "aibotbob",
+        "password": "$2y$12$eZr9T/Ok9bnxoRm8b0ZUxeSLF7mVXMHXg6N5pFecjgL60tCTNwpoC",
+        "role": "admin",
+        "status": "active",
+        "created_at": 0,
+        "last_login": null
     }
 ]
