@@ -8,6 +8,7 @@ $(function(){
         const $emptyState = $('#pagesEmptyState');
         const $visibleCount = $('#pagesVisibleCount');
         let activeFilter = 'all';
+        $('#cancelEdit').hide();
 
         function openPageModal() {
             openModal('pageModal');
@@ -177,6 +178,7 @@ $(function(){
             $('#published').prop('checked', false);
             $('#content').val('');
             $('#pageTabs').tabs('option', 'active', 0);
+            $('#cancelEdit').hide();
             openPageModal();
             slugEdited = false;
         });

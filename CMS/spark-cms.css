@@ -5098,8 +5098,227 @@
 }
 
 #pageModal .modal-content {
-    min-width: 900px;
+    background: none;
+    padding: 0;
+    border-radius: 0;
     max-width: none;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+}
+
+.page-modal-surface {
+    background: #ffffff;
+    border-radius: 18px;
+    width: min(720px, 92vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    padding: 32px 32px 28px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+}
+
+.page-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 22px;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.page-modal-close:hover,
+.page-modal-close:focus-visible {
+    background: #f1f5f9;
+    color: #1e293b;
+    outline: none;
+}
+
+.page-modal-header {
+    margin-bottom: 24px;
+}
+
+.page-modal-subtitle {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+}
+
+.page-modal-title {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.2;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.page-modal-description {
+    margin: 12px 0 0;
+    color: #475569;
+    font-size: 15px;
+}
+
+.page-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.page-modal-tabs .ui-tabs-nav {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.page-modal-tabs .ui-tabs-nav li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.page-modal-tabs .ui-tabs-nav li a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px 999px 0 0;
+    text-decoration: none;
+    font-weight: 600;
+    color: #475569;
+    background: transparent;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.page-modal-tabs .ui-tabs-nav li a:hover {
+    background: #e2e8f0;
+}
+
+.page-modal-tabs .ui-tabs-nav li.ui-state-active a,
+.page-modal-tabs .ui-tabs-nav li.ui-tabs-active a {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+.page-modal-panel {
+    padding-top: 20px;
+}
+
+.page-modal-panel .form-group {
+    margin-bottom: 0;
+}
+
+.page-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.page-modal-checkbox {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.page-modal-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.page-modal-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.page-modal-footer {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.page-modal-button {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.page-modal-button:focus-visible {
+    outline: 2px solid #1d4ed8;
+    outline-offset: 2px;
+}
+
+.page-modal-button--secondary {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.page-modal-button--secondary:hover {
+    background: #cbd5f5;
+}
+
+.page-modal-button--primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
+}
+
+.page-modal-button--primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 32px rgba(37, 99, 235, 0.28);
+}
+
+.page-modal-button--primary:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.24);
+}
+
+@media (max-width: 640px) {
+    .page-modal-surface {
+        padding: 24px 20px 20px;
+        border-radius: 16px;
+    }
+
+    .page-modal-title {
+        font-size: 22px;
+    }
+
+    .page-modal-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 }
 
 .crop-sidebar {
