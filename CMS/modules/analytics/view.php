@@ -2,6 +2,7 @@
 // File: view.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/../../includes/analytics.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
@@ -33,17 +34,50 @@ $zeroViewCount = count($zeroViewPages);
 $zeroViewExamples = array_slice($zeroViewPages, 0, 3);
 
 $initialEntries = [];
+$previousTotalViews = 0;
+$previousZeroViewCount = 0;
 foreach ($sortedPages as $page) {
+    $views = (int) ($page['views'] ?? 0);
+    $slug = isset($page['slug']) ? (string) $page['slug'] : '';
+    $previousViews = analytics_previous_views($slug, $views);
+
     $initialEntries[] = [
         'title' => isset($page['title']) ? (string) $page['title'] : 'Untitled',
-        'slug' => isset($page['slug']) ? (string) $page['slug'] : '',
-        'views' => (int) ($page['views'] ?? 0),
+        'slug' => $slug,
+        'views' => $views,
+        'previousViews' => $previousViews,
     ];
+
+    $previousTotalViews += $previousViews;
+    if ($previousViews === 0) {
+        $previousZeroViewCount++;
+    }
 }
 
 $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
     ? date('M j, Y g:i a', $lastUpdatedTimestamp)
     : null;
+
+$previousAverageViews = $totalPages > 0 ? $previousTotalViews / $totalPages : 0;
+
+$summaryComparisons = [
+    'totalViews' => [
+        'current' => $totalViews,
+        'previous' => $previousTotalViews,
+    ],
+    'averageViews' => [
+        'current' => $averageViews,
+        'previous' => $previousAverageViews,
+    ],
+    'totalPages' => [
+        'current' => $totalPages,
+        'previous' => $totalPages,
+    ],
+    'zeroViews' => [
+        'current' => $zeroViewCount,
+        'previous' => $previousZeroViewCount,
+    ],
+];
 ?>
 <link rel="stylesheet" href="modules/analytics/analytics.css">
 <div class="content-section" id="analytics">
@@ -74,6 +108,11 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
                 <div class="a11y-overview-card analytics-overview-card">
                     <div class="a11y-overview-value analytics-overview-value" id="analyticsTotalViews" data-value="<?php echo (int) $totalViews; ?>"><?php echo number_format($totalViews); ?></div>
                     <div class="a11y-overview-label analytics-overview-label">Total Views</div>
+                    <div class="analytics-overview-delta analytics-overview-delta--neutral" id="analyticsTotalViewsDelta" aria-live="polite">
+                        <i class="fa-solid fa-minus analytics-overview-delta__icon" aria-hidden="true"></i>
+                        <span class="analytics-overview-delta__text">No change vs previous</span>
+                        <span class="sr-only analytics-overview-delta__sr">Comparison to the previous period will update shortly.</span>
+                    </div>
                     <?php if (!empty($topPages)):
                         $topPage = $topPages[0]; ?>
                         <div class="analytics-overview-hint">Top page: <?php echo htmlspecialchars($topPage['title'] ?? 'Untitled', ENT_QUOTES); ?> (<?php echo number_format((int) ($topPage['views'] ?? 0)); ?>)</div>
@@ -84,16 +123,31 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
                 <div class="a11y-overview-card analytics-overview-card">
                     <div class="a11y-overview-value analytics-overview-value" id="analyticsAverageViews" data-value="<?php echo $averageViews; ?>"><?php echo number_format($averageViews, 1); ?></div>
                     <div class="a11y-overview-label analytics-overview-label">Avg. views per page</div>
+                    <div class="analytics-overview-delta analytics-overview-delta--neutral" id="analyticsAverageViewsDelta" aria-live="polite">
+                        <i class="fa-solid fa-minus analytics-overview-delta__icon" aria-hidden="true"></i>
+                        <span class="analytics-overview-delta__text">No change vs previous</span>
+                        <span class="sr-only analytics-overview-delta__sr">Comparison to the previous period will update shortly.</span>
+                    </div>
                     <div class="analytics-overview-hint">Based on <?php echo number_format($totalPages); ?> published pages</div>
                 </div>
                 <div class="a11y-overview-card analytics-overview-card">
                     <div class="a11y-overview-value analytics-overview-value" id="analyticsTotalPages" data-value="<?php echo $totalPages; ?>"><?php echo number_format($totalPages); ?></div>
                     <div class="a11y-overview-label analytics-overview-label">Published pages</div>
+                    <div class="analytics-overview-delta analytics-overview-delta--neutral" id="analyticsTotalPagesDelta" aria-live="polite">
+                        <i class="fa-solid fa-minus analytics-overview-delta__icon" aria-hidden="true"></i>
+                        <span class="analytics-overview-delta__text">No change vs previous</span>
+                        <span class="sr-only analytics-overview-delta__sr">Comparison to the previous period will update shortly.</span>
+                    </div>
                     <div class="analytics-overview-hint">Includes static and dynamic content</div>
                 </div>
                 <div class="a11y-overview-card analytics-overview-card">
                     <div class="a11y-overview-value analytics-overview-value" id="analyticsZeroPages" data-value="<?php echo $zeroViewCount; ?>"><?php echo number_format($zeroViewCount); ?></div>
                     <div class="a11y-overview-label analytics-overview-label">Pages with no views</div>
+                    <div class="analytics-overview-delta analytics-overview-delta--neutral" id="analyticsZeroPagesDelta" aria-live="polite">
+                        <i class="fa-solid fa-minus analytics-overview-delta__icon" aria-hidden="true"></i>
+                        <span class="analytics-overview-delta__text">No change vs previous</span>
+                        <span class="sr-only analytics-overview-delta__sr">Comparison to the previous period will update shortly.</span>
+                    </div>
                     <div class="analytics-overview-hint"><?php echo $zeroViewCount > 0 ? 'Great candidates for internal promotion.' : 'Every published page has traffic.'; ?></div>
                 </div>
             </div>
@@ -219,5 +273,6 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
     window.analyticsInitialMeta = <?php echo json_encode([
         'lastUpdated' => $lastUpdatedDisplay ? 'Data refreshed ' . $lastUpdatedDisplay : 'Data refreshed moments ago',
         'lastUpdatedIso' => $lastUpdatedTimestamp > 0 ? date(DATE_ATOM, $lastUpdatedTimestamp) : null,
+        'summary' => $summaryComparisons,
     ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;
 </script>

@@ -2499,6 +2499,40 @@
             color: rgba(255,255,255,0.8);
         }
 
+        .analytics-overview-delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .analytics-overview-delta__icon {
+            font-size: 13px;
+        }
+
+        .analytics-overview-delta__text {
+            line-height: 1.4;
+        }
+
+        .analytics-overview-delta--positive {
+            color: #4ade80;
+        }
+
+        .analytics-overview-delta--negative {
+            color: #f87171;
+        }
+
+        .analytics-overview-delta--neutral {
+            color: rgba(255,255,255,0.75);
+        }
+
+        .analytics-overview-card .analytics-overview-delta + .analytics-overview-hint {
+            margin-top: 6px;
+        }
+
         .analytics-overview-hint {
             margin-top: 10px;
             font-size: 13px;
