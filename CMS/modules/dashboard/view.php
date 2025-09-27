@@ -182,6 +182,19 @@
                             </div>
                         </section>
 
+                        <section class="dashboard-section" aria-labelledby="dashboardSectionActivity">
+                            <div class="dashboard-section-header">
+                                <div>
+                                    <h3 class="dashboard-section-title" id="dashboardSectionActivity">Recent activity</h3>
+                                    <p class="dashboard-section-description">Latest updates captured from edits, publishing, and system tasks.</p>
+                                </div>
+                            </div>
+                            <div class="dashboard-activity-card" role="region" aria-labelledby="dashboardSectionActivity">
+                                <p class="dashboard-activity-empty" id="dashboardActivityEmpty" role="status">No recent activity recorded yet.</p>
+                                <ol class="dashboard-activity-timeline" id="dashboardActivityTimeline" aria-live="polite"></ol>
+                            </div>
+                        </section>
+
                         <section class="dashboard-section" aria-labelledby="dashboardSectionModules">
                             <div class="dashboard-section-header">
                                 <div>

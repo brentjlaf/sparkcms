@@ -200,6 +200,59 @@ function dashboard_format_number(int $value): string
     return number_format($value);
 }
 
+function dashboard_normalize_action_label(?string $action): string
+{
+    $label = trim((string)($action ?? ''));
+    return $label !== '' ? $label : 'Updated content';
+}
+
+function dashboard_activity_determine_module(array $entry, string $context): string
+{
+    $module = '';
+
+    if (!empty($entry['module']) && is_string($entry['module'])) {
+        $module = (string) $entry['module'];
+    } elseif (!empty($entry['meta']) && is_array($entry['meta'])) {
+        if (!empty($entry['meta']['module']) && is_string($entry['meta']['module'])) {
+            $module = (string) $entry['meta']['module'];
+        } elseif (!empty($entry['meta']['trigger']) && is_string($entry['meta']['trigger'])) {
+            switch ($entry['meta']['trigger']) {
+                case 'sitemap_regeneration':
+                    $module = 'sitemap';
+                    break;
+            }
+        }
+    }
+
+    if ($module !== '') {
+        return $module;
+    }
+
+    switch ($context) {
+        case 'page':
+            return 'pages';
+        case 'post':
+            return 'blogs';
+        case 'media':
+            return 'media';
+        case 'form':
+            return 'forms';
+        default:
+            return 'logs';
+    }
+}
+
+function dashboard_activity_module_label(string $module, string $context): string
+{
+    $source = trim($module !== '' ? $module : $context);
+    if ($source === '') {
+        return '';
+    }
+
+    $label = str_replace(['_', '-'], ' ', $source);
+    return ucwords($label);
+}
+
 $libxmlPrevious = libxml_use_internal_errors(true);
 
 $accessibilitySummary = [
@@ -379,23 +432,99 @@ foreach ($menus as $menu) {
 
 $logEntries = 0;
 $latestLogTime = null;
-foreach ($history as $entries) {
+$recentActivity = [];
+$recentActivityLimit = 25;
+$pageLookup = [];
+foreach ($pages as $page) {
+    if (isset($page['id'])) {
+        $pageLookup[$page['id']] = (string)($page['title'] ?? 'Untitled page');
+    }
+}
+$postLookup = [];
+foreach ($posts as $post) {
+    if (isset($post['id'])) {
+        $postLookup[$post['id']] = (string)($post['title'] ?? 'Untitled post');
+    }
+}
+foreach ($history as $historyKey => $entries) {
     if (!is_array($entries)) {
         continue;
     }
     $logEntries += count($entries);
     foreach ($entries as $entry) {
         if (!is_array($entry)) {
-            continue;
-        }
-        $time = isset($entry['time']) ? (int)$entry['time'] : null;
-        if ($time) {
-            if ($latestLogTime === null || $time > $latestLogTime) {
+            $time = isset($entry['time']) ? (int)$entry['time'] : null;
+            if ($time && ($latestLogTime === null || $time > $latestLogTime)) {
                 $latestLogTime = $time;
             }
+            continue;
         }
+
+        $time = isset($entry['time']) ? (int)$entry['time'] : null;
+        if ($time && ($latestLogTime === null || $time > $latestLogTime)) {
+            $latestLogTime = $time;
+        }
+
+        $context = is_string($entry['context'] ?? null)
+            ? (string)$entry['context']
+            : (is_numeric($historyKey) ? 'page' : 'system');
+        $actionLabel = dashboard_normalize_action_label($entry['action'] ?? '');
+        $user = trim((string)($entry['user'] ?? ''));
+        $actor = $user !== '' ? $user : 'System';
+
+        $entityId = $historyKey;
+        if (!is_numeric($entityId) && isset($entry['page_id']) && is_numeric($entry['page_id'])) {
+            $entityId = (int)$entry['page_id'];
+        }
+
+        $title = $entry['page_title'] ?? null;
+        if (!is_string($title) || trim($title) === '') {
+            if ($context === 'system') {
+                $title = 'System activity';
+            } elseif ($context === 'post') {
+                $title = $postLookup[$entityId] ?? 'Blog post';
+            } else {
+                $title = $pageLookup[$entityId] ?? ($context !== '' ? ucwords($context) : 'Content');
+            }
+        }
+
+        $module = dashboard_activity_determine_module($entry, $context);
+        $moduleLabel = dashboard_activity_module_label($module, $context);
+
+        $targetId = null;
+        if (is_numeric($entityId)) {
+            $targetId = (int)$entityId;
+        }
+        if ($targetId === null && !empty($entry['meta']) && is_array($entry['meta'])) {
+            if (isset($entry['meta']['page_id']) && is_numeric($entry['meta']['page_id'])) {
+                $targetId = (int)$entry['meta']['page_id'];
+            } elseif (isset($entry['meta']['id']) && is_numeric($entry['meta']['id'])) {
+                $targetId = (int)$entry['meta']['id'];
+            }
+        }
+
+        $timeIso = $time ? date('c', $time) : null;
+
+        $recentActivity[] = [
+            'time' => $time,
+            'timeIso' => $timeIso,
+            'actor' => $actor,
+            'title' => (string)$title,
+            'action' => $actionLabel,
+            'context' => $context,
+            'module' => $module,
+            'moduleLabel' => $moduleLabel,
+            'targetId' => $targetId,
+        ];
     }
 }
+$recentActivity = array_filter($recentActivity, function ($activity) {
+    return isset($activity['time']) && $activity['time'];
+});
+usort($recentActivity, function ($a, $b) {
+    return ($b['time'] ?? 0) <=> ($a['time'] ?? 0);
+});
+$recentActivity = array_slice($recentActivity, 0, $recentActivityLimit);
 $logsLastActivity = $latestLogTime ? date('c', $latestLogTime) : null;
 
 $searchBreakdown = [
@@ -575,6 +704,7 @@ $data = [
     'speedHeaviestPageLength' => $largestPage['length'],
     'dataFileCount' => $dataFileCount,
     'moduleSummaries' => $moduleSummaries,
+    'recentActivity' => array_values($recentActivity),
 ];
 
 header('Content-Type: application/json');

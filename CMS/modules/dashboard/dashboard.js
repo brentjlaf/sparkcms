@@ -48,6 +48,8 @@ $(function(){
 
     const $refreshButton = $('#dashboardRefresh');
     const $lastUpdated = $('#dashboardLastUpdated');
+    const $activityList = $('#dashboardActivityTimeline');
+    const $activityEmpty = $('#dashboardActivityEmpty');
     const refreshButtonDefaultText = $refreshButton.length ? $refreshButton.find('span').text().trim() : '';
     const dateFormatter = typeof Intl !== 'undefined'
         ? new Intl.DateTimeFormat(undefined, {
@@ -55,6 +57,13 @@ $(function(){
             day: 'numeric',
             hour: 'numeric',
             minute: '2-digit'
+        })
+        : null;
+    const dayFormatter = typeof Intl !== 'undefined'
+        ? new Intl.DateTimeFormat(undefined, {
+            weekday: 'long',
+            month: 'short',
+            day: 'numeric'
         })
         : null;
 
@@ -132,6 +141,158 @@ $(function(){
         });
     }
 
+    function renderRecentActivity(activity) {
+        if (!$activityList.length) {
+            return;
+        }
+
+        $activityList.empty();
+
+        const hasItems = Array.isArray(activity) && activity.length > 0;
+
+        if (!hasItems) {
+            if ($activityEmpty.length) {
+                $activityEmpty.removeAttr('hidden');
+            }
+            $activityList.attr('hidden', 'hidden');
+            return;
+        }
+
+        if ($activityEmpty.length) {
+            $activityEmpty.attr('hidden', 'hidden');
+        }
+        $activityList.removeAttr('hidden');
+
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const groups = [];
+        const groupIndex = {};
+
+        activity.forEach(function (entry) {
+            if (!entry || typeof entry !== 'object') {
+                return;
+            }
+
+            const timeSeconds = Number(entry.time);
+            const hasValidTime = Number.isFinite(timeSeconds) && timeSeconds > 0;
+            const date = hasValidTime ? new Date(timeSeconds * 1000) : null;
+            let label = 'Earlier activity';
+            let key = 'unknown';
+            let order = -Infinity;
+
+            if (date) {
+                const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                key = startOfDay.getTime();
+                order = date.getTime();
+                const diff = Math.round((todayStart.getTime() - startOfDay.getTime()) / 86400000);
+                if (diff === 0) {
+                    label = 'Today';
+                } else if (diff === 1) {
+                    label = 'Yesterday';
+                } else if (dayFormatter) {
+                    label = dayFormatter.format(date);
+                } else {
+                    label = startOfDay.toDateString();
+                }
+            }
+
+            let group = groupIndex[key];
+            if (!group) {
+                group = { key, label, items: [], order };
+                groupIndex[key] = group;
+                groups.push(group);
+            }
+
+            if (order > group.order) {
+                group.order = order;
+            }
+
+            group.items.push({ entry, date });
+        });
+
+        groups.sort(function (a, b) {
+            return (b.order || -Infinity) - (a.order || -Infinity);
+        });
+
+        groups.forEach(function (group) {
+            const $groupItem = $('<li>', { class: 'dashboard-activity-group' });
+            $('<h4>', {
+                class: 'dashboard-activity-group-title',
+                text: group.label
+            }).appendTo($groupItem);
+
+            const $groupList = $('<ol>', { class: 'dashboard-activity-items' });
+
+            group.items.sort(function (a, b) {
+                return (b.entry && b.entry.time ? Number(b.entry.time) : 0) - (a.entry && a.entry.time ? Number(a.entry.time) : 0);
+            });
+
+            group.items.forEach(function (item) {
+                const entry = item.entry;
+                const actor = entry.actor || 'System';
+                const action = entry.action || 'Updated content';
+                const title = entry.title || '';
+                const module = entry.module || '';
+                const moduleLabel = entry.moduleLabel || (entry.context ? String(entry.context) : '');
+                const context = entry.context || '';
+                const targetId = entry.targetId;
+                const timeIso = entry.timeIso || (item.date ? item.date.toISOString() : '');
+                const formattedTime = item.date
+                    ? (dateFormatter ? dateFormatter.format(item.date) : item.date.toLocaleString())
+                    : 'Recently';
+
+                const $item = $('<li>', { class: 'dashboard-activity-item' });
+                const linkAttrs = {
+                    class: 'dashboard-activity-link',
+                    href: module ? '#' + module : '#'
+                };
+
+                if (module) {
+                    linkAttrs['data-module'] = module;
+                }
+                if (context) {
+                    linkAttrs['data-context'] = context;
+                }
+                if (targetId !== undefined && targetId !== null && targetId !== '') {
+                    linkAttrs['data-target-id'] = targetId;
+                }
+
+                const $link = $('<a>', linkAttrs);
+
+                const $time = $('<time>', {
+                    class: 'dashboard-activity-time',
+                    datetime: timeIso,
+                    text: formattedTime
+                });
+
+                const $summary = $('<span>', { class: 'dashboard-activity-summary' })
+                    .append($('<span>', { class: 'dashboard-activity-actor', text: actor }))
+                    .append(' ')
+                    .append(action);
+
+                if (title) {
+                    $summary.append(' ');
+                    $summary.append($('<span>', { class: 'dashboard-activity-target', text: title }));
+                }
+
+                $link.append($time, $summary);
+
+                if (moduleLabel) {
+                    $link.append($('<span>', {
+                        class: 'dashboard-activity-module',
+                        text: moduleLabel
+                    }));
+                }
+
+                $item.append($link);
+                $groupList.append($item);
+            });
+
+            $groupItem.append($groupList);
+            $activityList.append($groupItem);
+        });
+    }
+
     function navigateToModule(section) {
         if (!section) {
             return;
@@ -178,6 +339,16 @@ $(function(){
                 event.preventDefault();
                 navigateToModule($(this).data('module'));
             }
+        });
+
+        $('#dashboardActivityTimeline').on('click', '.dashboard-activity-link', function (event) {
+            const module = $(this).data('module');
+            if (module) {
+                event.preventDefault();
+                navigateToModule(module);
+                return;
+            }
+            event.preventDefault();
         });
     }
 
@@ -234,6 +405,7 @@ $(function(){
             });
 
             renderModuleSummaries(data.moduleSummaries || data.modules || []);
+            renderRecentActivity(data.recentActivity || []);
         })
             .done(function(){
                 updateLastUpdated(Date.now());

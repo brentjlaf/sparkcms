@@ -972,6 +972,98 @@
             margin-top: 16px;
         }
 
+        .dashboard-activity-card {
+            margin-top: 16px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 20px 45px -20px rgba(15, 23, 42, 0.12);
+            padding: 24px;
+        }
+
+        .dashboard-activity-empty {
+            margin: 0;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .dashboard-activity-timeline,
+        .dashboard-activity-items {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-activity-timeline[hidden] {
+            display: none;
+        }
+
+        .dashboard-activity-group + .dashboard-activity-group {
+            margin-top: 20px;
+        }
+
+        .dashboard-activity-group-title {
+            margin: 0 0 12px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #1f2937;
+        }
+
+        .dashboard-activity-item + .dashboard-activity-item {
+            margin-top: 12px;
+        }
+
+        .dashboard-activity-link {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            background-color: rgba(248, 250, 252, 0.9);
+            border: 1px solid transparent;
+            transition: background-color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+            color: inherit;
+        }
+
+        .dashboard-activity-link:hover,
+        .dashboard-activity-link:focus {
+            background-color: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.25);
+            transform: translateX(2px);
+        }
+
+        .dashboard-activity-link:focus-visible {
+            outline: 3px solid rgba(59, 130, 246, 0.45);
+            outline-offset: 2px;
+        }
+
+        .dashboard-activity-time {
+            font-size: 12px;
+            color: #64748b;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .dashboard-activity-summary {
+            font-size: 14px;
+            color: #1f2937;
+        }
+
+        .dashboard-activity-actor,
+        .dashboard-activity-target {
+            font-weight: 600;
+        }
+
+        .dashboard-activity-module {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+        }
+
         .dashboard-table-header {
             margin-bottom: 18px;
         }
