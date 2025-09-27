@@ -24,6 +24,81 @@
                             </div>
                         </header>
 
+                        <section class="dashboard-section" aria-labelledby="dashboardSectionQuick">
+                            <div class="dashboard-section-header">
+                                <div>
+                                    <h3 class="dashboard-section-title" id="dashboardSectionQuick">Quick actions</h3>
+                                    <p class="dashboard-section-description">Jump directly into the most used tools and keep work moving.</p>
+                                </div>
+                            </div>
+                            <div class="dashboard-quick-actions" id="dashboardQuickActions" role="list">
+                                <button type="button" class="dashboard-quick-card" data-module="pages" role="listitem">
+                                    <span class="dashboard-quick-icon pages" aria-hidden="true"><i class="fa-solid fa-file-lines"></i></span>
+                                    <span class="dashboard-quick-content">
+                                        <span class="dashboard-quick-label">Pages</span>
+                                        <span class="dashboard-quick-description">Publish updates and organise your site structure.</span>
+                                    </span>
+                                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                                </button>
+                                <button type="button" class="dashboard-quick-card" data-module="blogs" role="listitem">
+                                    <span class="dashboard-quick-icon blogs" aria-hidden="true"><i class="fa-solid fa-pen-nib"></i></span>
+                                    <span class="dashboard-quick-content">
+                                        <span class="dashboard-quick-label">Blogs</span>
+                                        <span class="dashboard-quick-description">Draft fresh stories and keep readers informed.</span>
+                                    </span>
+                                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                                </button>
+                                <button type="button" class="dashboard-quick-card" data-module="media" role="listitem">
+                                    <span class="dashboard-quick-icon media" aria-hidden="true"><i class="fa-solid fa-images"></i></span>
+                                    <span class="dashboard-quick-content">
+                                        <span class="dashboard-quick-label">Media</span>
+                                        <span class="dashboard-quick-description">Upload assets and keep your library organised.</span>
+                                    </span>
+                                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                                </button>
+                                <button type="button" class="dashboard-quick-card" data-module="forms" role="listitem">
+                                    <span class="dashboard-quick-icon forms" aria-hidden="true"><i class="fa-solid fa-inbox"></i></span>
+                                    <span class="dashboard-quick-content">
+                                        <span class="dashboard-quick-label">Forms</span>
+                                        <span class="dashboard-quick-description">Review submissions and fine-tune entry points.</span>
+                                    </span>
+                                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                                </button>
+                                <button type="button" class="dashboard-quick-card" data-module="users" role="listitem">
+                                    <span class="dashboard-quick-icon users" aria-hidden="true"><i class="fa-solid fa-user-shield"></i></span>
+                                    <span class="dashboard-quick-content">
+                                        <span class="dashboard-quick-label">Users</span>
+                                        <span class="dashboard-quick-description">Manage team access and keep roles up to date.</span>
+                                    </span>
+                                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                                </button>
+                                <button type="button" class="dashboard-quick-card" data-module="settings" role="listitem">
+                                    <span class="dashboard-quick-icon settings" aria-hidden="true"><i class="fa-solid fa-sliders"></i></span>
+                                    <span class="dashboard-quick-content">
+                                        <span class="dashboard-quick-label">Settings</span>
+                                        <span class="dashboard-quick-description">Fine tune branding, metadata, and site defaults.</span>
+                                    </span>
+                                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                                </button>
+                                <button type="button" class="dashboard-quick-card" data-module="analytics" role="listitem">
+                                    <span class="dashboard-quick-icon analytics" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
+                                    <span class="dashboard-quick-content">
+                                        <span class="dashboard-quick-label">Analytics</span>
+                                        <span class="dashboard-quick-description">Track performance and spot opportunities.</span>
+                                    </span>
+                                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                                </button>
+                                <button type="button" class="dashboard-quick-card" data-module="seo" role="listitem">
+                                    <span class="dashboard-quick-icon seo" aria-hidden="true"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
+                                    <span class="dashboard-quick-content">
+                                        <span class="dashboard-quick-label">SEO</span>
+                                        <span class="dashboard-quick-description">Resolve search optimisations and boost visibility.</span>
+                                    </span>
+                                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+                                </button>
+                            </div>
+                        </section>
+
                         <section class="dashboard-section" aria-labelledby="dashboardSectionMetrics">
                             <div class="dashboard-section-header">
                                 <div>
