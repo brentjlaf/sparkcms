@@ -11,6 +11,36 @@ $(function(){
     let viewType = 'medium';
     let itemsPerPage = 12;
 
+    const defaultSelectFolderHeading = $('#selectFolderState h3').text();
+    const defaultSelectFolderMessage = $('#selectFolderState p').text();
+    const defaultEmptyFolderHeading = $('#emptyFolderState h3').text();
+    const defaultEmptyFolderMessage = $('#emptyFolderState p').text();
+
+    function showRetryButton(containerSelector, handler){
+        const container = $(containerSelector);
+        let btn = container.find('button.retry-button');
+        if(!btn.length){
+            btn = $('<button type="button" class="btn btn-secondary retry-button">Retry</button>');
+            container.append(btn);
+        }
+        btn.off('click').on('click', function(e){
+            e.preventDefault();
+            handler();
+        }).show();
+    }
+
+    function hideRetryButton(containerSelector){
+        $(containerSelector).find('button.retry-button').hide();
+    }
+
+    function disableUpload(){
+        $('#uploadBtn').prop('disabled', true).addClass('is-disabled').attr('aria-disabled', 'true');
+    }
+
+    function enableUpload(){
+        $('#uploadBtn').prop('disabled', false).removeClass('is-disabled').removeAttr('aria-disabled');
+    }
+
     function loadFolders(){
         $.getJSON('modules/media/list_media.php', function(res){
             const list = $('#folderList').empty();
@@ -45,6 +75,29 @@ $(function(){
                 $('#mediaHeroFolderName').text('No folder selected');
                 $('#mediaHeroFolderInfo').text('Select a folder to see file details');
             }
+            $('#selectFolderState h3').text(defaultSelectFolderHeading);
+            $('#selectFolderState p').text(defaultSelectFolderMessage);
+            hideRetryButton('#selectFolderState');
+        }).fail(function(jqXHR, textStatus, errorThrown){
+            console.error('Failed to load folders:', textStatus, errorThrown);
+            currentFolder = null;
+            currentImages = [];
+            currentFolderMeta = '';
+            $('#folderList').empty();
+            $('#totalFolders').text('0');
+            $('#totalImages').text('0');
+            $('#totalSize').text('0');
+            $('#mediaStorageSummary').text('0 used');
+            $('#folderStats').text('');
+            $('#galleryHeader').hide();
+            disableUpload();
+            renderImages();
+            $('#mediaHeroFolderName').text('Unable to load folders');
+            $('#mediaHeroFolderInfo').text('Please try again or contact support if the issue continues.');
+            $('#selectFolderState h3').text('Unable to load folders');
+            $('#selectFolderState p').text('Check your connection and try again.');
+            showRetryButton('#selectFolderState', loadFolders);
+            alertModal('We couldn\'t load your media folders. Please try again.');
         });
     }
 
@@ -75,7 +128,29 @@ $(function(){
             currentFolderMeta = currentImages.length+' files • '+formatFileSize(totalBytes)+' • '+lastEdited;
             $('#folderStats').text(currentFolderMeta);
             $('#mediaHeroFolderInfo').text(currentFolderMeta);
+            $('#emptyFolderState h3').text(defaultEmptyFolderHeading);
+            $('#emptyFolderState p').text(defaultEmptyFolderMessage);
+            hideRetryButton('#emptyFolderState');
+            enableUpload();
+            $('#renameFolderBtn').show();
+            $('#deleteFolderBtn').show();
             renderImages();
+        }).fail(function(jqXHR, textStatus, errorThrown){
+            console.error('Failed to load images for folder', currentFolder, textStatus, errorThrown);
+            currentImages = [];
+            currentFolderMeta = '';
+            $('#folderStats').text('');
+            $('#galleryHeader').show();
+            $('#mediaHeroFolderInfo').text('Unable to load files for this folder. Please try again.');
+            $('#emptyFolderState h3').text('Unable to load media');
+            $('#emptyFolderState p').text('Check your connection and try again.');
+            showRetryButton('#emptyFolderState', loadImages);
+            disableUpload();
+            renderImages();
+            $('#mediaToolbar').hide();
+            $('#renameFolderBtn').hide();
+            $('#deleteFolderBtn').hide();
+            alertModal('We couldn\'t load the media in this folder. Please try again.');
         });
     }
 
