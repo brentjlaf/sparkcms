@@ -122,7 +122,129 @@ function grade_to_badge_class(string $grade): string {
     }
 }
 
+function speed_format_change(float $value, int $decimals = 0): string
+{
+    $absValue = number_format(abs($value), $decimals, '.', '');
+    if ($value > 0) {
+        return '+' . $absValue;
+    }
+    if ($value < 0) {
+        return '-' . $absValue;
+    }
+
+    return number_format(0, $decimals, '.', '');
+}
+
+function speed_calculate_change(float $current, ?float $previous): array
+{
+    $hasBaseline = $previous !== null;
+    $absoluteChange = $hasBaseline ? $current - (float)$previous : 0.0;
+    $direction = 'neutral';
+    if ($absoluteChange > 0) {
+        $direction = 'positive';
+    } elseif ($absoluteChange < 0) {
+        $direction = 'negative';
+    }
+
+    $percentChange = null;
+    if ($hasBaseline) {
+        if ($previous == 0.0) {
+            $percentChange = $absoluteChange == 0.0 ? 0.0 : null;
+        } else {
+            $percentChange = ($absoluteChange / $previous) * 100;
+        }
+    }
+
+    return [
+        'current' => $current,
+        'previous' => $previous,
+        'absolute' => $absoluteChange,
+        'percent' => $percentChange,
+        'direction' => $direction,
+        'hasBaseline' => $hasBaseline,
+    ];
+}
+
+function speed_render_delta(?array $delta, string $statLabel, string $unitSingular, ?string $unitPlural = null, int $absoluteDecimals = 0, int $percentDecimals = 1): string
+{
+    $unitPlural = $unitPlural ?? $unitSingular . 's';
+    $statLabel = trim($statLabel);
+
+    if (!$delta || empty($delta['hasBaseline'])) {
+        $srText = $statLabel . ' baseline established. No previous data available yet.';
+        return '<div class="a11y-overview-delta" aria-live="polite">'
+            . '<span class="speed-delta__value speed-delta__value--neutral speed-delta__value--baseline" aria-hidden="true">'
+            . '<i class="fas fa-circle-dot" aria-hidden="true"></i>'
+            . '<span>Baseline set</span>'
+            . '</span>'
+            . '<span class="sr-only">' . htmlspecialchars($srText, ENT_QUOTES, 'UTF-8') . '</span>'
+            . '</div>';
+    }
+
+    $direction = $delta['direction'] ?? 'neutral';
+    $directionClass = 'speed-delta__value--' . $direction;
+    $absolute = (float)($delta['absolute'] ?? 0.0);
+    $percentRaw = $delta['percent'];
+    $percentAvailable = $percentRaw !== null;
+
+    $percentClass = 'speed-delta__value ' . ($percentAvailable ? $directionClass : 'speed-delta__value--neutral speed-delta__value--empty');
+    $absoluteClass = 'speed-delta__value ' . $directionClass;
+
+    $icon = 'fa-minus';
+    if ($direction === 'positive') {
+        $icon = 'fa-arrow-trend-up';
+    } elseif ($direction === 'negative') {
+        $icon = 'fa-arrow-trend-down';
+    }
+
+    if (!$percentAvailable) {
+        $icon = 'fa-circle-question';
+    }
+
+    $percentText = $percentAvailable
+        ? speed_format_change((float)$percentRaw, $percentDecimals) . '%'
+        : 'No trend';
+    $absoluteUnit = abs($absolute) === 1.0 ? $unitSingular : $unitPlural;
+    $absoluteText = speed_format_change($absolute, $absoluteDecimals) . ' ' . $absoluteUnit;
+
+    $absNumber = number_format(abs($absolute), $absoluteDecimals, '.', '');
+    $percentNumber = $percentAvailable ? number_format(abs((float)$percentRaw), $percentDecimals, '.', '') : null;
+
+    if ($absolute == 0.0) {
+        $srSummary = $statLabel . ' remained unchanged compared to the previous scan.';
+    } else {
+        $srSummary = $statLabel . ' ' . ($absolute > 0 ? 'increased' : 'decreased') . ' by ' . $absNumber . ' ' . $absoluteUnit . ' compared to the previous scan.';
+    }
+
+    if ($percentAvailable) {
+        if ((float)$percentRaw === 0.0) {
+            $srSummary .= ' There was no percentage change.';
+        } else {
+            $srSummary .= ' That is ' . ((float)$percentRaw > 0 ? 'up ' : 'down ') . $percentNumber . ' percent.';
+        }
+    } else {
+        $srSummary .= ' Percentage change is not available yet.';
+    }
+
+    $html = '<div class="a11y-overview-delta" aria-live="polite">';
+    $html .= '<span class="' . $percentClass . '" aria-hidden="true">';
+    $html .= '<i class="fas ' . $icon . '" aria-hidden="true"></i>';
+    $html .= '<span>' . htmlspecialchars($percentText, ENT_QUOTES, 'UTF-8') . '</span>';
+    $html .= '</span>';
+    $html .= '<span class="' . $absoluteClass . '" aria-hidden="true">';
+    $html .= htmlspecialchars($absoluteText, ENT_QUOTES, 'UTF-8');
+    $html .= '</span>';
+    $html .= '<span class="sr-only">' . htmlspecialchars($srSummary, ENT_QUOTES, 'UTF-8') . '</span>';
+    $html .= '</div>';
+
+    return $html;
+}
+
 libxml_use_internal_errors(true);
+
+$snapshotFile = __DIR__ . '/../../data/speed_snapshot.json';
+$previousSnapshotRaw = read_json_file($snapshotFile);
+$previousSnapshot = is_array($previousSnapshotRaw) ? $previousSnapshotRaw : [];
 
 $report = [];
 $totalPages = 0;
@@ -411,6 +533,29 @@ $dashboardStats = [
     'lastScan' => $lastScan,
     'heaviestPage' => $heaviestPage,
 ];
+
+$previousTotals = [
+    'totalPages' => isset($previousSnapshot['totalPages']) ? (float)$previousSnapshot['totalPages'] : null,
+    'avgScore' => isset($previousSnapshot['avgScore']) ? (float)$previousSnapshot['avgScore'] : null,
+    'criticalAlerts' => isset($previousSnapshot['criticalAlerts']) ? (float)$previousSnapshot['criticalAlerts'] : null,
+    'slowPages' => isset($previousSnapshot['slowPages']) ? (float)$previousSnapshot['slowPages'] : null,
+];
+
+$dashboardStats['deltas'] = [
+    'totalPages' => speed_calculate_change((float)$totalPages, $previousTotals['totalPages']),
+    'avgScore' => speed_calculate_change((float)$avgScore, $previousTotals['avgScore']),
+    'criticalAlerts' => speed_calculate_change((float)$criticalAlertsTotal, $previousTotals['criticalAlerts']),
+    'slowPages' => speed_calculate_change((float)$slowPages, $previousTotals['slowPages']),
+];
+
+$currentSnapshot = [
+    'timestamp' => time(),
+    'totalPages' => $totalPages,
+    'avgScore' => $avgScore,
+    'criticalAlerts' => $criticalAlertsTotal,
+    'slowPages' => $slowPages,
+];
+write_json_file($snapshotFile, $currentSnapshot);
 ?>
 <div class="content-section" id="performance">
 <?php if ($selectedPage): ?>
@@ -570,18 +715,22 @@ $dashboardStats = [
                 <div class="a11y-overview-card">
                     <div class="a11y-overview-value" id="speedStatTotalPages"><?php echo $dashboardStats['totalPages']; ?></div>
                     <div class="a11y-overview-label">Total Pages</div>
+                    <?php echo speed_render_delta($dashboardStats['deltas']['totalPages'] ?? null, 'Total pages', 'page'); ?>
                 </div>
                 <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="speedStatAvgScore"><?php echo $dashboardStats['avgScore']; ?>%</div>
-                <div class="a11y-overview-label">Average Score</div>
-            </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="speedStatCritical"><?php echo $dashboardStats['criticalAlerts']; ?></div>
-                <div class="a11y-overview-label">Critical Alerts</div>
-            </div>
+                    <div class="a11y-overview-value" id="speedStatAvgScore"><?php echo $dashboardStats['avgScore']; ?>%</div>
+                    <div class="a11y-overview-label">Average Score</div>
+                    <?php echo speed_render_delta($dashboardStats['deltas']['avgScore'] ?? null, 'Average score', 'point', 'points'); ?>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="speedStatCritical"><?php echo $dashboardStats['criticalAlerts']; ?></div>
+                    <div class="a11y-overview-label">Critical Alerts</div>
+                    <?php echo speed_render_delta($dashboardStats['deltas']['criticalAlerts'] ?? null, 'Critical alerts', 'alert'); ?>
+                </div>
                 <div class="a11y-overview-card">
                     <div class="a11y-overview-value" id="speedStatSlow"><?php echo $dashboardStats['slowPages']; ?></div>
                     <div class="a11y-overview-label">Pages needing attention</div>
+                    <?php echo speed_render_delta($dashboardStats['deltas']['slowPages'] ?? null, 'Pages needing attention', 'page'); ?>
                 </div>
             </div>
         </header>
