@@ -10,6 +10,12 @@ if (!is_array($pages)) {
     $pages = [];
 }
 
+$historyFile = __DIR__ . '/../../data/page_history.json';
+$historyData = read_json_file($historyFile);
+if (!is_array($historyData)) {
+    $historyData = [];
+}
+
 function seo_pluralize(int $count, string $singular, ?string $plural = null): string
 {
     if ($count === 1) {
@@ -91,6 +97,143 @@ function seo_score_summary(array $entry): string
         default:
             return 'Review the detected items to improve overall SEO quality.';
     }
+}
+
+function seo_collect_score_candidate(array &$scores, $value, ?int $timestamp = null): void
+{
+    if (!is_numeric($value)) {
+        return;
+    }
+
+    $score = (int) round($value);
+    $score = max(0, min(100, $score));
+    $scores[] = [
+        'score' => $score,
+        'time' => $timestamp ?? 0,
+    ];
+}
+
+function seo_extract_previous_score(array $page, array $historyData): ?int
+{
+    $scores = [];
+    $lastModified = isset($page['last_modified']) && is_numeric($page['last_modified'])
+        ? (int) $page['last_modified']
+        : 0;
+
+    if (isset($page['seo_previous_score'])) {
+        seo_collect_score_candidate($scores, $page['seo_previous_score'], $lastModified);
+    }
+
+    if (isset($page['seo']) && is_array($page['seo'])) {
+        if (isset($page['seo']['previous_score'])) {
+            $recorded = isset($page['seo']['previous_score_recorded']) && is_numeric($page['seo']['previous_score_recorded'])
+                ? (int) $page['seo']['previous_score_recorded']
+                : $lastModified;
+            seo_collect_score_candidate($scores, $page['seo']['previous_score'], $recorded);
+        }
+
+        if (isset($page['seo']['history']) && is_array($page['seo']['history'])) {
+            foreach ($page['seo']['history'] as $entry) {
+                if (is_array($entry)) {
+                    $timestamp = isset($entry['time']) && is_numeric($entry['time']) ? (int) $entry['time'] : 0;
+                    if (isset($entry['score'])) {
+                        seo_collect_score_candidate($scores, $entry['score'], $timestamp);
+                    } elseif (isset($entry['value'])) {
+                        seo_collect_score_candidate($scores, $entry['value'], $timestamp);
+                    }
+                } elseif (is_numeric($entry)) {
+                    seo_collect_score_candidate($scores, $entry, 0);
+                }
+            }
+        }
+    }
+
+    if (isset($page['seo_history']) && is_array($page['seo_history'])) {
+        foreach ($page['seo_history'] as $entry) {
+            if (is_array($entry)) {
+                $timestamp = isset($entry['time']) && is_numeric($entry['time']) ? (int) $entry['time'] : 0;
+                if (isset($entry['score'])) {
+                    seo_collect_score_candidate($scores, $entry['score'], $timestamp);
+                } elseif (isset($entry['value'])) {
+                    seo_collect_score_candidate($scores, $entry['value'], $timestamp);
+                }
+            } elseif (is_numeric($entry)) {
+                seo_collect_score_candidate($scores, $entry, 0);
+            }
+        }
+    }
+
+    $pageId = $page['id'] ?? null;
+    if ($pageId !== null && isset($historyData[$pageId]) && is_array($historyData[$pageId])) {
+        foreach ($historyData[$pageId] as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $timestamp = isset($entry['time']) && is_numeric($entry['time']) ? (int) $entry['time'] : 0;
+            $context = strtolower((string) ($entry['context'] ?? ''));
+            $meta = $entry['meta'] ?? null;
+
+            if (is_array($meta)) {
+                if (isset($meta['seo_score'])) {
+                    seo_collect_score_candidate($scores, $meta['seo_score'], $timestamp);
+                    continue;
+                }
+                if (isset($meta['seo']) && is_array($meta['seo']) && isset($meta['seo']['score'])) {
+                    seo_collect_score_candidate($scores, $meta['seo']['score'], $timestamp);
+                    continue;
+                }
+                if (isset($meta['score']) && ($context === 'seo' || $context === 'seo_audit' || $context === 'seo_report' || $context === 'seo_scan')) {
+                    seo_collect_score_candidate($scores, $meta['score'], $timestamp);
+                    continue;
+                }
+            }
+
+            if (isset($entry['score']) && ($context === 'seo' || $context === 'seo_audit' || $context === 'seo_report' || $context === 'seo_scan')) {
+                seo_collect_score_candidate($scores, $entry['score'], $timestamp);
+            }
+        }
+    }
+
+    if (empty($scores)) {
+        return null;
+    }
+
+    usort($scores, static function (array $a, array $b) {
+        return $b['time'] <=> $a['time'];
+    });
+
+    return $scores[0]['score'];
+}
+
+function seo_describe_score_delta(?int $delta): ?array
+{
+    if ($delta === null) {
+        return null;
+    }
+
+    $abs = abs($delta);
+    if ($delta > 0) {
+        return [
+            'class' => 'seo-score-delta--up',
+            'visual' => '+' . $delta,
+            'sr' => sprintf('Score improved by %d %s since last check.', $abs, seo_pluralize($abs, 'point')),
+        ];
+    }
+
+    if ($delta < 0) {
+        return [
+            'class' => 'seo-score-delta--down',
+            'visual' => '−' . $abs,
+            'sr' => sprintf('Score declined by %d %s since last check.', $abs, seo_pluralize($abs, 'point')),
+        ];
+    }
+
+    return [
+        'class' => 'seo-score-delta--steady',
+        'visual' => '0',
+        'sr' => 'Score unchanged since last check.',
+    ];
 }
 
 $stringLength = function (string $value): int {
@@ -366,6 +509,16 @@ foreach ($pages as $pageIndex => $page) {
         $identifier .= '-' . $identifierCounts[$identifierBase];
     }
 
+    $previousScore = seo_extract_previous_score($page, $historyData);
+    $scoreDelta = $previousScore !== null ? $score - $previousScore : null;
+    $scoreTrend = null;
+    if ($scoreDelta !== null) {
+        $scoreTrend = $scoreDelta > 0
+            ? 'up'
+            : ($scoreDelta < 0 ? 'down' : 'steady');
+        $scoreDelta = (int) $scoreDelta;
+    }
+
     $report[] = [
         'identifier' => $identifier,
         'title' => $title,
@@ -383,6 +536,9 @@ foreach ($pages as $pageIndex => $page) {
         'score' => $score,
         'score_label' => $scoreLabel,
         'score_status' => $scoreStatus,
+        'previous_score' => $previousScore,
+        'score_delta' => $scoreDelta,
+        'score_trend' => $scoreTrend,
         'critical_count' => $criticalCount,
         'warning_count' => $warningCount,
         'word_count' => $wordCount,
@@ -1320,10 +1476,16 @@ if ($detailSlug !== null && $detailSlug !== '') {
             color: #64748b;
             margin-bottom: 18px;
         }
-        .seo-dashboard .seo-card-score {
+        .seo-dashboard .seo-card-score-wrapper {
             position: absolute;
             top: 22px;
             right: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+        .seo-dashboard .seo-card-score {
             width: 56px;
             height: 56px;
             border-radius: 50%;
@@ -1340,7 +1502,29 @@ if ($detailSlug !== null && $detailSlug !== '') {
         .seo-dashboard .seo-card-score.score-critical { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .seo-dashboard .seo-card-meta {
             position: relative;
-            padding-right: 70px;
+            padding-right: 90px;
+        }
+        .seo-dashboard .seo-score-delta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1;
+        }
+        .seo-dashboard .seo-score-delta--up {
+            background: rgba(34, 197, 94, 0.16);
+            color: #047857;
+        }
+        .seo-dashboard .seo-score-delta--down {
+            background: rgba(248, 113, 113, 0.2);
+            color: #b91c1c;
+        }
+        .seo-dashboard .seo-score-delta--steady {
+            background: #e2e8f0;
+            color: #475569;
         }
         .seo-dashboard .seo-card-stats {
             display: grid;
@@ -1403,6 +1587,12 @@ if ($detailSlug !== null && $detailSlug !== '') {
         .seo-dashboard .seo-tag.critical { background: #fee2e2; color: #b91c1c; }
         .seo-dashboard .seo-tag.warning { background: #fef3c7; color: #92400e; }
         .seo-dashboard .seo-tag.good { background: #dcfce7; color: #166534; }
+        .seo-dashboard .seo-table-score {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
         .seo-dashboard .seo-table-wrapper {
             margin-top: 30px;
             background: #fff;
@@ -1670,8 +1860,11 @@ if ($detailSlug !== null && $detailSlug !== '') {
                         'slug' => $entry['slug'],
                         'score' => $entry['score'],
                         'scoreLabel' => $entry['score_label'],
-                        'scoreStatus' => $entry['score_status'],
-                        'metaTitle' => $entry['meta_title'],
+        'scoreStatus' => $entry['score_status'],
+        'previousScore' => $entry['previous_score'],
+        'scoreDelta' => $entry['score_delta'],
+        'scoreTrend' => $entry['score_trend'],
+        'metaTitle' => $entry['meta_title'],
                         'metaTitleLength' => $entry['meta_title_length'],
                         'metaTitleStatus' => $entry['meta_title_status'],
                         'metaDescription' => $entry['meta_description'],
@@ -1690,9 +1883,18 @@ if ($detailSlug !== null && $detailSlug !== '') {
                     $jsonData = htmlspecialchars(json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
                 ?>
                 <article class="seo-card" data-status="<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower($entry['title'] . ' ' . $entry['slug'] . ' ' . $entry['meta_title']), ENT_QUOTES, 'UTF-8'); ?>" data-page="<?php echo $jsonData; ?>">
+                    <?php $deltaMeta = seo_describe_score_delta($entry['score_delta']); ?>
                     <div class="seo-card-meta">
-                        <div class="seo-card-score score-<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>">
-                            <?php echo (int) $entry['score']; ?>
+                        <div class="seo-card-score-wrapper">
+                            <div class="seo-card-score score-<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <?php echo (int) $entry['score']; ?>
+                            </div>
+                            <?php if ($deltaMeta): ?>
+                                <span class="seo-score-delta <?php echo htmlspecialchars($deltaMeta['class'], ENT_QUOTES, 'UTF-8'); ?>" role="text">
+                                    <span aria-hidden="true"><?php echo htmlspecialchars($deltaMeta['visual'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <span class="sr-only"><?php echo htmlspecialchars($deltaMeta['sr'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                </span>
+                            <?php endif; ?>
                         </div>
                         <h2 class="seo-card-title"><?php echo htmlspecialchars($entry['title']); ?></h2>
                         <div class="seo-card-url">/<?php echo htmlspecialchars($entry['slug']); ?></div>
@@ -1756,6 +1958,9 @@ if ($detailSlug !== null && $detailSlug !== '') {
                                 'score' => $entry['score'],
                                 'scoreLabel' => $entry['score_label'],
                                 'scoreStatus' => $entry['score_status'],
+                                'previousScore' => $entry['previous_score'],
+                                'scoreDelta' => $entry['score_delta'],
+                                'scoreTrend' => $entry['score_trend'],
                                 'metaTitle' => $entry['meta_title'],
                                 'metaTitleLength' => $entry['meta_title_length'],
                                 'metaTitleStatus' => $entry['meta_title_status'],
@@ -1773,6 +1978,7 @@ if ($detailSlug !== null && $detailSlug !== '') {
                                 'internalLinkCount' => $entry['internal_link_count'],
                             ];
                             $jsonData = htmlspecialchars(json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+                            $deltaMeta = seo_describe_score_delta($entry['score_delta']);
                         ?>
                         <tr data-status="<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower($entry['title'] . ' ' . $entry['slug'] . ' ' . $entry['meta_title']), ENT_QUOTES, 'UTF-8'); ?>" data-page="<?php echo $jsonData; ?>">
                             <td>
@@ -1788,7 +1994,15 @@ if ($detailSlug !== null && $detailSlug !== '') {
                                 </div>
                             </td>
                             <td>
-                                <span class="seo-status-badge <?php echo htmlspecialchars($entry['score_status']); ?>"><?php echo (int) $entry['score']; ?> &bull; <?php echo htmlspecialchars($entry['score_label']); ?></span>
+                                <div class="seo-table-score">
+                                    <span class="seo-status-badge <?php echo htmlspecialchars($entry['score_status']); ?>"><?php echo (int) $entry['score']; ?> &bull; <?php echo htmlspecialchars($entry['score_label']); ?></span>
+                                    <?php if ($deltaMeta): ?>
+                                        <span class="seo-score-delta <?php echo htmlspecialchars($deltaMeta['class'], ENT_QUOTES, 'UTF-8'); ?>" role="text">
+                                            <span aria-hidden="true"><?php echo htmlspecialchars($deltaMeta['visual'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <span class="sr-only"><?php echo htmlspecialchars($deltaMeta['sr'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <td>
                                 <?php if ($entry['meta_title'] !== ''): ?>
