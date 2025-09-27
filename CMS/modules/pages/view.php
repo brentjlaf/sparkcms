@@ -186,82 +186,96 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
         </div>
     </div>
 
-    <div id="pageModal" class="modal">
+    <div id="pageModal" class="modal page-settings-modal" role="dialog" aria-modal="true" aria-labelledby="formTitle" aria-describedby="pageModalDescription">
         <div class="modal-content">
-            <button class="close-btn" id="closePageModal" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
-            <div class="modal-header">
-                <div class="modal-title" id="formTitle">Add New Page</div>
+            <div class="page-modal-surface">
+                <button type="button" class="page-modal-close" id="closePageModal" aria-label="Close page settings">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+                <header class="page-modal-header">
+                    <span class="page-modal-subtitle">Page settings</span>
+                    <h2 class="page-modal-title" id="formTitle">Add New Page</h2>
+                    <p class="page-modal-description" id="pageModalDescription">Configure publishing, templates, and metadata before publishing your page.</p>
+                </header>
+                <form id="pageForm" class="page-modal-form">
+                    <input type="hidden" name="id" id="pageId">
+                    <input type="hidden" name="content" id="content">
+                    <div class="page-modal-body">
+                        <div id="pageTabs" class="page-modal-tabs">
+                            <ul>
+                                <li><a href="#tab-settings">Page Settings</a></li>
+                                <li><a href="#tab-seo">SEO Options</a></li>
+                                <li><a href="#tab-og">Social Open Graph</a></li>
+                            </ul>
+                            <div id="tab-settings" class="page-modal-panel">
+                                <div class="page-modal-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="title">Title</label>
+                                        <input type="text" class="form-input" name="title" id="title" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="slug">Slug</label>
+                                        <input type="text" class="form-input" name="slug" id="slug" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="template">Template</label>
+                                        <select class="form-select" name="template" id="template">
+                                            <option value="page.php">page.php</option>
+                                            <?php foreach ($templates as $t): ?>
+                                            <?php if ($t !== 'page.php'): ?>
+                                            <option value="<?php echo htmlspecialchars($t); ?>"><?php echo htmlspecialchars($t); ?></option>
+                                            <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="access">Access</label>
+                                        <select class="form-select" name="access" id="access">
+                                            <option value="public">Public</option>
+                                            <option value="private">Private</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group page-modal-checkbox">
+                                        <label class="form-label" for="published">Publishing</label>
+                                        <label class="page-modal-toggle">
+                                            <input type="checkbox" name="published" id="published">
+                                            <span>Published</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="tab-seo" class="page-modal-panel">
+                                <div class="form-group">
+                                    <label class="form-label" for="meta_title">Meta Title</label>
+                                    <input type="text" class="form-input" name="meta_title" id="meta_title">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="meta_description">Meta Description</label>
+                                    <textarea class="form-textarea" name="meta_description" id="meta_description" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div id="tab-og" class="page-modal-panel">
+                                <div class="form-group">
+                                    <label class="form-label" for="og_title">OG Title</label>
+                                    <input type="text" class="form-input" name="og_title" id="og_title">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="og_description">OG Description</label>
+                                    <textarea class="form-textarea" name="og_description" id="og_description" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="og_image">OG Image URL</label>
+                                    <input type="text" class="form-input" name="og_image" id="og_image">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="page-modal-footer">
+                        <button type="button" class="page-modal-button page-modal-button--secondary" id="cancelEdit">Cancel</button>
+                        <button type="submit" class="page-modal-button page-modal-button--primary">Save Page</button>
+                    </footer>
+                </form>
             </div>
-            <form id="pageForm">
-                <input type="hidden" name="id" id="pageId">
-                <input type="hidden" name="content" id="content">
-                <div id="pageTabs">
-                    <ul>
-                        <li><a href="#tab-settings">Page Settings</a></li>
-                        <li><a href="#tab-seo">SEO Options</a></li>
-                        <li><a href="#tab-og">Social Open Graph</a></li>
-                    </ul>
-                    <div id="tab-settings">
-                        <div class="form-group">
-                            <label class="form-label">Title</label>
-                            <input type="text" class="form-input" name="title" id="title" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Slug</label>
-                            <input type="text" class="form-input" name="slug" id="slug" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><input type="checkbox" name="published" id="published"> Published</label>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Template</label>
-                            <select class="form-select" name="template" id="template">
-                                <option value="page.php">page.php</option>
-                                <?php foreach ($templates as $t): ?>
-                                <?php if ($t !== 'page.php'): ?>
-                                <option value="<?php echo htmlspecialchars($t); ?>"><?php echo htmlspecialchars($t); ?></option>
-                                <?php endif; ?>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Access</label>
-                            <select class="form-select" name="access" id="access">
-                                <option value="public">Public</option>
-                                <option value="private">Private</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div id="tab-seo">
-                        <div class="form-group">
-                            <label class="form-label">Meta Title</label>
-                            <input type="text" class="form-input" name="meta_title" id="meta_title">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Meta Description</label>
-                            <textarea class="form-textarea" name="meta_description" id="meta_description" rows="3"></textarea>
-                        </div>
-                    </div>
-                    <div id="tab-og">
-                        <div class="form-group">
-                            <label class="form-label">OG Title</label>
-                            <input type="text" class="form-input" name="og_title" id="og_title">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">OG Description</label>
-                            <textarea class="form-textarea" name="og_description" id="og_description" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">OG Image URL</label>
-                            <input type="text" class="form-input" name="og_image" id="og_image">
-                        </div>
-                    </div>
-                </div>
-                <div style="display:flex; gap:10px; margin-top:15px;">
-                    <button type="submit" class="btn btn-primary">Save Page</button>
-                    <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
-                </div>
-            </form>
         </div>
     </div>
 
