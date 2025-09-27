@@ -4,6 +4,10 @@ $(function(){
         entries: [],
         filter: 'all',
         view: 'grid',
+        sort: {
+            key: 'views',
+            direction: 'desc',
+        },
         summary: {
             totalViews: 0,
             averageViews: 0,
@@ -21,6 +25,7 @@ $(function(){
     const $grid = $('#analyticsGrid');
     const $table = $('#analyticsTableView');
     const $tableBody = $('#analyticsTableBody');
+    const $sortButtons = $('[data-analytics-sort]');
     const $empty = $('#analyticsEmptyState');
     const $search = $('#analyticsSearchInput');
     const $filterButtons = $('[data-analytics-filter]');
@@ -316,11 +321,16 @@ $(function(){
     }
 
     function renderTable(items){
-        $tableBody.empty();
-        if (!items.length) {
+        updateSortIndicators();
+        if (!$tableBody.length) {
             return;
         }
-        const rows = items.map(function(item){
+        const sorted = sortItemsForTable(items);
+        $tableBody.empty();
+        if (!sorted.length) {
+            return;
+        }
+        const rows = sorted.map(function(item){
             return (
                 '<tr>' +
                     '<td class="analytics-table__title">' + escapeHtml(item.title) + '</td>' +
@@ -360,18 +370,89 @@ $(function(){
     function render(){
         const results = applyFilters();
         const hasResults = results.length > 0;
+        renderTable(results);
         if (state.view === 'grid') {
             renderGrid(results);
-            $tableBody.empty();
             $grid.removeAttr('hidden');
             $table.attr('hidden', true);
         } else {
-            renderTable(results);
-            $grid.empty();
+            renderGrid([]);
             $grid.attr('hidden', true);
             $table.removeAttr('hidden');
         }
         updateEmptyState(hasResults);
+    }
+
+    function sortItemsForTable(items){
+        const sorted = Array.isArray(items) ? items.slice() : [];
+        if (sorted.length <= 1) {
+            return sorted;
+        }
+        const key = state.sort.key;
+        const direction = state.sort.direction === 'asc' ? 1 : -1;
+        sorted.sort(function(a, b){
+            let comparison = 0;
+            if (key === 'title') {
+                comparison = a.titleLower.localeCompare(b.titleLower, undefined, { sensitivity: 'base' });
+            } else if (key === 'slug') {
+                comparison = a.slugLower.localeCompare(b.slugLower, undefined, { sensitivity: 'base' });
+            } else {
+                comparison = (a.views || 0) - (b.views || 0);
+            }
+            if (comparison === 0) {
+                comparison = (a.rank || 0) - (b.rank || 0);
+            }
+            return comparison * direction;
+        });
+        return sorted;
+    }
+
+    function updateSortIndicators(){
+        if (!$sortButtons.length) {
+            return;
+        }
+        $sortButtons.each(function(){
+            const $button = $(this);
+            const key = $button.data('analyticsSort');
+            if (!key) {
+                return;
+            }
+            const isActive = key === state.sort.key;
+            const isAscending = isActive && state.sort.direction === 'asc';
+            const ariaValue = isActive ? (isAscending ? 'ascending' : 'descending') : 'none';
+            const baseLabel = $button.data('analyticsSortLabel') || $button.find('.analytics-table__sort-label').text().trim() || 'Column';
+            const activeLabel = isActive ? baseLabel + ' column, sorted ' + (isAscending ? 'ascending' : 'descending') : 'Sort by ' + baseLabel + ' column';
+
+            $button.toggleClass('is-active', isActive);
+            $button.toggleClass('is-ascending', isAscending);
+            $button.toggleClass('is-descending', isActive && !isAscending);
+            $button.attr('aria-label', activeLabel);
+
+            const $header = $button.closest('th');
+            if ($header.length) {
+                $header.attr('aria-sort', ariaValue);
+            } else {
+                $button.attr('aria-sort', ariaValue);
+            }
+        });
+    }
+
+    function setSort(key){
+        if (!key) {
+            return;
+        }
+        const current = state.sort.key;
+        let direction = 'asc';
+        if (current === key) {
+            direction = state.sort.direction === 'asc' ? 'desc' : 'asc';
+        } else if (key === 'views') {
+            direction = 'desc';
+        }
+        state.sort = {
+            key: key,
+            direction: direction,
+        };
+        render();
     }
 
     function setFilter(filter){
@@ -457,6 +538,13 @@ $(function(){
     $search.on('input', debounce(function(){
         render();
     }, 150));
+
+    $sortButtons.on('click', function(){
+        const sortKey = $(this).data('analyticsSort');
+        if (sortKey) {
+            setSort(sortKey);
+        }
+    });
 
     if ($refreshBtn.length) {
         $refreshBtn.on('click', function(){
