@@ -46,6 +46,54 @@ $(function(){
         $el.text(output);
     }
 
+    const $refreshButton = $('#dashboardRefresh');
+    const $lastUpdated = $('#dashboardLastUpdated');
+    const refreshButtonDefaultText = $refreshButton.length ? $refreshButton.find('span').text().trim() : '';
+    const dateFormatter = typeof Intl !== 'undefined'
+        ? new Intl.DateTimeFormat(undefined, {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        })
+        : null;
+
+    function setRefreshState(isLoading) {
+        if (!$refreshButton.length) {
+            return;
+        }
+
+        const $label = $refreshButton.find('span');
+        if (isLoading) {
+            $refreshButton.prop('disabled', true).attr('aria-busy', 'true');
+            if ($label.length) {
+                $label.data('previous', $label.text());
+                $label.text('Refreshing…');
+            }
+        } else {
+            $refreshButton.prop('disabled', false).removeAttr('aria-busy');
+            if ($label.length) {
+                const previous = $label.data('previous') || refreshButtonDefaultText || 'Refresh insights';
+                $label.text(previous);
+            }
+        }
+    }
+
+    function updateLastUpdated(timestamp) {
+        if (!$lastUpdated.length) {
+            return;
+        }
+
+        if (!timestamp) {
+            $lastUpdated.text('Unable to refresh insights. Please try again.');
+            return;
+        }
+
+        const date = new Date(timestamp);
+        const formatted = dateFormatter ? dateFormatter.format(date) : date.toLocaleString();
+        $lastUpdated.text(`Last updated ${formatted}`);
+    }
+
     function renderModuleSummaries(modules) {
         const $table = $('#moduleSummaryTable tbody');
         if (!$table.length) {
@@ -81,7 +129,9 @@ $(function(){
     }
 
     function loadStats(){
-        $.getJSON('modules/dashboard/dashboard_data.php', function(data){
+        setRefreshState(true);
+
+        return $.getJSON('modules/dashboard/dashboard_data.php', function(data){
             updateText('#statPages', data.pages);
             updateText('#statPagesBreakdown', [data.pagesPublished, data.pagesDraft], function(values){
                 const published = formatNumber(values[0] || 0);
@@ -131,7 +181,23 @@ $(function(){
             });
 
             renderModuleSummaries(data.moduleSummaries || data.modules || []);
+        })
+            .done(function(){
+                updateLastUpdated(Date.now());
+            })
+            .fail(function(){
+                updateLastUpdated(0);
+            })
+            .always(function(){
+                setRefreshState(false);
+            });
+    }
+
+    if ($refreshButton.length) {
+        $refreshButton.on('click', function(){
+            loadStats();
         });
     }
+
     loadStats();
 });
