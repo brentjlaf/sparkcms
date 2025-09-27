@@ -866,21 +866,99 @@ section.container-fluid {
 }
 
 /* Blog Post List */
+.blog-post-list {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+.blog-post-list .blog-list-title {
+    margin-bottom: 0.5rem;
+}
+.blog-post-list .blog-list-intro {
+    max-width: 640px;
+    margin: 0 auto;
+}
+.blog-post-list .blog-posts {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
 .blog-post-list .blog-item {
-    margin-bottom: 1.5rem;
+    margin: 0;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background-color: #fff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.blog-post-list .blog-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
 }
 .blog-post-list .blog-title {
-    margin: 0 0 0.25rem;
-    font-size: 1.25rem;
+    margin: 0 0 0.5rem;
+    font-size: 1.35rem;
 }
 .blog-post-list .blog-title a {
     text-decoration: none;
-    color: var(--primary, #333);
+    color: var(--primary, #1f2937);
+}
+.blog-post-list .blog-title a:hover {
+    text-decoration: underline;
+}
+.blog-post-list .blog-meta {
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+.blog-post-list .blog-meta span + span::before {
+    content: "•";
+    margin: 0 0.5rem;
+    color: #d1d5db;
 }
 .blog-post-list .blog-excerpt {
-    margin: 0;
-    color: #555;
-    font-size: 0.95rem;
+    margin: 0 0 1rem;
+    color: #4b5563;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+.blog-post-list .blog-read-more {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--primary, #2563eb);
+    text-decoration: none;
+}
+.blog-post-list .blog-read-more span {
+    margin-left: 0.35rem;
+    transition: transform 0.2s ease;
+}
+.blog-post-list .blog-read-more:hover span {
+    transform: translateX(4px);
+}
+.blog-post-list .blog-item--placeholder,
+.blog-post-list .blog-item--error {
+    border: 1px dashed #cbd5f5;
+    background-color: #f8fafc;
+    color: #64748b;
+    text-align: center;
+}
+.blog-post-list .blog-empty {
+    margin-top: 1.5rem;
+}
+.blog-post-list .blog-list-title:empty,
+.blog-post-list .blog-list-intro:empty {
+    display: none;
+}
+@media (min-width: 768px) {
+    .blog-post-list .blog-posts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (min-width: 1200px) {
+    .blog-post-list .blog-posts {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 /* Additional Block Styles */
