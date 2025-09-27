@@ -636,291 +636,219 @@ if ($detailSlug !== null && $detailSlug !== '') {
             }
         ?>
         <style>
-            * {
-                box-sizing: border-box;
-            }
-
             .seo-detail-page {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                color: #334155;
-                background: #f8fafc;
-                min-height: 100%;
-            }
-
-            .seo-detail-page a {
-                text-decoration: none;
-            }
-
-            .seo-detail-page .header-section {
-                background: #fff;
-                border-bottom: 1px solid #e2e8f0;
-                padding: 20px 30px;
-            }
-
-            .seo-detail-page .back-btn {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                color: #3b82f6;
-                font-weight: 600;
-                margin-bottom: 15px;
-                padding: 8px 12px;
-                border-radius: 6px;
-                transition: background 0.2s ease;
-            }
-
-            .seo-detail-page .back-btn:hover {
-                background: #eff6ff;
-            }
-
-            .seo-detail-page .page-header {
+                font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                color: #0f172a;
                 display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 15px;
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .seo-detail-page .a11y-detail-actions {
+                display: flex;
+                gap: 12px;
                 flex-wrap: wrap;
             }
 
-            .seo-detail-page .page-info h1 {
-                color: #1e293b;
-                font-size: 24px;
-                margin-bottom: 5px;
-            }
-
-            .seo-detail-page .page-info .url {
-                font-size: 14px;
-                color: #64748b;
-                font-family: monospace;
-            }
-
-            .seo-detail-page .main-content {
-                padding: 30px;
-                max-width: 1400px;
-                margin: 0 auto;
-            }
-
-            .seo-detail-page .health-indicator {
-                background: <?php echo $scoreGradient; ?>;
+            .seo-detail-page .seo-action-primary {
+                background: linear-gradient(135deg, #2563eb, #7c3aed);
                 color: #fff;
-                padding: 40px;
-                border-radius: 16px;
-                margin-bottom: 30px;
+                border-color: transparent;
+            }
+
+            .seo-detail-page .seo-action-primary:hover,
+            .seo-detail-page .seo-action-primary:focus-visible {
+                background: linear-gradient(135deg, #1d4ed8, #5b21b6);
+                color: #fff;
+            }
+
+            .seo-detail-page .seo-action-secondary {
+                background: #f8fafc;
+                color: #1f2937;
+            }
+
+            .seo-detail-page .seo-action-secondary:hover,
+            .seo-detail-page .seo-action-secondary:focus-visible {
+                background: #e2e8f0;
+                color: #1f2937;
+            }
+
+            .seo-detail-page .seo-health-card {
                 position: relative;
                 overflow: hidden;
             }
 
-            .seo-detail-page .health-indicator::before {
+            .seo-detail-page .seo-health-card::before {
                 content: '';
                 position: absolute;
-                top: 0;
-                right: 0;
-                width: 200px;
-                height: 200px;
-                background: rgba(255, 255, 255, 0.12);
+                top: -60px;
+                right: -60px;
+                width: 220px;
+                height: 220px;
                 border-radius: 50%;
-                transform: translate(50%, -50%);
+                background: rgba(255, 255, 255, 0.18);
             }
 
-            .seo-detail-page .health-content {
-                position: relative;
-                z-index: 1;
-                display: flex;
+            .seo-detail-page .a11y-health-summary {
+                gap: 14px;
+            }
+
+            .seo-detail-page .seo-health-summary-text {
+                font-size: 15px;
+                line-height: 1.6;
+                color: rgba(255, 255, 255, 0.9);
+            }
+
+            .seo-detail-page .seo-score-pill {
+                display: inline-flex;
                 align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 20px;
-            }
-
-            .seo-detail-page .health-score {
-                text-align: center;
-            }
-
-            .seo-detail-page .health-score .score-display {
-                font-size: 64px;
-                font-weight: 700;
-            }
-
-            .seo-detail-page .health-score .score-label {
-                font-size: 18px;
-                opacity: 0.9;
-            }
-
-            .seo-detail-page .health-score .score-status {
-                margin-top: 10px;
-                padding: 8px 18px;
+                gap: 8px;
+                padding: 6px 14px;
                 border-radius: 999px;
-                background: rgba(15, 23, 42, 0.18);
+                background: rgba(15, 23, 42, 0.25);
+                font-size: 12px;
                 font-weight: 600;
-            }
-
-            .seo-detail-page .health-summary h2 {
-                font-size: 28px;
-                margin-bottom: 12px;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
                 color: #fff;
             }
 
-            .seo-detail-page .health-summary p {
-                margin-bottom: 20px;
-                font-size: 16px;
-                color: rgba(255, 255, 255, 0.92);
+            .seo-detail-page .seo-score-pill::before {
+                content: '';
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                border-radius: 999px;
+                background: var(--seo-pill-accent, rgba(255, 255, 255, 0.75));
             }
 
-            .seo-detail-page .quick-stats {
+            .seo-detail-page .seo-score-pill.status-excellent {
+                --seo-pill-accent: #22c55e;
+            }
+
+            .seo-detail-page .seo-score-pill.status-good {
+                --seo-pill-accent: #38bdf8;
+            }
+
+            .seo-detail-page .seo-score-pill.status-warning {
+                --seo-pill-accent: #f59e0b;
+            }
+
+            .seo-detail-page .seo-score-pill.status-critical {
+                --seo-pill-accent: #ef4444;
+            }
+
+            .seo-detail-page .seo-meta {
+                display: grid;
+                gap: 12px;
+                margin-top: 16px;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+
+            .seo-detail-page .seo-meta div {
+                background: rgba(15, 23, 42, 0.24);
+                border-radius: 12px;
+                padding: 12px 16px;
                 display: flex;
-                gap: 24px;
-                flex-wrap: wrap;
+                flex-direction: column;
+                gap: 4px;
             }
 
-            .seo-detail-page .quick-stat {
-                text-align: center;
-            }
-
-            .seo-detail-page .quick-stat-value {
-                font-size: 24px;
-                font-weight: 600;
-            }
-
-            .seo-detail-page .quick-stat-label {
+            .seo-detail-page .seo-meta span {
                 font-size: 12px;
                 text-transform: uppercase;
-                letter-spacing: 0.5px;
+                letter-spacing: 0.45px;
                 opacity: 0.85;
             }
 
-            .seo-detail-page .action-bar {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 20px 24px;
-                background: #fff;
-                border-radius: 12px;
-                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
-                margin-bottom: 30px;
-            }
-
-            .seo-detail-page .action-bar .actions {
-                display: flex;
-                gap: 12px;
-            }
-
-            .seo-detail-page .btn {
-                padding: 10px 20px;
-                border-radius: 8px;
+            .seo-detail-page .seo-meta strong {
+                font-size: 16px;
                 font-weight: 600;
-                border: none;
-                cursor: pointer;
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .seo-detail-page .btn-primary {
-                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
                 color: #fff;
             }
 
-            .seo-detail-page .btn-secondary {
-                background: #e2e8f0;
-                color: #1e293b;
+            .seo-detail-page .seo-meta small {
+                font-size: 12px;
+                color: rgba(255, 255, 255, 0.8);
             }
 
-            .seo-detail-page .content-grid {
+            .seo-detail-page .seo-metric-list {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-                gap: 25px;
-                margin-bottom: 30px;
+                gap: 18px;
             }
 
-            .seo-detail-page .section {
-                background: #fff;
-                border-radius: 12px;
-                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
-                overflow: hidden;
-            }
-
-            .seo-detail-page .section-header {
-                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-                color: #fff;
-                padding: 20px 24px;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-
-            .seo-detail-page .section-header.content-seo {
-                background: linear-gradient(135deg, #10b981, #059669);
-            }
-
-            .seo-detail-page .section-header.technical-seo {
-                background: linear-gradient(135deg, #f59e0b, #d97706);
-            }
-
-            .seo-detail-page .section-content {
-                padding: 22px;
-            }
-
-            .seo-detail-page .metric-row {
-                display: flex;
-                align-items: center;
+            .seo-detail-page .seo-metric {
+                display: grid;
+                grid-template-columns: auto 1fr auto;
                 gap: 16px;
-                padding: 16px 0;
-                border-bottom: 1px solid #f1f5f9;
+                align-items: center;
+                padding-bottom: 18px;
+                border-bottom: 1px solid #e2e8f0;
             }
 
-            .seo-detail-page .metric-row:last-child {
+            .seo-detail-page .seo-metric:last-child {
                 border-bottom: none;
+                padding-bottom: 0;
             }
 
-            .seo-detail-page .metric-icon {
+            .seo-detail-page .seo-metric-icon {
                 width: 44px;
                 height: 44px;
                 border-radius: 12px;
-                display: flex;
+                display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 18px;
+                background: #e2e8f0;
+                color: #1f2937;
             }
 
-            .seo-detail-page .metric-icon.excellent {
+            .seo-detail-page .seo-metric-icon.status-excellent {
                 background: #dcfce7;
                 color: #166534;
             }
 
-            .seo-detail-page .metric-icon.good {
+            .seo-detail-page .seo-metric-icon.status-good {
                 background: #dbeafe;
                 color: #1d4ed8;
             }
 
-            .seo-detail-page .metric-icon.warning {
+            .seo-detail-page .seo-metric-icon.status-warning {
                 background: #fef3c7;
                 color: #b45309;
             }
 
-            .seo-detail-page .metric-icon.critical {
+            .seo-detail-page .seo-metric-icon.status-critical {
                 background: #fee2e2;
                 color: #b91c1c;
             }
 
-            .seo-detail-page .metric-label {
+            .seo-detail-page .seo-metric-info {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .seo-detail-page .seo-metric-label {
                 font-weight: 600;
                 color: #1e293b;
             }
 
-            .seo-detail-page .metric-description {
-                color: #64748b;
-                font-size: 14px;
+            .seo-detail-page .seo-metric-description {
+                color: #475569;
+                font-size: 13px;
             }
 
-            .seo-detail-page .metric-value {
-                margin-left: auto;
+            .seo-detail-page .seo-badges {
                 display: flex;
-                align-items: center;
                 gap: 10px;
+                align-items: center;
+                justify-content: flex-end;
+                flex-wrap: wrap;
             }
 
-            .seo-detail-page .status-badge {
-                padding: 6px 14px;
+            .seo-detail-page .seo-status-badge {
+                padding: 6px 12px;
                 border-radius: 999px;
                 font-size: 12px;
                 font-weight: 600;
@@ -928,343 +856,305 @@ if ($detailSlug !== null && $detailSlug !== '') {
                 letter-spacing: 0.5px;
             }
 
-            .seo-detail-page .status-excellent {
+            .seo-detail-page .seo-status-badge.status-excellent {
                 background: #dcfce7;
                 color: #166534;
             }
 
-            .seo-detail-page .status-good {
+            .seo-detail-page .seo-status-badge.status-good {
                 background: #dbeafe;
                 color: #1d4ed8;
             }
 
-            .seo-detail-page .status-warning {
+            .seo-detail-page .seo-status-badge.status-warning {
                 background: #fef3c7;
                 color: #b45309;
             }
 
-            .seo-detail-page .status-critical {
+            .seo-detail-page .seo-status-badge.status-critical {
                 background: #fee2e2;
                 color: #b91c1c;
             }
 
-            .seo-detail-page .impact-indicator {
+            .seo-detail-page .seo-impact {
                 padding: 4px 10px;
                 border-radius: 999px;
-                font-size: 10px;
+                font-size: 11px;
                 font-weight: 600;
-                text-transform: uppercase;
                 letter-spacing: 0.4px;
+                text-transform: uppercase;
             }
 
-            .seo-detail-page .impact-high {
+            .seo-detail-page .seo-impact.high {
                 background: #fee2e2;
                 color: #b91c1c;
             }
 
-            .seo-detail-page .impact-medium {
+            .seo-detail-page .seo-impact.medium {
                 background: #fef3c7;
-                color: #b45309;
+                color: #92400e;
             }
 
-            .seo-detail-page .impact-low {
+            .seo-detail-page .seo-impact.low {
                 background: #e0f2fe;
                 color: #0369a1;
             }
 
-            .seo-detail-page .issues-section {
+            .seo-detail-page .seo-issues {
                 background: #fff;
-                border-radius: 12px;
-                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+                border-radius: 16px;
                 padding: 24px;
+                box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+                border: 1px solid #e2e8f0;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
             }
 
-            .seo-detail-page .issues-header {
+            .seo-detail-page .seo-issues-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 12px;
             }
 
-            .seo-detail-page .issues-header h3 {
-                font-size: 20px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
+            .seo-detail-page .seo-issues-header h2 {
+                margin: 0;
+                font-size: 18px;
                 color: #1e293b;
             }
 
-            .seo-detail-page .issues-list {
+            .seo-detail-page .seo-issue-list {
                 display: grid;
                 gap: 16px;
             }
 
-            .seo-detail-page .issue-item {
-                display: flex;
-                gap: 16px;
-                padding: 16px;
+            .seo-detail-page .seo-issue-card {
                 border: 1px solid #e2e8f0;
-                border-radius: 12px;
-                align-items: flex-start;
+                border-radius: 14px;
+                padding: 16px 18px;
+                display: grid;
+                gap: 10px;
             }
 
-            .seo-detail-page .issue-severity {
-                width: 40px;
-                height: 40px;
-                border-radius: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #fff;
+            .seo-detail-page .seo-issue-card.severity-critical {
+                border-color: #fecaca;
+                background: #fef2f2;
             }
 
-            .seo-detail-page .issue-severity.severity-critical {
-                background: #ef4444;
+            .seo-detail-page .seo-issue-card.severity-warning {
+                border-color: #fde68a;
+                background: #fffbeb;
             }
 
-            .seo-detail-page .issue-severity.severity-warning {
-                background: #f59e0b;
-            }
-
-            .seo-detail-page .issue-content {
-                flex: 1;
-            }
-
-            .seo-detail-page .issue-title {
+            .seo-detail-page .seo-issue-title {
                 font-weight: 600;
-                margin-bottom: 6px;
                 color: #1e293b;
             }
 
-            .seo-detail-page .issue-description {
-                font-size: 14px;
+            .seo-detail-page .seo-issue-description {
+                font-size: 13px;
                 color: #475569;
             }
 
-            .seo-detail-page .issue-badges {
-                margin-top: 10px;
-                display: flex;
-                gap: 12px;
-                flex-wrap: wrap;
-            }
-
-            .seo-detail-page .issue-badge {
-                background: #f1f5f9;
-                padding: 6px 10px;
+            .seo-detail-page .seo-issue-tag {
+                justify-self: flex-start;
+                padding: 4px 10px;
                 border-radius: 999px;
+                background: #e2e8f0;
+                color: #1f2937;
                 font-size: 11px;
+                font-weight: 600;
                 text-transform: uppercase;
-                letter-spacing: 0.4px;
-                color: #475569;
+                letter-spacing: 0.45px;
             }
 
-            .seo-detail-page .issues-empty {
+            .seo-detail-page .seo-empty {
                 text-align: center;
+                color: #475569;
+                display: grid;
+                gap: 12px;
                 padding: 40px 20px;
-                color: #64748b;
+            }
+
+            .seo-detail-page .seo-empty i {
+                font-size: 40px;
+                color: #10b981;
             }
 
             @media (max-width: 768px) {
-                .seo-detail-page .main-content {
-                    padding: 20px;
-                }
-
-                .seo-detail-page .content-grid {
+                .seo-detail-page .a11y-health-card {
                     grid-template-columns: 1fr;
                 }
 
-                .seo-detail-page .action-bar {
-                    flex-direction: column;
-                    gap: 16px;
-                    align-items: flex-start;
+                .seo-detail-page .seo-meta {
+                    grid-template-columns: 1fr;
+                }
+
+                .seo-detail-page .seo-badges {
+                    justify-content: flex-start;
                 }
             }
         </style>
-
-        <div class="seo-detail-page">
-            <header class="header-section">
-                <a class="back-btn" href="<?php echo htmlspecialchars($moduleUrl, ENT_QUOTES, 'UTF-8'); ?>">
-                    <i class="fas fa-arrow-left"></i>
-                    Back to Overview
+        <div class="a11y-detail-page seo-detail-page" id="seoDetailPage" data-page-slug="<?php echo htmlspecialchars($selectedPage['identifier'], ENT_QUOTES, 'UTF-8'); ?>">
+            <header class="a11y-detail-header">
+                <a href="<?php echo htmlspecialchars($moduleUrl, ENT_QUOTES, 'UTF-8'); ?>" class="a11y-back-link">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    <span>Back to SEO Overview</span>
                 </a>
-                <div class="page-header">
-                    <div class="page-info">
-                        <h1><?php echo htmlspecialchars($selectedPage['title'], ENT_QUOTES, 'UTF-8'); ?></h1>
-                        <div class="url"><?php echo htmlspecialchars($selectedPage['slug'] !== '' ? '/' . ltrim($selectedPage['slug'], '/') : 'No slug assigned', ENT_QUOTES, 'UTF-8'); ?></div>
-                    </div>
-                    <div class="header-actions">
-                        <button type="button" class="btn btn-primary">
-                            <i class="fas fa-sync"></i>
-                            Re-analyze Page
-                        </button>
-                    </div>
+                <div class="a11y-detail-actions">
+                    <button type="button" class="a11y-detail-btn seo-action-primary" data-seo-action="rescan-page">
+                        <i class="fas fa-rotate" aria-hidden="true"></i>
+                        <span>Rescan page</span>
+                    </button>
+                    <a class="a11y-detail-btn seo-action-secondary" href="<?php echo htmlspecialchars($selectedPage['path'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
+                        <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+                        <span>View live page</span>
+                    </a>
                 </div>
             </header>
 
-            <main class="main-content">
-                <section class="health-indicator">
-                    <div class="health-content">
-                        <div class="health-score">
-                            <div class="score-display"><?php echo (int) $selectedPage['score']; ?></div>
-                            <div class="score-label">SEO Health Score</div>
-                            <div class="score-status"><?php echo htmlspecialchars($scoreStatusHeadline, ENT_QUOTES, 'UTF-8'); ?></div>
-                        </div>
-                        <div class="health-summary">
-                            <h2>SEO Analysis</h2>
-                            <p><?php echo htmlspecialchars($detailSummary, ENT_QUOTES, 'UTF-8'); ?></p>
-                            <div class="quick-stats">
-                                <?php foreach ($quickStats as $stat): ?>
-                                    <div class="quick-stat">
-                                        <div class="quick-stat-value"><?php echo htmlspecialchars((string) $stat['value'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                        <div class="quick-stat-label"><?php echo htmlspecialchars($stat['label'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                    </div>
-                                <?php endforeach; ?>
+            <section class="a11y-health-card seo-health-card" style="background: <?php echo htmlspecialchars($scoreGradient, ENT_QUOTES, 'UTF-8'); ?>;">
+                <div class="a11y-health-score">
+                    <div class="a11y-health-score__value"><?php echo (int) $selectedPage['score']; ?><span>%</span></div>
+                    <div class="a11y-health-score__label">SEO Score</div>
+                    <span class="seo-score-pill status-<?php echo htmlspecialchars($selectedPage['score_status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($scoreStatusHeadline, ENT_QUOTES, 'UTF-8'); ?></span>
+                </div>
+                <div class="a11y-health-summary">
+                    <h1><?php echo htmlspecialchars($selectedPage['title'], ENT_QUOTES, 'UTF-8'); ?></h1>
+                    <p class="a11y-health-url"><?php echo htmlspecialchars($selectedPage['slug'] !== '' ? '/' . ltrim($selectedPage['slug'], '/') : 'No slug assigned', ENT_QUOTES, 'UTF-8'); ?></p>
+                    <p class="seo-health-summary-text"><?php echo htmlspecialchars($detailSummary, ENT_QUOTES, 'UTF-8'); ?></p>
+                    <div class="a11y-quick-stats">
+                        <?php foreach ($quickStats as $stat): ?>
+                            <div class="a11y-quick-stat">
+                                <div class="a11y-quick-stat__value"><?php echo htmlspecialchars((string) $stat['value'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                <div class="a11y-quick-stat__label"><?php echo htmlspecialchars($stat['label'], ENT_QUOTES, 'UTF-8'); ?></div>
                             </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="seo-meta">
+                        <div>
+                            <span>Score status</span>
+                            <strong><?php echo htmlspecialchars($scoreStatusLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                            <small><?php echo htmlspecialchars($scoreStatusHeadline, ENT_QUOTES, 'UTF-8'); ?></small>
                         </div>
-                    </div>
-                </section>
-
-                <div class="action-bar">
-                    <div>
-                        <span style="color: #64748b; font-size: 13px;">Last updated: <?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES, 'UTF-8'); ?></span>
-                    </div>
-                    <div class="actions">
-                        <a class="btn btn-secondary" href="<?php echo htmlspecialchars($selectedPage['path'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
-                            <i class="fas fa-external-link-alt"></i>
-                            View Live Page
-                        </a>
+                        <div>
+                            <span>Last updated</span>
+                            <strong><?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES, 'UTF-8'); ?></strong>
+                            <?php if ($ageDays !== null): ?>
+                                <small><?php echo $ageDays === 0 ? 'Updated today' : 'Updated ' . $ageDays . ' day' . ($ageDays === 1 ? '' : 's') . ' ago'; ?></small>
+                            <?php endif; ?>
+                        </div>
+                        <div>
+                            <span>Social preview</span>
+                            <strong><?php echo $selectedPage['has_social'] ? 'Complete' : 'Missing details'; ?></strong>
+                            <small><?php echo $selectedPage['has_social'] ? 'OG tags ready for sharing.' : 'Add OG title, description, and image.'; ?></small>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="content-grid">
-                    <?php if (!empty($onPageMetrics)): ?>
-                        <section class="section">
-                            <div class="section-header">
-                                <i class="fas fa-search"></i>
-                                On-Page SEO Essentials
-                            </div>
-                            <div class="section-content">
-                                <?php foreach ($onPageMetrics as $metric): ?>
-                                    <div class="metric-row">
-                                        <div class="metric-icon <?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
-                                            <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i>
-                                        </div>
-                                        <div class="metric-info">
-                                            <div class="metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                            <div class="metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                        </div>
-                                        <div class="metric-value">
-                                            <span class="status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                            <?php if (!empty($metric['impact'])): ?>
-                                                <span class="impact-indicator impact-<?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
-                                            <?php endif; ?>
-                                        </div>
+            <section class="a11y-detail-grid">
+                <?php if (!empty($onPageMetrics)): ?>
+                    <article class="a11y-detail-card">
+                        <h2>On-page SEO essentials</h2>
+                        <div class="seo-metric-list">
+                            <?php foreach ($onPageMetrics as $metric): ?>
+                                <div class="seo-metric">
+                                    <div class="seo-metric-icon status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
+                                        <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </section>
-                    <?php endif; ?>
-
-                    <?php if (!empty($contentMetrics)): ?>
-                        <section class="section">
-                            <div class="section-header content-seo">
-                                <i class="fas fa-file-text"></i>
-                                Content &amp; Structure
-                            </div>
-                            <div class="section-content">
-                                <?php foreach ($contentMetrics as $metric): ?>
-                                    <div class="metric-row">
-                                        <div class="metric-icon <?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
-                                            <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i>
-                                        </div>
-                                        <div class="metric-info">
-                                            <div class="metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                            <div class="metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                        </div>
-                                        <div class="metric-value">
-                                            <span class="status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                            <?php if (!empty($metric['impact'])): ?>
-                                                <span class="impact-indicator impact-<?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
-                                            <?php endif; ?>
-                                        </div>
+                                    <div class="seo-metric-info">
+                                        <div class="seo-metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="seo-metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </section>
-                    <?php endif; ?>
-
-                    <?php if (!empty($technicalMetrics)): ?>
-                        <section class="section">
-                            <div class="section-header technical-seo">
-                                <i class="fas fa-cogs"></i>
-                                Technical SEO
-                            </div>
-                            <div class="section-content">
-                                <?php foreach ($technicalMetrics as $metric): ?>
-                                    <div class="metric-row">
-                                        <div class="metric-icon <?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
-                                            <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i>
-                                        </div>
-                                        <div class="metric-info">
-                                            <div class="metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                            <div class="metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                        </div>
-                                        <div class="metric-value">
-                                            <span class="status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                            <?php if (!empty($metric['impact'])): ?>
-                                                <span class="impact-indicator impact-<?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </section>
-                    <?php endif; ?>
-                </div>
-
-                <section class="issues-section">
-                    <div class="issues-header">
-                        <h3>
-                            <i class="fas fa-exclamation-triangle"></i>
-                            Priority Issues &amp; Recommendations
-                        </h3>
-                        <span class="status-badge status-<?php echo $issueCount === 0 ? 'excellent' : ($issuesBySeverity['critical'] > 0 ? 'critical' : 'warning'); ?>"><?php echo htmlspecialchars($issueCount . ' ' . seo_pluralize($issueCount, 'Issue'), ENT_QUOTES, 'UTF-8'); ?></span>
-                    </div>
-                    <?php if ($issueCount === 0): ?>
-                        <div class="issues-empty">
-                            <i class="fas fa-check-circle" style="font-size: 40px; color: #10b981; margin-bottom: 10px;"></i>
-                            <h4>Nothing critical found</h4>
-                            <p>Great work! Keep monitoring this page for future improvements.</p>
-                        </div>
-                    <?php else: ?>
-                        <div class="issues-list">
-                            <?php foreach ($selectedPage['issues'] as $issue): ?>
-                                <?php $severity = $issue['severity'] ?? 'warning'; ?>
-                                <div class="issue-item">
-                                    <div class="issue-severity severity-<?php echo htmlspecialchars($severity, ENT_QUOTES, 'UTF-8'); ?>">
-                                        <i class="fas fa-exclamation"></i>
-                                    </div>
-                                    <div class="issue-content">
-                                        <div class="issue-title"><?php echo htmlspecialchars($issue['message'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                        <div class="issue-description">
-                                            <?php
-                                                if ($severity === 'critical') {
-                                                    echo 'Resolve this immediately to avoid search visibility losses.';
-                                                } else {
-                                                    echo 'Review and fix to strengthen overall optimization.';
-                                                }
-                                            ?>
-                                        </div>
-                                        <div class="issue-badges">
-                                            <span class="issue-badge"><?php echo htmlspecialchars(seo_status_label($severity), ENT_QUOTES, 'UTF-8'); ?></span>
-                                        </div>
+                                    <div class="seo-badges">
+                                        <span class="seo-status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <?php if (!empty($metric['impact'])): ?>
+                                            <span class="seo-impact <?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                    <?php endif; ?>
-                </section>
-            </main>
+                    </article>
+                <?php endif; ?>
+
+                <?php if (!empty($contentMetrics)): ?>
+                    <article class="a11y-detail-card">
+                        <h2>Content &amp; structure</h2>
+                        <div class="seo-metric-list">
+                            <?php foreach ($contentMetrics as $metric): ?>
+                                <div class="seo-metric">
+                                    <div class="seo-metric-icon status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
+                                        <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="seo-metric-info">
+                                        <div class="seo-metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="seo-metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </div>
+                                    <div class="seo-badges">
+                                        <span class="seo-status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <?php if (!empty($metric['impact'])): ?>
+                                            <span class="seo-impact <?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </article>
+                <?php endif; ?>
+
+                <?php if (!empty($technicalMetrics)): ?>
+                    <article class="a11y-detail-card">
+                        <h2>Technical SEO</h2>
+                        <div class="seo-metric-list">
+                            <?php foreach ($technicalMetrics as $metric): ?>
+                                <div class="seo-metric">
+                                    <div class="seo-metric-icon status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>">
+                                        <i class="<?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="seo-metric-info">
+                                        <div class="seo-metric-label"><?php echo htmlspecialchars($metric['label'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="seo-metric-description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </div>
+                                    <div class="seo-badges">
+                                        <span class="seo-status-badge status-<?php echo htmlspecialchars($metric['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($metric['badge'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <?php if (!empty($metric['impact'])): ?>
+                                            <span class="seo-impact <?php echo htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo strtoupper(htmlspecialchars($metric['impact'], ENT_QUOTES, 'UTF-8')); ?> Impact</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </article>
+                <?php endif; ?>
+            </section>
+
+            <section class="seo-issues">
+                <div class="seo-issues-header">
+                    <h2>Priority issues &amp; recommendations</h2>
+                    <span class="seo-status-badge status-<?php echo $issueCount === 0 ? 'excellent' : ($issuesBySeverity['critical'] > 0 ? 'critical' : 'warning'); ?>"><?php echo htmlspecialchars($issueCount . ' ' . seo_pluralize($issueCount, 'issue'), ENT_QUOTES, 'UTF-8'); ?></span>
+                </div>
+                <?php if ($issueCount === 0): ?>
+                    <div class="seo-empty">
+                        <i class="fas fa-check-circle" aria-hidden="true"></i>
+                        <p>Great work! Keep monitoring this page for future improvements.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="seo-issue-list">
+                        <?php foreach ($selectedPage['issues'] as $issue): ?>
+                            <?php $severity = $issue['severity'] ?? 'warning'; ?>
+                            <article class="seo-issue-card severity-<?php echo htmlspecialchars($severity, ENT_QUOTES, 'UTF-8'); ?>">
+                                <div class="seo-issue-title"><?php echo htmlspecialchars($issue['message'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                <div class="seo-issue-description"><?php echo $severity === 'critical' ? 'Resolve this immediately to avoid search visibility losses.' : 'Review and fix to strengthen overall optimization.'; ?></div>
+                                <span class="seo-issue-tag"><?php echo htmlspecialchars(seo_status_label($severity), ENT_QUOTES, 'UTF-8'); ?></span>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </section>
         </div>
     <?php else: ?>
     <style>
