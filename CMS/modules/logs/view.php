@@ -161,7 +161,7 @@ if ($uniqueUsersCount === 1) {
 }
 ?>
 <div class="content-section" id="logs">
-    <div class="logs-dashboard" data-logs="<?php echo $logsJson; ?>" data-endpoint="modules/logs/list_logs.php">
+    <div class="logs-dashboard a11y-dashboard" data-logs="<?php echo $logsJson; ?>" data-endpoint="modules/logs/list_logs.php">
         <header class="a11y-hero logs-hero">
             <div class="a11y-hero-content logs-hero-content">
                 <div>
