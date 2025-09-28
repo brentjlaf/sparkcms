@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/score_history.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
@@ -321,6 +322,8 @@ foreach ($report as $entry) {
         'total' => $violationsTotal,
     ];
 
+    $previousScore = derive_previous_score('accessibility', $slug !== '' ? $slug : ($entry['title'] !== '' ? $entry['title'] : (string) count($pageEntries)), $score);
+
     $pageData = [
         'title' => $entry['title'],
         'slug' => $slug,
@@ -328,6 +331,7 @@ foreach ($report as $entry) {
         'path' => $path,
         'template' => $entry['template'],
         'accessibilityScore' => $score,
+        'previousScore' => $previousScore,
         'wcagLevel' => $wcagLevel,
         'violations' => $violations,
         'warnings' => $warnings,
@@ -385,6 +389,11 @@ $dashboardStats = [
 <div class="content-section" id="accessibility">
 <?php if ($selectedPage): ?>
     <div class="a11y-detail-page" id="a11yDetailPage" data-page-slug="<?php echo htmlspecialchars($selectedPage['slug'], ENT_QUOTES); ?>">
+        <?php
+            $currentScore = (int) ($selectedPage['accessibilityScore'] ?? 0);
+            $previousScore = (int) ($selectedPage['previousScore'] ?? $currentScore);
+            $deltaMeta = describe_score_delta($currentScore, $previousScore);
+        ?>
         <header class="a11y-detail-header">
             <a href="<?php echo htmlspecialchars($moduleUrl, ENT_QUOTES); ?>" class="a11y-back-link" id="a11yBackToDashboard">
                 <i class="fas fa-arrow-left" aria-hidden="true"></i>
@@ -400,7 +409,15 @@ $dashboardStats = [
 
         <section class="a11y-health-card">
             <div class="a11y-health-score">
-                <div class="a11y-health-score__value"><?php echo (int)$selectedPage['accessibilityScore']; ?><span>%</span></div>
+                <div class="score-indicator score-indicator--hero">
+                    <div class="a11y-health-score__value">
+                        <span class="score-indicator__number"><?php echo $currentScore; ?></span><span>%</span>
+                    </div>
+                    <span class="score-delta <?php echo htmlspecialchars($deltaMeta['class'], ENT_QUOTES); ?>">
+                        <span aria-hidden="true"><?php echo htmlspecialchars($deltaMeta['display'], ENT_QUOTES); ?></span>
+                        <span class="sr-only"><?php echo htmlspecialchars($deltaMeta['srText'], ENT_QUOTES); ?></span>
+                    </span>
+                </div>
                 <div class="a11y-health-score__label">Accessibility Score</div>
                 <span class="a11y-health-score__badge level-<?php echo strtolower($selectedPage['wcagLevel']); ?>"><?php echo htmlspecialchars($selectedPage['wcagLevel']); ?></span>
             </div>
@@ -670,7 +687,7 @@ $dashboardStats = [
             </header>
             <div class="a11y-detail-modal-body">
                 <div class="a11y-detail-badges">
-                    <span class="a11y-detail-score" id="a11yDetailScore"></span>
+                    <span class="a11y-detail-score score-indicator score-indicator--badge" id="a11yDetailScore"></span>
                     <span class="a11y-detail-level" id="a11yDetailLevel"></span>
                     <span class="a11y-detail-violations" id="a11yDetailViolations"></span>
                 </div>

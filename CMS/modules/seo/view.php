@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/score_history.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
@@ -366,6 +367,8 @@ foreach ($pages as $pageIndex => $page) {
         $identifier .= '-' . $identifierCounts[$identifierBase];
     }
 
+    $previousScore = derive_previous_score('seo', $identifier, $score);
+
     $report[] = [
         'identifier' => $identifier,
         'title' => $title,
@@ -381,6 +384,7 @@ foreach ($pages as $pageIndex => $page) {
         'issues' => $issues,
         'slug_issues' => $slugIssues,
         'score' => $score,
+        'previousScore' => $previousScore,
         'score_label' => $scoreLabel,
         'score_status' => $scoreStatus,
         'critical_count' => $criticalCount,
@@ -435,6 +439,10 @@ if ($detailSlug !== null && $detailSlug !== '') {
             if ($lastUpdatedTs !== null) {
                 $ageDays = (int) floor((time() - $lastUpdatedTs) / 86400);
             }
+
+            $currentScore = (int) ($selectedPage['score'] ?? 0);
+            $previousScore = (int) ($selectedPage['previousScore'] ?? $currentScore);
+            $deltaMeta = describe_score_delta($currentScore, $previousScore);
 
             $quickStats = [
                 ['label' => 'Issues Found', 'value' => $issueCount],
@@ -1017,7 +1025,15 @@ if ($detailSlug !== null && $detailSlug !== '') {
 
             <section class="a11y-health-card seo-health-card" style="background: <?php echo htmlspecialchars($scoreGradient, ENT_QUOTES, 'UTF-8'); ?>;">
                 <div class="a11y-health-score">
-                    <div class="a11y-health-score__value"><?php echo (int) $selectedPage['score']; ?><span>%</span></div>
+                    <div class="score-indicator score-indicator--hero">
+                        <div class="a11y-health-score__value">
+                            <span class="score-indicator__number"><?php echo $currentScore; ?></span><span>%</span>
+                        </div>
+                        <span class="score-delta <?php echo htmlspecialchars($deltaMeta['class'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <span aria-hidden="true"><?php echo htmlspecialchars($deltaMeta['display'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span class="sr-only"><?php echo htmlspecialchars($deltaMeta['srText'], ENT_QUOTES, 'UTF-8'); ?></span>
+                        </span>
+                    </div>
                     <div class="a11y-health-score__label">SEO Score</div>
                     <span class="seo-score-pill status-<?php echo htmlspecialchars($selectedPage['score_status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($scoreStatusHeadline, ENT_QUOTES, 'UTF-8'); ?></span>
                 </div>
@@ -1352,26 +1368,26 @@ if ($detailSlug !== null && $detailSlug !== '') {
             margin-bottom: 18px;
         }
         .seo-dashboard .seo-card-score {
-            position: absolute;
-            top: 22px;
-            right: 24px;
-            width: 56px;
-            height: 56px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 18px;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.15);
         }
         .seo-dashboard .seo-card-score.score-excellent { background: linear-gradient(135deg, #22c55e, #16a34a); }
         .seo-dashboard .seo-card-score.score-good { background: linear-gradient(135deg, #3b82f6, #2563eb); }
         .seo-dashboard .seo-card-score.score-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .seo-dashboard .seo-card-score.score-critical { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .seo-dashboard .seo-card-meta {
-            position: relative;
-            padding-right: 70px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            align-items: flex-start;
         }
         .seo-dashboard .seo-card-stats {
             display: grid;
@@ -1490,6 +1506,12 @@ if ($detailSlug !== null && $detailSlug !== '') {
             font-size: 12px;
             font-weight: 600;
         }
+        .seo-dashboard .seo-status-text {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: none;
+            letter-spacing: 0;
+        }
         .seo-dashboard .seo-status-badge.good { background: #dcfce7; color: #166534; }
         .seo-dashboard .seo-status-badge.warning { background: #fef3c7; color: #92400e; }
         .seo-dashboard .seo-status-badge.critical { background: #fee2e2; color: #b91c1c; }
@@ -1566,6 +1588,14 @@ if ($detailSlug !== null && $detailSlug !== '') {
         .seo-dashboard .seo-detail-score-value {
             font-size: 20px;
             font-weight: 600;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .seo-dashboard .seo-score-suffix {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
         }
         .seo-dashboard .seo-detail-body {
             padding: 32px;
@@ -1706,10 +1736,15 @@ if ($detailSlug !== null && $detailSlug !== '') {
         <div class="seo-grid" id="seoGrid">
             <?php foreach ($report as $index => $entry): ?>
                 <?php
+                    $scoreValue = (int) $entry['score'];
+                    $previousScore = (int) ($entry['previousScore'] ?? $scoreValue);
+                    $deltaMeta = describe_score_delta($scoreValue, $previousScore);
+
                     $data = [
                         'title' => $entry['title'],
                         'slug' => $entry['slug'],
                         'score' => $entry['score'],
+                        'previousScore' => $entry['previousScore'],
                         'scoreLabel' => $entry['score_label'],
                         'scoreStatus' => $entry['score_status'],
                         'metaTitle' => $entry['meta_title'],
@@ -1732,8 +1767,14 @@ if ($detailSlug !== null && $detailSlug !== '') {
                 ?>
                 <article class="seo-card" data-status="<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>" data-search="<?php echo htmlspecialchars(strtolower($entry['title'] . ' ' . $entry['slug'] . ' ' . $entry['meta_title']), ENT_QUOTES, 'UTF-8'); ?>" data-score="<?php echo (int) $entry['score']; ?>" data-title="<?php echo htmlspecialchars($entry['title'], ENT_QUOTES, 'UTF-8'); ?>" data-updated="<?php echo $entry['last_updated_ts'] !== null ? (int) $entry['last_updated_ts'] : 0; ?>" data-page="<?php echo $jsonData; ?>">
                     <div class="seo-card-meta">
-                        <div class="seo-card-score score-<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>">
-                            <?php echo (int) $entry['score']; ?>
+                        <div class="score-indicator score-indicator--card">
+                            <div class="seo-card-score score-<?php echo htmlspecialchars($entry['score_status'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <span class="score-indicator__number"><?php echo $scoreValue; ?></span>
+                            </div>
+                            <span class="score-delta <?php echo htmlspecialchars($deltaMeta['class'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <span aria-hidden="true"><?php echo htmlspecialchars($deltaMeta['display'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                <span class="sr-only"><?php echo htmlspecialchars($deltaMeta['srText'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            </span>
                         </div>
                         <h2 class="seo-card-title"><?php echo htmlspecialchars($entry['title']); ?></h2>
                         <div class="seo-card-url">/<?php echo htmlspecialchars($entry['slug']); ?></div>
@@ -1791,10 +1832,15 @@ if ($detailSlug !== null && $detailSlug !== '') {
                 <tbody>
                     <?php foreach ($report as $entry): ?>
                         <?php
+                            $scoreValue = (int) $entry['score'];
+                            $previousScore = (int) ($entry['previousScore'] ?? $scoreValue);
+                            $deltaMeta = describe_score_delta($scoreValue, $previousScore);
+
                             $data = [
                                 'title' => $entry['title'],
                                 'slug' => $entry['slug'],
                                 'score' => $entry['score'],
+                                'previousScore' => $entry['previousScore'],
                                 'scoreLabel' => $entry['score_label'],
                                 'scoreStatus' => $entry['score_status'],
                                 'metaTitle' => $entry['meta_title'],
@@ -1829,7 +1875,16 @@ if ($detailSlug !== null && $detailSlug !== '') {
                                 </div>
                             </td>
                             <td>
-                                <span class="seo-status-badge <?php echo htmlspecialchars($entry['score_status']); ?>"><?php echo (int) $entry['score']; ?> &bull; <?php echo htmlspecialchars($entry['score_label']); ?></span>
+                                <div class="score-indicator score-indicator--table">
+                                    <span class="seo-status-badge <?php echo htmlspecialchars($entry['score_status']); ?>">
+                                        <span class="score-indicator__number"><?php echo $scoreValue; ?></span>
+                                        <span class="seo-status-text">&bull; <?php echo htmlspecialchars($entry['score_label']); ?></span>
+                                    </span>
+                                    <span class="score-delta <?php echo htmlspecialchars($deltaMeta['class'], ENT_QUOTES, 'UTF-8'); ?>">
+                                        <span aria-hidden="true"><?php echo htmlspecialchars($deltaMeta['display'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <span class="sr-only"><?php echo htmlspecialchars($deltaMeta['srText'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                    </span>
+                                </div>
                             </td>
                             <td>
                                 <?php if ($entry['meta_title'] !== ''): ?>
@@ -1874,7 +1929,7 @@ if ($detailSlug !== null && $detailSlug !== '') {
                     <div class="seo-detail-score-circle" data-detail="score-circle"></div>
                     <div class="seo-detail-score-text">
                         <span class="seo-detail-score-label">SEO Score</span>
-                        <span class="seo-detail-score-value" data-detail="score"></span>
+                        <span class="seo-detail-score-value score-indicator score-indicator--badge" data-detail="score"></span>
                         <span class="seo-card-url" style="margin: 0;" data-detail="score-label"></span>
                     </div>
                 </div>

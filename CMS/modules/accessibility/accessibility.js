@@ -30,6 +30,41 @@
         return 'a11y-score--failing';
     }
 
+    function normalizeScoreValue(value, fallback) {
+        const number = Number(value);
+        if (Number.isFinite(number)) {
+            return Math.max(0, Math.min(100, Math.round(number)));
+        }
+        return fallback;
+    }
+
+    function getScoreDeltaMeta(current, previous) {
+        const currentScore = normalizeScoreValue(current, 0);
+        const previousScore = normalizeScoreValue(previous, currentScore);
+        const delta = currentScore - previousScore;
+        const absolute = Math.abs(delta);
+        let className = 'score-delta--even';
+        let srText = 'No change since last scan.';
+        if (delta > 0) {
+            className = 'score-delta--up';
+            srText = 'Improved by ' + absolute + ' ' + (absolute === 1 ? 'point' : 'points') + ' since last scan.';
+        } else if (delta < 0) {
+            className = 'score-delta--down';
+            srText = 'Regressed by ' + absolute + ' ' + (absolute === 1 ? 'point' : 'points') + ' since last scan.';
+        }
+        const display = delta === 0 ? '0' : (delta > 0 ? '+' : '−') + absolute;
+        return {
+            display: display,
+            className: className,
+            srText: srText
+        };
+    }
+
+    function renderScoreDelta(current, previous) {
+        const meta = getScoreDeltaMeta(current, previous);
+        return '<span class="score-delta ' + meta.className + '"><span aria-hidden="true">' + meta.display + '</span><span class="sr-only">' + meta.srText + '</span></span>';
+    }
+
     function getLevelBadge(level) {
         return 'level-' + String(level || '').toLowerCase();
     }
@@ -245,8 +280,12 @@
             $modalTitle.text(page.title || 'Accessibility details');
             $modalUrl.text(page.url || '');
             $modalDescription.text(page.summaryLine || page.statusMessage || '');
-            $modalScore.text((page.accessibilityScore || 0) + '%');
-            $modalScore.removeClass('a11y-score--aaa a11y-score--aa a11y-score--partial a11y-score--failing').addClass(getScoreClass(page.accessibilityScore));
+            const modalScore = normalizeScoreValue(page.accessibilityScore, 0);
+            const modalDelta = renderScoreDelta(modalScore, page.previousScore);
+            $modalScore
+                .removeClass('a11y-score--aaa a11y-score--aa a11y-score--partial a11y-score--failing')
+                .addClass(getScoreClass(modalScore))
+                .html('<span class="score-indicator__number">' + modalScore + '%</span>' + modalDelta);
             $modalLevel.text(page.wcagLevel || 'Unknown');
             $modalLevel.removeClass('level-aaa level-aa level-partial level-failing level-').addClass(getLevelBadge(page.wcagLevel));
             $modalViolations.text(formatViolationsSummary(page.violations));
@@ -283,11 +322,18 @@
                 'data-slug': page.slug
             });
 
+            const score = normalizeScoreValue(page.accessibilityScore, 0);
+            const deltaHtml = renderScoreDelta(score, page.previousScore);
             const cardHtml = [
                 '<div class="a11y-page-card__header">',
-                '<div class="a11y-page-score ' + getScoreClass(page.accessibilityScore) + '">' + (page.accessibilityScore || 0) + '%</div>',
+                '<div class="a11y-page-card__title">',
                 '<h3 class="a11y-page-title">' + (page.title || 'Untitled') + '</h3>',
                 '<p class="a11y-page-url">' + (page.url || '') + '</p>',
+                '</div>',
+                '<div class="score-indicator score-indicator--card">',
+                '<div class="a11y-page-score ' + getScoreClass(score) + '"><span class="score-indicator__number">' + score + '%</span></div>',
+                deltaHtml,
+                '</div>',
                 '</div>',
                 '<div class="a11y-page-card__metrics">',
                 '<div><span class="label">Violations</span><span class="value">' + ((page.violations && page.violations.total) || 0) + '</span></div>',
@@ -310,13 +356,18 @@
                 'data-slug': page.slug
             });
 
+            const score = normalizeScoreValue(page.accessibilityScore, 0);
+            const deltaHtml = renderScoreDelta(score, page.previousScore);
             const rowHtml = [
                 '<div class="a11y-table-cell">',
                 '<div class="title">' + (page.title || 'Untitled') + '</div>',
                 '<div class="subtitle">' + (page.url || '') + '</div>',
                 '</div>',
                 '<div class="a11y-table-cell score">',
-                '<span class="a11y-table-score ' + getScoreClass(page.accessibilityScore) + '">' + (page.accessibilityScore || 0) + '%</span>',
+                '<div class="score-indicator score-indicator--table">',
+                '<span class="a11y-table-score ' + getScoreClass(score) + '"><span class="score-indicator__number">' + score + '%</span></span>',
+                deltaHtml,
+                '</div>',
                 '</div>',
                 '<div class="a11y-table-cell level"><span class="' + getLevelBadge(page.wcagLevel) + '">' + (page.wcagLevel || '—') + '</span></div>',
                 '<div class="a11y-table-cell">' + formatViolationsSummary(page.violations) + '</div>',

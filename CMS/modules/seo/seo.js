@@ -36,6 +36,40 @@ $(function () {
         internalLinkStatus: $detailOverlay.find('[data-detail="internal-link-status"]'),
     };
 
+    function normalizeScoreValue(value, fallback) {
+        const number = Number(value);
+        if (Number.isFinite(number)) {
+            return Math.max(0, Math.min(100, Math.round(number)));
+        }
+        return fallback;
+    }
+
+    function getScoreDeltaMeta(current, previous) {
+        const currentScore = normalizeScoreValue(current, 0);
+        const previousScore = normalizeScoreValue(previous, currentScore);
+        const delta = currentScore - previousScore;
+        const abs = Math.abs(delta);
+        let className = 'score-delta--even';
+        let srText = 'No change since last scan.';
+        if (delta > 0) {
+            className = 'score-delta--up';
+            srText = 'Improved by ' + abs + ' ' + (abs === 1 ? 'point' : 'points') + ' since last scan.';
+        } else if (delta < 0) {
+            className = 'score-delta--down';
+            srText = 'Regressed by ' + abs + ' ' + (abs === 1 ? 'point' : 'points') + ' since last scan.';
+        }
+        const display = delta === 0 ? '0' : (delta > 0 ? '+' : '−') + abs;
+        return { display: display, className: className, srText: srText, value: currentScore };
+    }
+
+    function renderScoreDelta(current, previous) {
+        const meta = getScoreDeltaMeta(current, previous);
+        return {
+            markup: '<span class="score-delta ' + meta.className + '"><span aria-hidden="true">' + meta.display + '</span><span class="sr-only">' + meta.srText + '</span></span>',
+            current: meta.value
+        };
+    }
+
     const sortDefinitions = {
         'score-desc': {
             label: 'Highest score',
@@ -273,9 +307,10 @@ $(function () {
 
         detailElements.title.text(data.title || 'Untitled');
         detailElements.url.text(data.slug ? `/${data.slug}` : '—');
-        detailElements.score.text(`${data.score || 0} / 100`);
+        const scoreDelta = renderScoreDelta(data.score, data.previousScore);
+        detailElements.score.html('<span class="score-indicator__value"><span class="score-indicator__number">' + scoreDelta.current + '</span><span class="seo-score-suffix">/ 100</span></span>' + scoreDelta.markup);
         detailElements.scoreLabel.text(data.scoreLabel || '');
-        updateScoreCircle(detailElements.scoreCircle, data.score || 0, data.scoreStatus || 'warning');
+        updateScoreCircle(detailElements.scoreCircle, scoreDelta.current, data.scoreStatus || 'warning');
 
         if (data.metaTitle) {
             detailElements.metaTitle.text(data.metaTitle);

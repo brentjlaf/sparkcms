@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/score_history.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
@@ -340,6 +341,8 @@ foreach ($pages as $page) {
         $issuePreview = ['No outstanding alerts'];
     }
 
+    $previousScore = derive_previous_score('speed', $slug !== '' ? $slug : ($title !== '' ? $title : (string) $pageIndex), $score);
+
     $pageData = [
         'title' => $title,
         'slug' => $slug,
@@ -347,6 +350,7 @@ foreach ($pages as $page) {
         'path' => $path,
         'template' => $page['template'] ?? '',
         'performanceScore' => $score,
+        'previousScore' => $previousScore,
         'grade' => $grade,
         'gradeClass' => grade_to_badge_class($grade),
         'scoreClass' => grade_to_score_class($grade),
@@ -415,6 +419,11 @@ $dashboardStats = [
 <div class="content-section" id="performance">
 <?php if ($selectedPage): ?>
     <div class="a11y-detail-page" id="speedDetailPage" data-page-slug="<?php echo htmlspecialchars($selectedPage['slug'], ENT_QUOTES); ?>">
+        <?php
+            $currentScore = (int) ($selectedPage['performanceScore'] ?? 0);
+            $previousScore = (int) ($selectedPage['previousScore'] ?? $currentScore);
+            $deltaMeta = describe_score_delta($currentScore, $previousScore);
+        ?>
         <header class="a11y-detail-header">
             <a href="<?php echo htmlspecialchars($moduleUrl, ENT_QUOTES); ?>" class="a11y-back-link" id="speedBackToDashboard">
                 <i class="fas fa-arrow-left" aria-hidden="true"></i>
@@ -434,7 +443,15 @@ $dashboardStats = [
 
         <section class="a11y-health-card">
             <div class="a11y-health-score">
-                <div class="a11y-health-score__value"><?php echo (int)$selectedPage['performanceScore']; ?><span>%</span></div>
+                <div class="score-indicator score-indicator--hero">
+                    <div class="a11y-health-score__value">
+                        <span class="score-indicator__number"><?php echo $currentScore; ?></span><span>%</span>
+                    </div>
+                    <span class="score-delta <?php echo htmlspecialchars($deltaMeta['class'], ENT_QUOTES); ?>">
+                        <span aria-hidden="true"><?php echo htmlspecialchars($deltaMeta['display'], ENT_QUOTES); ?></span>
+                        <span class="sr-only"><?php echo htmlspecialchars($deltaMeta['srText'], ENT_QUOTES); ?></span>
+                    </span>
+                </div>
                 <div class="a11y-health-score__label">Performance Score</div>
                 <span class="a11y-health-score__badge <?php echo htmlspecialchars($selectedPage['gradeClass']); ?>"><?php echo htmlspecialchars($selectedPage['grade']); ?></span>
             </div>
@@ -657,7 +674,7 @@ $dashboardStats = [
             </header>
             <div class="a11y-detail-modal-body">
                 <div class="a11y-detail-badges">
-                    <span class="a11y-detail-score" id="speedDetailScore"></span>
+                    <span class="a11y-detail-score score-indicator score-indicator--badge" id="speedDetailScore"></span>
                     <span class="a11y-detail-level" id="speedDetailGrade"></span>
                     <span class="a11y-detail-violations" id="speedDetailAlerts"></span>
                 </div>
