@@ -1206,3 +1206,10 @@ section.container-fluid {
 }
 
 
+.rich-text {
+    width: 100%;
+}
+
+.rich-text > :last-child {
+    margin-bottom: 0;
+}
