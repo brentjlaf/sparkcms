@@ -134,9 +134,13 @@
                     <div class="form-group blog-modal__field">
                         <label for="postImage">Featured Image</label>
                         <div class="blog-image-input">
-                            <input type="url" id="postImage" name="image" placeholder="https://example.com/featured-image.jpg" aria-describedby="postImageHint">
+                            <input type="url" id="postImage" name="image" placeholder="Select an image from the Media Library" aria-describedby="postImageHint">
+                            <button type="button" class="blog-btn blog-btn--subtle" id="chooseFeaturedImage">
+                                <i class="fa-solid fa-images" aria-hidden="true"></i>
+                                <span>Select from Media Library</span>
+                            </button>
                         </div>
-                        <p class="blog-modal__hint" id="postImageHint">Paste an image URL from the Media Library or another trusted source to highlight this post.</p>
+                        <p class="blog-modal__hint" id="postImageHint">Choose an image from the Media Library or paste a trusted image URL to highlight this post.</p>
                         <div class="blog-image-preview" id="postImagePreview" aria-live="polite"></div>
                     </div>
                     <div class="form-group blog-modal__field">

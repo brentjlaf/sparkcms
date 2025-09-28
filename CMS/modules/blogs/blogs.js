@@ -52,6 +52,30 @@ $(document).ready(function(){
     let authors = [];
     let nextPostId = 4;
 
+    function getCmsBasePath(){
+        if(window.__cmsBasePath !== undefined){
+            return window.__cmsBasePath;
+        }
+        const path = window.location.pathname || '';
+        const cmsMarker = '/CMS/';
+        let base = '';
+        const markerIndex = path.indexOf(cmsMarker);
+        if(markerIndex !== -1){
+            base = path.substring(0, markerIndex);
+        } else {
+            const fallbackIndex = path.indexOf('/CMS');
+            base = fallbackIndex !== -1 ? path.substring(0, fallbackIndex) : '';
+        }
+        window.__cmsBasePath = base;
+        return base;
+    }
+
+    function openMediaPicker(){
+        const base = getCmsBasePath();
+        const pickerUrl = `modules/media/picker.php?base=${encodeURIComponent(base)}`;
+        window.open(pickerUrl, 'SparkCMSMediaPicker', 'width=960,height=640,resizable=yes,scrollbars=yes');
+    }
+
     function escapeAttribute(value){
         return String(value ?? '')
             .replace(/&/g, '&amp;')
@@ -93,6 +117,13 @@ $(document).ready(function(){
     function setImagePreviewFromPost(post){
         updateImagePreview(post.image || '', post.imageAlt || post.title || '');
     }
+
+    window.__selectImageFromPicker = function(url){
+        if(!url){
+            return;
+        }
+        $('#postImage').val(url).trigger('change');
+    };
 
     function loadTinyMCE(cb){
         if(window.tinymce){
@@ -198,6 +229,11 @@ $(document).ready(function(){
         const url = $(this).val().trim();
         const alt = getPreviewAltText();
         updateImagePreview(url, alt);
+    });
+
+    $('#chooseFeaturedImage').on('click', function(e){
+        e.preventDefault();
+        openMediaPicker();
     });
 
     $('#postImageAlt').on('input change', function(){
