@@ -58,10 +58,6 @@ $settings = get_cached_json($settingsFile);
                         <div class="nav-icon"><i class="fas fa-blog"></i></div>
                         <div class="nav-text">Blogs</div>
                     </div>
-                    <div class="nav-item" data-section="calendar">
-                        <div class="nav-icon"><i class="fas fa-calendar-days"></i></div>
-                        <div class="nav-text">Calendar</div>
-                    </div>
                 </div>
 
                 <div class="nav-section">
