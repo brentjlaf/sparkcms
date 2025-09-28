@@ -111,7 +111,7 @@
                     <p class="dashboard-module-secondary">Module metrics will appear here once data is available.</p>
                     <footer class="dashboard-module-card-footer">
                         <span class="dashboard-module-trend" aria-hidden="true">Preparing data</span>
-                        <button type="button" class="dashboard-module-cta" disabled aria-disabled="true">Loading</button>
+                        <button type="button" class="dashboard-module-cta a11y-btn a11y-btn--secondary" disabled aria-disabled="true">Loading</button>
                     </footer>
                 </article>
             </div>
