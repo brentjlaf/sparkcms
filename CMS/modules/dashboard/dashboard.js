@@ -266,7 +266,7 @@ $(function(){
 
             const $ctaButton = $('<button>', {
                 type: 'button',
-                class: 'dashboard-module-cta',
+                class: 'dashboard-module-cta a11y-btn a11y-btn--secondary',
                 text: cta
             });
 
