@@ -110,3 +110,7 @@ body {
     cursor: not-allowed;
 }
 
+:is(.analytics-hero-meta, .menu-hero-meta, .media-hero-meta, .pages-hero-meta, .blog-hero-meta, .search-hero-meta, .import-hero-meta, .seo-hero-meta, .a11y-hero-meta, .accessibility-hero-meta) {
+    color: #fff;
+}
+
