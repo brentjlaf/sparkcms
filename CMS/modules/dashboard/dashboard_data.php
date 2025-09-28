@@ -2,12 +2,12 @@
 // File: dashboard_data.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/../../includes/settings.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $mediaFile = __DIR__ . '/../../data/media.json';
 $usersFile = __DIR__ . '/../../data/users.json';
-$settingsFile = __DIR__ . '/../../data/settings.json';
 $menusFile = __DIR__ . '/../../data/menus.json';
 $formsFile = __DIR__ . '/../../data/forms.json';
 $postsFile = __DIR__ . '/../../data/blog_posts.json';
@@ -17,7 +17,7 @@ $dataDirectory = __DIR__ . '/../../data';
 $pages = read_json_file($pagesFile);
 $media = read_json_file($mediaFile);
 $users = read_json_file($usersFile);
-$settings = read_json_file($settingsFile);
+$settings = get_site_settings();
 $menus = read_json_file($menusFile);
 $forms = read_json_file($formsFile);
 $posts = read_json_file($postsFile);

@@ -2,12 +2,12 @@
 // File: view.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/../../includes/settings.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = read_json_file($pagesFile);
-$settingsFile = __DIR__ . '/../../data/settings.json';
-$settings = read_json_file($settingsFile);
+$settings = get_site_settings();
 $templateDir = realpath(__DIR__ . '/../../../theme/templates/pages');
 $templates = [];
 if ($templateDir) {

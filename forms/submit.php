@@ -2,6 +2,9 @@
 // File: forms/submit.php
 require_once __DIR__ . '/../CMS/includes/data.php';
 require_once __DIR__ . '/../CMS/includes/sanitize.php';
+require_once __DIR__ . '/../CMS/includes/settings.php';
+
+ensure_site_timezone();
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');

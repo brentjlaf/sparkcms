@@ -2,6 +2,9 @@
 // File: auth.php
 session_start();
 require_once __DIR__ . '/data.php';
+require_once __DIR__ . '/settings.php';
+
+ensure_site_timezone();
 
 // Path to users.json
 $usersFile = __DIR__ . '/../data/users.json';

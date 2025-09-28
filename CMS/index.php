@@ -3,12 +3,12 @@
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/data.php';
 require_once __DIR__ . '/includes/sanitize.php';
+require_once __DIR__ . '/includes/settings.php';
 // Load pages from JSON
 $pagesFile = __DIR__ . '/data/pages.json';
 $pages = get_cached_json($pagesFile);
 
-$settingsFile = __DIR__ . '/data/settings.json';
-$settings = get_cached_json($settingsFile);
+$settings = get_site_settings();
 
 $menusFile = __DIR__ . '/data/menus.json';
 $menus = get_cached_json($menusFile);

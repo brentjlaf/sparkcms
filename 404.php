@@ -3,9 +3,9 @@
 http_response_code(404);
 // Reuse cached settings data if available to avoid redundant disk access
 require_once __DIR__ . '/CMS/includes/data.php';
-$settingsFile = __DIR__ . '/CMS/data/settings.json';
+require_once __DIR__ . '/CMS/includes/settings.php';
 $menusFile = __DIR__ . '/CMS/data/menus.json';
-$settings = get_cached_json($settingsFile);
+$settings = get_site_settings();
 $menus = get_cached_json($menusFile);
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {
