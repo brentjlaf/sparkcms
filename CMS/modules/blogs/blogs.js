@@ -51,6 +51,8 @@ $(document).ready(function(){
     let categories = ["Technology", "Programming", "Design", "Marketing", "Business"];
     let authors = [];
     let nextPostId = 4;
+    let mediaItems = [];
+    let mediaLoaded = false;
 
     function getCmsBasePath(){
         if(window.__cmsBasePath !== undefined){
@@ -70,10 +72,116 @@ $(document).ready(function(){
         return base;
     }
 
+    function isAbsoluteResource(path){
+        return /^https?:\/\//i.test(path || '') || (typeof path === 'string' && (path.startsWith('//') || path.startsWith('/')));
+    }
+
+    function resolveCmsPath(relativePath){
+        const value = String(relativePath || '');
+        if(!value){
+            return '';
+        }
+        if(isAbsoluteResource(value)){
+            return value;
+        }
+        const base = getCmsBasePath().replace(/\/$/, '');
+        const cleaned = value.replace(/^\.\/+/, '').replace(/^\/+/, '');
+        if(!cleaned){
+            return '';
+        }
+        if(!base){
+            return `/${cleaned}`;
+        }
+        return `${base}/${cleaned}`;
+    }
+
+    function normalizeImageValue(value){
+        const raw = (value || '').trim();
+        if(!raw){
+            return '';
+        }
+        if(/^https?:\/\//i.test(raw)){
+            try{
+                const parsed = new URL(raw, window.location.origin);
+                if(parsed.origin === window.location.origin){
+                    return normalizeImageValue(parsed.pathname);
+                }
+            }catch(err){
+                return raw;
+            }
+            return raw;
+        }
+        if(raw.startsWith('//') || raw.startsWith('data:')){
+            return raw;
+        }
+        if(raw.startsWith('/')){
+            return raw.replace(/\/+/g, '/');
+        }
+        const base = getCmsBasePath().replace(/\/$/, '');
+        const cleaned = raw.replace(/^\.\/+/, '').replace(/^\/+/, '');
+        if(!cleaned){
+            return '';
+        }
+        const baseName = base.replace(/^\//, '');
+        if(baseName && cleaned.startsWith(`${baseName}/`)){
+            return `/${cleaned}`;
+        }
+        if(base){
+            return `${base}/${cleaned}`;
+        }
+        return `/${cleaned}`;
+    }
+
+    function renderMediaPicker(items){
+        const grid = $('#mediaPickerGrid');
+        if(!items.length){
+            grid.html('<p class="blog-media-picker__status">No images found in the media library.</p>');
+            return;
+        }
+        const html = items.map(item => {
+            const filePath = resolveCmsPath(item.file);
+            const thumbPath = resolveCmsPath(item.thumbnail || item.file);
+            const safeFile = escapeAttribute(filePath);
+            const safeThumb = escapeAttribute(thumbPath);
+            const safeName = escapeAttribute(item.name || item.file || 'Media item');
+            return `
+                <button type="button" class="blog-media-picker__item" data-file="${safeFile}" role="option">
+                    <span class="blog-media-picker__thumb"><img src="${safeThumb}" alt="${safeName}"></span>
+                    <span class="blog-media-picker__name">${safeName}</span>
+                </button>
+            `;
+        }).join('');
+        grid.html(html);
+    }
+
+    function loadMediaLibrary(){
+        const grid = $('#mediaPickerGrid');
+        grid.html('<p class="blog-media-picker__status">Loading images…</p>');
+        return $.getJSON('modules/media/list_media.php', { sort: 'name', order: 'asc' })
+            .done(function(data){
+                mediaItems = Array.isArray(data.media)
+                    ? data.media.filter(item => (item.type || '') === 'images' && item.file)
+                    : [];
+                mediaLoaded = true;
+                if(!mediaItems.length){
+                    grid.html('<p class="blog-media-picker__status">No images found in the media library.</p>');
+                    return;
+                }
+                renderMediaPicker(mediaItems);
+            })
+            .fail(function(){
+                grid.html('<p class="blog-media-picker__status blog-media-picker__status--error">Unable to load the media library. Please try again.</p>');
+            });
+    }
+
     function openMediaPicker(){
-        const base = getCmsBasePath();
-        const pickerUrl = `modules/media/picker.php?base=${encodeURIComponent(base)}`;
-        window.open(pickerUrl, 'SparkCMSMediaPicker', 'width=960,height=640,resizable=yes,scrollbars=yes');
+        $('#mediaPickerSearch').val('');
+        openModal('mediaPickerModal');
+        if(mediaLoaded && mediaItems.length){
+            renderMediaPicker(mediaItems);
+            return;
+        }
+        loadMediaLibrary();
     }
 
     function escapeAttribute(value){
@@ -122,7 +230,9 @@ $(document).ready(function(){
         if(!url){
             return;
         }
-        $('#postImage').val(url).trigger('change');
+        const normalized = normalizeImageValue(url);
+        $('#postImage').val(normalized).trigger('change');
+        closeModal('mediaPickerModal');
     };
 
     function loadTinyMCE(cb){
@@ -225,15 +335,58 @@ $(document).ready(function(){
         }
     });
 
-    $('#postImage').on('input change', function(){
+    $('#postImage').on('input', function(){
         const url = $(this).val().trim();
         const alt = getPreviewAltText();
         updateImagePreview(url, alt);
     });
 
+    $('#postImage').on('change', function(){
+        const normalized = normalizeImageValue($(this).val());
+        $(this).val(normalized);
+        const alt = getPreviewAltText();
+        updateImagePreview(normalized, alt);
+    });
+
     $('#chooseFeaturedImage').on('click', function(e){
         e.preventDefault();
         openMediaPicker();
+    });
+
+    $('#mediaPickerGrid').on('click', '.blog-media-picker__item', function(){
+        const file = $(this).data('file');
+        if(!file){
+            return;
+        }
+        $('#postImage').val(file).trigger('change');
+        closeModal('mediaPickerModal');
+    });
+
+    $('#mediaPickerSearch').on('input', function(){
+        const term = $(this).val().toLowerCase().trim();
+        if(!mediaItems.length){
+            return;
+        }
+        if(!term){
+            renderMediaPicker(mediaItems);
+            return;
+        }
+        const filtered = mediaItems.filter(item => {
+            const name = (item.name || '').toLowerCase();
+            let tags = '';
+            if(Array.isArray(item.tags)){
+                tags = item.tags.join(' ').toLowerCase();
+            } else if(typeof item.tags === 'string'){
+                tags = item.tags.toLowerCase();
+            }
+            const file = (item.file || '').toLowerCase();
+            return name.includes(term) || tags.includes(term) || file.includes(term);
+        });
+        renderMediaPicker(filtered);
+    });
+
+    $('#closeMediaPickerModal').click(function(){
+        closeModal('mediaPickerModal');
     });
 
     $('#postImageAlt').on('input change', function(){
@@ -427,7 +580,7 @@ $(document).ready(function(){
 
     function savePost(){
         const formData = new FormData($('#postForm')[0]);
-        const imageUrl = (formData.get('image') || '').trim();
+        const imageUrl = normalizeImageValue(formData.get('image'));
         const imageAlt = (formData.get('imageAlt') || '').trim();
         const data = {
             title: formData.get('title'),
@@ -571,6 +724,7 @@ $(document).ready(function(){
         if(e.target.id==='postModal') closeModal('postModal');
         if(e.target.id==='categoriesModal') closeModal('categoriesModal');
         if(e.target.id==='postPreviewModal') closeModal('postPreviewModal');
+        if(e.target.id==='mediaPickerModal') closeModal('mediaPickerModal');
     });
 
     let autoSaveTimer;
