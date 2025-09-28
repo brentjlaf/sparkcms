@@ -72,7 +72,7 @@
                     <div class="dashboard-overview-body">
                         <div class="a11y-overview-value" data-stat="accessibility-score">0%</div>
                         <div class="a11y-overview-label">Accessibility</div>
-                        <div class="dashboard-overview-meta" data-stat="accessibility-breakdown">Compliant: 0 • Needs review: 0</div>
+                        <div class="dashboard-overview-meta" data-stat="accessibility-breakdown">Compliant: 0 &bull; Needs review: 0</div>
                         <div class="dashboard-overview-meta" data-stat="accessibility-alt">Alt text issues: 0</div>
                     </div>
                 </div>
