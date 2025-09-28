@@ -462,10 +462,14 @@
             });
 
             $fullAuditBtn.on('click', function () {
-                if (!activeSlug || !detailBaseUrl) {
+                if (!activeSlug) {
                     return;
                 }
-                window.location.href = detailBaseUrl + encodeURIComponent(activeSlug);
+
+                var page = pagesMap[activeSlug] || {};
+                var title = page.title ? '"' + page.title + '"' : 'this page';
+
+                alert('Generating a full SEO audit for ' + title + '\n\nThis would trigger an in-depth review of metadata, structured data, content quality, and linking signals without leaving the dashboard.');
             });
         }
     }
