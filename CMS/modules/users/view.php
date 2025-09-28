@@ -28,13 +28,13 @@
                     <div class="a11y-overview-label">Total members</div>
                 </div>
                 <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="usersStatActive">0</div>
-                <div class="a11y-overview-label">Active accounts</div>
-            </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" id="usersStatAdmins">0</div>
-                <div class="a11y-overview-label">Administrators</div>
-            </div>
+                    <div class="a11y-overview-value" id="usersStatActive">0</div>
+                    <div class="a11y-overview-label">Active accounts</div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" id="usersStatAdmins">0</div>
+                    <div class="a11y-overview-label">Administrators</div>
+                </div>
                 <div class="a11y-overview-card">
                     <div class="a11y-overview-value" id="usersStatRecent">0</div>
                     <div class="a11y-overview-label">New this month</div>
