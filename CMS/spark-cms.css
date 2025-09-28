@@ -2546,6 +2546,11 @@
             border-radius: 18px;
             overflow: hidden;
             box-shadow: 0 24px 48px rgba(37, 99, 235, 0.25);
+            --analytics-surface-color: rgba(15, 23, 42, 0.6);
+            --analytics-delta-positive: #34d399;
+            --analytics-delta-negative: #fda4af;
+            --analytics-delta-neutral: rgba(255, 255, 255, 0.88);
+            --analytics-delta-shadow: rgba(15, 23, 42, 0.45);
         }
 
         .analytics-hero::before,
@@ -2664,7 +2669,8 @@
         }
 
         .analytics-overview-card {
-            background: rgba(15,23,42,0.2);
+            background: var(--analytics-surface-color);
+            border: 1px solid rgba(148, 163, 184, 0.25);
             border-radius: 16px;
             padding: 18px 22px;
             backdrop-filter: blur(8px);
@@ -2673,6 +2679,7 @@
         .analytics-overview-value {
             font-size: 30px;
             font-weight: 600;
+            text-shadow: 0 0 4px var(--analytics-delta-shadow);
         }
 
         .analytics-overview-label {
@@ -2680,7 +2687,7 @@
             text-transform: uppercase;
             letter-spacing: 0.08em;
             margin-top: 4px;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255,255,255,0.85);
         }
 
         .analytics-overview-delta {
@@ -2690,11 +2697,13 @@
             margin-top: 8px;
             font-size: 13px;
             font-weight: 600;
-            color: rgba(255,255,255,0.8);
+            color: var(--analytics-delta-neutral);
+            text-shadow: 0 0 4px var(--analytics-delta-shadow);
         }
 
         .analytics-overview-delta__icon {
             font-size: 13px;
+            color: inherit;
         }
 
         .analytics-overview-delta__text {
@@ -2702,15 +2711,15 @@
         }
 
         .analytics-overview-delta--positive {
-            color: #4ade80;
+            color: var(--analytics-delta-positive);
         }
 
         .analytics-overview-delta--negative {
-            color: #f87171;
+            color: var(--analytics-delta-negative);
         }
 
         .analytics-overview-delta--neutral {
-            color: rgba(255,255,255,0.75);
+            color: var(--analytics-delta-neutral);
         }
 
         .analytics-overview-card .analytics-overview-delta + .analytics-overview-hint {
@@ -8061,6 +8070,11 @@
     gap: 28px;
     box-shadow: 0 24px 48px rgba(37, 99, 235, 0.28);
     overflow: hidden;
+    --seo-card-surface: rgba(15, 23, 42, 0.6);
+    --seo-shadow-soft: rgba(15, 23, 42, 0.45);
+    --seo-stat-critical: #fda4af;
+    --seo-stat-optimized: #bbf7d0;
+    --seo-stat-accent: #c7d2fe;
 }
 
 .seo-hero::before,
@@ -8136,7 +8150,8 @@
 }
 
 .seo-overview-card {
-    background: rgba(255, 255, 255, 0.16);
+    background: var(--seo-card-surface);
+    border: 1px solid rgba(148, 163, 184, 0.28);
     padding: 18px 20px;
     border-radius: 16px;
     backdrop-filter: blur(6px);
@@ -8145,6 +8160,7 @@
 .seo-overview-value {
     font-size: 28px;
     font-weight: 600;
+    text-shadow: 0 0 4px var(--seo-shadow-soft);
 }
 
 .seo-overview-label {
@@ -8153,6 +8169,18 @@
     letter-spacing: 0.6px;
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.78);
+}
+
+#seoStatAvgScore {
+    color: var(--seo-stat-accent);
+}
+
+#seoStatCritical {
+    color: var(--seo-stat-critical);
+}
+
+#seoStatOptimized {
+    color: var(--seo-stat-optimized);
 }
 
 .seo-controls {
