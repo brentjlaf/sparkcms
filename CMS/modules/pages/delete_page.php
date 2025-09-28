@@ -16,6 +16,57 @@ foreach ($pages as $p) {
 }
 $pages = array_filter($pages, function($p) use ($id) { return $p['id'] != $id; });
 file_put_contents($pagesFile, json_encode(array_values($pages), JSON_PRETTY_PRINT));
+
+// Remove the deleted page from any menus
+$menusFile = __DIR__ . '/../../data/menus.json';
+if (file_exists($menusFile)) {
+    $menus = read_json_file($menusFile);
+    $pageSlug = $deletedPage['slug'] ?? '';
+
+    $removePageFromItems = function (array $items) use (&$removePageFromItems, $id, $pageSlug) {
+        $cleaned = [];
+        foreach ($items as $item) {
+            $itemType = $item['type'] ?? '';
+            $itemPage = isset($item['page']) ? (int)$item['page'] : null;
+            $itemLink = isset($item['link']) ? rtrim($item['link'], '/') : null;
+            $pageLink = $pageSlug !== '' ? '/' . trim($pageSlug, '/') : null;
+
+            $matchesPage = ($itemType === 'page' && $itemPage === $id);
+            if (!$matchesPage && $pageLink !== null && $itemLink !== null) {
+                $matchesPage = $itemLink === $pageLink;
+            }
+
+            if ($matchesPage) {
+                continue;
+            }
+
+            if (!empty($item['children']) && is_array($item['children'])) {
+                $item['children'] = $removePageFromItems($item['children']);
+                if (empty($item['children'])) {
+                    unset($item['children']);
+                }
+            }
+
+            $cleaned[] = $item;
+        }
+        return $cleaned;
+    };
+
+    $menusUpdated = false;
+    foreach ($menus as &$menu) {
+        $originalItems = $menu['items'] ?? [];
+        $menu['items'] = $removePageFromItems($originalItems);
+        if ($menu['items'] !== $originalItems) {
+            $menusUpdated = true;
+        }
+    }
+    unset($menu);
+
+    if ($menusUpdated) {
+        file_put_contents($menusFile, json_encode($menus, JSON_PRETTY_PRINT));
+    }
+}
+
 // Update sitemap after a page is deleted
 require_once __DIR__ . '/../sitemap/generate.php';
 
