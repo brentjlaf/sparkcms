@@ -677,7 +677,7 @@ $dashboardStats = [
         </section>
     </div>
 <?php else: ?>
-    <div class="seo-dashboard" data-last-scan="<?php echo htmlspecialchars($lastScan, ENT_QUOTES); ?>">
+    <div class="seo-dashboard a11y-dashboard" data-last-scan="<?php echo htmlspecialchars($lastScan, ENT_QUOTES); ?>">
         <header class="seo-hero">
             <div class="seo-hero-content">
                 <div>
