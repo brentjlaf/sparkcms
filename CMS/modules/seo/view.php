@@ -767,7 +767,7 @@ $dashboardStats = [
 
         <section class="seo-page-grid" aria-live="polite">
             <?php foreach ($pageEntries as $page): ?>
-                <article class="seo-page-card" data-page-slug="<?php echo htmlspecialchars($page['slug']); ?>" data-seo-score="<?php echo (int)$page['seoScore']; ?>" data-seo-level="<?php echo htmlspecialchars(strtolower(str_replace(' ', '-', $page['optimizationLevel'])), ENT_QUOTES); ?>" data-issues="<?php echo (int)$page['violations']['total']; ?>">
+                <article class="seo-page-card" data-page-slug="<?php echo htmlspecialchars($page['slug']); ?>" data-seo-score="<?php echo (int)$page['seoScore']; ?>" data-seo-level="<?php echo htmlspecialchars(strtolower(str_replace(' ', '-', $page['optimizationLevel'])), ENT_QUOTES); ?>" data-issues="<?php echo (int)$page['violations']['total']; ?>" tabindex="0" role="button" aria-haspopup="dialog" aria-label="View SEO summary for <?php echo htmlspecialchars($page['title']); ?>">
                     <header>
                         <div class="seo-page-score score-indicator <?php echo $page['seoScore'] >= 90 ? 'seo-score--excellent' : ($page['seoScore'] >= 75 ? 'seo-score--good' : ($page['seoScore'] >= 60 ? 'seo-score--fair' : 'seo-score--poor')); ?>">
                             <span class="score-indicator__number"><?php echo (int)$page['seoScore']; ?></span><span>%</span>
@@ -788,10 +788,11 @@ $dashboardStats = [
                         <?php endforeach; ?>
                     </div>
                     <footer>
-                        <a href="<?php echo htmlspecialchars($moduleUrl . '&page=' . urlencode($page['slug']), ENT_QUOTES); ?>" class="seo-card-link">
+                        <span class="seo-card-link" aria-hidden="true">
                             View detailed recommendations
                             <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                        </a>
+                        </span>
+                        <span class="sr-only">Press Enter to open SEO details for <?php echo htmlspecialchars($page['title']); ?>.</span>
                     </footer>
                 </article>
             <?php endforeach; ?>
@@ -812,7 +813,7 @@ $dashboardStats = [
                 </thead>
                 <tbody>
                     <?php foreach ($pageEntries as $page): ?>
-                        <tr data-page-slug="<?php echo htmlspecialchars($page['slug']); ?>" data-seo-score="<?php echo (int)$page['seoScore']; ?>" data-issues="<?php echo (int)$page['violations']['total']; ?>">
+                        <tr data-page-slug="<?php echo htmlspecialchars($page['slug']); ?>" data-seo-score="<?php echo (int)$page['seoScore']; ?>" data-issues="<?php echo (int)$page['violations']['total']; ?>" tabindex="0" role="button" aria-haspopup="dialog" aria-label="View SEO summary for <?php echo htmlspecialchars($page['title']); ?>">
                             <th scope="row">
                                 <div class="seo-table-title"><?php echo htmlspecialchars($page['title']); ?></div>
                                 <div class="seo-table-url"><?php echo htmlspecialchars($page['url']); ?></div>
@@ -827,6 +828,37 @@ $dashboardStats = [
                 </tbody>
             </table>
         </section>
+
+        <div class="a11y-page-detail seo-page-detail" id="seoPageDetail" hidden role="dialog" aria-modal="true" aria-labelledby="seoDetailTitle">
+            <div class="a11y-detail-content">
+                <button type="button" class="a11y-detail-close" id="seoDetailClose" aria-label="Close SEO details">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+                <header class="a11y-detail-modal-header">
+                    <h2 id="seoDetailTitle">Page SEO Details</h2>
+                    <p id="seoDetailUrl" class="a11y-detail-url"></p>
+                    <p id="seoDetailDescription" class="a11y-detail-description"></p>
+                </header>
+                <div class="a11y-detail-modal-body">
+                    <div class="a11y-detail-badges">
+                        <span class="a11y-detail-score score-indicator score-indicator--badge" id="seoDetailScore"></span>
+                        <span class="a11y-detail-level" id="seoDetailLevel"></span>
+                        <span class="a11y-detail-violations" id="seoDetailSignals"></span>
+                    </div>
+                    <ul class="a11y-detail-metric-list" id="seoDetailMetrics"></ul>
+                    <div class="a11y-detail-issues-list">
+                        <h3>Key SEO findings</h3>
+                        <ul id="seoDetailIssues"></ul>
+                    </div>
+                </div>
+                <footer class="a11y-detail-modal-footer">
+                    <button type="button" class="a11y-btn a11y-btn--primary" data-seo-action="full-audit">
+                        <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        <span>Full SEO Audit</span>
+                    </button>
+                </footer>
+            </div>
+        </div>
 
         <footer class="seo-dashboard-footer">
             <p>SEO data last analysed on <?php echo htmlspecialchars($lastScan); ?>. Refresh the scan whenever you publish new content or update templates.</p>
