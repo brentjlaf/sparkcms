@@ -38,6 +38,12 @@ if ($lower !== '') {
     }
 }
 $resultCount = count($results);
+$resultSummary = $resultCount === 1
+    ? 'Showing 1 result'
+    : 'Showing ' . number_format($resultCount) . ' results';
+$querySuffix = $q !== ''
+    ? ' for &ldquo;' . htmlspecialchars($q) . '&rdquo;'
+    : '';
 $typeCounts = [
     'Page' => 0,
     'Post' => 0,
@@ -61,7 +67,7 @@ foreach ($results as $entry) {
                 <div class="a11y-hero-actions search-hero-actions">
                     <span class="a11y-hero-meta search-hero-meta">
                         <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
-                        <?php echo $resultCount === 1 ? 'Showing 1 result' : 'Showing ' . number_format($resultCount) . ' results'; ?><?php if ($q !== ''): ?> for “<?php echo htmlspecialchars($q); ?>”<?php endif; ?>
+                        <?php echo $resultSummary . $querySuffix; ?>
                     </span>
                 </div>
             </div>
@@ -81,45 +87,51 @@ foreach ($results as $entry) {
             </div>
         </header>
 
-        <div class="table-card">
-            <div class="table-header">
-                <div class="table-title">Search Results<?php if($q!=='') echo ' for \''.htmlspecialchars($q).'\''; ?></div>
+        <section class="a11y-detail-card search-results-card">
+            <header class="search-results-card__header">
+                <div class="search-results-card__intro">
+                    <h3 class="search-results-card__title">Search results</h3>
+                    <p class="search-results-card__description">Review matches across pages, posts, and media.</p>
+                </div>
+                <span class="search-results-card__meta"><?php echo $resultSummary . $querySuffix; ?></span>
+            </header>
+            <div class="search-results-table">
+                <table class="data-table search-table">
+                    <thead>
+                        <tr><th scope="col">Type</th><th scope="col">Title</th><th scope="col">Slug</th><th scope="col">Status</th><th scope="col">Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($results): ?>
+                            <?php foreach ($results as $r): ?>
+                                <?php
+                                    if(($r['type'] ?? '') === 'Post') {
+                                        $viewUrl = '../' . urlencode($r['slug']);
+                                        $status = ucfirst($r['status'] ?? 'draft');
+                                    } elseif(($r['type'] ?? '') === 'Media') {
+                                        $viewUrl = '../' . ltrim($r['file'], '/');
+                                        $status = !empty($r['size']) ? round($r['size']/1024).' KB' : '';
+                                    } else {
+                                        $viewUrl = '../?page=' . urlencode($r['slug']);
+                                        if(isset($_SESSION['user'])) {
+                                            $viewUrl = '../liveed/builder.php?id=' . urlencode($r['id']);
+                                        }
+                                        $status = !empty($r['published']) ? 'Published' : 'Draft';
+                                    }
+                                ?>
+                                <tr data-id="<?php echo $r['id']; ?>">
+                                    <td><?php echo htmlspecialchars($r['type'] ?? ''); ?></td>
+                                    <td><?php echo htmlspecialchars($r['title']); ?></td>
+                                    <td><?php echo htmlspecialchars($r['slug']); ?></td>
+                                    <td><?php echo htmlspecialchars($status); ?></td>
+                                    <td><a class="btn btn-secondary" href="<?php echo $viewUrl; ?>" target="_blank">View</a></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="5">No results found</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
-        <table class="data-table">
-            <thead>
-                <tr><th>Type</th><th>Title</th><th>Slug</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-                <?php if ($results): ?>
-                    <?php foreach ($results as $r): ?>
-                        <?php
-                            if(($r['type'] ?? '') === 'Post') {
-                                $viewUrl = '../' . urlencode($r['slug']);
-                                $status = ucfirst($r['status'] ?? 'draft');
-                            } elseif(($r['type'] ?? '') === 'Media') {
-                                $viewUrl = '../' . ltrim($r['file'], '/');
-                                $status = !empty($r['size']) ? round($r['size']/1024).' KB' : '';
-                            } else {
-                                $viewUrl = '../?page=' . urlencode($r['slug']);
-                                if(isset($_SESSION['user'])) {
-                                    $viewUrl = '../liveed/builder.php?id=' . urlencode($r['id']);
-                                }
-                                $status = !empty($r['published']) ? 'Published' : 'Draft';
-                            }
-                        ?>
-                        <tr data-id="<?php echo $r['id']; ?>">
-                            <td><?php echo htmlspecialchars($r['type'] ?? ''); ?></td>
-                            <td><?php echo htmlspecialchars($r['title']); ?></td>
-                            <td><?php echo htmlspecialchars($r['slug']); ?></td>
-                            <td><?php echo htmlspecialchars($status); ?></td>
-                            <td><a class="btn btn-secondary" href="<?php echo $viewUrl; ?>" target="_blank">View</a></td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr><td colspan="5">No results found</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-        </div>
+        </section>
     </div>
 </div>
