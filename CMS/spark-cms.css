@@ -493,19 +493,16 @@
             font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #64748b;
             font-weight: 600;
         }
 
         .logs-stat-value {
             font-size: 32px;
             font-weight: 700;
-            color: #1e1b4b;
         }
 
         .logs-stat-hint {
             font-size: 14px;
-            color: #6b7280;
         }
 
         .logs-activity {
