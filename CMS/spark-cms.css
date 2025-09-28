@@ -586,6 +586,74 @@
             font-size: 15px;
         }
 
+        .import-datasets {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .import-datasets__title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #0f172a;
+        }
+
+        .import-datasets__summary {
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .import-datasets__list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .import-datasets__item {
+            background: rgba(15, 118, 110, 0.14);
+            color: #0f766e;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .import-status {
+            margin-top: 20px;
+            border-radius: 12px;
+            padding: 16px 18px;
+            font-size: 14px;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .import-status.is-visible {
+            display: block;
+        }
+
+        .import-status--success {
+            background: rgba(16, 185, 129, 0.14);
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.32);
+        }
+
+        .import-status--error {
+            background: rgba(248, 113, 113, 0.14);
+            color: #991b1b;
+            border: 1px solid rgba(248, 113, 113, 0.32);
+        }
+
+        .import-status--info {
+            background: rgba(59, 130, 246, 0.14);
+            color: #1e40af;
+            border: 1px solid rgba(59, 130, 246, 0.28);
+        }
+
         /* Sitemap module */
         #sitemap .sitemap-dashboard {
             display: flex;
