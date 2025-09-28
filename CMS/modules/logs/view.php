@@ -173,16 +173,18 @@ if ($uniqueUsersCount === 1) {
                         <i class="fas fa-rotate" aria-hidden="true"></i>
                         <span>Refresh</span>
                     </button>
-                    <span class="a11y-hero-meta logs-hero-meta-item">
-                        <span class="logs-hero-meta__label">Last activity</span>
-                        <span class="logs-hero-meta__value" id="logsLastActivity" title="<?php echo htmlspecialchars($lastActivityExact, ENT_QUOTES, 'UTF-8'); ?>">
-                            <?php echo htmlspecialchars($lastActivityLabel, ENT_QUOTES, 'UTF-8'); ?>
+                    <div class="a11y-hero-meta-group logs-hero-meta-group">
+                        <span class="a11y-hero-meta logs-hero-meta-item">
+                            <span class="logs-hero-meta__label">Last activity</span>
+                            <span class="logs-hero-meta__value" id="logsLastActivity" title="<?php echo htmlspecialchars($lastActivityExact, ENT_QUOTES, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($lastActivityLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </span>
                         </span>
-                    </span>
-                    <span class="a11y-hero-meta logs-hero-meta-item">
-                        <span class="logs-hero-meta__label">Past 24 hours</span>
-                        <span class="logs-hero-meta__value" id="logsPast24h"><?php echo $last24Hours; ?></span>
-                    </span>
+                        <span class="a11y-hero-meta logs-hero-meta-item">
+                            <span class="logs-hero-meta__label">Past 24 hours</span>
+                            <span class="logs-hero-meta__value" id="logsPast24h"><?php echo $last24Hours; ?></span>
+                        </span>
+                    </div>
                 </div>
             </div>
             <div class="a11y-overview-grid logs-overview-grid">
