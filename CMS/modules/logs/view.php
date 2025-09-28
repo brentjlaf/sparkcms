@@ -169,7 +169,7 @@ if ($uniqueUsersCount === 1) {
                     <p class="a11y-hero-subtitle logs-hero-subtitle">Monitor publishing events, workflow actions, and page edits from a single, friendly timeline.</p>
                 </div>
                 <div class="a11y-hero-actions logs-hero-actions">
-                    <button type="button" class="logs-btn logs-btn--ghost" id="logsRefreshBtn">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" id="logsRefreshBtn">
                         <i class="fas fa-rotate" aria-hidden="true"></i>
                         <span>Refresh</span>
                     </button>
