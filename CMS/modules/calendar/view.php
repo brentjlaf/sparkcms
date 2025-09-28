@@ -69,29 +69,8 @@ $initialPayload = [
             gap: 0.75rem;
             margin-bottom: 1.5rem;
         }
-        .calendar-admin .calendar-toolbar a,
-        .calendar-admin .calendar-toolbar button {
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1rem;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .calendar-admin .calendar-btn-primary {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: #fff;
-        }
-        .calendar-admin .calendar-btn-primary:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
-        }
-        .calendar-admin .calendar-btn-outline {
-            background: transparent;
-            border: 1px solid #d1d5db;
-            color: #1f2937;
-        }
-        .calendar-admin .calendar-btn-outline:hover {
-            background: #f9fafb;
+        .calendar-admin .calendar-toolbar .a11y-btn {
+            gap: 0.5rem;
         }
         .calendar-admin .calendar-card {
             background: #fff;
@@ -298,6 +277,20 @@ $initialPayload = [
         .calendar-admin .calendar-submit-btn:hover {
             background: linear-gradient(135deg, #16a34a, #15803d);
         }
+        .calendar-admin .calendar-btn-outline {
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1rem;
+            background: #fff;
+            color: #1f2937;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .calendar-admin .calendar-btn-outline:hover,
+        .calendar-admin .calendar-btn-outline:focus-visible {
+            background: #f9fafb;
+        }
         .calendar-admin .calendar-category-color {
             display: inline-flex;
             align-items: center;
@@ -325,9 +318,14 @@ $initialPayload = [
         <h1>Manage Calendar Data</h1>
         <div class="calendar-alert" data-calendar-message aria-live="polite"></div>
         <div class="calendar-toolbar">
-            <a href="index.html" class="calendar-btn-outline" target="_blank" rel="noopener">&larr; View Calendar</a>
-            <button type="button" class="calendar-btn-primary" data-calendar-open="event">+ Add New Event</button>
-            <button type="button" class="calendar-btn-outline" data-calendar-open="categories">Manage Categories</button>
+            <button type="button" class="a11y-btn a11y-btn--primary" data-calendar-open="event">
+                <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+                <span>Add New Event</span>
+            </button>
+            <button type="button" class="a11y-btn a11y-btn--secondary" data-calendar-open="categories">
+                <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                <span>Manage Categories</span>
+            </button>
         </div>
     </div>
 
