@@ -270,7 +270,7 @@ $summaryComparisons = [
     <div class="a11y-page-detail analytics-detail" id="analyticsDetail" hidden role="dialog" aria-modal="true" aria-labelledby="analyticsDetailTitle">
         <div class="a11y-detail-content analytics-detail__content" role="document">
             <button type="button" class="a11y-detail-close analytics-detail__close" id="analyticsDetailClose" aria-label="Close page analytics">
-                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                <span class="analytics-detail__close-text">Close</span>
             </button>
             <header class="analytics-detail__header">
                 <div class="analytics-detail__title-group">
@@ -297,7 +297,6 @@ $summaryComparisons = [
             </div>
             <footer class="analytics-detail__footer">
                 <a id="analyticsDetailVisit" class="analytics-detail__link" href="/" target="_blank" rel="noopener">
-                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
                     <span>Open live page</span>
                 </a>
             </footer>
