@@ -5,8 +5,10 @@ $(function(){
     const $lastSaved = $('#settingsLastSaved');
     const $saveButton = $('#saveSettingsButton');
     const $logoPreview = $('#logoPreview');
+    const $faviconPreview = $('#faviconPreview');
     const $ogPreview = $('#ogImagePreview');
     const $clearLogo = $('#clearLogo');
+    const $clearFavicon = $('#clearFavicon');
     const $clearOgImage = $('#clearOgImage');
     const $socialPreviewImage = $('#socialPreviewImage');
     const $socialPreviewFallback = $('#socialPreviewImageFallback');
@@ -199,6 +201,7 @@ $(function(){
     }
 
     bindClearToggle($clearLogo, $logoPreview);
+    bindClearToggle($clearFavicon, $faviconPreview);
     bindClearToggle($clearOgImage, $ogPreview);
 
     function getDefaultOgTitle(settings){
@@ -246,6 +249,7 @@ $(function(){
             $('#admin_email').val(data.admin_email || '');
 
             setPreviewState($logoPreview, $clearLogo, data.logo || '');
+            setPreviewState($faviconPreview, $clearFavicon, data.favicon || '');
 
             $('#timezone').val(data.timezone || 'America/Denver');
             $('#googleAnalytics').val(data.googleAnalytics || '');
@@ -296,6 +300,17 @@ $(function(){
             reader.onload = function(e){
                 setPreviewState($logoPreview, $clearLogo, e.target.result);
                 updateOverview();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    $('#faviconFile').on('change', function(){
+        const file = this.files && this.files[0];
+        if(file){
+            const reader = new FileReader();
+            reader.onload = function(e){
+                setPreviewState($faviconPreview, $clearFavicon, e.target.result);
             };
             reader.readAsDataURL(file);
         }

@@ -59,10 +59,14 @@ $baseDir = realpath(__DIR__ . '/../../');
 $uploadsRoot = realpath($uploadDir);
 
 $previousLogo = $settings['logo'] ?? null;
+$previousFavicon = $settings['favicon'] ?? null;
 
 $logoCleared = !empty($_POST['clear_logo']);
+$faviconCleared = !empty($_POST['clear_favicon']);
 $newLogo = $previousLogo;
+$newFavicon = $previousFavicon;
 $logoUploaded = false;
+$faviconUploaded = false;
 
 $allowedImageTypes = [
     'image/gif',
@@ -70,6 +74,11 @@ $allowedImageTypes = [
     'image/png',
     'image/webp',
 ];
+$allowedFaviconTypes = array_merge($allowedImageTypes, [
+    'image/x-icon',
+    'image/vnd.microsoft.icon',
+    'image/svg+xml',
+]);
 $maxUploadSize = 5 * 1024 * 1024; // 5 MB
 
 function validate_image_upload(array $file, array $allowedTypes, int $maxSize, string $fieldLabel)
@@ -115,7 +124,7 @@ function validate_image_upload(array $file, array $allowedTypes, int $maxSize, s
     if (!$mime || !in_array($mime, $allowedTypes, true)) {
         return [
             'valid' => false,
-            'message' => sprintf('%s must be a valid image (PNG, JPG, GIF, or WebP).', $fieldLabel),
+            'message' => sprintf('%s must be a valid image file.', $fieldLabel),
         ];
     }
 
@@ -128,6 +137,16 @@ if (!$logoValidation['valid']) {
     echo json_encode([
         'status' => 'error',
         'message' => $logoValidation['message'],
+    ]);
+    exit;
+}
+
+$faviconValidation = validate_image_upload($_FILES['favicon'] ?? [], $allowedFaviconTypes, $maxUploadSize, 'Favicon');
+if (!$faviconValidation['valid']) {
+    http_response_code(400);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $faviconValidation['message'],
     ]);
     exit;
 }
@@ -152,8 +171,26 @@ if (!empty($_FILES['logo']['name']) && is_uploaded_file($_FILES['logo']['tmp_nam
     }
 }
 
+if (!empty($_FILES['favicon']['name']) && is_uploaded_file($_FILES['favicon']['tmp_name'])) {
+    $ext = strtolower(pathinfo($_FILES['favicon']['name'], PATHINFO_EXTENSION));
+    $allowedExtensions = ['gif', 'jpg', 'jpeg', 'png', 'webp', 'ico', 'svg'];
+    if (!in_array($ext, $allowedExtensions, true)) {
+        $ext = 'png';
+    }
+    $safe = 'favicon_' . uniqid('', true) . '.' . $ext;
+    $dest = $uploadDir . '/' . $safe;
+    if (move_uploaded_file($_FILES['favicon']['tmp_name'], $dest)) {
+        $newFavicon = 'uploads/' . $safe;
+        $faviconUploaded = true;
+    }
+}
+
 if ($logoCleared && !$logoUploaded) {
     $newLogo = null;
+}
+
+if ($faviconCleared && !$faviconUploaded) {
+    $newFavicon = null;
 }
 
 if ($newLogo !== null) {
@@ -162,8 +199,18 @@ if ($newLogo !== null) {
     unset($settings['logo']);
 }
 
+if ($newFavicon !== null) {
+    $settings['favicon'] = $newFavicon;
+} else {
+    unset($settings['favicon']);
+}
+
 if ($previousLogo && $previousLogo !== $newLogo) {
     delete_upload_file($previousLogo, $uploadsRoot, $baseDir);
+}
+
+if ($previousFavicon && $previousFavicon !== $newFavicon) {
+    delete_upload_file($previousFavicon, $uploadsRoot, $baseDir);
 }
 
 $social = is_array($settings['social'] ?? null) ? $settings['social'] : [];
@@ -232,6 +279,7 @@ echo json_encode([
     'status' => 'ok',
     'last_updated' => $settings['last_updated'],
     'logo' => $settings['logo'] ?? null,
+    'favicon' => $settings['favicon'] ?? null,
     'open_graph' => [
         'image' => $openGraph['image'] ?? null,
     ],
