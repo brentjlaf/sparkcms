@@ -1666,10 +1666,15 @@
         .pages-hero-content {
             position: relative;
             display: flex;
-            flex-direction: column;
-            gap: 16px;
-            max-width: 520px;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+            flex-wrap: wrap;
             z-index: 2;
+        }
+
+        .pages-hero-content > div:first-child {
+            max-width: 520px;
         }
 
         .pages-hero-label {
@@ -1695,8 +1700,9 @@
         .pages-hero-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 8px;
+            gap: 16px;
+            align-items: center;
+            justify-content: flex-end;
         }
 
         .pages-btn {
@@ -1757,7 +1763,6 @@
             border-radius: 999px;
             background: rgba(15,23,42,0.28);
             font-size: 13px;
-            margin-top: 6px;
         }
 
         .pages-hero-meta i {
