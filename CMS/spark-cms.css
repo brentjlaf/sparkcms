@@ -373,40 +373,28 @@
             font-weight: 600;
         }
 
-        .logs-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            border-radius: 999px;
-            border: none;
-            padding: 12px 24px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-size: 14px;
-        }
-
-        .logs-btn i {
+        .logs-hero-actions .a11y-btn i {
             font-size: 16px;
         }
 
-        .logs-btn--ghost {
+        .logs-hero-actions .a11y-btn--ghost {
             background: rgba(255, 255, 255, 0.12);
             color: #fff;
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
-        .logs-btn--ghost:hover,
-        .logs-btn--ghost:focus-visible {
+        .logs-hero-actions .a11y-btn--ghost:hover,
+        .logs-hero-actions .a11y-btn--ghost:focus-visible {
             background: rgba(255, 255, 255, 0.2);
             outline: none;
         }
 
-        .logs-btn.is-loading {
+        .logs-hero-actions .a11y-btn.is-loading {
             opacity: 0.65;
             cursor: progress;
         }
 
-        .logs-btn.is-loading i {
+        .logs-hero-actions .a11y-btn.is-loading i {
             animation: logs-spin 0.9s linear infinite;
         }
 
@@ -757,7 +745,7 @@
                 width: 100%;
             }
 
-            .logs-hero-actions .logs-btn {
+            .logs-hero-actions .a11y-btn {
                 width: 100%;
                 justify-content: center;
             }
