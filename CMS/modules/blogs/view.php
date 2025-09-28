@@ -134,7 +134,7 @@
                     <div class="form-group blog-modal__field">
                         <label for="postImage">Featured Image</label>
                         <div class="blog-image-input">
-                            <input type="url" id="postImage" name="image" placeholder="Select an image from the Media Library" aria-describedby="postImageHint">
+                            <input type="text" id="postImage" name="image" placeholder="Select an image from the Media Library" aria-describedby="postImageHint">
                             <button type="button" class="blog-btn blog-btn--subtle" id="chooseFeaturedImage">
                                 <i class="fa-solid fa-images" aria-hidden="true"></i>
                                 <span>Select from Media Library</span>
@@ -244,6 +244,30 @@
                 <button type="button" class="blog-modal__button blog-modal__button--secondary" id="closePreviewBtn">Close</button>
                 <button type="button" class="blog-modal__button blog-modal__button--primary" id="editPreviewBtn">Edit</button>
             </footer>
+        </div>
+    </div>
+</div>
+
+<div class="modal blog-modal" id="mediaPickerModal" role="dialog" aria-modal="true" aria-labelledby="mediaPickerTitle">
+    <div class="modal-content">
+        <div class="blog-modal__surface">
+            <button type="button" class="blog-modal__close" id="closeMediaPickerModal" aria-label="Close">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="blog-modal__header">
+                <span class="blog-modal__subtitle">Media library</span>
+                <h2 class="blog-modal__title" id="mediaPickerTitle">Select a featured image</h2>
+                <p class="blog-modal__description">Choose from the media library to quickly set a featured image for your post.</p>
+            </header>
+            <div class="blog-modal__body blog-media-picker">
+                <div class="blog-media-picker__toolbar">
+                    <label class="blog-media-picker__search" for="mediaPickerSearch">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <input type="search" id="mediaPickerSearch" placeholder="Search media by name or tag" aria-label="Search media">
+                    </label>
+                </div>
+                <div id="mediaPickerGrid" class="blog-media-picker__grid" role="listbox" aria-label="Media library images" aria-live="polite"></div>
+            </div>
         </div>
     </div>
 </div>
