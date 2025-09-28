@@ -56,7 +56,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
     <div class="pages-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?>">
         <header class="a11y-hero pages-hero">
             <div class="a11y-hero-content pages-hero-content">
-                <div>
+                <div class="pages-hero-summary">
                     <span class="pages-hero-label">Content</span>
                     <h2 class="a11y-hero-title pages-hero-title">Pages</h2>
                     <p class="a11y-hero-subtitle pages-hero-subtitle">Keep your site structure organised and publish updates with confidence.</p>
@@ -72,7 +72,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                     </a>
                     <span class="a11y-hero-meta pages-hero-meta">
                         <i class="fa-solid fa-clock" aria-hidden="true"></i>
-                        Last edit: <?php echo htmlspecialchars($lastUpdatedDisplay); ?>
+                        <span class="pages-hero-meta-text">Last edit: <?php echo htmlspecialchars($lastUpdatedDisplay); ?></span>
                     </span>
                 </div>
             </div>
