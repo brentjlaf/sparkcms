@@ -4864,6 +4864,19 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .form-input.is-invalid,
+        .form-select.is-invalid,
+        .form-textarea.is-invalid {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+        }
+
+        .form-error {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #dc2626;
+        }
+
         .form-textarea {
             resize: vertical;
             min-height: 120px;
