@@ -4819,16 +4819,50 @@
         }
 
         .drag-handle {
-            cursor: move;
+            cursor: grab;
             font-size: 18px;
             color: #94a3b8;
             display: inline-flex;
             align-items: center;
             padding: 0 6px;
+            transition: color 0.2s ease;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
         }
 
         .drag-handle:hover {
             color: #2563eb;
+        }
+
+        .menu-item .drag-handle {
+            align-items: center;
+            background: #e2e8f0;
+            border: 1px solid #cbd5f5;
+            border-radius: 10px;
+            color: #1e293b;
+            display: inline-flex;
+            height: 34px;
+            justify-content: center;
+            margin-right: 2px;
+            padding: 0;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+                box-shadow 0.2s ease, transform 0.1s ease;
+            width: 34px;
+        }
+
+        .menu-item .drag-handle:hover,
+        .menu-item .drag-handle:focus {
+            background: #2563eb;
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            color: #fff;
+        }
+
+        .menu-item .drag-handle:active {
+            cursor: grabbing;
+            transform: scale(0.95);
         }
 
         .menu-placeholder {
