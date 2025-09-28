@@ -1,1 +1,27 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "Workshops",
+    "color": "#1abc9c"
+  },
+  {
+    "id": 2,
+    "name": "Webinars",
+    "color": "#3498db"
+  },
+  {
+    "id": 3,
+    "name": "Community Outreach",
+    "color": "#e67e22"
+  },
+  {
+    "id": 4,
+    "name": "Product Launches",
+    "color": "#9b59b6"
+  },
+  {
+    "id": 5,
+    "name": "Internal Operations",
+    "color": "#f1c40f"
+  }
+]
