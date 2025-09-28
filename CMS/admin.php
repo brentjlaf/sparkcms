@@ -58,6 +58,10 @@ $settings = get_site_settings();
                         <div class="nav-icon"><i class="fas fa-blog"></i></div>
                         <div class="nav-text">Blogs</div>
                     </div>
+                    <div class="nav-item" data-section="calendar">
+                        <div class="nav-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="nav-text">Calendar</div>
+                    </div>
                 </div>
 
                 <div class="nav-section">
@@ -197,7 +201,8 @@ $(function(){
   var moduleTitles = {
     search: 'Manage search index',
     sitemap: 'Review sitemap',
-    import_export: 'Import & Export'
+    import_export: 'Import & Export',
+    calendar: 'Manage calendar data'
   };
 
   $(document).on('sparkcms:navigate', function(event, data){
