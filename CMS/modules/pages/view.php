@@ -108,16 +108,16 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
             </div>
         </div>
 
-        <div class="pages-table-card">
-            <div class="pages-table-header">
-                <div>
-                    <h3 class="pages-table-title">Page inventory</h3>
-                    <p class="pages-table-subtitle">Manage publishing status, homepage selection, and metadata across all content.</p>
+        <section class="a11y-detail-card table-card pages-table-card" aria-labelledby="pagesInventoryTitle" aria-describedby="pagesInventoryDescription">
+            <header class="table-header pages-table-header">
+                <div class="table-header-text">
+                    <h3 class="table-title" id="pagesInventoryTitle">Page inventory</h3>
+                    <p class="table-description" id="pagesInventoryDescription">Manage publishing status, homepage selection, and metadata across all content.</p>
                 </div>
-                <div class="pages-table-meta" id="pagesVisibleCount">Showing <?php echo $totalPages . ' ' . $pagesWord; ?></div>
-            </div>
+                <span class="table-meta pages-table-meta" id="pagesVisibleCount" aria-live="polite">Showing <?php echo $totalPages . ' ' . $pagesWord; ?></span>
+            </header>
             <div class="pages-table-wrapper">
-                <table class="data-table pages-table" id="pagesTable">
+                <table class="data-table pages-table" id="pagesTable" aria-describedby="pagesInventoryDescription">
                     <thead>
                         <tr>
                             <th scope="col">Title</th>
@@ -178,7 +178,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
 
         <div class="pages-empty-state" id="pagesEmptyState" hidden>
             <i class="fa-solid fa-file-circle-question" aria-hidden="true"></i>
