@@ -15,6 +15,8 @@ $(function(){
     let viewType = 'medium';
     let itemsPerPage = 12;
 
+    const reservedFolderNames = ['.', '..', 'con', 'prn', 'aux', 'nul', 'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9'];
+
     const defaultSelectFolderHeading = $('#selectFolderState h3').text();
     const defaultSelectFolderMessage = $('#selectFolderState p').text();
     const defaultEmptyFolderHeading = $('#emptyFolderState h3').text();
@@ -487,9 +489,8 @@ $(function(){
             return;
         }
 
-        const reservedNames = ['.', '..', 'con', 'prn', 'aux', 'nul', 'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9'];
         const lowerName = name.toLowerCase();
-        if(reservedNames.includes(lowerName)){
+        if(reservedFolderNames.includes(lowerName)){
             showCreateFolderMessage('That folder name is reserved. Please choose another.', 'error');
             $input.focus();
             return;
@@ -529,9 +530,38 @@ $(function(){
         });
     }
 
+    function getRenameFolderMessageElement(){
+        return $('#renameFolderMessage');
+    }
+
+    function showRenameFolderMessage(text, type = 'error'){
+        const $message = getRenameFolderMessageElement();
+        if(!$message.length) return;
+        $message
+            .text(text)
+            .attr('role', type === 'error' ? 'alert' : 'status')
+            .attr('aria-live', type === 'error' ? 'assertive' : 'polite')
+            .css({
+                color: type === 'error' ? '#c0392b' : '#1e8449',
+                'font-weight': '600'
+            })
+            .show();
+    }
+
+    function clearRenameFolderMessage(){
+        const $message = getRenameFolderMessageElement();
+        if($message.length){
+            $message.text('').hide().removeAttr('role').removeAttr('aria-live');
+        }
+    }
+
     function renameFolder(){
         if(!currentFolder) return;
         const previousFolder = currentFolder;
+        const $modal = $('#renameFolderModal');
+        const $input = $('#renameFolderName');
+        const $confirm = $('#confirmRenameFolderBtn');
+        const $cancel = $('#cancelRenameFolderBtn');
         const restoreSelection = () => {
             currentFolder = previousFolder;
             $('#selectedFolderName').text(previousFolder);
@@ -539,19 +569,63 @@ $(function(){
             $('.folder-item').removeClass('active');
             $('.folder-item[data-folder="'+previousFolder+'"]').addClass('active');
         };
-        promptModal('Enter new folder name', previousFolder).then(newName => {
-            if(newName === undefined || newName === null) return;
-            const trimmedName = newName.trim();
+        clearRenameFolderMessage();
+        $input.val(previousFolder);
+        openModal('renameFolderModal');
+        $input.focus().select();
+
+        function cleanup(){
+            $modal.off('click.renameFolder');
+            $input.off('keypress.renameFolder');
+            $input.off('input.renameFolder');
+            $confirm.off('click.renameFolder').prop('disabled', false);
+            $cancel.off('click.renameFolder');
+        }
+
+        function closeRenameModal(){
+            cleanup();
+            closeModal('renameFolderModal');
+            clearRenameFolderMessage();
+        }
+
+        function cancelRename(){
+            closeRenameModal();
+            restoreSelection();
+        }
+
+        function attemptRename(){
+            clearRenameFolderMessage();
+            const value = $input.val();
+            const trimmedName = value.trim();
+            $input.val(trimmedName);
+
             if(!trimmedName){
-                alertModal('Folder name cannot be empty.');
-                restoreSelection();
+                showRenameFolderMessage('Folder name cannot be empty.', 'error');
+                $input.focus();
                 return;
             }
+
+            if(/[\\/]/.test(trimmedName)){
+                showRenameFolderMessage('Folder names cannot contain slashes.', 'error');
+                $input.focus();
+                return;
+            }
+
+            const lowerName = trimmedName.toLowerCase();
+            if(reservedFolderNames.includes(lowerName)){
+                showRenameFolderMessage('That folder name is reserved. Please choose another.', 'error');
+                $input.focus();
+                return;
+            }
+
             if(trimmedName === previousFolder){
-                alertModal('Folder name is unchanged.');
-                restoreSelection();
+                showRenameFolderMessage('Folder name is unchanged.', 'error');
+                $input.focus();
                 return;
             }
+
+            $confirm.prop('disabled', true);
+
             $.post('modules/media/rename_folder.php',{old:previousFolder,new:trimmedName},function(res){
                 if(res.status==='success'){
                     currentFolder = trimmedName;
@@ -559,15 +633,46 @@ $(function(){
                     $('#mediaHeroFolderName').text(trimmedName);
                     loadImages();
                     loadFolders();
+                    closeRenameModal();
                 }else{
-                    alertModal(res && res.message ? res.message : 'Error renaming folder');
+                    const message = res && res.message ? res.message : 'Error renaming folder';
+                    showRenameFolderMessage(message, 'error');
                     restoreSelection();
                 }
             },'json').fail(function(xhr){
                 const message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error renaming folder';
-                alertModal(message);
+                showRenameFolderMessage(message, 'error');
                 restoreSelection();
+            }).always(function(){
+                $confirm.prop('disabled', false);
             });
+        }
+
+        $confirm.off('click.renameFolder').on('click.renameFolder', function(e){
+            e.preventDefault();
+            attemptRename();
+        });
+
+        $cancel.off('click.renameFolder').on('click.renameFolder', function(e){
+            e.preventDefault();
+            cancelRename();
+        });
+
+        $modal.off('click.renameFolder').on('click.renameFolder', function(e){
+            if(e.target === this){
+                cancelRename();
+            }
+        });
+
+        $input.off('keypress.renameFolder').on('keypress.renameFolder', function(e){
+            if(e.which === 13){
+                e.preventDefault();
+                attemptRename();
+            }
+        });
+
+        $input.off('input.renameFolder').on('input.renameFolder', function(){
+            clearRenameFolderMessage();
         });
     }
 

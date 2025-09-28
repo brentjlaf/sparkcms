@@ -158,6 +158,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="modal" id="renameFolderModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>Rename Folder</h2>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label class="form-label" for="renameFolderName">New folder name</label>
+                                    <input type="text" id="renameFolderName" class="form-input" autocomplete="off">
+                                    <p class="form-help" id="renameFolderMessage" style="display:none;"></p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" id="cancelRenameFolderBtn">Cancel</button>
+                                <button class="btn btn-primary" id="confirmRenameFolderBtn">Rename</button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="modal" id="imageInfoModal">
                         <div class="modal-content">
                             <div class="modal-header">
