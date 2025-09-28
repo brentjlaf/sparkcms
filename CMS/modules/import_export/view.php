@@ -38,7 +38,13 @@
                             </div>
                         </header>
                         <div class="import-placeholder">
-                            <p>Import or export CMS data.</p>
+                            <p id="importExportIntro">Import or export CMS data.</p>
+                            <div class="import-datasets" id="importDatasetSection" hidden>
+                                <div class="import-datasets__title">Included in export:</div>
+                                <div class="import-datasets__summary" id="importDatasetSummary"></div>
+                                <ul class="import-datasets__list" id="importDatasetList" aria-live="polite"></ul>
+                            </div>
+                            <div class="import-status" id="importExportStatus" role="status" aria-live="polite" aria-hidden="true"></div>
                         </div>
                     </div>
                 </div>
