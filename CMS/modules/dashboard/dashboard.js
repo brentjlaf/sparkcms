@@ -48,6 +48,8 @@ $(function(){
 
     const $refreshButton = $('#dashboardRefresh');
     const $lastUpdated = $('#dashboardLastUpdated');
+    const $metricsGrid = $('.dashboard-overview-grid');
+    const $metricsStatus = $('#dashboardMetricsStatus');
     const refreshButtonDefaultText = $refreshButton.length ? $refreshButton.find('span').text().trim() : '';
     const dateFormatter = typeof Intl !== 'undefined'
         ? new Intl.DateTimeFormat(undefined, {
@@ -57,6 +59,12 @@ $(function(){
             minute: '2-digit'
         })
         : null;
+
+    const metricsMessages = {
+        loading: 'Loading dashboard metrics…',
+        updated: 'Dashboard metrics updated.',
+        error: 'Unable to load dashboard metrics. Please try again.'
+    };
 
     function setRefreshState(isLoading) {
         if (!$refreshButton.length) {
@@ -92,6 +100,28 @@ $(function(){
         const date = new Date(timestamp);
         const formatted = dateFormatter ? dateFormatter.format(date) : date.toLocaleString();
         $lastUpdated.text(`Last updated ${formatted}`);
+    }
+
+    function setMetricsLoading(isLoading, statusText) {
+        if (!$metricsGrid.length) {
+            return;
+        }
+
+        $metricsGrid.attr('aria-busy', isLoading ? 'true' : 'false');
+
+        const $cards = $metricsGrid.find('.dashboard-overview-card');
+        if (isLoading) {
+            $cards.addClass('is-loading');
+            $cards.find('[data-stat]').attr('aria-hidden', 'true');
+        } else {
+            $cards.removeClass('is-loading');
+            $cards.find('[data-stat]').removeAttr('aria-hidden');
+        }
+
+        if ($metricsStatus.length) {
+            const message = statusText || (isLoading ? metricsMessages.loading : metricsMessages.updated);
+            $metricsStatus.text(message);
+        }
     }
 
     const statusClassMap = {
@@ -291,6 +321,7 @@ $(function(){
 
     function loadStats(){
         setRefreshState(true);
+        setMetricsLoading(true);
         $('#dashboardModuleCards').attr('aria-busy', 'true');
 
         return $.getJSON('modules/dashboard/dashboard_data.php', function(data){
@@ -334,10 +365,12 @@ $(function(){
         })
             .done(function(){
                 updateLastUpdated(Date.now());
+                setMetricsLoading(false, metricsMessages.updated);
             })
             .fail(function(){
                 updateLastUpdated(0);
                 renderModuleSummaries([], { message: 'Unable to load module data' });
+                setMetricsLoading(false, metricsMessages.error);
             })
             .always(function(){
                 setRefreshState(false);

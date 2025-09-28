@@ -988,6 +988,53 @@
             border-radius: 16px;
             background: rgba(255, 255, 255, 0.14);
             backdrop-filter: blur(6px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-overview-card .dashboard-overview-icon,
+        .dashboard-overview-card .dashboard-overview-body {
+            position: relative;
+            z-index: 1;
+            transition: opacity 0.2s ease;
+        }
+
+        .dashboard-overview-card.is-loading .dashboard-overview-icon,
+        .dashboard-overview-card.is-loading .dashboard-overview-body {
+            opacity: 0;
+        }
+
+        .dashboard-overview-card.is-loading::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(6px);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .dashboard-overview-card.is-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 28px;
+            height: 28px;
+            margin: -14px 0 0 -14px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.45);
+            border-top-color: #ffffff;
+            animation: dashboard-spinner 0.8s linear infinite;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        @keyframes dashboard-spinner {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .dashboard-overview-icon {

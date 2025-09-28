@@ -22,9 +22,12 @@
                         <i class="fa-solid fa-clock" aria-hidden="true"></i>
                         Insights update automatically every few moments.
                     </span>
+                    <span class="sr-only" id="dashboardMetricsStatus" role="status" aria-live="polite">
+                        Loading dashboard metrics…
+                    </span>
                 </div>
             </div>
-            <div class="a11y-overview-grid dashboard-overview-grid">
+            <div class="a11y-overview-grid dashboard-overview-grid" aria-busy="true">
                 <div class="a11y-overview-card dashboard-overview-card">
                     <div class="dashboard-overview-icon pages" aria-hidden="true">
                         <i class="fa-solid fa-file-lines"></i>
