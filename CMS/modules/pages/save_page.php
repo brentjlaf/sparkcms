@@ -34,6 +34,7 @@ if ($template === '') {
 }
 $meta_title = sanitize_text($_POST['meta_title'] ?? '');
 $meta_description = sanitize_text($_POST['meta_description'] ?? '');
+$canonical_url = sanitize_url($_POST['canonical_url'] ?? '');
 $og_title = sanitize_text($_POST['og_title'] ?? '');
 $og_description = sanitize_text($_POST['og_description'] ?? '');
 $og_image = sanitize_url($_POST['og_image'] ?? '');
@@ -58,6 +59,7 @@ if ($id) {
             $p['template'] = $template;
             $p['meta_title'] = $meta_title;
             $p['meta_description'] = $meta_description;
+            $p['canonical_url'] = $canonical_url;
             $p['og_title'] = $og_title;
             $p['og_description'] = $og_description;
             $p['og_image'] = $og_image;
@@ -87,8 +89,11 @@ if ($id) {
         if ($old['meta_title'] !== $meta_title) {
             $details[] = 'Meta title updated';
         }
-        if ($old['meta_description'] !== $meta_description) {
+        if (($old['meta_description'] ?? '') !== $meta_description) {
             $details[] = 'Meta description updated';
+        }
+        if (($old['canonical_url'] ?? '') !== $canonical_url) {
+            $details[] = 'Canonical URL: ' . (($old['canonical_url'] ?? '') !== '' ? ($old['canonical_url'] ?? '') : 'none') . ' → ' . ($canonical_url !== '' ? $canonical_url : 'none');
         }
         if ($old['og_title'] !== $og_title) {
             $details[] = 'OG title: "' . $old['og_title'] . '" → "' . $og_title . '"';
@@ -125,6 +130,7 @@ if ($id) {
         'template' => $template,
         'meta_title' => $meta_title,
         'meta_description' => $meta_description,
+        'canonical_url' => $canonical_url,
         'og_title' => $og_title,
         'og_description' => $og_description,
         'og_image' => $og_image,

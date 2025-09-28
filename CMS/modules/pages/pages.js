@@ -154,6 +154,7 @@ $(function(){
             $('#template').val(tmpl);
             $('#meta_title').val(row.data('meta_title'));
             $('#meta_description').val(row.data('meta_description'));
+            $('#canonical_url').val(row.data('canonical_url'));
             $('#og_title').val(row.data('og_title'));
             $('#og_description').val(row.data('og_description'));
             $('#og_image').val(row.data('og_image'));
@@ -168,6 +169,7 @@ $(function(){
             $('#pageId').val('');
             $('#pageForm')[0].reset();
             $('#published').prop('checked', false);
+            $('#canonical_url').val('');
             closePageModal();
             slugEdited = false;
         });
@@ -177,6 +179,7 @@ $(function(){
             $('#pageForm')[0].reset();
             $('#published').prop('checked', false);
             $('#content').val('');
+            $('#canonical_url').val('');
             $('#pageTabs').tabs('option', 'active', 0);
             $('#cancelEdit').hide();
             openPageModal();
