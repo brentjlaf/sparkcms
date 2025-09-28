@@ -7805,11 +7805,11 @@
         }
 
         .content-section :is(article, section, div)[class*='-card'] {
-            background: none;
-            border: 1px solid var(--module-border);
-            border-radius: var(--module-radius-md);
-            box-shadow: none;
-            padding: 24px;
+            /* background: none; */
+            /* border: 1px solid var(--module-border); */
+            /* border-radius: var(--module-radius-md); */
+            /* box-shadow: none; */
+            /* padding: 24px; */
         }
 
         .content-section :is(div, section)[class*='table-card'] {
