@@ -51,7 +51,7 @@ foreach ($results as $entry) {
 }
 ?>
 <div class="content-section" id="search" data-query="<?php echo htmlspecialchars($q); ?>">
-    <div class="search-dashboard">
+    <div class="search-dashboard a11y-dashboard">
         <header class="a11y-hero search-hero">
             <div class="a11y-hero-content search-hero-content">
                 <div>
