@@ -126,6 +126,8 @@ $(function(){
         $('#pageForm').on('submit', function(e){
             e.preventDefault();
             $.post('modules/pages/save_page.php', $(this).serialize(), function(){
+                closePageModal();
+                slugEdited = false;
                 location.reload();
             });
         });
