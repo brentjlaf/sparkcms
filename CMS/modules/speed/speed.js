@@ -646,6 +646,14 @@
         const $detailPage = $('#speedDetailPage');
         if ($detailPage.length) {
             const pageSlug = $detailPage.data('page-slug');
+            $('#speedBackToDashboard').on('click', function (event) {
+                event.preventDefault();
+                if (!loadSpeedModule('')) {
+                    if (stats.moduleUrl) {
+                        window.location.href = stats.moduleUrl;
+                    }
+                }
+            });
             const pageData = dataMap[pageSlug];
             const $rescanBtn = $detailPage.find('[data-speed-action="rescan-page"]');
             const $exportBtn = $detailPage.find('[data-speed-action="export-page-report"]');
