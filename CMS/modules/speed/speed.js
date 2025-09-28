@@ -30,6 +30,41 @@
         return 'speed-score--d';
     }
 
+    function normalizeScoreValue(value, fallback) {
+        const number = Number(value);
+        if (Number.isFinite(number)) {
+            return Math.max(0, Math.min(100, Math.round(number)));
+        }
+        return fallback;
+    }
+
+    function getScoreDeltaMeta(current, previous) {
+        const currentScore = normalizeScoreValue(current, 0);
+        const previousScore = normalizeScoreValue(previous, currentScore);
+        const delta = currentScore - previousScore;
+        const absolute = Math.abs(delta);
+        let className = 'score-delta--even';
+        let srText = 'No change since last scan.';
+        if (delta > 0) {
+            className = 'score-delta--up';
+            srText = 'Improved by ' + absolute + ' ' + (absolute === 1 ? 'point' : 'points') + ' since last scan.';
+        } else if (delta < 0) {
+            className = 'score-delta--down';
+            srText = 'Regressed by ' + absolute + ' ' + (absolute === 1 ? 'point' : 'points') + ' since last scan.';
+        }
+        const display = delta === 0 ? '0' : (delta > 0 ? '+' : '−') + absolute;
+        return {
+            display: display,
+            className: className,
+            srText: srText
+        };
+    }
+
+    function renderScoreDelta(current, previous) {
+        const meta = getScoreDeltaMeta(current, previous);
+        return '<span class="score-delta ' + meta.className + '"><span aria-hidden="true">' + meta.display + '</span><span class="sr-only">' + meta.srText + '</span></span>';
+    }
+
     function getGradeBadge(grade) {
         switch ((grade || '').toUpperCase()) {
             case 'A':
@@ -254,11 +289,18 @@
         const weight = page.metrics && page.metrics.weightKb ? page.metrics.weightKb + ' KB' : '—';
         const alertsTotal = page.alerts && typeof page.alerts.total !== 'undefined' ? page.alerts.total : (page.warnings || 0);
 
+        const score = normalizeScoreValue(page.performanceScore, 0);
+        const deltaHtml = renderScoreDelta(score, page.previousScore);
         const cardHtml = [
             '<div class="a11y-page-card__header">',
-            '<div class="a11y-page-score ' + getScoreClass(page.performanceScore) + '">' + (page.performanceScore || 0) + '%</div>',
+            '<div class="a11y-page-card__title">',
             '<h3 class="a11y-page-title">' + (page.title || 'Untitled') + '</h3>',
             '<p class="a11y-page-url">' + (page.url || '') + '</p>',
+            '</div>',
+            '<div class="score-indicator score-indicator--card">',
+            '<div class="a11y-page-score ' + getScoreClass(score) + '"><span class="score-indicator__number">' + score + '%</span></div>',
+            deltaHtml,
+            '</div>',
             '</div>',
             '<div class="a11y-page-card__metrics">',
             '<div><span class="label">Grade</span><span class="value ' + getGradeBadge(page.grade) + '">' + (page.grade || '—') + '</span></div>',
@@ -284,13 +326,18 @@
         const alertsSummary = formatAlertSummary(page.alerts);
         const weight = page.metrics && page.metrics.weightKb ? page.metrics.weightKb + ' KB' : '—';
 
+        const score = normalizeScoreValue(page.performanceScore, 0);
+        const deltaHtml = renderScoreDelta(score, page.previousScore);
         const rowHtml = [
             '<div class="a11y-table-cell">',
             '<div class="title">' + (page.title || 'Untitled') + '</div>',
             '<div class="subtitle">' + (page.url || '') + '</div>',
             '</div>',
             '<div class="a11y-table-cell score">',
-            '<span class="a11y-table-score ' + getScoreClass(page.performanceScore) + '">' + (page.performanceScore || 0) + '%</span>',
+            '<div class="score-indicator score-indicator--table">',
+            '<span class="a11y-table-score ' + getScoreClass(score) + '"><span class="score-indicator__number">' + score + '%</span></span>',
+            deltaHtml,
+            '</div>',
             '</div>',
             '<div class="a11y-table-cell level"><span class="' + getGradeBadge(page.grade) + '">' + (page.grade || '—') + '</span></div>',
             '<div class="a11y-table-cell">' + alertsSummary + '</div>',
@@ -391,8 +438,12 @@
             $modalTitle.text(page.title || 'Performance details');
             $modalUrl.text(page.url || '');
             $modalDescription.text(page.summaryLine || page.statusMessage || '');
-            $modalScore.text((page.performanceScore || 0) + '%');
-            $modalScore.removeClass('speed-score--a speed-score--b speed-score--c speed-score--d').addClass(getScoreClass(page.performanceScore));
+            const modalScore = normalizeScoreValue(page.performanceScore, 0);
+            const modalDelta = renderScoreDelta(modalScore, page.previousScore);
+            $modalScore
+                .removeClass('speed-score--a speed-score--b speed-score--c speed-score--d')
+                .addClass(getScoreClass(modalScore))
+                .html('<span class="score-indicator__number">' + modalScore + '%</span>' + modalDelta);
             $modalGrade.text(page.grade || '—');
             $modalGrade.removeClass('grade-a grade-b grade-c grade-d').addClass(getGradeBadge(page.grade));
             $modalAlerts.text(formatAlertSummary(page.alerts));
