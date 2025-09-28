@@ -1523,140 +1523,308 @@ if ($detailSlug !== null && $detailSlug !== '') {
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1050;
             padding: 24px;
+            z-index: 1050;
         }
         .seo-dashboard .seo-detail-overlay.active {
             display: flex;
         }
-        .seo-dashboard .seo-detail {
+        .seo-dashboard .seo-detail-panel {
             background: #fff;
-            border-radius: 20px;
-            max-width: 860px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+            width: min(960px, 100%);
+            max-height: 92vh;
             position: relative;
-            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.18);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
-        .seo-dashboard .seo-detail-header {
-            padding: 32px;
-            border-bottom: 1px solid #e2e8f0;
+        .seo-dashboard .seo-detail-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            border: none;
+            background: rgba(15, 23, 42, 0.08);
+            color: #0f172a;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+            z-index: 2;
         }
-        .seo-dashboard .seo-detail-title {
-            font-size: 24px;
+        .seo-dashboard .seo-detail-close:hover,
+        .seo-dashboard .seo-detail-close:focus-visible {
+            background: rgba(15, 23, 42, 0.14);
+            transform: translateY(-1px);
+            color: #111827;
+        }
+        .seo-dashboard .seo-detail-close i {
+            font-size: 16px;
+        }
+        .seo-dashboard .seo-detail-scroll {
+            padding: 36px 36px 28px;
+            overflow-y: auto;
+        }
+        .seo-dashboard .seo-detail-hero {
+            position: relative;
+            border-radius: 20px;
+            padding: 36px;
+            color: #fff;
+            margin-bottom: 28px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #6366f1, #4338ca);
+        }
+        .seo-dashboard .seo-detail-hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -80px -80px auto;
+            width: 260px;
+            height: 260px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+        }
+        .seo-dashboard .seo-detail-hero.status-excellent { background: linear-gradient(135deg, #10b981, #059669); }
+        .seo-dashboard .seo-detail-hero.status-good { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .seo-dashboard .seo-detail-hero.status-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .seo-dashboard .seo-detail-hero.status-critical { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .seo-dashboard .seo-detail-hero-layout {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            align-items: flex-start;
+        }
+        .seo-dashboard .seo-detail-score-block {
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .seo-dashboard .seo-detail-score-value {
+            font-size: 60px;
             font-weight: 700;
-            margin-bottom: 6px;
+            line-height: 1;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .seo-dashboard .seo-detail-score-suffix {
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+        .seo-dashboard .seo-detail-score-delta {
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+        }
+        .seo-dashboard .seo-detail-score-delta .score-delta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(15, 23, 42, 0.25);
+            color: rgba(255, 255, 255, 0.92);
+        }
+        .seo-dashboard .seo-detail-score-delta .score-delta--up {
+            background: rgba(34, 197, 94, 0.18);
+            color: #dcfce7;
+        }
+        .seo-dashboard .seo-detail-score-delta .score-delta--down {
+            background: rgba(239, 68, 68, 0.18);
+            color: #fee2e2;
+        }
+        .seo-dashboard .seo-detail-score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: rgba(15, 23, 42, 0.25);
+        }
+        .seo-dashboard .seo-detail-hero-content {
+            flex: 1;
+            min-width: 280px;
+            display: grid;
+            gap: 12px;
+        }
+        .seo-dashboard .seo-detail-hero-content h2 {
+            font-size: 26px;
+            font-weight: 700;
         }
         .seo-dashboard .seo-detail-url {
             font-family: "JetBrains Mono", "Fira Code", monospace;
             font-size: 13px;
-            color: #64748b;
+            color: rgba(255, 255, 255, 0.82);
         }
-        .seo-dashboard .seo-detail-score {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-top: 24px;
+        .seo-dashboard .seo-detail-summary {
+            font-size: 15px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.92);
+            max-width: 640px;
         }
-        .seo-dashboard .seo-detail-score-circle {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 24px;
-            font-weight: 700;
-        }
-        .seo-dashboard .seo-detail-score-circle.score-excellent { background: linear-gradient(135deg, #22c55e, #16a34a); }
-        .seo-dashboard .seo-detail-score-circle.score-good { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .seo-dashboard .seo-detail-score-circle.score-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .seo-dashboard .seo-detail-score-circle.score-critical { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .seo-dashboard .seo-detail-score-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .seo-dashboard .seo-detail-score-label {
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 0.4px;
-            color: #64748b;
-        }
-        .seo-dashboard .seo-detail-score-value {
-            font-size: 20px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: baseline;
-            gap: 6px;
-        }
-        .seo-dashboard .seo-score-suffix {
-            font-size: 14px;
-            font-weight: 500;
-            color: #1e293b;
-        }
-        .seo-dashboard .seo-detail-body {
-            padding: 32px;
+        .seo-dashboard .seo-detail-quick-stats {
             display: grid;
-            gap: 28px;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         }
-        .seo-dashboard .seo-detail-section h3 {
+        .seo-dashboard .seo-detail-quick-stat {
+            background: rgba(15, 23, 42, 0.25);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+        .seo-dashboard .seo-detail-quick-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+            color: rgba(255, 255, 255, 0.75);
+            display: block;
+            margin-bottom: 6px;
+        }
+        .seo-dashboard .seo-detail-quick-value {
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 12px;
+            color: #fff;
+            display: block;
         }
-        .seo-dashboard .seo-detail-grid {
+        .seo-dashboard .seo-detail-section {
+            margin-bottom: 32px;
+        }
+        .seo-dashboard .seo-detail-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 18px;
+        }
+        .seo-dashboard .seo-detail-card-grid {
             display: grid;
             gap: 18px;
         }
         @media (min-width: 768px) {
-            .seo-dashboard .seo-detail-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+            .seo-dashboard .seo-detail-card-grid {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             }
         }
         .seo-dashboard .seo-detail-card {
-            background: #f8fafc;
+            background: #fff;
             border-radius: 16px;
-            padding: 18px;
-        }
-        .seo-dashboard .seo-detail-card strong {
-            display: block;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 8px;
-            color: #475569;
-        }
-        .seo-dashboard .seo-issue-list {
-            list-style: none;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
             display: grid;
             gap: 10px;
         }
-        .seo-dashboard .seo-issue-item {
-            display: flex;
-            gap: 10px;
-            align-items: flex-start;
-        }
-        .seo-dashboard .seo-issue-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-top: 6px;
-        }
-        .seo-dashboard .seo-issue-dot.critical { background: #ef4444; }
-        .seo-dashboard .seo-issue-dot.warning { background: #f97316; }
-        .seo-dashboard .seo-issue-dot.good { background: #22c55e; }
-        .seo-dashboard .seo-detail-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            border: none;
-            background: transparent;
-            font-size: 28px;
+        .seo-dashboard .seo-detail-card h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             color: #475569;
-            cursor: pointer;
+        }
+        .seo-dashboard .seo-detail-card p {
+            font-size: 14px;
+            color: #0f172a;
+            line-height: 1.6;
+        }
+        .seo-dashboard .seo-detail-card-hint {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .seo-dashboard .seo-detail-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .seo-dashboard .seo-detail-issue-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.45px;
+            text-transform: uppercase;
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .seo-dashboard .seo-detail-issue-badge.status-good { background: #dcfce7; color: #166534; }
+        .seo-dashboard .seo-detail-issue-badge.status-warning { background: #fef3c7; color: #92400e; }
+        .seo-dashboard .seo-detail-issue-badge.status-critical { background: #fee2e2; color: #991b1b; }
+        .seo-dashboard .seo-detail-issue-grid {
+            display: grid;
+            gap: 16px;
+        }
+        .seo-dashboard .seo-detail-issue {
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+        }
+        .seo-dashboard .seo-detail-issue.severity-critical {
+            border-color: #fecaca;
+            background: #fef2f2;
+        }
+        .seo-dashboard .seo-detail-issue.severity-warning {
+            border-color: #fde68a;
+            background: #fffbeb;
+        }
+        .seo-dashboard .seo-detail-issue.severity-good {
+            border-color: #cbd5f5;
+            background: #f8fafc;
+        }
+        .seo-dashboard .seo-detail-issue-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .seo-dashboard .seo-detail-issue-text {
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+        .seo-dashboard .seo-detail-issue-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+            background: rgba(15, 23, 42, 0.08);
+            color: #0f172a;
+        }
+        .seo-dashboard .seo-detail-empty {
+            text-align: center;
+            padding: 48px 20px;
+            border-radius: 18px;
+            border: 1px dashed #cbd5f5;
+            color: #475569;
+            background: #f8fafc;
+            display: grid;
+            gap: 12px;
+            justify-items: center;
+        }
+        .seo-dashboard .seo-detail-empty i {
+            font-size: 42px;
+            color: #10b981;
         }
         .seo-dashboard .seo-empty {
             background: #fff;
@@ -1747,21 +1915,23 @@ if ($detailSlug !== null && $detailSlug !== '') {
                         'previousScore' => $entry['previousScore'],
                         'scoreLabel' => $entry['score_label'],
                         'scoreStatus' => $entry['score_status'],
+                        'scoreStatusLabel' => seo_status_label($entry['score_status']),
+                        'summary' => seo_score_summary($entry),
                         'metaTitle' => $entry['meta_title'],
                         'metaTitleLength' => $entry['meta_title_length'],
                         'metaTitleStatus' => $entry['meta_title_status'],
                         'metaDescription' => $entry['meta_description'],
-        'metaDescriptionLength' => $entry['meta_description_length'],
-        'metaDescriptionStatus' => $entry['meta_description_status'],
-        'hasSocial' => $entry['has_social'],
-        'issues' => $entry['issues'],
-        'lastUpdated' => $entry['last_updated'],
-        'criticalCount' => $entry['critical_count'],
-        'warningCount' => $entry['warning_count'],
-        'wordCount' => $entry['word_count'],
-        'h1Count' => $entry['h1_count'],
-        'missingAltCount' => $entry['missing_alt_count'],
-        'internalLinkCount' => $entry['internal_link_count'],
+                        'metaDescriptionLength' => $entry['meta_description_length'],
+                        'metaDescriptionStatus' => $entry['meta_description_status'],
+                        'hasSocial' => $entry['has_social'],
+                        'issues' => $entry['issues'],
+                        'lastUpdated' => $entry['last_updated'],
+                        'criticalCount' => $entry['critical_count'],
+                        'warningCount' => $entry['warning_count'],
+                        'wordCount' => $entry['word_count'],
+                        'h1Count' => $entry['h1_count'],
+                        'missingAltCount' => $entry['missing_alt_count'],
+                        'internalLinkCount' => $entry['internal_link_count'],
                     ];
                     $jsonData = htmlspecialchars(json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
                 ?>
@@ -1843,6 +2013,8 @@ if ($detailSlug !== null && $detailSlug !== '') {
                                 'previousScore' => $entry['previousScore'],
                                 'scoreLabel' => $entry['score_label'],
                                 'scoreStatus' => $entry['score_status'],
+                                'scoreStatusLabel' => seo_status_label($entry['score_status']),
+                                'summary' => seo_score_summary($entry),
                                 'metaTitle' => $entry['meta_title'],
                                 'metaTitleLength' => $entry['meta_title_length'],
                                 'metaTitleStatus' => $entry['meta_title_status'],
@@ -1920,68 +2092,92 @@ if ($detailSlug !== null && $detailSlug !== '') {
     <?php endif; ?>
 
     <div class="seo-detail-overlay" id="seoDetail" role="dialog" aria-modal="true" aria-hidden="true">
-        <div class="seo-detail">
-            <button type="button" class="seo-detail-close" aria-label="Close details">&times;</button>
-            <div class="seo-detail-header">
-                <div class="seo-detail-title" data-detail="title"></div>
-                <div class="seo-detail-url" data-detail="url"></div>
-                <div class="seo-detail-score">
-                    <div class="seo-detail-score-circle" data-detail="score-circle"></div>
-                    <div class="seo-detail-score-text">
-                        <span class="seo-detail-score-label">SEO Score</span>
-                        <span class="seo-detail-score-value score-indicator score-indicator--badge" data-detail="score"></span>
-                        <span class="seo-card-url" style="margin: 0;" data-detail="score-label"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="seo-detail-body">
-                <section class="seo-detail-section">
-                    <h3>Metadata Overview</h3>
-                    <div class="seo-detail-grid">
-                        <div class="seo-detail-card">
-                            <strong>Meta Title</strong>
-                            <div data-detail="meta-title"></div>
-                            <div class="seo-card-url" data-detail="meta-title-length"></div>
+        <div class="seo-detail-panel" role="document">
+            <button type="button" class="seo-detail-close" aria-label="Close details">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            <div class="seo-detail-scroll">
+                <section class="seo-detail-hero" data-detail="hero">
+                    <div class="seo-detail-hero-layout">
+                        <div class="seo-detail-score-block">
+                            <div class="seo-detail-score-value">
+                                <span data-detail="score-value"></span>
+                                <span class="seo-detail-score-suffix">/100</span>
+                            </div>
+                            <div class="seo-detail-score-delta" data-detail="score-delta"></div>
+                            <span class="seo-detail-score-badge" data-detail="score-status-label"></span>
                         </div>
-                        <div class="seo-detail-card">
-                            <strong>Meta Description</strong>
-                            <div data-detail="meta-description"></div>
-                            <div class="seo-card-url" data-detail="meta-description-length"></div>
-                        </div>
-                        <div class="seo-detail-card">
-                            <strong>Social Preview</strong>
-                            <div data-detail="social-status"></div>
-                        </div>
-                        <div class="seo-detail-card">
-                            <strong>Last Updated</strong>
-                            <div data-detail="last-updated"></div>
-                        </div>
-                    </div>
-                </section>
-                <section class="seo-detail-section">
-                    <h3>Content Insights</h3>
-                    <div class="seo-detail-grid">
-                        <div class="seo-detail-card">
-                            <strong>Word Count</strong>
-                            <div data-detail="word-count"></div>
-                        </div>
-                        <div class="seo-detail-card">
-                            <strong>Heading Structure</strong>
-                            <div data-detail="heading-status"></div>
-                        </div>
-                        <div class="seo-detail-card">
-                            <strong>Image Accessibility</strong>
-                            <div data-detail="image-alt-status"></div>
-                        </div>
-                        <div class="seo-detail-card">
-                            <strong>Internal Linking</strong>
-                            <div data-detail="internal-link-status"></div>
+                        <div class="seo-detail-hero-content">
+                            <h2 data-detail="title"></h2>
+                            <p class="seo-detail-url" data-detail="url"></p>
+                            <p class="seo-detail-summary" data-detail="summary"></p>
+                            <div class="seo-detail-quick-stats">
+                                <div class="seo-detail-quick-stat">
+                                    <span class="seo-detail-quick-label">Performance</span>
+                                    <span class="seo-detail-quick-value" data-detail="score-label"></span>
+                                </div>
+                                <div class="seo-detail-quick-stat">
+                                    <span class="seo-detail-quick-label">Last updated</span>
+                                    <span class="seo-detail-quick-value" data-detail="last-updated"></span>
+                                </div>
+                                <div class="seo-detail-quick-stat">
+                                    <span class="seo-detail-quick-label">Critical issues</span>
+                                    <span class="seo-detail-quick-value" data-detail="critical-count"></span>
+                                </div>
+                                <div class="seo-detail-quick-stat">
+                                    <span class="seo-detail-quick-label">Warnings</span>
+                                    <span class="seo-detail-quick-value" data-detail="warning-count"></span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
                 <section class="seo-detail-section">
-                    <h3>Issues & Recommendations</h3>
-                    <ul class="seo-issue-list" data-detail="issues"></ul>
+                    <h3>Metadata essentials</h3>
+                    <div class="seo-detail-card-grid">
+                        <article class="seo-detail-card">
+                            <h4>Meta title</h4>
+                            <p data-detail="meta-title"></p>
+                            <span class="seo-detail-card-hint" data-detail="meta-title-length"></span>
+                        </article>
+                        <article class="seo-detail-card">
+                            <h4>Meta description</h4>
+                            <p data-detail="meta-description"></p>
+                            <span class="seo-detail-card-hint" data-detail="meta-description-length"></span>
+                        </article>
+                        <article class="seo-detail-card">
+                            <h4>Social preview</h4>
+                            <p data-detail="social-status"></p>
+                        </article>
+                    </div>
+                </section>
+                <section class="seo-detail-section">
+                    <h3>Content insights</h3>
+                    <div class="seo-detail-card-grid">
+                        <article class="seo-detail-card">
+                            <h4>Word count</h4>
+                            <p data-detail="word-count"></p>
+                        </article>
+                        <article class="seo-detail-card">
+                            <h4>Heading structure</h4>
+                            <p data-detail="heading-status"></p>
+                        </article>
+                        <article class="seo-detail-card">
+                            <h4>Image alt text</h4>
+                            <p data-detail="image-alt-status"></p>
+                        </article>
+                        <article class="seo-detail-card">
+                            <h4>Internal links</h4>
+                            <p data-detail="internal-link-status"></p>
+                        </article>
+                    </div>
+                </section>
+                <section class="seo-detail-section">
+                    <div class="seo-detail-section-header">
+                        <h3>Priority issues &amp; recommendations</h3>
+                        <span class="seo-detail-issue-badge" data-detail="issue-count"></span>
+                    </div>
+                    <div class="seo-detail-issue-grid" data-detail="issues"></div>
                 </section>
             </div>
         </div>

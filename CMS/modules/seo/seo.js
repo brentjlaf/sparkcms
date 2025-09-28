@@ -18,22 +18,28 @@ $(function () {
     const $detailClose = $detailOverlay.find('.seo-detail-close');
 
     const detailElements = {
+        hero: $detailOverlay.find('[data-detail="hero"]'),
         title: $detailOverlay.find('[data-detail="title"]'),
         url: $detailOverlay.find('[data-detail="url"]'),
-        scoreCircle: $detailOverlay.find('[data-detail="score-circle"]'),
-        score: $detailOverlay.find('[data-detail="score"]'),
+        summary: $detailOverlay.find('[data-detail="summary"]'),
+        scoreValue: $detailOverlay.find('[data-detail="score-value"]'),
+        scoreDelta: $detailOverlay.find('[data-detail="score-delta"]'),
+        scoreStatusLabel: $detailOverlay.find('[data-detail="score-status-label"]'),
         scoreLabel: $detailOverlay.find('[data-detail="score-label"]'),
+        lastUpdated: $detailOverlay.find('[data-detail="last-updated"]'),
+        criticalCount: $detailOverlay.find('[data-detail="critical-count"]'),
+        warningCount: $detailOverlay.find('[data-detail="warning-count"]'),
         metaTitle: $detailOverlay.find('[data-detail="meta-title"]'),
         metaTitleLength: $detailOverlay.find('[data-detail="meta-title-length"]'),
         metaDescription: $detailOverlay.find('[data-detail="meta-description"]'),
         metaDescriptionLength: $detailOverlay.find('[data-detail="meta-description-length"]'),
         socialStatus: $detailOverlay.find('[data-detail="social-status"]'),
-        lastUpdated: $detailOverlay.find('[data-detail="last-updated"]'),
-        issues: $detailOverlay.find('[data-detail="issues"]'),
         wordCount: $detailOverlay.find('[data-detail="word-count"]'),
         headingStatus: $detailOverlay.find('[data-detail="heading-status"]'),
         imageAltStatus: $detailOverlay.find('[data-detail="image-alt-status"]'),
         internalLinkStatus: $detailOverlay.find('[data-detail="internal-link-status"]'),
+        issues: $detailOverlay.find('[data-detail="issues"]'),
+        issueCount: $detailOverlay.find('[data-detail="issue-count"]'),
     };
 
     function normalizeScoreValue(value, fallback) {
@@ -270,34 +276,46 @@ $(function () {
         }
     });
 
-    function renderIssues(list, issues) {
-        list.empty();
+    function renderIssues(container, issues) {
+        container.empty();
+
         if (!issues || issues.length === 0) {
-            list.append(
-                $('<li/>', { class: 'seo-issue-item' }).append(
-                    $('<span/>', { class: 'seo-issue-dot good' }),
-                    $('<div/>').text('No outstanding issues. Everything looks great!')
+            container.append(
+                $('<div/>', { class: 'seo-detail-empty' }).append(
+                    $('<i/>', { class: 'fas fa-check-circle', 'aria-hidden': 'true' }),
+                    $('<p/>').text('Great work! Keep monitoring this page for future improvements.')
                 )
             );
-            return;
+            return { total: 0, critical: 0, warning: 0 };
         }
 
+        let criticalCount = 0;
+        let warningCount = 0;
+
         issues.forEach((issue) => {
-            const severity = issue.severity || 'warning';
-            list.append(
-                $('<li/>', { class: 'seo-issue-item' }).append(
-                    $('<span/>', { class: `seo-issue-dot ${severity}` }),
-                    $('<div/>').text(issue.message)
+            const severityRaw = issue.severity || 'warning';
+            const severity = severityRaw === 'critical' ? 'critical' : (severityRaw === 'warning' ? 'warning' : 'good');
+            if (severity === 'critical') {
+                criticalCount++;
+            } else if (severity === 'warning') {
+                warningCount++;
+            }
+
+            const description = severity === 'critical'
+                ? 'Resolve this immediately to avoid search visibility losses.'
+                : 'Review and fix to strengthen overall optimization.';
+            const label = severity === 'critical' ? 'Critical' : (severity === 'warning' ? 'Warning' : 'Info');
+
+            container.append(
+                $('<article/>', { class: `seo-detail-issue severity-${severity}` }).append(
+                    $('<div/>', { class: 'seo-detail-issue-title' }).text(issue.message),
+                    $('<p/>', { class: 'seo-detail-issue-text' }).text(description),
+                    $('<span/>', { class: 'seo-detail-issue-tag' }).text(label)
                 )
             );
         });
-    }
 
-    function updateScoreCircle($circle, score, status) {
-        $circle
-            .removeClass('score-excellent score-good score-warning score-critical')
-            .addClass(`score-${status}`)
-            .text(typeof score === 'number' ? score : '—');
+        return { total: issues.length, critical: criticalCount, warning: warningCount };
     }
 
     function populateDetail(data) {
@@ -305,12 +323,20 @@ $(function () {
             return;
         }
 
+        const status = typeof data.scoreStatus === 'string' ? data.scoreStatus : 'warning';
+        detailElements.hero
+            .removeClass('status-excellent status-good status-warning status-critical')
+            .addClass(`status-${status}`);
+
         detailElements.title.text(data.title || 'Untitled');
         detailElements.url.text(data.slug ? `/${data.slug}` : '—');
+        const summaryText = data.summary || 'Review the detected items to improve overall SEO quality.';
+        detailElements.summary.text(summaryText);
         const scoreDelta = renderScoreDelta(data.score, data.previousScore);
-        detailElements.score.html('<span class="score-indicator__value"><span class="score-indicator__number">' + scoreDelta.current + '</span><span class="seo-score-suffix">/ 100</span></span>' + scoreDelta.markup);
-        detailElements.scoreLabel.text(data.scoreLabel || '');
-        updateScoreCircle(detailElements.scoreCircle, scoreDelta.current, data.scoreStatus || 'warning');
+        detailElements.scoreValue.text(scoreDelta.current);
+        detailElements.scoreDelta.html(scoreDelta.markup);
+        detailElements.scoreStatusLabel.text(data.scoreStatusLabel || 'SEO Score');
+        detailElements.scoreLabel.text(data.scoreLabel || '—');
 
         if (data.metaTitle) {
             detailElements.metaTitle.text(data.metaTitle);
@@ -334,7 +360,14 @@ $(function () {
                 : 'Social preview is incomplete. Provide OG title, description, and image for better sharing.'
         );
 
-        detailElements.lastUpdated.text(data.lastUpdated || 'Unknown');
+        const lastUpdated = data.lastUpdated || 'Unknown';
+        detailElements.lastUpdated.text(lastUpdated);
+        const criticalRaw = Number(data.criticalCount);
+        const warningRaw = Number(data.warningCount);
+        const critical = Number.isFinite(criticalRaw) ? criticalRaw : 0;
+        const warning = Number.isFinite(warningRaw) ? warningRaw : 0;
+        detailElements.criticalCount.text(`${critical} ${critical === 1 ? 'issue' : 'issues'}`);
+        detailElements.warningCount.text(`${warning} ${warning === 1 ? 'warning' : 'warnings'}`);
         const wordCount = typeof data.wordCount === 'number' ? data.wordCount : 0;
         if (wordCount > 0) {
             const readingTime = Math.max(1, Math.round(wordCount / 200));
@@ -365,7 +398,19 @@ $(function () {
         } else {
             detailElements.internalLinkStatus.text(`${internalLinks} internal link${internalLinks === 1 ? '' : 's'} found`);
         }
-        renderIssues(detailElements.issues, data.issues || []);
+
+        const issuesMeta = renderIssues(detailElements.issues, data.issues || []);
+        const totalIssues = typeof issuesMeta.total === 'number' ? issuesMeta.total : 0;
+        const criticalIssues = critical > 0
+            ? critical
+            : (typeof issuesMeta.critical === 'number' ? issuesMeta.critical : 0);
+        const badgeClass = totalIssues === 0
+            ? 'status-good'
+            : (criticalIssues > 0 ? 'status-critical' : 'status-warning');
+        detailElements.issueCount
+            .removeClass('status-good status-warning status-critical')
+            .addClass(badgeClass)
+            .text(`${totalIssues} ${totalIssues === 1 ? 'issue' : 'issues'}`);
     }
 
     function openDetail(data) {
