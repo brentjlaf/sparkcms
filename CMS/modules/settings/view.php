@@ -2,18 +2,18 @@
 <div class="content-section" id="settings">
     <form id="settingsForm" class="settings-dashboard" enctype="multipart/form-data">
         <div class="a11y-dashboard" id="settingsDashboard" data-last-saved="">
-            <header class="a11y-hero">
-                <div class="a11y-hero-content">
+            <header class="a11y-hero settings-hero">
+                <div class="a11y-hero-content settings-hero-content">
                     <div>
-                        <h2 class="a11y-hero-title">Site Settings</h2>
-                        <p class="a11y-hero-subtitle">Fine-tune your brand voice, analytics, and sharing defaults from a single, polished workspace.</p>
+                        <h2 class="a11y-hero-title settings-hero-title">Site Settings</h2>
+                        <p class="a11y-hero-subtitle settings-hero-subtitle">Fine-tune your brand voice, analytics, and sharing defaults from a single, polished workspace.</p>
                     </div>
-                    <div class="a11y-hero-actions">
+                    <div class="a11y-hero-actions settings-hero-actions">
                         <button type="submit" class="a11y-btn a11y-btn--primary" id="saveSettingsButton">
                             <i class="fas fa-save" aria-hidden="true"></i>
                             <span>Save Settings</span>
                         </button>
-                        <span class="a11y-hero-meta">
+                        <span class="a11y-hero-meta settings-hero-meta">
                             <i class="fas fa-clock" aria-hidden="true"></i>
                             Last updated <span id="settingsLastSaved">—</span>
                         </span>
