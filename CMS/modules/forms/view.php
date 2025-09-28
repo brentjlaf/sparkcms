@@ -83,6 +83,7 @@ $lastSubmissionLabel = $latestSubmission > 0
         <header class="a11y-hero forms-hero">
             <div class="a11y-hero-content">
                 <div>
+                    <span class="hero-eyebrow forms-hero-eyebrow">Submission Health</span>
                     <h2 class="a11y-hero-title">Form Builder &amp; Intake</h2>
                     <p class="a11y-hero-subtitle">Design conversion-ready forms, monitor submissions, and manage intake without leaving the dashboard.</p>
                 </div>

@@ -4,6 +4,7 @@
         <header class="a11y-hero users-hero">
             <div class="a11y-hero-content">
                 <div>
+                    <span class="hero-eyebrow users-hero-eyebrow">Team Directory</span>
                     <h2 class="a11y-hero-title">Team access &amp; permissions</h2>
                     <p class="a11y-hero-subtitle">Review account health, monitor roles, and invite new collaborators from a single, polished dashboard.</p>
                 </div>

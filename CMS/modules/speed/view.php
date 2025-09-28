@@ -704,6 +704,7 @@ write_json_file($snapshotFile, $currentSnapshot);
         <header class="a11y-hero">
             <div class="a11y-hero-content">
                 <div>
+                    <span class="hero-eyebrow speed-hero-eyebrow">Performance Pulse</span>
                     <h2 class="a11y-hero-title">Performance &amp; Speed Dashboard</h2>
                     <p class="a11y-hero-subtitle">Track asset weight, script usage, and rendering health across every published page.</p>
                 </div>

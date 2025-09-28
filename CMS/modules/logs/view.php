@@ -165,6 +165,7 @@ if ($uniqueUsersCount === 1) {
         <header class="a11y-hero logs-hero">
             <div class="a11y-hero-content logs-hero-content">
                 <div>
+                    <span class="hero-eyebrow logs-hero-eyebrow">Activity Timeline</span>
                     <h2 class="a11y-hero-title logs-hero-title">Activity Logs</h2>
                     <p class="a11y-hero-subtitle logs-hero-subtitle">Monitor publishing events, workflow actions, and page edits from a single, friendly timeline.</p>
                 </div>
