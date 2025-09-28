@@ -4,6 +4,7 @@
         <header class="a11y-hero blog-hero">
             <div class="a11y-hero-content blog-hero-content">
                 <div>
+                    <span class="hero-eyebrow blog-hero-eyebrow">Publishing Pipeline</span>
                     <h2 class="a11y-hero-title blog-hero-title">Editorial Dashboard</h2>
                     <p class="a11y-hero-subtitle blog-hero-subtitle">Plan, publish, and measure the health of your content pipeline.</p>
                 </div>

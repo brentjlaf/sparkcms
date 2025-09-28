@@ -85,6 +85,7 @@ $summaryComparisons = [
         <header class="a11y-hero analytics-hero">
             <div class="a11y-hero-content analytics-hero-content">
                 <div class="analytics-hero-text">
+                    <span class="hero-eyebrow analytics-hero-eyebrow">Insights Summary</span>
                     <h2 class="a11y-hero-title analytics-hero-title">Analytics Dashboard</h2>
                     <p class="a11y-hero-subtitle analytics-hero-subtitle">Monitor traffic trends, understand what resonates, and uncover pages that need promotion.</p>
                 </div>

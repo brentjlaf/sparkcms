@@ -4,6 +4,7 @@
                         <header class="a11y-hero media-hero">
                             <div class="a11y-hero-content media-hero-content">
                                 <div>
+                                    <span class="hero-eyebrow media-hero-eyebrow">Library Overview</span>
                                     <h2 class="a11y-hero-title media-hero-title">Media Library</h2>
                                     <p class="a11y-hero-subtitle media-hero-subtitle">Keep your images, documents, and videos organised with a modern, visual workspace that mirrors the accessibility dashboard experience.</p>
                                 </div>

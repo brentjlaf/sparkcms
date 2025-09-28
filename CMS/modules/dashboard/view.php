@@ -4,6 +4,7 @@
         <header class="a11y-hero dashboard-hero">
             <div class="a11y-hero-content dashboard-hero-content">
                 <div>
+                    <span class="hero-eyebrow dashboard-hero-eyebrow">Operations Overview</span>
                     <h2 class="a11y-hero-title">Operations Dashboard</h2>
                     <p class="a11y-hero-subtitle">
                         Monitor the health of your content, media, and optimisation efforts from one polished overview.

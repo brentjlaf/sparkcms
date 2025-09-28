@@ -2472,6 +2472,16 @@
             flex-wrap: wrap;
         }
 
+        .hero-eyebrow {
+            display: block;
+            font-size: var(--font-size-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-weight: 600;
+            color: rgba(224, 231, 255, 0.88);
+            margin-bottom: 6px;
+        }
+
         .a11y-hero-title {
             font-size: var(--font-size-2xl);
             font-weight: 600;

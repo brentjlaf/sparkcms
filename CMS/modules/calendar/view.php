@@ -85,7 +85,7 @@ $initialPayload = [
     <header class="a11y-hero calendar-hero">
         <div class="a11y-hero-content calendar-hero-content">
             <div class="calendar-hero-text">
-                <span class="calendar-hero-eyebrow">Calendar Overview</span>
+                <span class="hero-eyebrow calendar-hero-eyebrow">Calendar Overview</span>
                 <h2 class="a11y-hero-title calendar-hero-title">Manage Calendar Data</h2>
                 <p class="a11y-hero-subtitle calendar-hero-subtitle">
                     Coordinate upcoming events, recurring schedules, and categories without leaving the dashboard.

@@ -692,6 +692,7 @@ $dashboardStats = [
         <header class="seo-hero">
             <div class="seo-hero-content">
                 <div>
+                    <span class="hero-eyebrow seo-hero-eyebrow">Optimisation Signals</span>
                     <h2 class="seo-hero-title">SEO Optimisation Dashboard</h2>
                     <p class="seo-hero-subtitle">Measure on-page signals and prioritise fixes that improve organic visibility.</p>
                 </div>

@@ -93,6 +93,7 @@ $filterCounts = [
         <header class="a11y-hero menu-hero">
             <div class="a11y-hero-content menu-hero-content">
                 <div>
+                    <span class="hero-eyebrow menu-hero-eyebrow">Navigation Health</span>
                     <h2 class="a11y-hero-title menu-hero-title">Navigation Menus</h2>
                     <p class="a11y-hero-subtitle menu-hero-subtitle">Craft intuitive navigation experiences and keep every menu in sync with your site's structure.</p>
                 </div>

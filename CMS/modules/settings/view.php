@@ -5,6 +5,7 @@
             <header class="a11y-hero settings-hero">
                 <div class="a11y-hero-content settings-hero-content">
                     <div>
+                        <span class="hero-eyebrow settings-hero-eyebrow">Configuration Hub</span>
                         <h2 class="a11y-hero-title settings-hero-title">Site Settings</h2>
                         <p class="a11y-hero-subtitle settings-hero-subtitle">Fine-tune your brand voice, analytics, and sharing defaults from a single, polished workspace.</p>
                     </div>

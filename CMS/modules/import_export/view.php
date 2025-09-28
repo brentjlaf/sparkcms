@@ -4,6 +4,7 @@
                         <header class="a11y-hero import-hero">
                             <div class="a11y-hero-content import-hero-content">
                                 <div>
+                                    <span class="hero-eyebrow import-hero-eyebrow">Transfer Toolkit</span>
                                     <h2 class="a11y-hero-title import-hero-title">Import &amp; Export</h2>
                                     <p class="a11y-hero-subtitle import-hero-subtitle">Transfer site content, menus, media, and settings between environments with confidence.</p>
                                 </div>

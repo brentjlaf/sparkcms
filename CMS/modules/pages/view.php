@@ -57,6 +57,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
         <header class="a11y-hero pages-hero">
             <div class="a11y-hero-content pages-hero-content">
                 <div>
+                    <span class="hero-eyebrow pages-hero-eyebrow">Content Inventory</span>
                     <h2 class="a11y-hero-title pages-hero-title">Pages</h2>
                     <p class="a11y-hero-subtitle pages-hero-subtitle">Keep your site structure organised and publish updates with confidence.</p>
                 </div>

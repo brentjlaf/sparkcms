@@ -48,6 +48,7 @@ $statusMessage = $entryCount > 0
         <header class="a11y-hero sitemap-hero">
             <div class="a11y-hero-content sitemap-hero-content">
                 <div>
+                    <span class="hero-eyebrow sitemap-hero-eyebrow">Index Coverage</span>
                     <h2 class="a11y-hero-title sitemap-hero-title">Sitemap overview</h2>
                     <p class="a11y-hero-subtitle sitemap-hero-subtitle">
                         Review the URLs included in your sitemap and regenerate it after publishing new content.

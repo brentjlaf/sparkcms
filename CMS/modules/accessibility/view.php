@@ -571,6 +571,7 @@ $dashboardStats = [
         <header class="a11y-hero accessibility-hero">
             <div class="a11y-hero-content accessibility-hero-content">
                 <div>
+                    <span class="hero-eyebrow accessibility-hero-eyebrow">Accessibility Snapshot</span>
                     <h2 class="a11y-hero-title accessibility-hero-title">Accessibility Dashboard</h2>
                     <p class="a11y-hero-subtitle accessibility-hero-subtitle">Monitor WCAG compliance and keep your experience inclusive for every visitor.</p>
                 </div>

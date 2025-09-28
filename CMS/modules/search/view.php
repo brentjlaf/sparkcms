@@ -61,6 +61,7 @@ foreach ($results as $entry) {
         <header class="a11y-hero search-hero">
             <div class="a11y-hero-content search-hero-content">
                 <div>
+                    <span class="hero-eyebrow search-hero-eyebrow">Unified Index</span>
                     <h2 class="a11y-hero-title search-hero-title">Unified Search</h2>
                     <p class="a11y-hero-subtitle search-hero-subtitle">Surface pages, posts, and media without leaving the dashboard.</p>
                 </div>
