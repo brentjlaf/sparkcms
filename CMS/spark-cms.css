@@ -2082,10 +2082,10 @@
             gap: 18px;
             align-items: center;
             justify-content: space-between;
-            background: #fff;
-            border-radius: 18px;
-            padding: 20px 24px;
-            box-shadow: 0 20px 44px rgba(15, 23, 42, 0.08);
+            /* background: #fff; */
+            /* border-radius: 18px; */
+            /* padding: 20px 24px; */
+            /* box-shadow: 0 20px 44px rgba(15, 23, 42, 0.08); */
         }
 
         .pages-search {
