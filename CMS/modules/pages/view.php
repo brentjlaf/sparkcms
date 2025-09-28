@@ -53,7 +53,7 @@ $filterCounts = [
 $pagesWord = $totalPages === 1 ? 'page' : 'pages';
 ?>
 <div class="content-section" id="pages">
-    <div class="pages-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?>">
+    <div class="pages-dashboard a11y-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedDisplay, ENT_QUOTES); ?>">
         <header class="a11y-hero pages-hero">
             <div class="a11y-hero-content pages-hero-content">
                 <div>
