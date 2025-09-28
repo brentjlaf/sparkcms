@@ -568,18 +568,18 @@ $dashboardStats = [
     </div>
 <?php else: ?>
     <div class="a11y-dashboard" data-last-scan="<?php echo htmlspecialchars($lastScan, ENT_QUOTES); ?>">
-        <header class="a11y-hero">
-            <div class="a11y-hero-content">
+        <header class="a11y-hero accessibility-hero">
+            <div class="a11y-hero-content accessibility-hero-content">
                 <div>
-                    <h2 class="a11y-hero-title">Accessibility Dashboard</h2>
-                    <p class="a11y-hero-subtitle">Monitor WCAG compliance and keep your experience inclusive for every visitor.</p>
+                    <h2 class="a11y-hero-title accessibility-hero-title">Accessibility Dashboard</h2>
+                    <p class="a11y-hero-subtitle accessibility-hero-subtitle">Monitor WCAG compliance and keep your experience inclusive for every visitor.</p>
                 </div>
-                <div class="a11y-hero-actions">
+                <div class="a11y-hero-actions accessibility-hero-actions">
                     <button type="button" id="scanAllPagesBtn" class="a11y-btn a11y-btn--primary" data-a11y-action="scan-all">
                         <i class="fas fa-universal-access" aria-hidden="true"></i>
                         <span>Scan All Pages</span>
                     </button>
-                    <span class="a11y-hero-meta">
+                    <span class="a11y-hero-meta accessibility-hero-meta">
                         <i class="fas fa-clock" aria-hidden="true"></i>
                         Last scan: <?php echo htmlspecialchars($lastScan); ?>
                     </span>
