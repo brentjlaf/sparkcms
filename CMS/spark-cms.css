@@ -5960,26 +5960,13 @@
 }
 
 .media-overview-card {
-    position: relative;
     display: flex;
     align-items: center;
-    gap: 18px;
-    padding: 26px 24px;
-    border-radius: 20px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 22px 40px rgba(15, 23, 42, 0.08);
-    overflow: hidden;
-}
-
-.media-overview-card::after {
-    content: '';
-    position: absolute;
-    bottom: -40px;
-    right: -20px;
-    width: 140px;
-    height: 140px;
-    background: radial-gradient(circle at center, rgba(99,102,241,0.18) 0%, transparent 70%);
+    gap: 16px;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.14);
+    backdrop-filter: blur(6px);
 }
 
 .media-overview-icon {
