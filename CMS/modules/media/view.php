@@ -38,24 +38,30 @@
                             </div>
                             <div class="a11y-overview-grid media-overview-grid">
                                 <div class="a11y-overview-card media-overview-card">
-                                    <span class="media-overview-icon"><i class="fa-solid fa-folder-open" aria-hidden="true"></i></span>
+                                    <div class="media-overview-icon" aria-hidden="true">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                    </div>
                                     <div class="media-overview-content">
-                                        <span class="a11y-overview-label media-overview-label">Folders</span>
-                                        <span class="a11y-overview-value media-overview-value" id="totalFolders">0</span>
+                                        <div class="a11y-overview-label media-overview-label">Folders</div>
+                                        <div class="a11y-overview-value media-overview-value" id="totalFolders">0</div>
                                     </div>
                                 </div>
                                 <div class="a11y-overview-card media-overview-card">
-                                    <span class="media-overview-icon"><i class="fa-solid fa-images" aria-hidden="true"></i></span>
+                                    <div class="media-overview-icon" aria-hidden="true">
+                                        <i class="fa-solid fa-images"></i>
+                                    </div>
                                     <div class="media-overview-content">
-                                        <span class="a11y-overview-label media-overview-label">Files</span>
-                                        <span class="a11y-overview-value media-overview-value" id="totalImages">0</span>
+                                        <div class="a11y-overview-label media-overview-label">Files</div>
+                                        <div class="a11y-overview-value media-overview-value" id="totalImages">0</div>
                                     </div>
                                 </div>
                                 <div class="a11y-overview-card media-overview-card">
-                                    <span class="media-overview-icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span>
+                                    <div class="media-overview-icon" aria-hidden="true">
+                                        <i class="fa-solid fa-database"></i>
+                                    </div>
                                     <div class="media-overview-content">
-                                        <span class="a11y-overview-label media-overview-label">Storage Used</span>
-                                        <span class="a11y-overview-value media-overview-value" id="totalSize">0</span>
+                                        <div class="a11y-overview-label media-overview-label">Storage Used</div>
+                                        <div class="a11y-overview-value media-overview-value" id="totalSize">0</div>
                                     </div>
                                 </div>
                             </div>
