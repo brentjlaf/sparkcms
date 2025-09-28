@@ -2,6 +2,7 @@
 // File: modules/calendar/api.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/helpers.php';
 require_login();
 
 header('Content-Type: application/json');
@@ -55,6 +56,7 @@ function respond(array $payload, int $status = 200): void
 }
 
 [$events, $categories] = load_calendar_dataset($eventsFile, $categoriesFile);
+$metrics = compute_calendar_metrics($events, $categories);
 
 switch ($action) {
     case 'save_event':
@@ -155,11 +157,14 @@ switch ($action) {
 
         save_calendar_dataset($eventsFile, $categoriesFile, $events, $categories);
 
+        $metrics = compute_calendar_metrics($events, $categories);
+
         respond([
             'success' => true,
             'message' => $message,
             'events' => $events,
             'categories' => $categories,
+            'metrics' => $metrics,
         ]);
         break;
 
@@ -181,11 +186,14 @@ switch ($action) {
 
         save_calendar_dataset($eventsFile, $categoriesFile, $events, $categories);
 
+        $metrics = compute_calendar_metrics($events, $categories);
+
         respond([
             'success' => true,
             'message' => 'Event deleted.',
             'events' => $events,
             'categories' => $categories,
+            'metrics' => $metrics,
         ]);
         break;
 
@@ -226,11 +234,14 @@ switch ($action) {
 
         save_calendar_dataset($eventsFile, $categoriesFile, $events, $categories);
 
+        $metrics = compute_calendar_metrics($events, $categories);
+
         respond([
             'success' => true,
             'message' => 'Category added.',
             'events' => $events,
             'categories' => $categories,
+            'metrics' => $metrics,
         ]);
         break;
 
@@ -269,11 +280,14 @@ switch ($action) {
 
         save_calendar_dataset($eventsFile, $categoriesFile, $events, $categories);
 
+        $metrics = compute_calendar_metrics($events, $categories);
+
         respond([
             'success' => true,
             'message' => 'Category deleted.',
             'events' => $events,
             'categories' => $categories,
+            'metrics' => $metrics,
         ]);
         break;
 
@@ -282,5 +296,6 @@ switch ($action) {
             'success' => true,
             'events' => $events,
             'categories' => $categories,
+            'metrics' => $metrics,
         ]);
 }

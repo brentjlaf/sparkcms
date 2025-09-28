@@ -8,6 +8,7 @@
   const state = {
     events: [],
     categories: [],
+    metrics: null,
   };
 
   const initial = window.sparkCalendarInitial || {};
@@ -16,6 +17,9 @@
   }
   if (Array.isArray(initial.categories)) {
     state.categories = initial.categories.slice();
+  }
+  if (initial.metrics && typeof initial.metrics === 'object') {
+    state.metrics = initial.metrics;
   }
 
   const messageBox = root.querySelector('[data-calendar-message]');
@@ -27,6 +31,13 @@
   const eventModal = root.querySelector('[data-calendar-modal="event"]');
   const categoriesModal = root.querySelector('[data-calendar-modal="categories"]');
   const eventModalTitle = root.querySelector('#calendarEventModalTitle');
+  const heroNextEvent = root.querySelector('[data-calendar-next-event]');
+  const heroStatElements = {
+    total: root.querySelector('[data-calendar-stat="total"]'),
+    upcoming: root.querySelector('[data-calendar-stat="upcoming"]'),
+    recurring: root.querySelector('[data-calendar-stat="recurring"]'),
+    categories: root.querySelector('[data-calendar-stat="categories"]'),
+  };
 
   const recurrenceLabels = {
     none: 'None',
@@ -64,6 +75,23 @@
     );
   }
 
+  function formatReadableDate(value) {
+    if (!value) {
+      return '';
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    return date.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
+
   function toDateTimeLocal(value) {
     if (!value) {
       return '';
@@ -86,6 +114,104 @@
     );
   }
 
+  function computeMetrics(events, categories) {
+    const now = Date.now();
+    let upcomingCount = 0;
+    let recurringCount = 0;
+    let nextEvent = null;
+
+    events.forEach((event) => {
+      const startValue = event && event.start_date ? Date.parse(event.start_date) : Number.NaN;
+      if (Number.isNaN(startValue)) {
+        return;
+      }
+
+      if (event && event.recurring_interval && event.recurring_interval !== 'none') {
+        recurringCount += 1;
+      }
+
+      if (startValue >= now) {
+        upcomingCount += 1;
+        const eventId = Number.isFinite(Number(event.id)) ? Number(event.id) : 0;
+        if (
+          !nextEvent ||
+          startValue < nextEvent.timestamp ||
+          (startValue === nextEvent.timestamp && eventId < nextEvent.id)
+        ) {
+          nextEvent = {
+            id: eventId,
+            title: event && event.title ? String(event.title) : '',
+            start_date: new Date(startValue).toISOString(),
+            timestamp: startValue,
+          };
+        }
+      }
+    });
+
+    return {
+      total_events: events.length,
+      upcoming_count: upcomingCount,
+      recurring_count: recurringCount,
+      category_count: categories.length,
+      next_event: nextEvent,
+    };
+  }
+
+  function normalizeMetrics(metrics) {
+    const fallback = computeMetrics(state.events, state.categories);
+    if (!metrics || typeof metrics !== 'object') {
+      return fallback;
+    }
+    return {
+      total_events:
+        typeof metrics.total_events === 'number' ? metrics.total_events : fallback.total_events,
+      upcoming_count:
+        typeof metrics.upcoming_count === 'number' ? metrics.upcoming_count : fallback.upcoming_count,
+      recurring_count:
+        typeof metrics.recurring_count === 'number' ? metrics.recurring_count : fallback.recurring_count,
+      category_count:
+        typeof metrics.category_count === 'number' ? metrics.category_count : fallback.category_count,
+      next_event:
+        metrics.next_event && typeof metrics.next_event === 'object'
+          ? metrics.next_event
+          : fallback.next_event,
+    };
+  }
+
+  function renderHeroStats() {
+    if (!heroNextEvent && !heroStatElements.total) {
+      return;
+    }
+
+    state.metrics = normalizeMetrics(state.metrics);
+    const metrics = state.metrics;
+
+    if (heroStatElements.total) {
+      heroStatElements.total.textContent = String(metrics.total_events || 0);
+    }
+    if (heroStatElements.upcoming) {
+      heroStatElements.upcoming.textContent = String(metrics.upcoming_count || 0);
+    }
+    if (heroStatElements.recurring) {
+      heroStatElements.recurring.textContent = String(metrics.recurring_count || 0);
+    }
+    if (heroStatElements.categories) {
+      heroStatElements.categories.textContent = String(metrics.category_count || 0);
+    }
+
+    if (heroNextEvent) {
+      if (metrics.next_event) {
+        const nextTitle = metrics.next_event.title || 'Untitled event';
+        const formattedDate = formatReadableDate(metrics.next_event.start_date);
+        heroNextEvent.textContent = formattedDate
+          ? `Next event: ${nextTitle} • ${formattedDate}`
+          : `Next event: ${nextTitle}`;
+      } else {
+        heroNextEvent.textContent = 'Next event: none scheduled';
+      }
+    }
+  }
+
   function setMessage(message, type) {
     if (!messageBox) {
       return;
@@ -102,6 +228,10 @@
 
   if (initial.message) {
     setMessage(initial.message, 'info');
+  }
+
+  if (!state.metrics) {
+    state.metrics = computeMetrics(state.events, state.categories);
   }
 
   function getCategoryMeta(name) {
@@ -338,8 +468,10 @@
           throw new Error((payload && payload.message) || 'Unable to delete event.');
         }
         state.events = Array.isArray(payload.events) ? payload.events : [];
+        state.metrics = payload.metrics || state.metrics;
         setMessage(payload.message || 'Event deleted.', 'success');
         renderEvents();
+        renderHeroStats();
       })
       .catch((error) => {
         setMessage(error.message || 'Unable to delete event.', 'error');
@@ -368,9 +500,11 @@
         }
         state.categories = Array.isArray(payload.categories) ? payload.categories : [];
         state.events = Array.isArray(payload.events) ? payload.events : state.events;
+        state.metrics = payload.metrics || state.metrics;
         setMessage(payload.message || 'Category deleted.', 'success');
         renderCategories();
         renderEvents();
+        renderHeroStats();
       })
       .catch((error) => {
         setMessage(error.message || 'Unable to delete category.', 'error');
@@ -399,8 +533,10 @@
           if (Array.isArray(payload.categories)) {
             state.categories = payload.categories;
           }
+          state.metrics = payload.metrics || state.metrics;
           renderEvents();
           renderCategories();
+          renderHeroStats();
           closeModal(eventModal);
           setMessage(payload.message || 'Event saved.', 'success');
           resetEventForm();
@@ -435,8 +571,10 @@
             throw new Error((payload && payload.message) || 'Unable to add category.');
           }
           state.categories = Array.isArray(payload.categories) ? payload.categories : [];
+          state.metrics = payload.metrics || state.metrics;
           setMessage(payload.message || 'Category added.', 'success');
           renderCategories();
+          renderHeroStats();
           categoryForm.reset();
           const colorField = categoryForm.querySelector('input[name="cat_color"]');
           if (colorField) {
@@ -507,4 +645,5 @@
 
   renderCategories();
   renderEvents();
+  renderHeroStats();
 })();
