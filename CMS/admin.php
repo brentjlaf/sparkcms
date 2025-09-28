@@ -189,6 +189,42 @@ $(function(){
     $('#sidebar').removeClass('mobile-open');
     $(this).removeClass('active');
   });
+
+  var moduleTitles = {
+    search: 'Manage search index',
+    sitemap: 'Review sitemap',
+    import_export: 'Import & Export'
+  };
+
+  $(document).on('sparkcms:navigate', function(event, data){
+    if(!data || typeof data.section !== 'string'){ return; }
+    var section = data.section.trim();
+    if(section === ''){ return; }
+
+    var $targetNav = $(".nav-item[data-section='" + section + "']");
+    if($targetNav.length){
+      $targetNav.trigger('click');
+      return;
+    }
+
+    if(typeof loadModule !== 'function'){ return; }
+
+    $(".nav-item").removeClass("active");
+
+    var title = moduleTitles[section];
+    if(!title){
+      title = section.replace(/_/g, ' ');
+      title = title.replace(/\b\w/g, function(char){ return char.toUpperCase(); });
+    }
+    $('#pageTitle').text(title);
+
+    loadModule(section);
+
+    if(window.innerWidth <= 1024){
+      $('#sidebar').removeClass('mobile-open');
+      $('#sidebarOverlay').removeClass('active');
+    }
+  });
   loadModule("dashboard");
 });
     </script>

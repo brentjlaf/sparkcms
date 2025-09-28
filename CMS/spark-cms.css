@@ -516,6 +516,112 @@
             font-size: 15px;
         }
 
+        /* Sitemap module */
+        #sitemap .sitemap-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sitemap-hero {
+            background: linear-gradient(135deg, #1e293b, #2563eb);
+            box-shadow: 0 24px 48px rgba(37, 99, 235, 0.32);
+        }
+
+        .sitemap-hero-subtitle {
+            color: rgba(226, 232, 240, 0.92);
+        }
+
+        .sitemap-overview-grid .a11y-overview-card {
+            background: rgba(30, 41, 59, 0.3);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        .sitemap-overview-grid .a11y-overview-value {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .sitemap-overview-url {
+            font-size: 16px;
+            word-break: break-all;
+        }
+
+        .sitemap-status-card {
+            padding: 24px;
+            gap: 24px;
+        }
+
+        .sitemap-status-card__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .sitemap-status-card__title {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .sitemap-status-card__description {
+            margin: 0;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .sitemap-status-card__meta {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            color: #1d4ed8;
+            background: rgba(37, 99, 235, 0.12);
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .sitemap-status-card__body {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sitemap-table {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: inset 0 0 0 1px #e2e8f0;
+            overflow: hidden;
+        }
+
+        .sitemap-table .data-table {
+            margin: 0;
+        }
+
+        .sitemap-table .data-table th,
+        .sitemap-table .data-table td {
+            padding: 14px 20px;
+        }
+
+        .sitemap-empty-message,
+        #sitemapEmptyMessage {
+            margin: 0;
+            color: #475569;
+            font-size: 15px;
+        }
+
+        .sitemap-hero-actions .a11y-btn.is-loading {
+            opacity: 0.7;
+            cursor: progress;
+        }
+
+        .sitemap-hero-actions .a11y-btn.is-loading i {
+            animation: logs-spin 0.9s linear infinite;
+        }
+
         @keyframes logs-spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
