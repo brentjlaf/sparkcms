@@ -2850,6 +2850,73 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
         }
 
+        .a11y-sort-direction {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 1px solid #cbd5f5;
+            background: #f8fafc;
+            color: #1e293b;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .a11y-sort-direction i {
+            font-size: 14px;
+            color: #4338ca;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .a11y-sort-direction__text {
+            white-space: nowrap;
+        }
+
+        .a11y-sort-direction:hover,
+        .a11y-sort-direction:focus-visible {
+            outline: none;
+            background: #eef2ff;
+            border-color: #818cf8;
+            color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18);
+        }
+
+        .a11y-sort-direction:hover i,
+        .a11y-sort-direction:focus-visible i {
+            color: #3730a3;
+        }
+
+        .a11y-sort-direction[aria-pressed="true"] {
+            background: linear-gradient(135deg, #4338ca, #2563eb);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 8px 16px -6px rgba(37, 99, 235, 0.55);
+        }
+
+        .a11y-sort-direction[aria-pressed="true"] i,
+        .a11y-sort-direction[aria-pressed="true"] .a11y-sort-direction__text {
+            color: #fff;
+        }
+
+        .a11y-sort-direction[aria-pressed="true"]:focus-visible {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35);
+        }
+
+        .a11y-sort-direction[data-direction="asc"] i {
+            transform: translateY(-1px);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .a11y-sort-direction,
+            .a11y-sort-direction i {
+                transition: none;
+            }
+        }
+
         .a11y-sort-btn {
             display: inline-flex;
             align-items: center;

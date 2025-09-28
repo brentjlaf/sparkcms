@@ -770,7 +770,7 @@ write_json_file($snapshotFile, $currentSnapshot);
                     <option value="alerts">Total alerts</option>
                     <option value="weight">Estimated weight</option>
                 </select>
-                <button type="button" class="a11y-sort-direction" id="speedSortDirection" data-direction="desc" aria-label="Sort high to low" aria-pressed="true">
+                <button type="button" class="a11y-sort-direction" id="speedSortDirection" data-direction="desc" aria-label="Toggle sort direction (High to low)" aria-pressed="true">
                     <i class="fas fa-sort-amount-down-alt" aria-hidden="true"></i>
                     <span class="a11y-sort-direction__text" id="speedSortDirectionLabel">High to low</span>
                 </button>
