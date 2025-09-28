@@ -277,6 +277,7 @@ $(document).ready(function(){
                         <div class="actions">
                             <button class="btn btn-sm btn-secondary view-btn" data-id="${post.id}">View</button>
                             <button class="btn btn-sm btn-secondary edit-post-btn" data-id="${post.id}">Edit</button>
+                            ${post.status !== 'published' ? `<button class="btn btn-sm btn-primary publish-btn" data-id="${post.id}">Publish</button>` : ''}
                             <button class="btn btn-sm btn-danger delete-btn" data-id="${post.id}">Delete</button>
                         </div>
                     </td>
@@ -293,6 +294,10 @@ $(document).ready(function(){
         $('.edit-post-btn').click(function(){
             const id = parseInt($(this).data('id'));
             editPost(id);
+        });
+        $('.publish-btn').click(function(){
+            const id = parseInt($(this).data('id'));
+            publishPost(id);
         });
         $('.delete-btn').click(function(){
             const id = parseInt($(this).data('id'));
@@ -401,6 +406,9 @@ $(document).ready(function(){
             image: imageUrl,
             imageAlt
         };
+        if(data.status === 'published' && !data.publishDate){
+            data.publishDate = new Date().toISOString();
+        }
         const id = $('#postId').val();
         if(id){
             const idx = posts.findIndex(p=>p.id===parseInt(id));
@@ -413,6 +421,27 @@ $(document).ready(function(){
         closeModal('postModal');
         renderPosts();
         updateStats();
+    }
+
+    function publishPost(id){
+        const post = posts.find(p=>p.id===id);
+        if(!post) return;
+        confirmModal('Publish this post now?').then(ok => {
+            if(!ok) return;
+            post.status = 'published';
+            const now = new Date();
+            const nowIso = now.toISOString();
+            if(!post.publishDate){
+                post.publishDate = nowIso;
+            } else {
+                const currentDate = new Date(post.publishDate);
+                if(Number.isNaN(currentDate.getTime()) || currentDate > now){
+                    post.publishDate = nowIso;
+                }
+            }
+            renderPosts();
+            updateStats();
+        });
     }
 
     function openCategoriesModal(){
