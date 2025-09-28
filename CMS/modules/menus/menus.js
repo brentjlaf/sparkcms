@@ -318,7 +318,7 @@ $(function () {
             .join('');
         const $li = $('<li></li>');
         const $item = $('<div class="menu-item"></div>');
-        $item.append('<span class="drag-handle" aria-hidden="true">&#9776;</span>');
+        $item.append('<span class="drag-handle" aria-hidden="true" title="Drag to reorder">&#9776;</span>');
         $item.append('<select class="form-select type-select"><option value="page">Link to Page</option><option value="custom">Custom Link</option></select>');
         $item.append('<select class="form-select page-select">' + pageOptions + '</select>');
         $item.append('<input type="text" class="form-input link-input" placeholder="URL">');
