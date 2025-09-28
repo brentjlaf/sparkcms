@@ -9,15 +9,15 @@
                 </div>
                 <div class="a11y-hero-actions">
                     <button type="button" class="a11y-btn a11y-btn--primary" id="usersNewBtn">
-                        <i class="fas fa-user-plus" aria-hidden="true"></i>
+                        <i class="fa-solid fa-user-plus" aria-hidden="true"></i>
                         <span>Add teammate</span>
                     </button>
                     <button type="button" class="a11y-btn a11y-btn--ghost" id="usersRefreshBtn">
-                        <i class="fas fa-rotate" aria-hidden="true"></i>
+                        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                         <span>Refresh</span>
                     </button>
                     <span class="a11y-hero-meta users-last-sync">
-                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        <i class="fa-solid fa-clock" aria-hidden="true"></i>
                         Last updated <span id="usersLastSync">just now</span>
                     </span>
                 </div>
