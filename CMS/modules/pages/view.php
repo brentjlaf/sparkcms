@@ -61,11 +61,11 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                     <p class="a11y-hero-subtitle pages-hero-subtitle">Keep your site structure organised and publish updates with confidence.</p>
                 </div>
                 <div class="a11y-hero-actions pages-hero-actions">
-                    <button type="button" class="pages-btn pages-btn--primary" id="newPageBtn">
+                    <button type="button" class="a11y-btn a11y-btn--primary" id="newPageBtn">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <span>New Page</span>
                     </button>
-                    <a class="pages-btn pages-btn--ghost" href="../" target="_blank" rel="noopener">
+                    <a class="a11y-btn a11y-btn--ghost" href="../" target="_blank" rel="noopener">
                         <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
                         <span>View Site</span>
                     </a>
