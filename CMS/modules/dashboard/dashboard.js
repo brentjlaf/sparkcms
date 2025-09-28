@@ -174,7 +174,34 @@ $(function(){
             return;
         }
 
-        modules.forEach(function (module) {
+        const statusPriority = {
+            urgent: 0,
+            warning: 1,
+            ok: 2
+        };
+
+        const sortedModules = Array.isArray(modules)
+            ? modules.slice().sort(function (a, b) {
+                const statusA = String(a && a.status ? a.status : 'ok').toLowerCase();
+                const statusB = String(b && b.status ? b.status : 'ok').toLowerCase();
+                const priorityA = Object.prototype.hasOwnProperty.call(statusPriority, statusA)
+                    ? statusPriority[statusA]
+                    : statusPriority.ok;
+                const priorityB = Object.prototype.hasOwnProperty.call(statusPriority, statusB)
+                    ? statusPriority[statusB]
+                    : statusPriority.ok;
+
+                if (priorityA === priorityB) {
+                    const nameA = (a && (a.module || a.name || '')) || '';
+                    const nameB = (b && (b.module || b.name || '')) || '';
+                    return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
+                }
+
+                return priorityA - priorityB;
+            })
+            : modules;
+
+        sortedModules.forEach(function (module) {
             const id = module.id || module.module || module.name || '';
             const name = module.module || module.name || id || '';
             const primary = module.primary || '—';
