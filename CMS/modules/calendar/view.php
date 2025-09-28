@@ -399,6 +399,33 @@ $initialPayload = [
         .calendar-admin .calendar-btn-outline:focus-visible {
             background: #f9fafb;
         }
+        .calendar-admin .calendar-confirm-btn {
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #fff;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        }
+        .calendar-admin .calendar-confirm-btn:hover,
+        .calendar-admin .calendar-confirm-btn:focus-visible {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+        .calendar-admin .calendar-confirm-btn--danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        .calendar-admin .calendar-confirm-btn--danger:hover,
+        .calendar-admin .calendar-confirm-btn--danger:focus-visible {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+        .calendar-admin .calendar-confirm-btn[data-loading] {
+            opacity: 0.7;
+            cursor: wait;
+            pointer-events: none;
+        }
         .calendar-admin .calendar-category-color {
             display: inline-flex;
             align-items: center;
@@ -419,6 +446,12 @@ $initialPayload = [
         }
         .calendar-admin .calendar-recurring {
             text-transform: capitalize;
+        }
+        .calendar-admin [data-calendar-confirm-message] {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #4b5563;
         }
     </style>
 
@@ -576,6 +609,22 @@ $initialPayload = [
             </div>
             <div class="calendar-modal-footer">
                 <button type="button" class="calendar-btn-outline" data-calendar-close>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar-modal-backdrop calendar-modal-small" data-calendar-modal="confirm">
+        <div class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendarConfirmTitle">
+            <div class="calendar-modal-header">
+                <h2 class="calendar-modal-title" id="calendarConfirmTitle" data-calendar-confirm-title>Confirm Action</h2>
+                <button type="button" class="calendar-close" data-calendar-close>&times;</button>
+            </div>
+            <div class="calendar-modal-body">
+                <p data-calendar-confirm-message>Are you sure?</p>
+            </div>
+            <div class="calendar-modal-footer">
+                <button type="button" class="calendar-btn-outline" data-calendar-close>Cancel</button>
+                <button type="button" class="calendar-confirm-btn calendar-confirm-btn--danger" data-calendar-confirm-accept>Confirm</button>
             </div>
         </div>
     </div>

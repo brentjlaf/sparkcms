@@ -30,6 +30,16 @@
   const categorySelect = root.querySelector('#calendarEventCategory');
   const eventModal = root.querySelector('[data-calendar-modal="event"]');
   const categoriesModal = root.querySelector('[data-calendar-modal="categories"]');
+  const confirmModal = root.querySelector('[data-calendar-modal="confirm"]');
+  const confirmTitle = confirmModal
+    ? confirmModal.querySelector('[data-calendar-confirm-title]')
+    : null;
+  const confirmMessage = confirmModal
+    ? confirmModal.querySelector('[data-calendar-confirm-message]')
+    : null;
+  const confirmAcceptButton = confirmModal
+    ? confirmModal.querySelector('[data-calendar-confirm-accept]')
+    : null;
   const eventModalTitle = root.querySelector('#calendarEventModalTitle');
   const heroNextEvent = root.querySelector('[data-calendar-next-event]');
   const heroStatElements = {
@@ -46,6 +56,8 @@
     monthly: 'Monthly',
     yearly: 'Yearly',
   };
+
+  let confirmConfig = null;
 
   function escapeHtml(value) {
     return String(value)
@@ -378,9 +390,46 @@
       return;
     }
     modal.classList.remove('show');
+    if (modal === confirmModal) {
+      confirmConfig = null;
+      if (confirmAcceptButton) {
+        confirmAcceptButton.disabled = false;
+        confirmAcceptButton.removeAttribute('data-loading');
+        confirmAcceptButton.classList.remove('calendar-confirm-btn--danger');
+      }
+    }
     if (!root.querySelector('.calendar-modal-backdrop.show')) {
       document.body.classList.remove('calendar-modal-open');
     }
+  }
+
+  function openConfirmModal(config) {
+    if (!confirmModal || !confirmAcceptButton) {
+      return;
+    }
+    confirmConfig = config || {};
+    if (confirmTitle) {
+      confirmTitle.textContent = confirmConfig.title || 'Confirm action';
+    }
+    if (confirmMessage) {
+      confirmMessage.textContent = confirmConfig.message || '';
+    }
+    confirmAcceptButton.textContent = confirmConfig.confirmLabel || 'Confirm';
+    confirmAcceptButton.classList.remove('calendar-confirm-btn--danger');
+    if (confirmConfig.confirmTone === 'danger') {
+      confirmAcceptButton.classList.add('calendar-confirm-btn--danger');
+    }
+    confirmAcceptButton.disabled = false;
+    confirmAcceptButton.removeAttribute('data-loading');
+    openModal(confirmModal);
+    confirmAcceptButton.focus();
+  }
+
+  function closeConfirmModal() {
+    if (!confirmModal) {
+      return;
+    }
+    closeModal(confirmModal);
   }
 
   function resetEventForm() {
@@ -451,64 +500,78 @@
     if (!eventId) {
       return;
     }
-    const confirmed = window.confirm(`Delete event #${eventId}?`);
-    if (!confirmed) {
-      return;
-    }
-    const formData = new FormData();
-    formData.append('evt_id', eventId);
-    fetch('modules/calendar/api.php?action=delete_event', {
-      method: 'POST',
-      body: formData,
-      credentials: 'same-origin',
-    })
-      .then((response) => response.json())
-      .then((payload) => {
-        if (!payload || !payload.success) {
-          throw new Error((payload && payload.message) || 'Unable to delete event.');
-        }
-        state.events = Array.isArray(payload.events) ? payload.events : [];
-        state.metrics = payload.metrics || state.metrics;
-        setMessage(payload.message || 'Event deleted.', 'success');
-        renderEvents();
-        renderHeroStats();
-      })
-      .catch((error) => {
-        setMessage(error.message || 'Unable to delete event.', 'error');
-      });
+    const event = state.events.find((item) => String(item.id) === String(eventId));
+    const eventTitle = event && event.title ? ` "${event.title}"` : '';
+    openConfirmModal({
+      title: 'Delete Event',
+      message: `Are you sure you want to delete event #${eventId}${eventTitle}? This action cannot be undone.`,
+      confirmLabel: 'Delete Event',
+      confirmTone: 'danger',
+      onConfirm: () => {
+        const formData = new FormData();
+        formData.append('evt_id', eventId);
+        return fetch('modules/calendar/api.php?action=delete_event', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin',
+        })
+          .then((response) => response.json())
+          .then((payload) => {
+            if (!payload || !payload.success) {
+              throw new Error((payload && payload.message) || 'Unable to delete event.');
+            }
+            state.events = Array.isArray(payload.events) ? payload.events : [];
+            state.metrics = payload.metrics || state.metrics;
+            setMessage(payload.message || 'Event deleted.', 'success');
+            renderEvents();
+            renderHeroStats();
+          })
+          .catch((error) => {
+            setMessage(error.message || 'Unable to delete event.', 'error');
+            throw error;
+          });
+      },
+    });
   }
 
   function handleDeleteCategory(categoryId) {
     if (!categoryId) {
       return;
     }
-    const confirmed = window.confirm('Delete this category?');
-    if (!confirmed) {
-      return;
-    }
-    const formData = new FormData();
-    formData.append('cat_id', categoryId);
-    fetch('modules/calendar/api.php?action=delete_category', {
-      method: 'POST',
-      body: formData,
-      credentials: 'same-origin',
-    })
-      .then((response) => response.json())
-      .then((payload) => {
-        if (!payload || !payload.success) {
-          throw new Error((payload && payload.message) || 'Unable to delete category.');
-        }
-        state.categories = Array.isArray(payload.categories) ? payload.categories : [];
-        state.events = Array.isArray(payload.events) ? payload.events : state.events;
-        state.metrics = payload.metrics || state.metrics;
-        setMessage(payload.message || 'Category deleted.', 'success');
-        renderCategories();
-        renderEvents();
-        renderHeroStats();
-      })
-      .catch((error) => {
-        setMessage(error.message || 'Unable to delete category.', 'error');
-      });
+    const category = state.categories.find((item) => String(item.id) === String(categoryId));
+    const categoryName = category && category.name ? ` "${category.name}"` : '';
+    openConfirmModal({
+      title: 'Delete Category',
+      message: `Delete category #${categoryId}${categoryName}? Events assigned to this category will remain but without a category.`,
+      confirmLabel: 'Delete Category',
+      confirmTone: 'danger',
+      onConfirm: () => {
+        const formData = new FormData();
+        formData.append('cat_id', categoryId);
+        return fetch('modules/calendar/api.php?action=delete_category', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin',
+        })
+          .then((response) => response.json())
+          .then((payload) => {
+            if (!payload || !payload.success) {
+              throw new Error((payload && payload.message) || 'Unable to delete category.');
+            }
+            state.categories = Array.isArray(payload.categories) ? payload.categories : [];
+            state.events = Array.isArray(payload.events) ? payload.events : state.events;
+            state.metrics = payload.metrics || state.metrics;
+            setMessage(payload.message || 'Category deleted.', 'success');
+            renderCategories();
+            renderEvents();
+            renderHeroStats();
+          })
+          .catch((error) => {
+            setMessage(error.message || 'Unable to delete category.', 'error');
+            throw error;
+          });
+      },
+    });
   }
 
   if (eventForm) {
@@ -589,6 +652,36 @@
             submitButton.disabled = false;
           }
         });
+    });
+  }
+
+  if (confirmAcceptButton) {
+    confirmAcceptButton.addEventListener('click', () => {
+      if (!confirmConfig || typeof confirmConfig.onConfirm !== 'function') {
+        closeConfirmModal();
+        return;
+      }
+      let result;
+      try {
+        result = confirmConfig.onConfirm();
+      } catch (error) {
+        closeConfirmModal();
+        return;
+      }
+      if (result && typeof result.then === 'function') {
+        confirmAcceptButton.disabled = true;
+        confirmAcceptButton.setAttribute('data-loading', 'true');
+        result
+          .then(() => {
+            closeConfirmModal();
+          })
+          .catch(() => {
+            confirmAcceptButton.disabled = false;
+            confirmAcceptButton.removeAttribute('data-loading');
+          });
+      } else {
+        closeConfirmModal();
+      }
     });
   }
 
