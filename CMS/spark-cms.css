@@ -2507,12 +2507,13 @@
 
         .a11y-btn--ghost {
             background: transparent;
-            color: var(--color-text-primary);
+            color: #fff;
             border: 1px solid var(--color-border-strong);
         }
 
         .a11y-btn--ghost:hover {
             background: #e2e8f0;
+            color: #000;
         }
 
         .a11y-btn--icon {
