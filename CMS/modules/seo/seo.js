@@ -222,8 +222,8 @@
     }
 
     function initDetail($root) {
-        var $issueCards = $root.find('.seo-issue-card');
-        var $buttons = $root.find('.seo-severity-btn');
+        var $issueCards = $root.find('[data-impact]');
+        var $buttons = $root.find('[data-seo-severity]');
         var $status = $('#seoIssueFilterStatus');
 
         function updateIssueVisibility(filter) {

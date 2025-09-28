@@ -490,7 +490,13 @@ foreach ($pageEntries as $page) {
     }
 }
 
-$moduleUrl = $_SERVER['PHP_SELF'] . '?module=seo';
+$scriptPath = isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : '';
+$queryParams = is_array($_GET) ? $_GET : [];
+unset($queryParams['page']);
+$queryParams = array_merge(['module' => 'seo'], $queryParams);
+$moduleQuery = http_build_query($queryParams);
+$moduleUrl = $scriptPath . ($moduleQuery !== '' ? '?' . $moduleQuery : '');
+$moduleAnchorUrl = $moduleUrl . '#seo';
 $detailSlug = isset($_GET['page']) ? sanitize_text($_GET['page']) : null;
 $detailSlug = $detailSlug !== null ? trim($detailSlug) : null;
 
@@ -509,13 +515,13 @@ $dashboardStats = [
     'needsWork' => $needsWork,
     'filterCounts' => $filterCounts,
     'moduleUrl' => $moduleUrl,
-    'detailBaseUrl' => $moduleUrl . '&page=',
+    'detailBaseUrl' => $moduleUrl . (strpos($moduleUrl, '?') === false ? '?' : '&') . 'page=',
     'lastScan' => $lastScan,
 ];
 ?>
 <div class="content-section" id="seo">
 <?php if ($selectedPage): ?>
-    <div class="seo-detail-page" id="seoDetailPage" data-page-slug="<?php echo htmlspecialchars($selectedPage['slug'], ENT_QUOTES); ?>">
+    <div class="a11y-detail-page seo-detail-page" id="seoDetailPage" data-page-slug="<?php echo htmlspecialchars($selectedPage['slug'], ENT_QUOTES); ?>">
         <?php
             $currentScore = (int)($selectedPage['seoScore'] ?? 0);
             $previousScore = (int)($selectedPage['previousScore'] ?? $currentScore);
@@ -538,12 +544,12 @@ $dashboardStats = [
             }
             $issueDetailCount = array_sum($impactCounts);
         ?>
-        <header class="seo-detail-header">
-            <a href="<?php echo htmlspecialchars($moduleUrl, ENT_QUOTES); ?>" class="seo-back-link" id="seoBackToDashboard">
+        <header class="a11y-detail-header">
+            <a href="<?php echo htmlspecialchars($moduleAnchorUrl, ENT_QUOTES); ?>" class="a11y-back-link" id="seoBackToDashboard">
                 <i class="fas fa-arrow-left" aria-hidden="true"></i>
                 <span>Back to SEO Dashboard</span>
             </a>
-            <div class="seo-detail-actions">
+            <div class="a11y-detail-actions">
                 <button type="button" class="a11y-btn a11y-btn--ghost" data-seo-action="rescan-page">
                     <i class="fas fa-rotate" aria-hidden="true"></i>
                     <span>Rescan Page</span>
@@ -551,10 +557,10 @@ $dashboardStats = [
             </div>
         </header>
 
-        <section class="seo-health-card">
-            <div class="seo-health-score">
+        <section class="a11y-health-card">
+            <div class="a11y-health-score">
                 <div class="score-indicator score-indicator--hero">
-                    <div class="seo-health-score__value">
+                    <div class="a11y-health-score__value">
                         <span class="score-indicator__number"><?php echo $currentScore; ?></span><span>%</span>
                     </div>
                     <span class="score-delta <?php echo htmlspecialchars($deltaMeta['class'], ENT_QUOTES); ?>">
@@ -562,117 +568,122 @@ $dashboardStats = [
                         <span class="sr-only"><?php echo htmlspecialchars($deltaMeta['srText'], ENT_QUOTES); ?></span>
                     </span>
                 </div>
-                <div class="seo-health-score__label">SEO Score</div>
-                <span class="seo-health-score__badge level-<?php echo strtolower(str_replace(' ', '-', $selectedPage['optimizationLevel'])); ?>"><?php echo htmlspecialchars($selectedPage['optimizationLevel']); ?></span>
+                <div class="a11y-health-score__label">SEO Score</div>
+                <span class="a11y-health-score__badge level-<?php echo strtolower(str_replace(' ', '-', $selectedPage['optimizationLevel'])); ?>"><?php echo htmlspecialchars($selectedPage['optimizationLevel']); ?></span>
             </div>
-            <div class="seo-health-summary">
+            <div class="a11y-health-summary">
                 <h1><?php echo htmlspecialchars($selectedPage['title']); ?></h1>
-                <p class="seo-health-url"><?php echo htmlspecialchars($selectedPage['url']); ?></p>
+                <p class="a11y-health-url"><?php echo htmlspecialchars($selectedPage['url']); ?></p>
                 <p><?php echo htmlspecialchars($selectedPage['statusMessage']); ?></p>
-                <p class="seo-health-overview"><?php echo htmlspecialchars($selectedPage['summaryLine']); ?></p>
-                <div class="seo-quick-stats">
-                    <div class="seo-quick-stat">
-                        <div class="seo-quick-stat__value"><?php echo $selectedPage['metrics']['wordCount']; ?></div>
-                        <div class="seo-quick-stat__label">Words</div>
+                <p class="a11y-health-overview"><?php echo htmlspecialchars($selectedPage['summaryLine']); ?></p>
+                <div class="a11y-quick-stats">
+                    <div class="a11y-quick-stat">
+                        <div class="a11y-quick-stat__value"><?php echo $selectedPage['metrics']['wordCount']; ?></div>
+                        <div class="a11y-quick-stat__label">Words</div>
                     </div>
-                    <div class="seo-quick-stat">
-                        <div class="seo-quick-stat__value"><?php echo $selectedPage['metrics']['links']['internal']; ?></div>
-                        <div class="seo-quick-stat__label">Internal Links</div>
+                    <div class="a11y-quick-stat">
+                        <div class="a11y-quick-stat__value"><?php echo $selectedPage['metrics']['links']['internal']; ?></div>
+                        <div class="a11y-quick-stat__label">Internal Links</div>
                     </div>
-                    <div class="seo-quick-stat">
-                        <div class="seo-quick-stat__value">H1: <?php echo $selectedPage['metrics']['h1Count']; ?></div>
-                        <div class="seo-quick-stat__label">Heading Structure</div>
+                    <div class="a11y-quick-stat">
+                        <div class="a11y-quick-stat__value">H1: <?php echo $selectedPage['metrics']['h1Count']; ?></div>
+                        <div class="a11y-quick-stat__label">Heading Structure</div>
                     </div>
-                    <div class="seo-quick-stat">
-                        <div class="seo-quick-stat__value"><?php echo $selectedPage['metrics']['missingAlt']; ?></div>
-                        <div class="seo-quick-stat__label">Missing Alt</div>
+                    <div class="a11y-quick-stat">
+                        <div class="a11y-quick-stat__value"><?php echo $selectedPage['metrics']['missingAlt']; ?></div>
+                        <div class="a11y-quick-stat__label">Missing Alt</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="seo-metric-grid" aria-labelledby="seoMetricsHeading">
-            <header class="seo-metric-grid__header">
-                <h2 id="seoMetricsHeading">Key SEO signals</h2>
-                <p>Focus on the fundamentals that influence crawlability, relevance, and click-through rate.</p>
-            </header>
-            <div class="seo-metric-grid__body">
-                <article class="seo-metric-card">
-                    <header><h3>Metadata</h3></header>
-                    <ul>
-                        <li><span>Title length</span><span><?php echo $selectedPage['metrics']['titleLength']; ?> characters</span></li>
-                        <li><span>Meta description</span><span><?php echo $selectedPage['metrics']['metaDescriptionLength']; ?> characters</span></li>
-                        <li><span>Canonical URL</span><span><?php echo $selectedPage['metrics']['hasCanonical'] ? 'Present' : 'Missing'; ?></span></li>
-                    </ul>
-                </article>
-                <article class="seo-metric-card">
-                    <header><h3>Content depth</h3></header>
-                    <ul>
-                        <li><span>Word count</span><span><?php echo $selectedPage['metrics']['wordCount']; ?></span></li>
-                        <li><span>H1 headings</span><span><?php echo $selectedPage['metrics']['h1Count']; ?></span></li>
-                        <li><span>Structured data</span><span><?php echo $selectedPage['metrics']['hasStructuredData'] ? 'Detected' : 'Not detected'; ?></span></li>
-                    </ul>
-                </article>
-                <article class="seo-metric-card">
-                    <header><h3>Media & sharing</h3></header>
-                    <ul>
-                        <li><span>Images</span><span><?php echo $selectedPage['metrics']['images']; ?></span></li>
-                        <li><span>Missing alt text</span><span><?php echo $selectedPage['metrics']['missingAlt']; ?></span></li>
-                        <li><span>Open Graph</span><span><?php echo $selectedPage['metrics']['hasOpenGraph'] ? 'Configured' : 'Missing'; ?></span></li>
-                    </ul>
-                </article>
-                <article class="seo-metric-card">
-                    <header><h3>Linking</h3></header>
-                    <ul>
-                        <li><span>Internal links</span><span><?php echo $selectedPage['metrics']['links']['internal']; ?></span></li>
-                        <li><span>External links</span><span><?php echo $selectedPage['metrics']['links']['external']; ?></span></li>
-                        <li><span>Robots directives</span><span><?php echo $selectedPage['metrics']['isNoindex'] ? 'Noindex' : 'Indexable'; ?></span></li>
-                    </ul>
-                </article>
-            </div>
+        <section class="a11y-detail-grid" aria-labelledby="seoMetricsHeading">
+            <article class="a11y-detail-card seo-detail-card">
+                <div class="seo-detail-card__header">
+                    <h2 id="seoMetricsHeading">Key SEO signals</h2>
+                    <p class="seo-detail-card__hint">Focus on the fundamentals that influence crawlability, relevance, and click-through rate.</p>
+                </div>
+                <div class="seo-detail-card__metrics">
+                    <div class="seo-metric-group">
+                        <h3>Metadata</h3>
+                        <ul class="seo-metric-list">
+                            <li><span>Title length</span><span><?php echo $selectedPage['metrics']['titleLength']; ?> characters</span></li>
+                            <li><span>Meta description</span><span><?php echo $selectedPage['metrics']['metaDescriptionLength']; ?> characters</span></li>
+                            <li><span>Canonical URL</span><span><?php echo $selectedPage['metrics']['hasCanonical'] ? 'Present' : 'Missing'; ?></span></li>
+                        </ul>
+                    </div>
+                    <div class="seo-metric-group">
+                        <h3>Content depth</h3>
+                        <ul class="seo-metric-list">
+                            <li><span>Word count</span><span><?php echo $selectedPage['metrics']['wordCount']; ?></span></li>
+                            <li><span>H1 headings</span><span><?php echo $selectedPage['metrics']['h1Count']; ?></span></li>
+                            <li><span>Structured data</span><span><?php echo $selectedPage['metrics']['hasStructuredData'] ? 'Detected' : 'Not detected'; ?></span></li>
+                        </ul>
+                    </div>
+                    <div class="seo-metric-group">
+                        <h3>Media &amp; sharing</h3>
+                        <ul class="seo-metric-list">
+                            <li><span>Images</span><span><?php echo $selectedPage['metrics']['images']; ?></span></li>
+                            <li><span>Missing alt text</span><span><?php echo $selectedPage['metrics']['missingAlt']; ?></span></li>
+                            <li><span>Open Graph</span><span><?php echo $selectedPage['metrics']['hasOpenGraph'] ? 'Configured' : 'Missing'; ?></span></li>
+                        </ul>
+                    </div>
+                    <div class="seo-metric-group">
+                        <h3>Linking</h3>
+                        <ul class="seo-metric-list">
+                            <li><span>Internal links</span><span><?php echo $selectedPage['metrics']['links']['internal']; ?></span></li>
+                            <li><span>External links</span><span><?php echo $selectedPage['metrics']['links']['external']; ?></span></li>
+                            <li><span>Robots directives</span><span><?php echo $selectedPage['metrics']['isNoindex'] ? 'Noindex' : 'Indexable'; ?></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
         </section>
 
-        <section class="seo-issues" aria-labelledby="seoIssuesHeading">
-            <header>
-                <h2 id="seoIssuesHeading">Actionable SEO fixes</h2>
-                <p>Address these issues to strengthen relevance signals and organic performance.</p>
+        <section class="a11y-detail-issues seo-detail-issues" aria-labelledby="seoIssuesHeading">
+            <header class="seo-detail-issues__header">
+                <div>
+                    <h2 id="seoIssuesHeading">Actionable SEO fixes</h2>
+                    <p>Address these issues to strengthen relevance signals and organic performance.</p>
+                </div>
+                <span class="seo-detail-issues__count"><?php echo $issueDetailCount; ?> <?php echo $issueDetailCount === 1 ? 'issue' : 'issues'; ?></span>
             </header>
             <?php if ($issueDetailCount > 0): ?>
-                <div class="seo-severity-filters" role="group" aria-label="Filter issues by severity">
-                    <button type="button" class="seo-severity-btn active" data-seo-severity="all" aria-pressed="true" aria-label="Show all issues (<?php echo $issueDetailCount; ?>)">
+                <div class="a11y-severity-filters" role="group" aria-label="Filter issues by severity">
+                    <button type="button" class="a11y-severity-btn active" data-seo-severity="all" aria-pressed="true" aria-label="Show all issues (<?php echo $issueDetailCount; ?>)">
                         All <span aria-hidden="true">(<?php echo $issueDetailCount; ?>)</span>
                     </button>
-                    <button type="button" class="seo-severity-btn" data-seo-severity="critical" aria-pressed="false" aria-label="Show critical issues (<?php echo $impactCounts['critical']; ?>)">
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="critical" aria-pressed="false" aria-label="Show critical issues (<?php echo $impactCounts['critical']; ?>)">
                         Critical <span aria-hidden="true">(<?php echo $impactCounts['critical']; ?>)</span>
                     </button>
-                    <button type="button" class="seo-severity-btn" data-seo-severity="serious" aria-pressed="false" aria-label="Show serious issues (<?php echo $impactCounts['serious']; ?>)">
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="serious" aria-pressed="false" aria-label="Show serious issues (<?php echo $impactCounts['serious']; ?>)">
                         Serious <span aria-hidden="true">(<?php echo $impactCounts['serious']; ?>)</span>
                     </button>
-                    <button type="button" class="seo-severity-btn" data-seo-severity="moderate" aria-pressed="false" aria-label="Show moderate issues (<?php echo $impactCounts['moderate']; ?>)">
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="moderate" aria-pressed="false" aria-label="Show moderate issues (<?php echo $impactCounts['moderate']; ?>)">
                         Moderate <span aria-hidden="true">(<?php echo $impactCounts['moderate']; ?>)</span>
                     </button>
-                    <button type="button" class="seo-severity-btn" data-seo-severity="minor" aria-pressed="false" aria-label="Show minor issues (<?php echo $impactCounts['minor']; ?>)">
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="minor" aria-pressed="false" aria-label="Show minor issues (<?php echo $impactCounts['minor']; ?>)">
                         Minor <span aria-hidden="true">(<?php echo $impactCounts['minor']; ?>)</span>
                     </button>
-                    <button type="button" class="seo-severity-btn" data-seo-severity="review" aria-pressed="false" aria-label="Show review issues (<?php echo $impactCounts['review']; ?>)">
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="review" aria-pressed="false" aria-label="Show review issues (<?php echo $impactCounts['review']; ?>)">
                         Review <span aria-hidden="true">(<?php echo $impactCounts['review']; ?>)</span>
                     </button>
                 </div>
                 <div class="sr-only" id="seoIssueFilterStatus" role="status" aria-live="polite"></div>
-                <div class="seo-issue-list">
+                <div class="a11y-issue-list">
                     <?php foreach ($selectedPage['issues']['details'] as $issue): ?>
-                        <article class="seo-issue-card impact-<?php echo htmlspecialchars($issue['impact']); ?>" data-impact="<?php echo htmlspecialchars(strtolower($issue['impact'])); ?>">
+                        <article class="a11y-issue-card impact-<?php echo htmlspecialchars($issue['impact']); ?>" data-impact="<?php echo htmlspecialchars(strtolower($issue['impact'])); ?>">
                             <header>
                                 <h3><?php echo htmlspecialchars($issue['description']); ?></h3>
-                                <span class="seo-impact-badge impact-<?php echo htmlspecialchars($issue['impact']); ?>"><?php echo ucfirst($issue['impact']); ?></span>
+                                <span class="a11y-impact-badge impact-<?php echo htmlspecialchars($issue['impact']); ?>"><?php echo ucfirst($issue['impact']); ?></span>
                             </header>
                             <p><?php echo htmlspecialchars($issue['recommendation']); ?></p>
                         </article>
                     <?php endforeach; ?>
                 </div>
-                <p class="seo-detail-empty" id="seoNoIssuesMessage" hidden>No issues match this severity filter.</p>
+                <p class="a11y-detail-empty" id="seoNoIssuesMessage" hidden>No issues match this severity filter.</p>
             <?php else: ?>
-                <p class="seo-detail-success">This page passes the automated SEO checks with no outstanding issues.</p>
+                <p class="a11y-detail-success">This page passes the automated SEO checks with no outstanding issues.</p>
             <?php endif; ?>
         </section>
     </div>

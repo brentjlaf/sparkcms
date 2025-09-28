@@ -3515,6 +3515,9 @@
         .level-aa { background: #dbeafe; color: #1d4ed8; }
         .level-partial { background: #fef3c7; color: #92400e; }
         .level-failing { background: #fee2e2; color: #b91c1c; }
+        .level-optimised { background: #dcfce7; color: #047857; }
+        .level-needs-improvement { background: #fef3c7; color: #92400e; }
+        .level-critical { background: #fee2e2; color: #b91c1c; }
         .grade-a { background: #dcfce7; color: #047857; }
         .grade-b { background: #dbeafe; color: #1d4ed8; }
         .grade-c { background: #fef3c7; color: #92400e; }
@@ -8592,201 +8595,118 @@
     text-align: center;
 }
 
-.seo-detail-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.seo-back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    font-weight: 600;
-    color: #1e3a8a;
-}
-
-.seo-health-card {
+.seo-detail-card {
+    display: grid;
+    gap: 1.75rem;
     background: #fff;
     border-radius: 20px;
     border: 1px solid #e5e7eb;
-    padding: 2rem;
+    padding: 2.25rem;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+}
+
+.seo-detail-card__header {
     display: grid;
-    gap: 1.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    box-shadow: 0 25px 50px rgba(15, 23, 42, 0.08);
+    gap: 0.65rem;
 }
 
-.seo-health-score {
-    display: grid;
-    gap: 1rem;
-}
-
-.seo-health-score__value {
-    display: flex;
-    align-items: baseline;
-    gap: 0.3rem;
-    font-size: 2.5rem;
-    font-weight: 700;
-}
-
-.seo-health-score__badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    background: rgba(37, 99, 235, 0.12);
-    color: #1e3a8a;
-}
-
-.seo-health-summary {
-    display: grid;
-    gap: 0.75rem;
-}
-
-.seo-health-url {
+.seo-detail-card__header h2 {
     margin: 0;
-    font-weight: 600;
-    color: #2563eb;
+    font-size: 1.4rem;
+    color: #0f172a;
 }
 
-.seo-health-overview {
+.seo-detail-card__hint {
     margin: 0;
     color: #4b5563;
+    font-size: 0.95rem;
     line-height: 1.6;
 }
 
-.seo-quick-stats {
+.seo-detail-card__metrics {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1rem;
-}
-
-.seo-quick-stat {
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 1rem;
-    text-align: center;
-}
-
-.seo-quick-stat__value {
-    font-weight: 700;
-    font-size: 1.4rem;
-}
-
-.seo-quick-stat__label {
-    font-size: 0.85rem;
-    color: #6b7280;
-}
-
-.seo-metric-grid {
-    background: #fff;
-    border-radius: 20px;
-    border: 1px solid #e5e7eb;
-    padding: 2rem;
-    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.07);
-    display: grid;
-    gap: 2rem;
-}
-
-.seo-metric-grid__body {
-    display: grid;
-    gap: 1.5rem;
+    gap: 1.25rem;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.seo-metric-card {
+.seo-metric-group {
     background: #f9fafb;
-    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
     padding: 1.5rem;
     display: grid;
-    gap: 0.75rem;
+    gap: 0.85rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-.seo-metric-card ul {
+.seo-metric-group h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #1e293b;
+}
+
+.seo-metric-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
+    gap: 0.55rem;
+    font-size: 0.95rem;
+    color: #1f2937;
+}
+
+.seo-metric-list li {
+    display: flex;
+    justify-content: space-between;
     gap: 0.5rem;
 }
 
-.seo-metric-card li {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95rem;
+.seo-metric-list span:last-child {
+    font-weight: 600;
+    color: #1e3a8a;
 }
 
-.seo-issues {
+.seo-detail-issues {
     background: #fff;
     border-radius: 20px;
     border: 1px solid #e5e7eb;
-    padding: 2rem;
+    padding: 2.25rem;
     display: grid;
     gap: 1.5rem;
     box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
 }
 
-.seo-severity-filters {
+.seo-detail-issues__header {
     display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
     flex-wrap: wrap;
-    gap: 0.75rem;
 }
 
-.seo-severity-btn {
-    border-radius: 999px;
-    border: 1px solid #d1d5db;
-    padding: 0.45rem 1rem;
-    font-weight: 600;
-    background: #fff;
-    cursor: pointer;
+.seo-detail-issues__header h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.35rem;
+    color: #111827;
 }
 
-.seo-severity-btn.active {
-    background: #1e40af;
-    color: #fff;
-    border-color: #1e3a8a;
+.seo-detail-issues__header p {
+    margin: 0;
+    color: #4b5563;
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
-.seo-issue-list {
-    display: grid;
-    gap: 1rem;
-}
-
-.seo-issue-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 1.25rem;
-    background: #f9fafb;
-}
-
-.seo-impact-badge {
+.seo-detail-issues__count {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.25rem 0.75rem;
+    gap: 0.4rem;
+    background: #eef2ff;
+    color: #3730a3;
+    padding: 0.4rem 0.8rem;
     border-radius: 999px;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    font-weight: 700;
-}
-
-.impact-critical { background: rgba(239, 68, 68, 0.15); color: #b91c1c; }
-.impact-serious { background: rgba(249, 115, 22, 0.18); color: #c2410c; }
-.impact-moderate { background: rgba(234, 179, 8, 0.18); color: #b45309; }
-.impact-minor { background: rgba(59, 130, 246, 0.18); color: #1d4ed8; }
-.impact-review { background: rgba(16, 185, 129, 0.18); color: #047857; }
-
-.seo-detail-success,
-.seo-detail-empty {
-    font-size: 0.95rem;
-    color: #374151;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
 @media (max-width: 900px) {
@@ -8815,9 +8735,9 @@
     .seo-page-card {
         padding: 1.5rem;
     }
-    .seo-health-card,
-    .seo-metric-grid,
-    .seo-issues {
+    .a11y-health-card,
+    .seo-detail-card,
+    .seo-detail-issues {
         padding: 1.5rem;
     }
     .seo-overview-grid {
