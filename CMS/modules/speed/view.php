@@ -762,7 +762,7 @@ write_json_file($snapshotFile, $currentSnapshot);
                 <button type="button" class="a11y-filter-btn" data-speed-filter="monitor">Needs attention <span class="a11y-filter-count" data-count="monitor"><?php echo $filterCounts['monitor']; ?></span></button>
                 <button type="button" class="a11y-filter-btn" data-speed-filter="fast">Performing well <span class="a11y-filter-count" data-count="fast"><?php echo $filterCounts['fast']; ?></span></button>
             </div>
-            <div class="a11y-sort" role="group" aria-label="Sort results">
+            <div class="a11y-sort-group" role="group" aria-label="Sort results">
                 <label for="speedSortSelect">Sort by</label>
                 <select id="speedSortSelect">
                     <option value="score" selected>Performance score</option>
