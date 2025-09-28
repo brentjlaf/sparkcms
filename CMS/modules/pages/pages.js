@@ -123,13 +123,127 @@ $(function(){
             }
         });
 
+        function formatTimestamp(date){
+            if (!(date instanceof Date)) {
+                return '';
+            }
+            const pad = (value) => value.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+
+        function updatePageRow(data){
+            if (!$pagesTable.length || !data || !data.id) {
+                return;
+            }
+
+            const $row = $pagesTable.find(`tr[data-id="${data.id}"]`);
+            if (!$row.length) {
+                return;
+            }
+
+            const publishedFlag = data.published ? 1 : 0;
+
+            $row.attr({
+                'data-title': data.title,
+                'data-slug': data.slug,
+                'data-content': data.content,
+                'data-template': data.template,
+                'data-meta_title': data.meta_title,
+                'data-meta_description': data.meta_description,
+                'data-canonical_url': data.canonical_url,
+                'data-og_title': data.og_title,
+                'data-og_description': data.og_description,
+                'data-og_image': data.og_image,
+                'data-access': data.access,
+                'data-published': publishedFlag
+            });
+
+            $row.data('title', data.title);
+            $row.data('slug', data.slug);
+            $row.data('content', data.content);
+            $row.data('template', data.template);
+            $row.data('meta_title', data.meta_title);
+            $row.data('meta_description', data.meta_description);
+            $row.data('canonical_url', data.canonical_url);
+            $row.data('og_title', data.og_title);
+            $row.data('og_description', data.og_description);
+            $row.data('og_image', data.og_image);
+            $row.data('access', data.access);
+            $row.data('published', publishedFlag);
+
+            $row.find('.pages-title-text').text(data.title);
+            $row.find('.pages-slug').text(`/${data.slug}`);
+
+            const $statusBadge = $row.find('.status-badge');
+            $statusBadge.removeClass('status-published status-draft');
+            $statusBadge.addClass(publishedFlag ? 'status-published' : 'status-draft');
+            $statusBadge.text(publishedFlag ? 'Published' : 'Draft');
+
+            const $viewLink = $row.find('.pages-action-link[href]').first();
+            if ($viewLink.length) {
+                $viewLink.attr('href', `../?page=${encodeURIComponent(data.slug)}`);
+            }
+
+            const $modifiedCell = $row.find('.modified');
+            if ($modifiedCell.length) {
+                $modifiedCell.text(formatTimestamp(new Date()));
+            }
+        }
+
         $('#pageForm').on('submit', function(e){
             e.preventDefault();
-            $.post('modules/pages/save_page.php', $(this).serialize(), function(){
-                closePageModal();
-                slugEdited = false;
-                location.reload();
-            });
+
+            const $form = $(this);
+            const isEditing = $('#pageId').val() !== '';
+            const rawSlugValue = $('#slug').val();
+            const slugSource = rawSlugValue || $('#title').val() || '';
+            let normalizedSlug = slugify(slugSource);
+            if (!normalizedSlug) {
+                normalizedSlug = 'page';
+            }
+            $('#slug').val(normalizedSlug);
+
+            const pageData = {
+                id: $('#pageId').val(),
+                title: $('#title').val(),
+                slug: normalizedSlug,
+                content: $('#content').val(),
+                template: $('#template').val(),
+                meta_title: $('#meta_title').val(),
+                meta_description: $('#meta_description').val(),
+                canonical_url: $('#canonical_url').val(),
+                og_title: $('#og_title').val(),
+                og_description: $('#og_description').val(),
+                og_image: $('#og_image').val(),
+                access: $('#access').val(),
+                published: $('#published').is(':checked') ? 1 : 0
+            };
+
+            const $submitButton = $form.find('button[type="submit"]');
+            const originalButtonHtml = $submitButton.html();
+            $submitButton.prop('disabled', true).text('Saving...');
+
+            $.post('modules/pages/save_page.php', $form.serialize())
+                .done(function(){
+                    slugEdited = false;
+                    closePageModal();
+
+                    if (isEditing) {
+                        updatePageRow(pageData);
+                        applyPageFilters();
+                    } else {
+                        $('#pageForm')[0].reset();
+                        $('#published').prop('checked', false);
+                        location.reload();
+                    }
+                })
+                .fail(function(xhr){
+                    const message = xhr && xhr.responseText ? xhr.responseText : 'An unexpected error occurred while saving the page.';
+                    alertModal(message);
+                })
+                .always(function(){
+                    $submitButton.prop('disabled', false).html(originalButtonHtml);
+                });
         });
         $('.deleteBtn').on('click', function(){
             const row = $(this).closest('tr');
