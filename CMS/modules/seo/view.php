@@ -720,26 +720,26 @@ $dashboardStats = [
                 <i class="fas fa-search" aria-hidden="true"></i>
                 <input type="search" id="seoSearchInput" placeholder="Search pages by title, URL, or issue" aria-label="Search SEO results">
             </label>
-            <div class="seo-filter-group" role="group" aria-label="SEO filters">
-                <button type="button" class="seo-filter-btn active" data-seo-filter="all">All Pages <span class="seo-filter-count" data-count="all"><?php echo $filterCounts['all']; ?></span></button>
-                <button type="button" class="seo-filter-btn" data-seo-filter="critical">Critical Issues <span class="seo-filter-count" data-count="critical"><?php echo $filterCounts['critical']; ?></span></button>
-                <button type="button" class="seo-filter-btn" data-seo-filter="needs-work">Needs Work <span class="seo-filter-count" data-count="needs-work"><?php echo $filterCounts['needs-work']; ?></span></button>
-                <button type="button" class="seo-filter-btn" data-seo-filter="optimized">Optimised <span class="seo-filter-count" data-count="optimized"><?php echo $filterCounts['optimized']; ?></span></button>
+            <div class="a11y-filter-group" role="group" aria-label="SEO filters">
+                <button type="button" class="a11y-filter-btn active" data-seo-filter="all">All Pages <span class="a11y-filter-count" data-count="all"><?php echo $filterCounts['all']; ?></span></button>
+                <button type="button" class="a11y-filter-btn" data-seo-filter="critical">Critical Issues <span class="a11y-filter-count" data-count="critical"><?php echo $filterCounts['critical']; ?></span></button>
+                <button type="button" class="a11y-filter-btn" data-seo-filter="needs-work">Needs Work <span class="a11y-filter-count" data-count="needs-work"><?php echo $filterCounts['needs-work']; ?></span></button>
+                <button type="button" class="a11y-filter-btn" data-seo-filter="optimized">Optimised <span class="a11y-filter-count" data-count="optimized"><?php echo $filterCounts['optimized']; ?></span></button>
             </div>
-            <div class="seo-sort-group" role="group" aria-label="Sort pages">
-                <button type="button" class="seo-sort-btn active" data-seo-sort="score-desc">
+            <div class="a11y-sort-group" role="group" aria-label="Sort pages">
+                <button type="button" class="a11y-sort-btn active" data-seo-sort="score-desc">
                     <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
                     <span>Score (High–Low)</span>
                 </button>
-                <button type="button" class="seo-sort-btn" data-seo-sort="score-asc">
+                <button type="button" class="a11y-sort-btn" data-seo-sort="score-asc">
                     <i class="fas fa-sort-amount-up" aria-hidden="true"></i>
                     <span>Score (Low–High)</span>
                 </button>
-                <button type="button" class="seo-sort-btn" data-seo-sort="issues-desc">
+                <button type="button" class="a11y-sort-btn" data-seo-sort="issues-desc">
                     <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
                     <span>Most Issues</span>
                 </button>
-                <button type="button" class="seo-sort-btn" data-seo-sort="title-asc">
+                <button type="button" class="a11y-sort-btn" data-seo-sort="title-asc">
                     <i class="fas fa-sort-alpha-down" aria-hidden="true"></i>
                     <span>Title (A–Z)</span>
                 </button>
