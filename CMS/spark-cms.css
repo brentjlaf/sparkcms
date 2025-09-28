@@ -1578,6 +1578,16 @@
             font-weight: 600;
         }
 
+        .dashboard-module-card .dashboard-module-cta:not([disabled]) {
+            background: var(--color-primary-strong);
+            color: #fff;
+        }
+
+        .dashboard-module-card .dashboard-module-cta:not([disabled]):hover {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
         .dashboard-module-card .dashboard-module-cta[disabled],
         .dashboard-module-card.placeholder .dashboard-module-cta {
             background: #e2e8f0;
