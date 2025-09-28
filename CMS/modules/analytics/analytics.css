@@ -10,7 +10,7 @@
     justify-content: space-between;
     gap: 0.5rem;
     font: inherit;
-    font-size: 13px;
+    font-size: var(--module-font-size-sm);
     letter-spacing: 0.08em;
     padding: 0;
     text-transform: uppercase;

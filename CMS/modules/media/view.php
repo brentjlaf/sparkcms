@@ -164,8 +164,8 @@
                                 <h2>Image Details</h2>
                             </div>
                             <div class="modal-body info-layout">
-                                <div class="info-preview">
-                                    <img id="infoImage" src="" alt="Preview" style="max-width:100%;border:1px solid #ccc;">
+                                    <div class="info-preview">
+                                        <img id="infoImage" src="" alt="Preview" class="media-preview-image">
                                 </div>
                                 <div class="info-meta">
                                     <div id="item-info" class="form-group">
@@ -184,7 +184,7 @@
                                     <div class="form-group" id="rename-file-group">
                                         <label class="form-label" for="edit-fileName">Rename File</label>
                                         <input type="text" id="edit-fileName" class="form-input">
-                                        <div class="form-check" style="margin-top:8px;">
+                                        <div class="form-check media-form-check">
                                             <input type="checkbox" id="renamePhysicalCheckbox">
                                             <label for="renamePhysicalCheckbox">Rename on disk</label>
                                         </div>
@@ -204,7 +204,7 @@
                             </div>
                             <div class="modal-body edit-layout">
                                 <div class="crop-container">
-                                    <img id="editImage" src="" style="max-width:100%;display:block;">
+                                    <img id="editImage" src="" class="media-edit-image">
                                 </div>
                                 <div class="crop-sidebar">
                                     <div class="form-group">
