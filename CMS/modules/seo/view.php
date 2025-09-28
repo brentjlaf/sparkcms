@@ -544,7 +544,7 @@ $dashboardStats = [
                 <span>Back to SEO Dashboard</span>
             </a>
             <div class="seo-detail-actions">
-                <button type="button" class="seo-btn seo-btn--ghost" data-seo-action="rescan-page">
+                <button type="button" class="a11y-btn a11y-btn--ghost" data-seo-action="rescan-page">
                     <i class="fas fa-rotate" aria-hidden="true"></i>
                     <span>Rescan Page</span>
                 </button>
@@ -685,7 +685,7 @@ $dashboardStats = [
                     <p class="seo-hero-subtitle">Measure on-page signals and prioritise fixes that improve organic visibility.</p>
                 </div>
                 <div class="seo-hero-actions">
-                    <button type="button" id="seoScanAllPagesBtn" class="seo-btn seo-btn--primary" data-seo-action="scan-all">
+                    <button type="button" id="seoScanAllPagesBtn" class="a11y-btn a11y-btn--primary" data-seo-action="scan-all">
                         <i class="fas fa-search" aria-hidden="true"></i>
                         <span>Scan All Pages</span>
                     </button>
