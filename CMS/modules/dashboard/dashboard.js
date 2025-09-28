@@ -315,16 +315,6 @@ $(function(){
                 return `Average per page: ${formatNumber(value || 0)}`;
             });
 
-            updateText('#statSeoScore, [data-stat="seo-score"]', data.seoScore, formatPercent);
-            updateText('#statSeoBreakdown, [data-stat="seo-breakdown"]', [data.seoOptimized, data.seoNeedsAttention], function(values){
-                const optimized = formatNumber(values[0]);
-                const attention = formatNumber(values[1]);
-                return `Optimized: ${optimized} • Needs attention: ${attention}`;
-            });
-            updateText('#statSeoMetadata, [data-stat="seo-metadata"]', data.seoMetadataGaps, function(value){
-                return `Metadata gaps: ${formatNumber(value)}`;
-            });
-
             updateText('#statAccessibilityScore, [data-stat="accessibility-score"]', data.accessibilityScore, formatPercent);
             updateText('#statAccessibilityBreakdown, [data-stat="accessibility-breakdown"]', [data.accessibilityCompliant, data.accessibilityNeedsReview], function(values){
                 const compliant = formatNumber(values[0]);
@@ -336,10 +326,8 @@ $(function(){
             });
 
             updateText('#statAlerts, [data-stat="alerts"]', data.openAlerts);
-            updateText('#statAlertsBreakdown, [data-stat="alerts-breakdown"]', [data.alertsSeo, data.alertsAccessibility], function(values){
-                const seo = formatNumber(values[0]);
-                const accessibility = formatNumber(values[1]);
-                return `SEO: ${seo} • Accessibility: ${accessibility}`;
+            updateText('#statAlertsBreakdown, [data-stat="alerts-breakdown"]', data.alertsAccessibility, function(value){
+                return `Accessibility reviews pending: ${formatNumber(value || 0)}`;
             });
 
             renderModuleSummaries(data.moduleSummaries || data.modules || []);
