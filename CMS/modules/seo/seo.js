@@ -121,7 +121,7 @@
         $root.find('#seoStatOptimized').text(stats.optimizedPages || 0);
         if (stats.filterCounts) {
             Object.keys(stats.filterCounts).forEach(function (key) {
-                $root.find('.seo-filter-count[data-count="' + key + '"]').text(stats.filterCounts[key]);
+                $root.find('.a11y-filter-count[data-count="' + key + '"]').text(stats.filterCounts[key]);
             });
         }
     }
@@ -167,20 +167,20 @@
 
         applyFilters();
 
-        $root.find('.seo-filter-btn').on('click', function () {
+        $root.find('.a11y-filter-btn').on('click', function () {
             var $btn = $(this);
             var filter = String($btn.data('seo-filter') || 'all');
             currentFilter = filter;
-            $root.find('.seo-filter-btn').removeClass('active').attr('aria-pressed', 'false');
+            $root.find('.a11y-filter-btn').removeClass('active').attr('aria-pressed', 'false');
             $btn.addClass('active').attr('aria-pressed', 'true');
             applyFilters();
         });
 
-        $root.find('.seo-sort-btn').on('click', function () {
+        $root.find('.a11y-sort-btn').on('click', function () {
             var $btn = $(this);
             var sortKey = String($btn.data('seo-sort') || 'score-desc');
             currentSort = sortKey;
-            $root.find('.seo-sort-btn').removeClass('active').attr('aria-pressed', 'false');
+            $root.find('.a11y-sort-btn').removeClass('active').attr('aria-pressed', 'false');
             $btn.addClass('active').attr('aria-pressed', 'true');
             applyFilters();
         });
