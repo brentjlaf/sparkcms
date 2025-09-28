@@ -3617,6 +3617,58 @@
             color: #1e293b;
         }
 
+        .settings-hero {
+            background: linear-gradient(135deg, #0f172a, #0ea5e9);
+            box-shadow: 0 26px 52px rgba(14, 165, 233, 0.28);
+        }
+
+        .settings-hero::before,
+        .settings-hero::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+            filter: blur(1px);
+        }
+
+        .settings-hero::before {
+            width: 260px;
+            height: 260px;
+            top: -120px;
+            right: -40px;
+        }
+
+        .settings-hero::after {
+            width: 180px;
+            height: 180px;
+            bottom: -80px;
+            left: -60px;
+        }
+
+        .settings-hero-content {
+            align-items: center;
+        }
+
+        .settings-hero-title {
+            letter-spacing: -0.01em;
+        }
+
+        .settings-hero-subtitle {
+            max-width: 560px;
+        }
+
+        .settings-hero-actions {
+            padding: 12px 18px;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.22);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+        }
+
+        .settings-hero-meta {
+            background: rgba(14, 165, 233, 0.2);
+            color: rgba(255,255,255,0.92);
+        }
+
         .settings-dashboard .settings-card-description {
             margin: 0;
             color: #475569;
