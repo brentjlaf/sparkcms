@@ -267,6 +267,42 @@ $summaryComparisons = [
             <p>No pages match your current filters. Adjust the filters or clear the search to see results.</p>
         </div>
     </div>
+    <div class="a11y-page-detail analytics-detail" id="analyticsDetail" hidden role="dialog" aria-modal="true" aria-labelledby="analyticsDetailTitle">
+        <div class="a11y-detail-content analytics-detail__content" role="document">
+            <button type="button" class="a11y-detail-close analytics-detail__close" id="analyticsDetailClose" aria-label="Close page analytics">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="analytics-detail__header">
+                <div class="analytics-detail__title-group">
+                    <p id="analyticsDetailSlug" class="analytics-detail__slug"></p>
+                    <h2 id="analyticsDetailTitle" class="analytics-detail__title">Page analytics details</h2>
+                    <p id="analyticsDetailSummary" class="analytics-detail__summary"></p>
+                </div>
+                <div class="analytics-detail__headline">
+                    <span id="analyticsDetailViews" class="analytics-detail__views-number">0</span>
+                    <span class="analytics-detail__views-caption">views this period</span>
+                    <span id="analyticsDetailDelta" class="analytics-detail__delta analytics-detail__delta--neutral">No change vs previous period</span>
+                </div>
+            </header>
+            <div class="analytics-detail__badges">
+                <span id="analyticsDetailBadge" class="analytics-detail__badge analytics-detail__badge--neutral">Page insight</span>
+                <span id="analyticsDetailTrend" class="analytics-detail__badge analytics-detail__badge--neutral">Traffic holding steady</span>
+            </div>
+            <div class="analytics-detail__body">
+                <ul id="analyticsDetailMetrics" class="analytics-detail__metrics"></ul>
+                <section class="analytics-detail__insights" id="analyticsDetailInsightsSection" hidden>
+                    <h3 class="analytics-detail__insights-title">Recommended next steps</h3>
+                    <ul id="analyticsDetailInsights"></ul>
+                </section>
+            </div>
+            <footer class="analytics-detail__footer">
+                <a id="analyticsDetailVisit" class="analytics-detail__link" href="/" target="_blank" rel="noopener">
+                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                    <span>Open live page</span>
+                </a>
+            </footer>
+        </div>
+    </div>
 </div>
 <script>
     window.analyticsInitialEntries = <?php echo json_encode($initialEntries, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>;

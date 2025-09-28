@@ -47,6 +47,22 @@ $(function(){
     const $zeroList = $('#analyticsZeroList');
     const $zeroEmpty = $('#analyticsZeroEmpty');
     const $zeroSummary = $('#analyticsZeroSummary');
+    const $detail = $('#analyticsDetail');
+    const $detailClose = $('#analyticsDetailClose');
+    const $detailTitle = $('#analyticsDetailTitle');
+    const $detailSlug = $('#analyticsDetailSlug');
+    const $detailSummary = $('#analyticsDetailSummary');
+    const $detailViews = $('#analyticsDetailViews');
+    const $detailDelta = $('#analyticsDetailDelta');
+    const $detailBadge = $('#analyticsDetailBadge');
+    const $detailTrend = $('#analyticsDetailTrend');
+    const $detailMetrics = $('#analyticsDetailMetrics');
+    const $detailInsightsSection = $('#analyticsDetailInsightsSection');
+    const $detailInsights = $('#analyticsDetailInsights');
+    const $detailVisit = $('#analyticsDetailVisit');
+
+    let detailActiveSlug = null;
+    let detailReturnFocus = null;
 
     function escapeHtml(str){
         return $('<div>').text(str == null ? '' : String(str)).html();
@@ -60,6 +76,42 @@ $(function(){
     function formatAverage(value){
         const number = Number(value) || 0;
         return number.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    }
+
+    function formatSignedNumber(value){
+        const number = Number(value);
+        if (!Number.isFinite(number) || number === 0) {
+            return '0';
+        }
+        const absolute = Math.abs(number);
+        const formatted = formatNumber(absolute);
+        const sign = number > 0 ? '+' : '−';
+        return sign + formatted;
+    }
+
+    function formatPercentChange(value){
+        if (value == null || !Number.isFinite(value)) {
+            return '';
+        }
+        if (value === 0) {
+            return '0%';
+        }
+        const absolute = Math.abs(value);
+        const decimals = absolute < 10 ? 1 : 0;
+        const sign = value > 0 ? '+' : '−';
+        return sign + absolute.toFixed(decimals) + '%';
+    }
+
+    function formatShareOfTraffic(share){
+        if (!Number.isFinite(share) || share <= 0) {
+            return '0%';
+        }
+        const percent = share * 100;
+        if (percent < 1) {
+            return 'Less than 1%';
+        }
+        const decimals = percent < 10 ? 1 : 0;
+        return percent.toFixed(decimals) + '%';
     }
 
     function buildDefaultExportFileName(){
@@ -199,7 +251,7 @@ $(function(){
             let status = 'growing';
             if (entry.views === 0) {
                 status = 'no-views';
-            } else if (index < 3 || entry.views >= totals.averageViews) {
+            } else if (index < 3 || entry.views >= averageViews) {
                 status = 'top';
             }
 
@@ -210,6 +262,17 @@ $(function(){
             entry.badge = status === 'top' ? 'Top performer' : (status === 'no-views' ? 'Needs promotion' : 'Steady traffic');
             entry.titleLower = entry.title.toLowerCase();
             entry.slugLower = entry.slug.toLowerCase();
+            const difference = entry.views - entry.previousViews;
+            entry.difference = difference;
+            entry.percentChange = entry.previousViews === 0
+                ? (entry.views === 0 ? 0 : null)
+                : (difference / Math.abs(entry.previousViews)) * 100;
+            entry.trend = entry.previousViews === 0 && entry.views > 0
+                ? 'new'
+                : (difference > 0 ? 'up' : (difference < 0 ? 'down' : 'flat'));
+            entry.shareOfViews = totals.totalViews > 0 ? entry.views / totals.totalViews : 0;
+            entry.isNewThisPeriod = entry.previousViews === 0 && entry.views > 0;
+            entry.hadPreviousTraffic = entry.previousViews > 0;
         });
 
         return {
@@ -450,12 +513,16 @@ $(function(){
                 : (item.status === 'no-views' ? 'analytics-badge--warning' : 'analytics-badge--neutral');
             const badge = '<span class="analytics-badge ' + badgeClass + '">' + escapeHtml(item.badge) + '</span>';
             const rank = item.rank <= 3 ? '<span class="analytics-rank">#' + item.rank + '</span>' : '';
+            const slugDisplay = item.slug ? '/' + item.slug : '/';
+            const detailLabel = item.slug
+                ? item.title + ' (' + slugDisplay + ')'
+                : item.title;
             return (
-                '<article class="analytics-page-card" data-analytics-status="' + item.status + '" role="listitem">' +
+                '<article class="analytics-page-card" data-analytics-status="' + item.status + '" data-analytics-slug="' + escapeHtml(item.slug) + '" role="listitem" tabindex="0" aria-label="View analytics details for ' + escapeHtml(detailLabel) + '">' +
                     '<div class="analytics-page-card__header">' +
                         '<div>' +
                             '<h3 class="analytics-page-card__title">' + escapeHtml(item.title) + '</h3>' +
-                            '<p class="analytics-page-card__slug">/' + escapeHtml(item.slug) + '</p>' +
+                            '<p class="analytics-page-card__slug">' + escapeHtml(slugDisplay) + '</p>' +
                         '</div>' +
                         '<div class="analytics-page-card__metric">' +
                             '<span class="analytics-page-card__views">' + formatNumber(item.views) + '</span>' +
@@ -483,10 +550,14 @@ $(function(){
             return;
         }
         const rows = sorted.map(function(item){
+            const slugDisplay = item.slug ? '/' + item.slug : '/';
+            const detailLabel = item.slug
+                ? item.title + ' (' + slugDisplay + ')'
+                : item.title;
             return (
-                '<tr>' +
+                '<tr class="analytics-table__row" data-analytics-slug="' + escapeHtml(item.slug) + '" tabindex="0" aria-label="View analytics details for ' + escapeHtml(detailLabel) + '">' +
                     '<td class="analytics-table__title">' + escapeHtml(item.title) + '</td>' +
-                    '<td class="analytics-table__slug">/' + escapeHtml(item.slug) + '</td>' +
+                    '<td class="analytics-table__slug">' + escapeHtml(slugDisplay) + '</td>' +
                     '<td class="analytics-table__views">' + formatNumber(item.views) + '</td>' +
                 '</tr>'
             );
@@ -533,6 +604,312 @@ $(function(){
             $table.removeAttr('hidden');
         }
         updateEmptyState(hasResults);
+    }
+
+    function getSlugFromElement(element){
+        if (!element) {
+            return null;
+        }
+        const node = element.nodeType === 1 ? element : (element[0] || null);
+        if (!node) {
+            return null;
+        }
+        const slugAttr = node.getAttribute ? node.getAttribute('data-analytics-slug') : null;
+        if (slugAttr == null) {
+            return null;
+        }
+        return slugAttr;
+    }
+
+    function findEntryBySlug(slug){
+        if (slug == null) {
+            return null;
+        }
+        const key = String(slug);
+        for (let index = 0; index < state.entries.length; index++) {
+            if (state.entries[index].slug === key) {
+                return state.entries[index];
+            }
+        }
+        return null;
+    }
+
+    function buildDeltaText(entry){
+        if (!entry) {
+            return '';
+        }
+        if (entry.previousViews === 0 && entry.views > 0) {
+            return 'New this period (+' + formatNumber(entry.views) + ')';
+        }
+        if (entry.previousViews === 0 && entry.views === 0) {
+            return 'Awaiting first visitors';
+        }
+        if (entry.difference === 0) {
+            return 'No change vs previous period';
+        }
+        const signed = formatSignedNumber(entry.difference);
+        const percentLabel = formatPercentChange(entry.percentChange);
+        let text = signed + ' vs previous period';
+        if (percentLabel) {
+            text += ' (' + percentLabel + ')';
+        }
+        return text;
+    }
+
+    function buildDeltaMetric(entry){
+        if (!entry) {
+            return 'No change';
+        }
+        if (entry.previousViews === 0 && entry.views > 0) {
+            return '+' + formatNumber(entry.views) + ' new views';
+        }
+        if (entry.previousViews === 0 && entry.views === 0) {
+            return 'No change';
+        }
+        if (entry.difference === 0) {
+            return 'No change';
+        }
+        const percentLabel = formatPercentChange(entry.percentChange);
+        let metric = formatSignedNumber(entry.difference) + ' views';
+        if (percentLabel) {
+            metric += ' (' + percentLabel + ')';
+        }
+        return metric;
+    }
+
+    function getStatusSummary(entry){
+        if (!entry) {
+            return '';
+        }
+        const shareLabel = formatShareOfTraffic(entry.shareOfViews);
+        if (entry.status === 'no-views') {
+            if (entry.hadPreviousTraffic) {
+                return 'Traffic dropped to zero this period after recording ' + formatNumber(entry.previousViews) + ' views last time.';
+            }
+            return 'This page has not received any visits yet. Promote it to capture the first views.';
+        }
+        if (entry.status === 'top') {
+            if (entry.difference < 0) {
+                return 'Still a top performer, but visits slipped compared to the previous period.';
+            }
+            return 'This page is driving ' + shareLabel + ' of your site traffic.';
+        }
+        if (entry.difference > 0) {
+            return 'Traffic is steadily increasing and now represents ' + shareLabel + ' of total views.';
+        }
+        if (entry.difference < 0) {
+            return 'Traffic softened this period. Refresh or promote the page to maintain momentum.';
+        }
+        return 'Traffic is stable and contributes ' + shareLabel + ' of total views.';
+    }
+
+    function getTrendLabel(entry){
+        if (!entry) {
+            return '';
+        }
+        if (entry.trend === 'new') {
+            return 'New traffic this period';
+        }
+        if (entry.trend === 'up') {
+            const percentLabel = formatPercentChange(entry.percentChange);
+            return 'Traffic trending up' + (percentLabel ? ' (' + percentLabel + ')' : '');
+        }
+        if (entry.trend === 'down') {
+            const percentLabel = formatPercentChange(entry.percentChange);
+            return 'Traffic trending down' + (percentLabel ? ' (' + percentLabel + ')' : '');
+        }
+        if (entry.previousViews === 0 && entry.views === 0) {
+            return 'Awaiting first visitors';
+        }
+        return 'Traffic holding steady';
+    }
+
+    function getTrendBadgeClass(entry){
+        if (!entry) {
+            return 'analytics-detail__badge--neutral';
+        }
+        if (entry.trend === 'up' || entry.trend === 'new') {
+            return 'analytics-detail__badge--positive';
+        }
+        if (entry.trend === 'down') {
+            return 'analytics-detail__badge--negative';
+        }
+        return 'analytics-detail__badge--neutral';
+    }
+
+    function getStatusBadgeClass(entry){
+        if (!entry) {
+            return 'analytics-detail__badge--neutral';
+        }
+        if (entry.status === 'top') {
+            return 'analytics-detail__badge--success';
+        }
+        if (entry.status === 'no-views') {
+            return 'analytics-detail__badge--warning';
+        }
+        return 'analytics-detail__badge--neutral';
+    }
+
+    function getInsightSuggestions(entry){
+        const baseSuggestions = {
+            top: [
+                'Feature this page in newsletters or on the homepage to extend its reach.',
+                'Link to complementary content to keep high-intent visitors exploring longer.'
+            ],
+            growing: [
+                'Monitor engagement over the next few weeks to spot breakout potential.',
+                'Test new calls-to-action to turn consistent visitors into conversions.'
+            ],
+            'no-views': [
+                'Add internal links from popular pages to send visitors here.',
+                'Share the page on social channels or email to secure first visits.'
+            ],
+            default: [
+                'Keep an eye on this page to understand how readers engage with the topic.'
+            ]
+        };
+
+        const bucket = baseSuggestions[entry.status] ? baseSuggestions[entry.status].slice() : baseSuggestions.default.slice();
+
+        if (entry.difference < 0 && entry.previousViews > 0) {
+            bucket.unshift('Traffic dropped by ' + formatNumber(Math.abs(entry.difference)) + ' views versus last period—refresh the content or promote it again.');
+        } else if (entry.difference > 0 && entry.hadPreviousTraffic) {
+            bucket.unshift('Traffic grew by ' + formatNumber(entry.difference) + ' views this period. Highlight it in upcoming campaigns to build on the momentum.');
+        } else if (entry.isNewThisPeriod) {
+            bucket.unshift('The page is attracting its first visitors—share it broadly to keep the momentum going.');
+        }
+
+        return bucket.slice(0, 3);
+    }
+
+    function buildPageUrl(slug){
+        const cleanSlug = (slug || '').toString().replace(/^\/+/, '');
+        if (cleanSlug === '') {
+            return '/';
+        }
+        return '/' + cleanSlug;
+    }
+
+    function renderDetail(entry){
+        if (!$detail.length || !entry) {
+            return;
+        }
+        const slugDisplay = entry.slug ? '/' + entry.slug : '/';
+        const deltaClass = entry.previousViews === 0 && entry.views > 0
+            ? 'positive'
+            : (entry.difference > 0 ? 'positive' : (entry.difference < 0 ? 'negative' : 'neutral'));
+
+        if ($detailTitle.length) {
+            $detailTitle.text(entry.title || 'Page analytics details');
+        }
+        if ($detailSlug.length) {
+            $detailSlug.text(slugDisplay);
+        }
+        if ($detailSummary.length) {
+            $detailSummary.text(getStatusSummary(entry));
+        }
+        if ($detailViews.length) {
+            $detailViews.text(formatNumber(entry.views));
+        }
+        if ($detailDelta.length) {
+            $detailDelta
+                .attr('class', 'analytics-detail__delta analytics-detail__delta--' + deltaClass)
+                .text(buildDeltaText(entry));
+        }
+        if ($detailBadge.length) {
+            $detailBadge
+                .attr('class', 'analytics-detail__badge ' + getStatusBadgeClass(entry))
+                .text(entry.badge || 'Page insight');
+        }
+        if ($detailTrend.length) {
+            $detailTrend
+                .attr('class', 'analytics-detail__badge ' + getTrendBadgeClass(entry))
+                .text(getTrendLabel(entry));
+        }
+
+        if ($detailMetrics.length) {
+            const metrics = [
+                { label: 'Previous period', value: formatNumber(entry.previousViews) + ' views' },
+                { label: 'Change vs previous', value: buildDeltaMetric(entry) },
+                { label: 'Share of site traffic', value: formatShareOfTraffic(entry.shareOfViews) },
+                { label: 'Sitewide rank', value: '#' + entry.rank + ' of ' + formatNumber(state.counts.all) }
+            ];
+            const metricHtml = metrics.map(function(metric){
+                return '<li>' +
+                    '<span class="analytics-detail__metric-label">' + escapeHtml(metric.label) + '</span>' +
+                    '<span class="analytics-detail__metric-value">' + escapeHtml(metric.value) + '</span>' +
+                '</li>';
+            }).join('');
+            $detailMetrics.html(metricHtml);
+        }
+
+        if ($detailInsights.length) {
+            const suggestions = getInsightSuggestions(entry);
+            if (suggestions.length) {
+                const insightsHtml = suggestions.map(function(text){
+                    return '<li>' + escapeHtml(text) + '</li>';
+                }).join('');
+                $detailInsights.html(insightsHtml);
+                if ($detailInsightsSection.length) {
+                    $detailInsightsSection.removeAttr('hidden');
+                }
+            } else {
+                $detailInsights.empty();
+                if ($detailInsightsSection.length) {
+                    $detailInsightsSection.attr('hidden', true);
+                }
+            }
+        }
+
+        if ($detailVisit.length) {
+            const url = buildPageUrl(entry.slug);
+            $detailVisit.attr('href', url);
+        }
+    }
+
+    function closeDetail(options){
+        if (!$detail.length) {
+            return;
+        }
+        if (detailActiveSlug == null) {
+            $detail.attr('hidden', true).removeClass('is-visible');
+            return;
+        }
+        $detail.attr('hidden', true).removeClass('is-visible');
+        const shouldRestoreFocus = !(options && options.skipFocus);
+        const trigger = detailReturnFocus;
+        detailActiveSlug = null;
+        detailReturnFocus = null;
+        if (shouldRestoreFocus && trigger && typeof trigger.focus === 'function') {
+            try {
+                trigger.focus();
+            } catch (error) {
+                // Ignore focus errors
+            }
+        }
+    }
+
+    function openDetail(entry, trigger){
+        if (!$detail.length || !entry) {
+            return;
+        }
+        detailActiveSlug = entry.slug;
+        detailReturnFocus = trigger && trigger.nodeType === 1 ? trigger : (trigger && trigger[0] ? trigger[0] : null);
+        renderDetail(entry);
+        $detail.attr('hidden', false).addClass('is-visible');
+        if ($detailClose.length) {
+            setTimeout(function(){
+                $detailClose.trigger('focus');
+            }, 0);
+        }
+    }
+
+    function openDetailBySlug(slug, trigger){
+        const entry = findEntryBySlug(slug);
+        if (!entry) {
+            return;
+        }
+        openDetail(entry, trigger);
     }
 
     function sortItemsForTable(items){
@@ -648,6 +1025,14 @@ $(function(){
         updateFilterCounts();
         renderInsights();
         render();
+        if (detailActiveSlug != null) {
+            const activeEntry = findEntryBySlug(detailActiveSlug);
+            if (activeEntry) {
+                renderDetail(activeEntry);
+            } else {
+                closeDetail({ skipFocus: true });
+            }
+        }
     }
 
     function loadFromServer(){
@@ -741,5 +1126,59 @@ $(function(){
                 });
         });
     }
+
+    $grid.on('click', '.analytics-page-card', function(){
+        const slug = getSlugFromElement(this);
+        if (slug !== null) {
+            openDetailBySlug(slug, this);
+        }
+    });
+
+    $grid.on('keydown', '.analytics-page-card', function(event){
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            const slug = getSlugFromElement(this);
+            if (slug !== null) {
+                openDetailBySlug(slug, this);
+            }
+        }
+    });
+
+    $tableBody.on('click', '.analytics-table__row', function(){
+        const slug = getSlugFromElement(this);
+        if (slug !== null) {
+            openDetailBySlug(slug, this);
+        }
+    });
+
+    $tableBody.on('keydown', '.analytics-table__row', function(event){
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            const slug = getSlugFromElement(this);
+            if (slug !== null) {
+                openDetailBySlug(slug, this);
+            }
+        }
+    });
+
+    if ($detail.length) {
+        $detail.on('click', function(event){
+            if (event.target === this) {
+                closeDetail();
+            }
+        });
+    }
+
+    if ($detailClose.length) {
+        $detailClose.on('click', function(){
+            closeDetail();
+        });
+    }
+
+    $(document).on('keydown.analyticsDetail', function(event){
+        if (event.key === 'Escape' && detailActiveSlug != null) {
+            closeDetail();
+        }
+    });
 
 });
