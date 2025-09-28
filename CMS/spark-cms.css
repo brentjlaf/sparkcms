@@ -352,6 +352,13 @@
             z-index: 1;
         }
 
+        .logs-hero-meta-group {
+            display: inline-flex;
+            align-items: stretch;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
         .logs-hero-meta-item {
             display: inline-flex;
             flex-direction: column;
@@ -2139,6 +2146,13 @@
             display: flex;
             align-items: center;
             gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .a11y-hero-meta-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
