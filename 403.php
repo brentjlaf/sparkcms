@@ -1,10 +1,10 @@
 <?php
 // File: 403.php
 require_once __DIR__ . '/CMS/includes/data.php';
+require_once __DIR__ . '/CMS/includes/settings.php';
 http_response_code(403);
-$settingsFile = __DIR__ . '/CMS/data/settings.json';
 $menusFile = __DIR__ . '/CMS/data/menus.json';
-$settings = read_json_file($settingsFile);
+$settings = get_site_settings();
 $menus = read_json_file($menusFile);
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {

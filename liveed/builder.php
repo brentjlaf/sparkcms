@@ -2,6 +2,7 @@
 // File: builder.php
 require_once __DIR__ . '/../CMS/includes/auth.php';
 require_once __DIR__ . '/../CMS/includes/data.php';
+require_once __DIR__ . '/../CMS/includes/settings.php';
 require_login();
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -24,8 +25,7 @@ if (substr($scriptBase, -7) === '/liveed') {
 $themeBase = $scriptBase . '/theme';
 
 // Load settings and menus for the theme template
-$settingsFile = __DIR__ . '/../CMS/data/settings.json';
-$settings = read_json_file($settingsFile);
+$settings = get_site_settings();
 $menusFile = __DIR__ . '/../CMS/data/menus.json';
 $menus = read_json_file($menusFile);
 

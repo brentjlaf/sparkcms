@@ -3,11 +3,12 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../../includes/settings.php';
 require_login();
 
 header('Content-Type: application/json');
 
-$settingsFile = __DIR__ . '/../../data/settings.json';
+$settingsFile = get_settings_file_path();
 $settings = read_json_file($settingsFile);
 if (!is_array($settings)) {
     $settings = [];
@@ -225,6 +226,7 @@ $settings['open_graph'] = $openGraph;
 $settings['last_updated'] = date('c');
 
 write_json_file($settingsFile, $settings);
+set_site_settings_cache($settings);
 
 echo json_encode([
     'status' => 'ok',

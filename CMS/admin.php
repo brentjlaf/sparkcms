@@ -2,13 +2,13 @@
 // File: admin.php
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/data.php';
+require_once __DIR__ . '/includes/settings.php';
 require_login();
 
 $pagesFile = __DIR__ . '/data/pages.json';
 $pages = get_cached_json($pagesFile);
 
-$settingsFile = __DIR__ . '/data/settings.json';
-$settings = get_cached_json($settingsFile);
+$settings = get_site_settings();
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -3,12 +3,9 @@
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/sanitize.php';
 require_once __DIR__ . '/includes/data.php';
+require_once __DIR__ . '/includes/settings.php';
 
-$settingsFile = __DIR__ . '/data/settings.json';
-$settings = [];
-if (file_exists($settingsFile)) {
-    $settings = read_json_file($settingsFile);
-}
+$settings = get_site_settings();
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

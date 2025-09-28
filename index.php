@@ -1,6 +1,7 @@
 <?php
 // File: index.php
 require_once __DIR__ . '/CMS/includes/data.php';
+require_once __DIR__ . '/CMS/includes/settings.php';
 // Determine the requested path for clean URLs.
 // When the CMS is installed in a subdirectory we need to strip that base
 // directory from the request URI so that routing works correctly.
@@ -12,8 +13,7 @@ if ($base && strpos($path, $base) === 0) {
 
 // If a real file is requested, serve it directly. This allows access to
 // backend scripts like CMS/login.php when using URL rewriting.
-$settingsFile = __DIR__ . '/CMS/data/settings.json';
-$settings = read_json_file($settingsFile);
+$settings = get_site_settings();
 $homepage = $settings['homepage'] ?? 'home';
 
 $requested = __DIR__ . '/' . $path;
