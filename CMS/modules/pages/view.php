@@ -139,6 +139,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
     data-template="<?php echo htmlspecialchars($p['template'] ?? '', ENT_QUOTES); ?>"
     data-meta_title="<?php echo htmlspecialchars($p['meta_title'] ?? '', ENT_QUOTES); ?>"
     data-meta_description="<?php echo htmlspecialchars($p['meta_description'] ?? '', ENT_QUOTES); ?>"
+    data-canonical_url="<?php echo htmlspecialchars($p['canonical_url'] ?? '', ENT_QUOTES); ?>"
     data-og_title="<?php echo htmlspecialchars($p['og_title'] ?? '', ENT_QUOTES); ?>"
     data-og_description="<?php echo htmlspecialchars($p['og_description'] ?? '', ENT_QUOTES); ?>"
     data-og_image="<?php echo htmlspecialchars($p['og_image'] ?? '', ENT_QUOTES); ?>"
@@ -253,6 +254,10 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                                 <div class="form-group">
                                     <label class="form-label" for="meta_description">Meta Description</label>
                                     <textarea class="form-textarea" name="meta_description" id="meta_description" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="canonical_url">Canonical URL</label>
+                                    <input type="url" class="form-input" name="canonical_url" id="canonical_url" placeholder="https://example.com/your-page">
                                 </div>
                             </div>
                             <div id="tab-og" class="page-modal-panel">

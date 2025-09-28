@@ -203,6 +203,9 @@ if ($templateFile && (!$logged_in || $preview_mode)) {
 <?php if (!empty($page['meta_description'])): ?>
     <meta name="description" content="<?php echo htmlspecialchars($page['meta_description']); ?>">
 <?php endif; ?>
+<?php if (!empty($page['canonical_url'])): ?>
+    <link rel="canonical" href="<?php echo htmlspecialchars($page['canonical_url']); ?>">
+<?php endif; ?>
 <?php if (!empty($page['og_title'])): ?>
     <meta property="og:title" content="<?php echo htmlspecialchars($page['og_title']); ?>">
 <?php endif; ?>

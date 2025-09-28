@@ -13,7 +13,8 @@
     "og_title": "Home",
     "og_description": "Welcome to the Home Page",
     "og_image": "",
-    "access": "public"
+    "access": "public",
+    "canonical_url": ""
   },
   {
     "id": 2,
@@ -29,7 +30,8 @@
     "og_title": "About Us",
     "og_description": "Learn more about our company",
     "og_image": "",
-    "access": "public"
+    "access": "public",
+    "canonical_url": ""
   },
   {
     "id": 3,
@@ -45,7 +47,8 @@
     "og_title": "Services",
     "og_description": "Overview of the services we offer",
     "og_image": "",
-    "access": "public"
+    "access": "public",
+    "canonical_url": ""
   },
   {
     "id": 4,
@@ -61,7 +64,8 @@
     "og_title": "Blogs",
     "og_description": "Latest blog posts and updates",
     "og_image": "",
-    "access": "public"
+    "access": "public",
+    "canonical_url": ""
   },
   {
     "id": 5,
@@ -77,7 +81,8 @@
     "og_title": "Contact Us",
     "og_description": "Get in touch with us",
     "og_image": "",
-    "access": "public"
+    "access": "public",
+    "canonical_url": ""
   },
   {
     "id": 6,
@@ -93,7 +98,8 @@
     "published": true,
     "access": "public",
     "template": "page.php",
-    "views": 0
+    "views": 0,
+    "canonical_url": ""
   },
   {
     "id": 7,
@@ -109,7 +115,8 @@
     "published": true,
     "access": "public",
     "template": "page.php",
-    "views": 0
+    "views": 0,
+    "canonical_url": ""
   },
   {
     "id": 8,
@@ -125,7 +132,8 @@
     "published": true,
     "access": "public",
     "template": "page.php",
-    "views": 0
+    "views": 0,
+    "canonical_url": ""
   },
   {
     "id": 9,
@@ -141,6 +149,7 @@
     "published": true,
     "access": "public",
     "template": "page.php",
-    "views": 0
+    "views": 0,
+    "canonical_url": ""
   }
 ]
