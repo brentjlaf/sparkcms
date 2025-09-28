@@ -9,56 +9,41 @@
                                 </div>
                                 <div class="a11y-hero-actions media-hero-actions">
                                     <button type="button" class="media-btn media-btn--ghost" id="createFolderBtn">
-                                        <i class="fa-solid fa-folder-plus" aria-hidden="true"></i>
                                         <span>New Folder</span>
                                     </button>
                                     <button type="button" class="media-btn media-btn--primary is-disabled" id="uploadBtn" disabled aria-disabled="true">
-                                        <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
                                         <span>Upload Media</span>
                                     </button>
                                 </div>
                             </div>
                             <div class="media-hero-meta">
                                 <span class="media-hero-chip">
-                                    <i class="fa-solid fa-photo-film" aria-hidden="true"></i>
                                     <span>Rich asset management with previews, cropping, and tagging tools.</span>
                                 </span>
                                 <span class="media-hero-chip" id="mediaHeroFolderChip">
-                                    <i class="fa-solid fa-folder-tree" aria-hidden="true"></i>
                                     <span id="mediaHeroFolderName">No folder selected</span>
                                 </span>
                                 <span class="media-hero-chip" id="mediaHeroFolderMeta">
-                                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                                     <span id="mediaHeroFolderInfo">Select a folder to see file details</span>
                                 </span>
                                 <span class="media-hero-chip">
-                                    <i class="fa-solid fa-database" aria-hidden="true"></i>
                                     <span id="mediaStorageSummary">0 used</span>
                                 </span>
                             </div>
                             <div class="a11y-overview-grid media-overview-grid">
                                 <div class="a11y-overview-card media-overview-card">
-                                    <div class="media-overview-icon" aria-hidden="true">
-                                        <i class="fa-solid fa-folder-open"></i>
-                                    </div>
                                     <div class="media-overview-content">
                                         <div class="a11y-overview-label media-overview-label">Folders</div>
                                         <div class="a11y-overview-value media-overview-value" id="totalFolders">0</div>
                                     </div>
                                 </div>
                                 <div class="a11y-overview-card media-overview-card">
-                                    <div class="media-overview-icon" aria-hidden="true">
-                                        <i class="fa-solid fa-images"></i>
-                                    </div>
                                     <div class="media-overview-content">
                                         <div class="a11y-overview-label media-overview-label">Files</div>
                                         <div class="a11y-overview-value media-overview-value" id="totalImages">0</div>
                                     </div>
                                 </div>
                                 <div class="a11y-overview-card media-overview-card">
-                                    <div class="media-overview-icon" aria-hidden="true">
-                                        <i class="fa-solid fa-database"></i>
-                                    </div>
                                     <div class="media-overview-content">
                                         <div class="a11y-overview-label media-overview-label">Storage Used</div>
                                         <div class="a11y-overview-value media-overview-value" id="totalSize">0</div>
