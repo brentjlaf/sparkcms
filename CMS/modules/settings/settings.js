@@ -14,6 +14,87 @@ $(function(){
     const $socialPreviewDescription = $('#socialPreviewDescription');
     const $socialPreviewDomain = $('#socialPreviewDomain');
 
+    const integrationValidators = [
+        {
+            selector: '#googleAnalytics',
+            pattern: /^(G-[A-Z0-9]{8,12}|UA-\d{4,10}-\d{1,4})$/i,
+            message: 'Enter a valid Google Analytics ID (e.g., G-XXXXXXXXXX or UA-XXXXXXXX-X).'
+        },
+        {
+            selector: '#googleSearchConsole',
+            pattern: /^(google-site-verification=)?[A-Za-z0-9_-]{10,100}$/,
+            message: 'Enter a valid Google Search Console verification code (e.g., google-site-verification=XXXXX).'
+        },
+        {
+            selector: '#facebookPixel',
+            pattern: /^\d{15,16}$/,
+            message: 'Enter a valid Facebook Pixel ID using 15-16 digits.'
+        }
+    ];
+
+    function clearFieldError($field){
+        if(!$field || !$field.length){
+            return;
+        }
+        $field.removeClass('is-invalid').removeAttr('aria-invalid');
+        $field.closest('.form-group').find('.form-error').remove();
+    }
+
+    function showFieldError($field, message){
+        if(!$field || !$field.length){
+            return;
+        }
+        clearFieldError($field);
+        $field.addClass('is-invalid').attr('aria-invalid', 'true');
+        const $group = $field.closest('.form-group');
+        const $error = $('<div class="form-error" role="alert"></div>').text(message);
+        const $help = $group.find('.form-help').last();
+        if($help.length){
+            $error.insertAfter($help);
+        } else {
+            $group.append($error);
+        }
+    }
+
+    function clearIntegrationErrors(){
+        integrationValidators.forEach(({selector}) => {
+            clearFieldError($(selector));
+        });
+    }
+
+    function validateIntegrations(){
+        let firstInvalidField = null;
+        let hasError = false;
+
+        integrationValidators.forEach(({selector, pattern, message}) => {
+            const $field = $(selector);
+            const value = ($field.val() || '').trim();
+            if(!value){
+                clearFieldError($field);
+                return;
+            }
+
+            if(!pattern.test(value)){
+                showFieldError($field, message);
+                if(!firstInvalidField){
+                    firstInvalidField = $field;
+                }
+                hasError = true;
+            } else {
+                clearFieldError($field);
+            }
+        });
+
+        if(hasError){
+            alertModal('Please fix the highlighted integration fields before saving.');
+            if(firstInvalidField){
+                firstInvalidField.focus();
+            }
+        }
+
+        return !hasError;
+    }
+
     function formatTimestamp(value){
         if(!value){
             return 'Not saved yet';
@@ -202,6 +283,7 @@ $(function(){
             $socialPreviewDomain.text(hostname);
             updateSocialPreviewText();
 
+            clearIntegrationErrors();
             updateHeroMeta(data.last_updated || '');
             updateOverview();
         });
@@ -231,6 +313,7 @@ $(function(){
     });
 
     $form.on('input change', 'input, textarea, select', function(){
+        clearFieldError($(this));
         updateOverview();
     });
 
@@ -240,6 +323,10 @@ $(function(){
 
     $form.on('submit', function(e){
         e.preventDefault();
+        if(!validateIntegrations()){
+            return;
+        }
+
         const fd = new FormData(this);
         $.ajax({
             url: 'modules/settings/save_settings.php',
