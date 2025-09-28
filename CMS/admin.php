@@ -9,6 +9,13 @@ $pagesFile = __DIR__ . '/data/pages.json';
 $pages = get_cached_json($pagesFile);
 
 $settings = get_site_settings();
+$adminFavicon = 'images/favicon.png';
+$faviconSetting = $settings['favicon'] ?? '';
+if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?://#i', $faviconSetting)) {
+    $adminFavicon = $faviconSetting;
+} elseif (!empty($settings['favicon'])) {
+    $adminFavicon = ltrim($settings['favicon'], '/');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,7 +30,7 @@ $settings = get_site_settings();
     <script src="modal-utils.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="spark-cms.css">
-                <link rel="shortcut icon" href="images/favicon.png" />
+    <link rel="shortcut icon" href="<?php echo htmlspecialchars($adminFavicon); ?>" />
 
 </head>
 <body>

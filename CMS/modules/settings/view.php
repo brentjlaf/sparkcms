@@ -69,6 +69,20 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label class="form-label" for="faviconFile">Site Favicon</label>
+                        <div class="settings-file-input">
+                            <input type="file" class="form-input" id="faviconFile" name="favicon" accept="image/png,image/jpeg,image/gif,image/webp,image/x-icon,image/vnd.microsoft.icon,image/svg+xml,.ico">
+                            <img id="faviconPreview" class="settings-file-preview" src="" alt="Favicon preview" hidden>
+                        </div>
+                        <div class="form-option">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="clearFavicon" name="clear_favicon" value="1">
+                                <span>Remove current favicon</span>
+                            </label>
+                        </div>
+                        <div class="form-help">Upload a square image (PNG, ICO, or SVG) at least 32×32 pixels.</div>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label" for="timezone">Timezone</label>
                         <select class="form-select" id="timezone" name="timezone">
                             <option value="America/New_York">Eastern Time (ET)</option>

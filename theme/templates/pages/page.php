@@ -8,6 +8,14 @@ if (!empty($settings['logo'])) {
 } else {
     $logo = $themeBase . '/images/logo.png';
 }
+$faviconSetting = $settings['favicon'] ?? '';
+if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?://#i', $faviconSetting)) {
+    $favicon = $faviconSetting;
+} elseif (!empty($settings['favicon'])) {
+    $favicon = $scriptBase . '/CMS/' . ltrim($settings['favicon'], '/');
+} else {
+    $favicon = $themeBase . '/images/favicon.png';
+}
 $mainMenu = $menus[0]['items'] ?? [];
 $footerMenu = $menus[1]['items'] ?? [];
 $social = $settings['social'] ?? [];
@@ -45,7 +53,7 @@ function renderFooterMenu($items){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Favicon -->
-    <link rel="shortcut icon" href="<?php echo $themeBase; ?>/images/favicon.png" type="image/x-icon"/>
+    <link rel="shortcut icon" href="<?php echo htmlspecialchars($favicon); ?>" type="image/x-icon"/>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
