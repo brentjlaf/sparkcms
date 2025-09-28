@@ -593,8 +593,14 @@
   }
 
   root.addEventListener('click', (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) {
+    const rawTarget = event.target;
+    if (!(rawTarget instanceof HTMLElement)) {
+      return;
+    }
+
+    const target = rawTarget.closest('[data-calendar-open], [data-calendar-close], [data-calendar-action]');
+
+    if (!target) {
       return;
     }
 
