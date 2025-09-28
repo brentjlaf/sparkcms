@@ -27,6 +27,17 @@
   const eventModal = root.querySelector('[data-calendar-modal="event"]');
   const categoriesModal = root.querySelector('[data-calendar-modal="categories"]');
   const eventModalTitle = root.querySelector('#calendarEventModalTitle');
+  const heroStatElements = {
+    total: root.querySelector('[data-calendar-stat="total"]'),
+    upcoming: root.querySelector('[data-calendar-stat="upcoming"]'),
+    recurring: root.querySelector('[data-calendar-stat="recurring"]'),
+    categories: root.querySelector('[data-calendar-stat="categories"]'),
+  };
+  const nextEventMeta = root.querySelector('[data-calendar-next-event]');
+  const nextEventText = root.querySelector('[data-calendar-next-event-text]');
+  const nextEventEmptyLabel =
+    (nextEventText && nextEventText.getAttribute('data-empty-label')) ||
+    'No upcoming events scheduled';
 
   const recurrenceLabels = {
     none: 'None',
@@ -128,6 +139,100 @@
     categorySelect.innerHTML = options.join('');
   }
 
+  function formatHeroDate(timestamp, longForm) {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    const baseOptions = longForm
+      ? {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        }
+      : {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        };
+    return date.toLocaleString(undefined, baseOptions);
+  }
+
+  function updateHeroStats() {
+    const totalEvents = Array.isArray(state.events) ? state.events.length : 0;
+    if (heroStatElements.total) {
+      heroStatElements.total.textContent = String(totalEvents);
+    }
+
+    let upcomingCount = 0;
+    let recurringCount = 0;
+    let nextEventTimestamp = null;
+    let nextEventTitle = '';
+    const now = Date.now();
+
+    if (Array.isArray(state.events)) {
+      state.events.forEach((event) => {
+        if (!event || typeof event !== 'object') {
+          return;
+        }
+
+        const recurrence = String(event.recurring_interval || '').toLowerCase();
+        if (recurrence && recurrence !== 'none') {
+          recurringCount += 1;
+        }
+
+        const startValue = event.start_date ? Date.parse(event.start_date) : NaN;
+        if (!Number.isNaN(startValue) && startValue >= now) {
+          upcomingCount += 1;
+          if (nextEventTimestamp === null || startValue < nextEventTimestamp) {
+            nextEventTimestamp = startValue;
+            const titleValue = String(event.title || '').trim();
+            nextEventTitle = titleValue || 'Untitled event';
+          }
+        }
+      });
+    }
+
+    if (heroStatElements.upcoming) {
+      heroStatElements.upcoming.textContent = String(upcomingCount);
+    }
+    if (heroStatElements.recurring) {
+      heroStatElements.recurring.textContent = String(recurringCount);
+    }
+    if (heroStatElements.categories) {
+      const categoriesCount = Array.isArray(state.categories)
+        ? state.categories.length
+        : 0;
+      heroStatElements.categories.textContent = String(categoriesCount);
+    }
+
+    if (!nextEventText) {
+      return;
+    }
+
+    if (nextEventTimestamp !== null) {
+      const summary = formatHeroDate(nextEventTimestamp, false);
+      const longSummary = formatHeroDate(nextEventTimestamp, true) || summary;
+      const label = `${nextEventTitle} • ${summary}`;
+      nextEventText.textContent = label;
+      if (nextEventMeta) {
+        nextEventMeta.title = `${nextEventTitle} on ${longSummary}`;
+        nextEventMeta.classList.remove('is-empty');
+      }
+    } else {
+      const fallback = nextEventEmptyLabel;
+      nextEventText.textContent = fallback;
+      if (nextEventMeta) {
+        nextEventMeta.title = fallback;
+        nextEventMeta.classList.add('is-empty');
+      }
+    }
+  }
+
   function renderEvents() {
     if (!eventsTableBody) {
       return;
@@ -136,6 +241,7 @@
     if (!Array.isArray(state.events) || state.events.length === 0) {
       eventsTableBody.innerHTML =
         '<tr><td colspan="7" class="calendar-empty">No events found.</td></tr>';
+      updateHeroStats();
       return;
     }
 
@@ -185,10 +291,13 @@
       .join('');
 
     eventsTableBody.innerHTML = rows;
+    updateHeroStats();
   }
 
   function renderCategories() {
     if (!categoriesTableBody) {
+      renderCategoryOptions();
+      updateHeroStats();
       return;
     }
 
@@ -230,6 +339,7 @@
     }
 
     renderCategoryOptions();
+    updateHeroStats();
   }
 
   function openModal(modal, titleText) {

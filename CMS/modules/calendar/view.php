@@ -41,6 +41,48 @@ $categories = array_values(array_filter($categories, static function ($item) {
     return is_array($item) && isset($item['id']);
 }));
 
+$totalEvents = count($events);
+$categoryCount = count($categories);
+$now = time();
+$upcomingCount = 0;
+$recurringCount = 0;
+$nextEventName = '';
+$nextEventTimestamp = null;
+
+foreach ($events as $event) {
+    if (!is_array($event)) {
+        continue;
+    }
+
+    $recurring = strtolower((string) ($event['recurring_interval'] ?? ''));
+    if ($recurring !== '' && $recurring !== 'none') {
+        $recurringCount++;
+    }
+
+    if (isset($event['start_date'])) {
+        $startTimestamp = strtotime((string) $event['start_date']);
+        if ($startTimestamp !== false && $startTimestamp >= $now) {
+            $upcomingCount++;
+            if ($nextEventTimestamp === null || $startTimestamp < $nextEventTimestamp) {
+                $nextEventTimestamp = $startTimestamp;
+                $title = trim((string) ($event['title'] ?? ''));
+                $nextEventName = $title !== '' ? $title : 'Untitled event';
+            }
+        }
+    }
+}
+
+$hasUpcomingEvent = $nextEventTimestamp !== null;
+$nextEventDisplay = 'No upcoming events scheduled';
+$nextEventTitle = 'No upcoming events scheduled';
+if ($hasUpcomingEvent) {
+    $formattedDate = date('M j, Y g:i A', $nextEventTimestamp);
+    $longDate = date('l, F j, Y g:i A', $nextEventTimestamp);
+    $nextEventDisplay = $nextEventName . ' • ' . $formattedDate;
+    $nextEventTitle = $nextEventName . ' on ' . $longDate;
+}
+$nextEventEmptyLabel = 'No upcoming events scheduled';
+
 $message = '';
 if (isset($_GET['message'])) {
     $message = trim((string) $_GET['message']);
@@ -58,40 +100,127 @@ $initialPayload = [
             font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
             color: #1f2937;
         }
-        .calendar-admin h1 {
-            font-size: 1.75rem;
-            margin: 0 0 1rem;
-            font-weight: 600;
+        .calendar-admin .calendar-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
         }
-        .calendar-admin .calendar-toolbar {
+        .calendar-admin .calendar-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.25rem;
+        }
+        .calendar-admin .calendar-hero::before {
+            content: '';
+            position: absolute;
+            inset: auto -80px -90px auto;
+            width: 260px;
+            height: 260px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            filter: blur(1px);
+        }
+        .calendar-admin .calendar-hero-content {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            z-index: 1;
+        }
+        .calendar-admin .calendar-hero-content > div:first-child {
+            max-width: 36rem;
+        }
+        .calendar-admin .calendar-hero-title {
+            margin: 0 0 0.5rem;
+        }
+        .calendar-admin .calendar-hero-subtitle {
+            margin: 0;
+        }
+        .calendar-admin .calendar-hero-actions {
             display: flex;
             flex-wrap: wrap;
+            align-items: center;
             gap: 0.75rem;
-            margin-bottom: 1.5rem;
         }
-        .calendar-admin .calendar-toolbar a,
-        .calendar-admin .calendar-toolbar button {
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1rem;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .calendar-admin .calendar-hero-actions .a11y-btn {
+            gap: 0.5rem;
+        }
+        .calendar-admin .calendar-hero-actions .a11y-btn--secondary {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+        }
+        .calendar-admin .calendar-hero-actions .a11y-btn--secondary:hover {
+            background: rgba(255, 255, 255, 0.24);
+            color: #fff;
+        }
+        .calendar-admin .calendar-hero-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.28);
+            font-size: 0.9rem;
+        }
+        .calendar-admin .calendar-hero-meta.is-empty {
+            background: rgba(255, 255, 255, 0.18);
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .calendar-admin .calendar-hero-meta i {
+            font-size: 1rem;
+        }
+        .calendar-admin .calendar-overview-grid {
+            position: relative;
+            z-index: 1;
+        }
+        .calendar-admin .calendar-overview-grid .a11y-overview-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 1.1rem;
+            padding: 1.2rem 1.3rem;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.15);
+        }
+        .calendar-admin .calendar-overview-grid .a11y-overview-label {
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.78);
+            margin-bottom: 0.2rem;
+        }
+        .calendar-admin .calendar-overview-grid .a11y-overview-value {
+            font-size: 1.55rem;
+            font-weight: 600;
+            color: #fff;
         }
         .calendar-admin .calendar-btn-primary {
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: #fff;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.65rem 1.2rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .calendar-admin .calendar-btn-primary:hover {
-            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px rgba(37, 99, 235, 0.25);
         }
         .calendar-admin .calendar-btn-outline {
             background: transparent;
             border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            padding: 0.6rem 1.1rem;
+            font-size: 0.95rem;
+            cursor: pointer;
             color: #1f2937;
+            transition: background 0.2s ease, color 0.2s ease;
         }
         .calendar-admin .calendar-btn-outline:hover {
             background: #f9fafb;
+            color: #111827;
         }
         .calendar-admin .calendar-card {
             background: #fff;
@@ -321,33 +450,72 @@ $initialPayload = [
         }
     </style>
 
-    <div class="calendar-header">
-        <h1>Manage Calendar Data</h1>
-        <div class="calendar-alert" data-calendar-message aria-live="polite"></div>
-        <div class="calendar-toolbar">
-            <a href="index.html" class="calendar-btn-outline" target="_blank" rel="noopener">&larr; View Calendar</a>
-            <button type="button" class="calendar-btn-primary" data-calendar-open="event">+ Add New Event</button>
-            <button type="button" class="calendar-btn-outline" data-calendar-open="categories">Manage Categories</button>
-        </div>
-    </div>
+    <div class="calendar-dashboard a11y-dashboard">
+        <header class="a11y-hero calendar-hero">
+            <div class="a11y-hero-content calendar-hero-content">
+                <div>
+                    <h2 class="a11y-hero-title calendar-hero-title">Calendar &amp; Events</h2>
+                    <p class="a11y-hero-subtitle calendar-hero-subtitle">Plan programming, track key milestones, and keep your public schedule aligned across the site.</p>
+                </div>
+                <div class="a11y-hero-actions calendar-hero-actions">
+                    <a class="a11y-btn a11y-btn--ghost" href="index.html" target="_blank" rel="noopener">
+                        <i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i>
+                        <span>View calendar</span>
+                    </a>
+                    <button type="button" class="a11y-btn a11y-btn--primary" data-calendar-open="event">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                        <span>New event</span>
+                    </button>
+                    <button type="button" class="a11y-btn a11y-btn--secondary" data-calendar-open="categories">
+                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                        <span>Manage categories</span>
+                    </button>
+                    <span class="a11y-hero-meta calendar-hero-meta<?php echo $hasUpcomingEvent ? '' : ' is-empty'; ?>" data-calendar-next-event title="<?php echo htmlspecialchars($nextEventTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                        <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+                        <span data-calendar-next-event-text data-empty-label="<?php echo htmlspecialchars($nextEventEmptyLabel, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($nextEventDisplay, ENT_QUOTES, 'UTF-8'); ?></span>
+                    </span>
+                </div>
+            </div>
+            <div class="a11y-overview-grid calendar-overview-grid">
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-label">Total events</div>
+                    <div class="a11y-overview-value" data-calendar-stat="total"><?php echo (int) $totalEvents; ?></div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-label">Upcoming events</div>
+                    <div class="a11y-overview-value" data-calendar-stat="upcoming"><?php echo (int) $upcomingCount; ?></div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-label">Recurring events</div>
+                    <div class="a11y-overview-value" data-calendar-stat="recurring"><?php echo (int) $recurringCount; ?></div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-label">Categories</div>
+                    <div class="a11y-overview-value" data-calendar-stat="categories"><?php echo (int) $categoryCount; ?></div>
+                </div>
+            </div>
+        </header>
 
-    <div class="calendar-card">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:60px;">ID</th>
-                    <th>Title</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Category</th>
-                    <th>Recurrence</th>
-                    <th style="width:160px;">Actions</th>
-                </tr>
-            </thead>
-            <tbody data-calendar-events>
-                <tr><td colspan="7" class="calendar-empty">Loading events…</td></tr>
-            </tbody>
-        </table>
+        <div class="calendar-alert" data-calendar-message aria-live="polite"></div>
+
+        <div class="calendar-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:60px;">ID</th>
+                        <th>Title</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Category</th>
+                        <th>Recurrence</th>
+                        <th style="width:160px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody data-calendar-events>
+                    <tr><td colspan="7" class="calendar-empty">Loading events…</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="calendar-modal-backdrop" data-calendar-modal="event">
