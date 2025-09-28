@@ -53,67 +53,6 @@ foreach ($pages as $p) {
     $views += $p['views'] ?? 0;
 }
 
-$seoSummary = [
-    'optimized' => 0,
-    'needs_attention' => 0,
-    'metadata_gaps' => 0,
-];
-
-$stringLength = function (string $value): int {
-    if (function_exists('mb_strlen')) {
-        return mb_strlen($value);
-    }
-    return strlen($value);
-};
-
-foreach ($pages as $page) {
-    $metaTitle = trim((string)($page['meta_title'] ?? ''));
-    $metaDescription = trim((string)($page['meta_description'] ?? ''));
-    $ogTitle = trim((string)($page['og_title'] ?? ''));
-    $ogDescription = trim((string)($page['og_description'] ?? ''));
-    $ogImage = trim((string)($page['og_image'] ?? ''));
-
-    $issues = [];
-
-    if ($metaTitle === '') {
-        $issues[] = 'meta_title_missing';
-        $seoSummary['metadata_gaps']++;
-    } else {
-        $length = $stringLength($metaTitle);
-        if ($length < 30 || $length > 60) {
-            $issues[] = 'meta_title_length';
-        }
-    }
-
-    if ($metaDescription === '') {
-        $issues[] = 'meta_description_missing';
-        $seoSummary['metadata_gaps']++;
-    } else {
-        $length = $stringLength($metaDescription);
-        if ($length < 50 || $length > 160) {
-            $issues[] = 'meta_description_length';
-        }
-    }
-
-    $slug = (string)($page['slug'] ?? '');
-    if ($slug === '' || !preg_match('/^[a-z0-9\-]+$/', $slug)) {
-        $issues[] = 'slug_format';
-    }
-
-    if ($ogTitle === '' || $ogDescription === '' || $ogImage === '') {
-        $issues[] = 'social_preview';
-    }
-
-    if (empty($issues)) {
-        $seoSummary['optimized']++;
-    } else {
-        $seoSummary['needs_attention']++;
-    }
-}
-
-$seoTotal = count($pages);
-$seoScore = $seoTotal > 0 ? round(($seoSummary['optimized'] / $seoTotal) * 100) : 0;
-
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {
     $scriptBase = substr($scriptBase, 0, -4);
@@ -509,18 +448,6 @@ $analyticsStatus = $analyticsSummary['totalViews'] === 0 ? 'warning' : 'ok';
 $analyticsTrend = 'Average views per page: ' . dashboard_format_number((int)$analyticsSummary['averageViews']);
 $analyticsCta = $analyticsSummary['totalViews'] === 0 ? 'Set up tracking' : 'Explore analytics';
 
-$seoStatus = 'ok';
-if ($seoSummary['needs_attention'] > 0) {
-    $seoStatus = 'warning';
-}
-if ($seoSummary['metadata_gaps'] > 0 && $seoSummary['optimized'] === 0) {
-    $seoStatus = 'urgent';
-}
-$seoTrend = $seoTotal > 0
-    ? $seoScore . '% SEO health score'
-    : 'No pages analysed yet';
-$seoCta = $seoSummary['needs_attention'] > 0 ? 'Review SEO issues' : 'Monitor SEO health';
-
 $accessibilityStatus = 'ok';
 if ($accessibilitySummary['needs_review'] > 0 || $accessibilitySummary['missing_alt'] > 0) {
     $accessibilityStatus = 'warning';
@@ -642,16 +569,6 @@ $moduleSummaries = [
         'cta' => $analyticsCta,
     ],
     [
-        'id' => 'seo',
-        'module' => 'SEO',
-        'primary' => dashboard_format_number($seoSummary['optimized']) . ' optimized pages',
-        'secondary' => 'Needs attention: ' . dashboard_format_number($seoSummary['needs_attention']) . ' • Metadata gaps: ' . dashboard_format_number($seoSummary['metadata_gaps']),
-        'status' => $seoStatus,
-        'statusLabel' => dashboard_status_label($seoStatus),
-        'trend' => $seoTrend,
-        'cta' => $seoCta,
-    ],
-    [
         'id' => 'accessibility',
         'module' => 'Accessibility',
         'primary' => dashboard_format_number($accessibilitySummary['accessible']) . ' compliant pages',
@@ -744,16 +661,11 @@ $data = [
     'formsFields' => $formsFields,
     'menusCount' => count($menus),
     'menuItems' => $menuItems,
-    'seoScore' => $seoScore,
-    'seoOptimized' => $seoSummary['optimized'],
-    'seoNeedsAttention' => $seoSummary['needs_attention'],
-    'seoMetadataGaps' => $seoSummary['metadata_gaps'],
     'accessibilityScore' => $accessibilityScore,
     'accessibilityCompliant' => $accessibilitySummary['accessible'],
     'accessibilityNeedsReview' => $accessibilitySummary['needs_review'],
     'accessibilityMissingAlt' => $accessibilitySummary['missing_alt'],
-    'openAlerts' => $seoSummary['needs_attention'] + $accessibilitySummary['needs_review'],
-    'alertsSeo' => $seoSummary['needs_attention'],
+    'openAlerts' => $accessibilitySummary['needs_review'],
     'alertsAccessibility' => $accessibilitySummary['needs_review'],
     'logsEntries' => $logEntries,
     'logsLastActivity' => $logsLastActivity,

@@ -66,17 +66,6 @@
                     </div>
                 </div>
                 <div class="a11y-overview-card dashboard-overview-card">
-                    <div class="dashboard-overview-icon seo" aria-hidden="true">
-                        <i class="fa-solid fa-magnifying-glass-chart"></i>
-                    </div>
-                    <div class="dashboard-overview-body">
-                        <div class="a11y-overview-value" data-stat="seo-score">0%</div>
-                        <div class="a11y-overview-label">SEO Health</div>
-                        <div class="dashboard-overview-meta" data-stat="seo-breakdown">Optimized: 0 • Needs attention: 0</div>
-                        <div class="dashboard-overview-meta" data-stat="seo-metadata">Metadata gaps: 0</div>
-                    </div>
-                </div>
-                <div class="a11y-overview-card dashboard-overview-card">
                     <div class="dashboard-overview-icon accessibility" aria-hidden="true">
                         <i class="fa-solid fa-universal-access"></i>
                     </div>
@@ -94,7 +83,7 @@
                     <div class="dashboard-overview-body">
                         <div class="a11y-overview-value" data-stat="alerts">0</div>
                         <div class="a11y-overview-label">Open Alerts</div>
-                        <div class="dashboard-overview-meta" data-stat="alerts-breakdown">SEO: 0 • Accessibility: 0</div>
+                        <div class="dashboard-overview-meta" data-stat="alerts-breakdown">Accessibility reviews pending: 0</div>
                     </div>
                 </div>
             </div>
@@ -164,14 +153,6 @@
                     </span>
                     <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
                 </button>
-                <button type="button" class="dashboard-quick-card" data-module="seo" role="listitem">
-                    <span class="dashboard-quick-icon seo" aria-hidden="true"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
-                    <span class="dashboard-quick-content">
-                        <span class="dashboard-quick-label">SEO</span>
-                        <span class="dashboard-quick-description">Resolve search optimisations and boost visibility.</span>
-                    </span>
-                    <span class="dashboard-quick-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
-                </button>
             </div>
         </section>
 
@@ -225,17 +206,6 @@
                 </article>
                 <article class="stat-card dashboard-metric-card">
                     <div class="stat-header">
-                        <div class="stat-icon seo"><i class="fa-solid fa-magnifying-glass-chart" aria-hidden="true"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-label">SEO Health</div>
-                            <div class="stat-number" id="statSeoScore">0%</div>
-                        </div>
-                    </div>
-                    <div class="stat-subtext" id="statSeoBreakdown">Optimized: 0 • Needs attention: 0</div>
-                    <div class="stat-subtext" id="statSeoMetadata">Metadata gaps: 0</div>
-                </article>
-                <article class="stat-card dashboard-metric-card">
-                    <div class="stat-header">
                         <div class="stat-icon accessibility"><i class="fa-solid fa-universal-access" aria-hidden="true"></i></div>
                         <div class="stat-content">
                             <div class="stat-label">Accessibility</div>
@@ -253,7 +223,7 @@
                             <div class="stat-number" id="statAlerts">0</div>
                         </div>
                     </div>
-                    <div class="stat-subtext" id="statAlertsBreakdown">SEO: 0 • Accessibility: 0</div>
+                    <div class="stat-subtext" id="statAlertsBreakdown">Accessibility reviews pending: 0</div>
                 </article>
             </div>
         </section>
