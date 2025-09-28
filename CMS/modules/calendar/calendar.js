@@ -295,7 +295,7 @@
         const recurrence = recurrenceLabels[event.recurring_interval] || 'None';
         const categoryMeta = getCategoryMeta(event.category);
         const categoryLabel = event.category
-          ? '<span class="calendar-badge" style="color:' +
+          ? '<span class="calendar-badge" style="--calendar-badge-color:' +
             escapeHtml((categoryMeta && categoryMeta.color) || '#4338ca') +
             '">' +
             escapeHtml(event.category) +
@@ -354,9 +354,9 @@
             '<td>' + escapeHtml(category.id || '') + '</td>' +
             '<td>' + escapeHtml(category.name || '') + '</td>' +
             '<td>' +
-            '<span class="calendar-category-color"><span style="background:' +
+            '<span class="calendar-category-color" style="--calendar-category-color:' +
             escapeHtml(color) +
-            ';"></span>' +
+            ';">' +
             escapeHtml(color) +
             '</span>' +
             '</td>' +

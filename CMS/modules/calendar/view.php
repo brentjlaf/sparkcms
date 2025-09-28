@@ -81,439 +81,80 @@ $initialPayload = [
     'metrics' => $metrics,
 ];
 ?>
-<div class="content-section calendar-admin" id="calendarModule">
-    <style>
-        .calendar-admin {
-            font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
-            color: #1f2937;
-        }
-        .calendar-admin h1 {
-            font-size: 1.75rem;
-            margin: 0 0 1rem;
-            font-weight: 600;
-        }
-        .calendar-admin .calendar-hero {
-            background: radial-gradient(120% 120% at 0% 0%, rgba(37, 99, 235, 0.12), rgba(255, 255, 255, 0));
-            border-radius: 1.5rem;
-            padding: clamp(1.5rem, 2vw, 2.25rem);
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(37, 99, 235, 0.08);
-        }
-        .calendar-admin .calendar-hero-main {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        @media (min-width: 768px) {
-            .calendar-admin .calendar-hero-main {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-            }
-        }
-        .calendar-admin .calendar-hero-text {
-            max-width: 520px;
-        }
-        .calendar-admin .calendar-hero-eyebrow {
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.18em;
-            font-weight: 600;
-            color: #2563eb;
-            margin: 0 0 0.5rem;
-        }
-        .calendar-admin .calendar-hero-subtitle {
-            margin: 0.65rem 0 0;
-            font-size: 0.95rem;
-            color: #4b5563;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        .calendar-admin .calendar-hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: rgba(37, 99, 235, 0.12);
-            color: #1e3a8a;
-            padding: 0.35rem 0.7rem;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        .calendar-admin .calendar-hero-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-        .calendar-admin .calendar-hero-actions .a11y-btn {
-            gap: 0.5rem;
-        }
-        .calendar-admin .calendar-hero-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-top: 1.75rem;
-        }
-        .calendar-admin .calendar-hero-tile {
-            background: #fff;
-            border-radius: 1rem;
-            padding: 1rem 1.25rem;
-            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-        }
-        .calendar-admin .calendar-hero-tile span {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #6b7280;
-        }
-        .calendar-admin .calendar-hero-tile strong {
-            font-size: 1.65rem;
-            font-weight: 700;
-            color: #111827;
-        }
-        .calendar-admin .calendar-hero-tile .calendar-hero-tile-subtext {
-            font-size: 0.8rem;
-            color: #4b5563;
-        }
-        .calendar-admin .calendar-card {
-            background: #fff;
-            border-radius: 1rem;
-            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
-            overflow: hidden;
-        }
-        .calendar-admin table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .calendar-admin thead {
-            background: #f9fafb;
-        }
-        .calendar-admin th,
-        .calendar-admin td {
-            padding: 0.9rem 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-            font-size: 0.95rem;
-        }
-        .calendar-admin th {
-            font-weight: 600;
-            color: #4b5563;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-size: 0.8rem;
-        }
-        .calendar-admin tbody tr:hover {
-            background: #f3f4f6;
-        }
-        .calendar-admin .calendar-table-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .calendar-admin .calendar-table-actions button {
-            padding: 0.35rem 0.75rem;
-            border-radius: 0.45rem;
-            border: none;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        .calendar-admin .calendar-edit-btn {
-            background: #2563eb;
-            color: #fff;
-        }
-        .calendar-admin .calendar-delete-btn {
-            background: #ef4444;
-            color: #fff;
-        }
-        .calendar-admin .calendar-empty {
-            text-align: center;
-            padding: 2rem 1rem;
-            color: #6b7280;
-        }
-        .calendar-admin .calendar-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: #e0e7ff;
-            color: #4338ca;
-            padding: 0.2rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.8rem;
-        }
-        .calendar-admin .calendar-badge::before {
-            content: '';
-            width: 0.65rem;
-            height: 0.65rem;
-            border-radius: 999px;
-            background: currentColor;
-            opacity: 0.7;
-        }
-        .calendar-admin .calendar-alert {
-            display: none;
-            margin-bottom: 1rem;
-            padding: 0.85rem 1rem;
-            border-radius: 0.65rem;
-            background: #dbeafe;
-            color: #1e3a8a;
-            border: 1px solid #bfdbfe;
-        }
-        .calendar-admin .calendar-alert.is-visible {
-            display: block;
-        }
-        .calendar-admin .calendar-alert[data-type="success"] {
-            background: #dcfce7;
-            border-color: #bbf7d0;
-            color: #166534;
-        }
-        .calendar-admin .calendar-alert[data-type="error"] {
-            background: #fee2e2;
-            border-color: #fecaca;
-            color: #991b1b;
-        }
-        body.calendar-modal-open {
-            overflow: hidden;
-        }
-        .calendar-admin .calendar-modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.45);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .calendar-admin .calendar-modal-backdrop.show {
-            display: flex;
-        }
-        .calendar-admin .calendar-modal {
-            background: #fff;
-            border-radius: 1rem;
-            width: min(640px, 94vw);
-            max-height: 92vh;
-            overflow-y: auto;
-            box-shadow: 0 30px 60px rgba(15, 23, 42, 0.2);
-            animation: calendarModalIn 0.25s ease;
-        }
-        @keyframes calendarModalIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .calendar-admin .calendar-modal-header,
-        .calendar-admin .calendar-modal-footer {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .calendar-admin .calendar-modal-footer {
-            border-top: 1px solid #e5e7eb;
-            border-bottom: none;
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.75rem;
-        }
-        .calendar-admin .calendar-modal-body {
-            padding: 1.5rem;
-        }
-        .calendar-admin .calendar-modal-title {
-            font-size: 1.2rem;
-            margin: 0;
-            font-weight: 600;
-        }
-        .calendar-admin .calendar-close {
-            border: none;
-            background: transparent;
-            font-size: 1.3rem;
-            cursor: pointer;
-            color: #6b7280;
-        }
-        .calendar-admin .calendar-form-grid {
-            display: grid;
-            gap: 1rem;
-        }
-        @media (min-width: 640px) {
-            .calendar-admin .calendar-form-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-            .calendar-admin .calendar-form-grid .span-2 {
-                grid-column: span 2 / span 2;
-            }
-        }
-        .calendar-admin label {
-            display: block;
-            margin-bottom: 0.35rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #374151;
-        }
-        .calendar-admin input[type="text"],
-        .calendar-admin input[type="datetime-local"],
-        .calendar-admin input[type="color"],
-        .calendar-admin textarea,
-        .calendar-admin select {
-            width: 100%;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 0.65rem 0.75rem;
-            font-size: 0.95rem;
-            background: #fff;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .calendar-admin textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        .calendar-admin input:focus,
-        .calendar-admin textarea:focus,
-        .calendar-admin select:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-        .calendar-admin .calendar-submit-btn {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: #fff;
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.7rem 1.4rem;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-        .calendar-admin .calendar-submit-btn:hover {
-            background: linear-gradient(135deg, #16a34a, #15803d);
-        }
-        .calendar-admin .calendar-btn-outline {
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1rem;
-            background: #fff;
-            color: #1f2937;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .calendar-admin .calendar-btn-outline:hover,
-        .calendar-admin .calendar-btn-outline:focus-visible {
-            background: #f9fafb;
-        }
-        .calendar-admin .calendar-confirm-btn {
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1.25rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: #fff;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-        }
-        .calendar-admin .calendar-confirm-btn:hover,
-        .calendar-admin .calendar-confirm-btn:focus-visible {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        }
-        .calendar-admin .calendar-confirm-btn--danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
-        .calendar-admin .calendar-confirm-btn--danger:hover,
-        .calendar-admin .calendar-confirm-btn--danger:focus-visible {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-        }
-        .calendar-admin .calendar-confirm-btn[data-loading] {
-            opacity: 0.7;
-            cursor: wait;
-            pointer-events: none;
-        }
-        .calendar-admin .calendar-category-color {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-        .calendar-admin .calendar-category-color span {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border-radius: 0.3rem;
-            border: 1px solid rgba(15, 23, 42, 0.15);
-        }
-        .calendar-admin .calendar-modal-small .calendar-modal {
-            width: min(480px, 92vw);
-        }
-        .calendar-admin .calendar-muted {
-            color: #6b7280;
-        }
-        .calendar-admin .calendar-recurring {
-            text-transform: capitalize;
-        }
-        .calendar-admin [data-calendar-confirm-message] {
-            margin: 0;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: #4b5563;
-        }
-    </style>
-
-    <div class="calendar-hero">
-        <div class="calendar-hero-main">
+<div class="content-section calendar-module" id="calendarModule">
+    <header class="a11y-hero calendar-hero">
+        <div class="a11y-hero-content calendar-hero-content">
             <div class="calendar-hero-text">
-                <p class="calendar-hero-eyebrow">Calendar Overview</p>
-                <h1>Manage Calendar Data</h1>
-                <p class="calendar-hero-subtitle">
-                    <span class="calendar-hero-badge" data-calendar-next-event><?php echo htmlspecialchars($nextEventLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                <span class="calendar-hero-eyebrow">Calendar Overview</span>
+                <h2 class="a11y-hero-title calendar-hero-title">Manage Calendar Data</h2>
+                <p class="a11y-hero-subtitle calendar-hero-subtitle">
+                    Coordinate upcoming events, recurring schedules, and categories without leaving the dashboard.
                 </p>
             </div>
-            <div class="calendar-hero-actions">
+            <div class="a11y-hero-actions calendar-hero-actions">
                 <button type="button" class="a11y-btn a11y-btn--primary" data-calendar-open="event">
                     <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
-                    <span>Add New Event</span>
+                    <span>Add new event</span>
                 </button>
-                <button type="button" class="a11y-btn a11y-btn--secondary" data-calendar-open="categories">
+                <button type="button" class="a11y-btn a11y-btn--ghost" data-calendar-open="categories">
                     <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
-                    <span>Manage Categories</span>
+                    <span>Manage categories</span>
                 </button>
+                <span class="a11y-hero-meta calendar-hero-meta" data-calendar-next-event>
+                    <?php echo htmlspecialchars($nextEventLabel, ENT_QUOTES, 'UTF-8'); ?>
+                </span>
             </div>
         </div>
-        <div class="calendar-hero-grid">
-            <div class="calendar-hero-tile">
-                <span>Total Events</span>
-                <strong data-calendar-stat="total"><?php echo $totalEventsCount; ?></strong>
+        <div class="a11y-overview-grid calendar-overview">
+            <div class="a11y-overview-card">
+                <div class="a11y-overview-value" data-calendar-stat="total"><?php echo $totalEventsCount; ?></div>
+                <div class="a11y-overview-label">Total events</div>
             </div>
-            <div class="calendar-hero-tile">
-                <span>Upcoming</span>
-                <strong data-calendar-stat="upcoming"><?php echo $upcomingEventsCount; ?></strong>
+            <div class="a11y-overview-card">
+                <div class="a11y-overview-value" data-calendar-stat="upcoming"><?php echo $upcomingEventsCount; ?></div>
+                <div class="a11y-overview-label">Upcoming</div>
             </div>
-            <div class="calendar-hero-tile">
-                <span>Recurring</span>
-                <strong data-calendar-stat="recurring"><?php echo $recurringEventsCount; ?></strong>
+            <div class="a11y-overview-card">
+                <div class="a11y-overview-value" data-calendar-stat="recurring"><?php echo $recurringEventsCount; ?></div>
+                <div class="a11y-overview-label">Recurring</div>
             </div>
-            <div class="calendar-hero-tile">
-                <span>Categories</span>
-                <strong data-calendar-stat="categories"><?php echo $categoryCount; ?></strong>
+            <div class="a11y-overview-card">
+                <div class="a11y-overview-value" data-calendar-stat="categories"><?php echo $categoryCount; ?></div>
+                <div class="a11y-overview-label">Categories</div>
             </div>
         </div>
-    </div>
+    </header>
+
     <div class="calendar-alert" data-calendar-message aria-live="polite"></div>
 
-    <div class="calendar-card">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:60px;">ID</th>
-                    <th>Title</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Category</th>
-                    <th>Recurrence</th>
-                    <th style="width:160px;">Actions</th>
-                </tr>
-            </thead>
-            <tbody data-calendar-events>
-                <tr><td colspan="7" class="calendar-empty">Loading events…</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <section class="a11y-detail-card calendar-table-card">
+        <header class="calendar-card-header">
+            <div>
+                <h3>Event library</h3>
+                <p>Review upcoming and past events, update details, or remove outdated sessions.</p>
+            </div>
+        </header>
+        <div class="calendar-table-wrapper">
+            <table class="data-table calendar-table">
+                <thead>
+                    <tr>
+                        <th class="is-id-column">ID</th>
+                        <th>Title</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Category</th>
+                        <th>Recurrence</th>
+                        <th class="is-actions-column">Actions</th>
+                    </tr>
+                </thead>
+                <tbody data-calendar-events>
+                    <tr>
+                        <td colspan="7" class="calendar-empty">Loading events…</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
     <div class="calendar-modal-backdrop" data-calendar-modal="event">
         <div class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendarEventModalTitle">
@@ -562,7 +203,7 @@ $initialPayload = [
                             <textarea name="description" id="calendarEventDescription"></textarea>
                         </div>
                     </div>
-                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <div class="calendar-form-actions">
                         <button type="button" class="calendar-btn-outline" data-calendar-close>Cancel</button>
                         <button type="submit" class="calendar-submit-btn">Save Event</button>
                     </div>
@@ -578,22 +219,26 @@ $initialPayload = [
                 <button type="button" class="calendar-close" data-calendar-close>&times;</button>
             </div>
             <div class="calendar-modal-body">
-                <div class="calendar-card" style="box-shadow:none; border:1px solid #e5e7eb; margin-bottom:1rem;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width:60px;">ID</th>
-                                <th>Name</th>
-                                <th>Color</th>
-                                <th style="width:100px;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody data-calendar-categories>
-                            <tr><td colspan="4" class="calendar-empty">No categories yet.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <form data-calendar-form="category" class="calendar-form-grid">
+                <section class="calendar-modal-table">
+                    <div class="calendar-table-wrapper">
+                        <table class="data-table calendar-table">
+                            <thead>
+                                <tr>
+                                    <th class="is-id-column">ID</th>
+                                    <th>Name</th>
+                                    <th>Color</th>
+                                    <th class="is-actions-column">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody data-calendar-categories>
+                                <tr>
+                                    <td colspan="4" class="calendar-empty">No categories yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                <form data-calendar-form="category" class="calendar-form-grid calendar-category-form">
                     <div>
                         <label for="calendarCategoryName">Category Name*</label>
                         <input type="text" name="cat_name" id="calendarCategoryName" required>
@@ -602,7 +247,7 @@ $initialPayload = [
                         <label for="calendarCategoryColor">Color</label>
                         <input type="color" name="cat_color" id="calendarCategoryColor" value="#ffffff">
                     </div>
-                    <div class="span-2" style="display:flex; justify-content:flex-end;">
+                    <div class="span-2 calendar-form-actions calendar-form-actions--inline">
                         <button type="submit" class="calendar-submit-btn">Add Category</button>
                     </div>
                 </form>
