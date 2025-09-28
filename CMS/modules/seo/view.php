@@ -851,12 +851,6 @@ $dashboardStats = [
                         <ul id="seoDetailIssues"></ul>
                     </div>
                 </div>
-                <footer class="a11y-detail-modal-footer">
-                    <button type="button" class="a11y-btn a11y-btn--primary" data-seo-action="full-audit">
-                        <i class="fas fa-chart-line" aria-hidden="true"></i>
-                        <span>Full SEO Audit</span>
-                    </button>
-                </footer>
             </div>
         </div>
 
