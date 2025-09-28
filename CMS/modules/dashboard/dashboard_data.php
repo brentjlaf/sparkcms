@@ -139,6 +139,15 @@ function dashboard_format_number(int $value): string
     return number_format($value);
 }
 
+function dashboard_strlen(string $value): int
+{
+    if (function_exists('mb_strlen')) {
+        return (int)mb_strlen($value);
+    }
+
+    return strlen($value);
+}
+
 function dashboard_status_label(string $status): string
 {
     switch ($status) {
@@ -160,6 +169,28 @@ $accessibilitySummary = [
     'issues' => 0,
 ];
 
+$seoSummary = [
+    'optimised' => 0,
+    'missing_title' => 0,
+    'missing_description' => 0,
+    'long_title' => 0,
+    'description_length' => 0,
+    'duplicate_slugs' => 0,
+    'issues' => 0,
+];
+
+$slugCounts = [];
+foreach ($pages as $page) {
+    $slug = strtolower(trim((string)($page['slug'] ?? '')));
+    if ($slug === '') {
+        continue;
+    }
+    if (!isset($slugCounts[$slug])) {
+        $slugCounts[$slug] = 0;
+    }
+    $slugCounts[$slug]++;
+}
+
 $genericLinkTerms = [
     'click here',
     'read more',
@@ -179,6 +210,7 @@ foreach ($pages as $page) {
     $genericLinks = 0;
     $landmarks = 0;
     $h1Count = 0;
+    $seoIssues = 0;
 
     if ($loaded) {
         $images = $doc->getElementsByTagName('img');
@@ -236,10 +268,47 @@ foreach ($pages as $page) {
     }
 
     $accessibilitySummary['issues'] += count($issues);
+
+    $metaTitle = trim((string)($page['meta_title'] ?? ''));
+    if ($metaTitle === '') {
+        $seoSummary['missing_title']++;
+        $seoIssues++;
+    } else {
+        $titleLength = dashboard_strlen($metaTitle);
+        if ($titleLength > 60) {
+            $seoSummary['long_title']++;
+            $seoIssues++;
+        }
+    }
+
+    $metaDescription = trim((string)($page['meta_description'] ?? ''));
+    if ($metaDescription === '') {
+        $seoSummary['missing_description']++;
+        $seoIssues++;
+    } else {
+        $descriptionLength = dashboard_strlen($metaDescription);
+        if ($descriptionLength < 50 || $descriptionLength > 160) {
+            $seoSummary['description_length']++;
+            $seoIssues++;
+        }
+    }
+
+    if ($seoIssues === 0) {
+        $seoSummary['optimised']++;
+    }
+
+    $seoSummary['issues'] += $seoIssues;
 }
 
 libxml_clear_errors();
 libxml_use_internal_errors($libxmlPrevious);
+
+foreach ($slugCounts as $slug => $count) {
+    if ($count > 1) {
+        $seoSummary['duplicate_slugs'] += $count - 1;
+        $seoSummary['issues'] += $count - 1;
+    }
+}
 
 $totalPages = count($pages);
 $accessibilityScore = $totalPages > 0 ? round(($accessibilitySummary['accessible'] / $totalPages) * 100) : 0;
@@ -497,6 +566,22 @@ $importExportTrend = $dataFileCount > 0
     : 'No data files detected';
 $importExportCta = 'Open import/export';
 
+$seoStatus = 'ok';
+if ($seoSummary['missing_title'] > 0 || $seoSummary['missing_description'] > 0 || $seoSummary['duplicate_slugs'] > 0) {
+    $seoStatus = 'urgent';
+} elseif ($seoSummary['long_title'] > 0 || $seoSummary['description_length'] > 0) {
+    $seoStatus = 'warning';
+}
+$seoTrend = 'Meta descriptions within best practice range';
+if ($seoSummary['duplicate_slugs'] > 0) {
+    $seoTrend = 'Duplicate slugs detected: ' . dashboard_format_number((int)$seoSummary['duplicate_slugs']);
+} elseif ($seoSummary['missing_description'] > 0 || $seoSummary['missing_title'] > 0) {
+    $seoTrend = dashboard_format_number((int)($seoSummary['missing_title'] + $seoSummary['missing_description'])) . ' meta fields missing';
+} elseif ($seoSummary['long_title'] > 0 || $seoSummary['description_length'] > 0) {
+    $seoTrend = 'Metadata length alerts: ' . dashboard_format_number((int)($seoSummary['long_title'] + $seoSummary['description_length']));
+}
+$seoCta = $seoStatus === 'urgent' ? 'Fix SEO issues' : 'Review SEO settings';
+
 $moduleSummaries = [
     [
         'id' => 'pages',
@@ -609,6 +694,16 @@ $moduleSummaries = [
         'cta' => $settingsCta,
     ],
     [
+        'id' => 'seo',
+        'module' => 'SEO',
+        'primary' => dashboard_format_number($seoSummary['optimised']) . ' pages optimised',
+        'secondary' => 'Meta issues: ' . dashboard_format_number((int)$seoSummary['issues']) . ' • Duplicate slugs: ' . dashboard_format_number((int)$seoSummary['duplicate_slugs']),
+        'status' => $seoStatus,
+        'statusLabel' => dashboard_status_label($seoStatus),
+        'trend' => $seoTrend,
+        'cta' => $seoCta,
+    ],
+    [
         'id' => 'sitemap',
         'module' => 'Sitemap',
         'primary' => dashboard_format_number($sitemapEntries) . ' published URLs',
@@ -639,6 +734,25 @@ $moduleSummaries = [
         'cta' => $importExportCta,
     ],
 ];
+
+$statusPriority = [
+    'urgent' => 0,
+    'warning' => 1,
+    'ok' => 2,
+];
+
+usort($moduleSummaries, function (array $a, array $b) use ($statusPriority): int {
+    $statusA = strtolower((string)($a['status'] ?? 'ok'));
+    $statusB = strtolower((string)($b['status'] ?? 'ok'));
+    $priorityA = $statusPriority[$statusA] ?? $statusPriority['ok'];
+    $priorityB = $statusPriority[$statusB] ?? $statusPriority['ok'];
+
+    if ($priorityA === $priorityB) {
+        return strcasecmp((string)($a['module'] ?? ''), (string)($b['module'] ?? ''));
+    }
+
+    return $priorityA <=> $priorityB;
+});
 
 $data = [
     'pages' => $totalPages,
@@ -680,6 +794,12 @@ $data = [
     'speedHeaviestPage' => $largestPage['title'],
     'speedHeaviestPageLength' => $largestPage['length'],
     'dataFileCount' => $dataFileCount,
+    'seoOptimised' => $seoSummary['optimised'],
+    'seoMissingTitle' => $seoSummary['missing_title'],
+    'seoMissingDescription' => $seoSummary['missing_description'],
+    'seoDescriptionLengthIssues' => $seoSummary['description_length'],
+    'seoDuplicateSlugs' => $seoSummary['duplicate_slugs'],
+    'seoIssues' => $seoSummary['issues'],
     'moduleSummaries' => $moduleSummaries,
 ];
 
