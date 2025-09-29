@@ -17,6 +17,8 @@ $(function(){
     const $formPreview = $('#formPreview');
     const $cancelFormEdit = $('#cancelFormEdit');
     const $closeFormBuilder = $('#closeFormBuilder');
+    const $formsGrid = $('#formsLibrary');
+    const $formsEmptyState = $('#formsLibraryEmptyState');
 
     const FIELD_TYPE_LABELS = {
         text: 'Text input',
@@ -163,6 +165,18 @@ $(function(){
         });
     }
 
+    function getFormCardName($card){
+        if(!$card || !$card.length){
+            return '';
+        }
+        const stored = $card.data('formName');
+        if(typeof stored === 'string' && stored.trim() !== ''){
+            return stored;
+        }
+        const title = $card.find('.forms-card__title').first().text();
+        return title ? title.trim() : '';
+    }
+
     function refreshSubmissionStats(){
         $.getJSON('modules/forms/list_submissions.php', function(data){
             const submissions = Array.isArray(data) ? data : [];
@@ -223,7 +237,7 @@ $(function(){
         closeSubmissionModal();
         const text = message || 'Select a form to view submissions';
         const placeholder = /[.!?]$/.test(text) ? text : text + '.';
-        $('#formsTable tbody tr').removeClass('selected');
+        $formsGrid.find('.forms-library-item').removeClass('is-selected');
         $('#selectedFormName').text(text);
         $('#formSubmissionsCount').text('—');
         $('#formSubmissionsList')
@@ -323,8 +337,10 @@ $(function(){
         currentFormId = formId;
         currentFormName = formName;
         currentSubmissions = [];
-        $('#formsTable tbody tr').removeClass('selected');
-        $('#formsTable tbody tr').filter(function(){ return $(this).data('id') == formId; }).addClass('selected');
+        $formsGrid.find('.forms-library-item').removeClass('is-selected');
+        $formsGrid.find('.forms-library-item').filter(function(){
+            return $(this).data('id') == formId;
+        }).addClass('is-selected');
         $('#selectedFormName').text(formName);
         $('#formSubmissionsCount').text('—');
         const $list = $('#formSubmissionsList');
@@ -584,44 +600,92 @@ $(function(){
             const forms = Array.isArray(data) ? data : [];
             formsCache = forms;
             applyFormStats({ totalForms: forms.length });
-            const tbody = $('#formsTable tbody').empty();
-            forms.forEach(function(f){
-                tbody.append('<tr data-id="'+f.id+'">'+
-                    '<td class="name">'+escapeHtml(f.name)+'</td>'+
-                    '<td class="count">'+(f.fields?f.fields.length:0)+'</td>'+
-                    '<td class="forms-actions">'+
-                        '<button type="button" class="a11y-btn a11y-btn--ghost forms-action-btn viewSubmissions">'+
-                            '<i class="fas fa-inbox" aria-hidden="true"></i><span>Submissions</span>'+
-                        '</button> '+
-                        '<button type="button" class="a11y-btn a11y-btn--secondary forms-action-btn editForm">'+
-                            '<i class="fas fa-pen" aria-hidden="true"></i><span>Edit</span>'+
-                        '</button> '+
-                        '<button type="button" class="a11y-btn a11y-btn--ghost forms-action-btn forms-action-delete deleteForm">'+
-                            '<i class="fas fa-trash" aria-hidden="true"></i><span>Delete</span>'+
-                        '</button>'+
-                    '</td>'+
-                    '</tr>');
-            });
-            refreshSubmissionStats();
+            if($formsGrid.length){
+                $formsGrid.attr('aria-busy', 'true').empty().removeAttr('hidden');
+            }
+            if($formsEmptyState.length){
+                $formsEmptyState.attr('hidden', true);
+            }
+
             if(!forms.length){
+                if($formsGrid.length){
+                    $formsGrid.attr('aria-busy', 'false').attr('hidden', true).empty();
+                }
+                if($formsEmptyState.length){
+                    $formsEmptyState.removeAttr('hidden');
+                }
+                refreshSubmissionStats();
                 resetSubmissionsCard('Create a form to start collecting submissions');
                 return;
             }
+
+            forms.forEach(function(f){
+                const fieldCount = Array.isArray(f.fields) ? f.fields.length : 0;
+                const fieldLabel = fieldCount === 1 ? '1 field' : fieldCount + ' fields';
+                const formName = typeof f.name === 'string' && f.name.trim() !== '' ? f.name : 'Untitled form';
+                const $card = $('<article class="a11y-page-card forms-card forms-library-item" role="listitem" tabindex="0"></article>');
+                $card.attr('data-id', f.id);
+                $card.data('formName', formName);
+
+                const $header = $('<div class="forms-card__header"></div>');
+                const $title = $('<h4 class="forms-card__title"></h4>').text(formName);
+                const $badge = $('<span class="forms-card__badge" aria-label="'+escapeHtml(fieldLabel)+'"></span>');
+                $badge.append('<i class="fas fa-layer-group" aria-hidden="true"></i>');
+                $badge.append('<span>'+escapeHtml(fieldLabel)+'</span>');
+                $header.append($title).append($badge);
+                $card.append($header);
+
+                if(f.id){
+                    const $meta = $('<div class="forms-card__meta"></div>');
+                    const $metaItem = $('<span class="forms-card__meta-item"></span>');
+                    $metaItem.append('<i class="fas fa-hashtag" aria-hidden="true"></i>');
+                    $metaItem.append('<span>Form ID '+escapeHtml(String(f.id))+'</span>');
+                    $meta.append($metaItem);
+                    $card.append($meta);
+                }
+
+                const $actions = $('<div class="forms-card__actions" role="group" aria-label="Form actions"></div>');
+                const $viewBtn = $('<button type="button" class="a11y-btn a11y-btn--ghost forms-card__action" data-action="view-submissions"></button>');
+                $viewBtn.append('<i class="fas fa-inbox" aria-hidden="true"></i>');
+                $viewBtn.append('<span>View submissions</span>');
+                const $editBtn = $('<button type="button" class="a11y-btn a11y-btn--secondary forms-card__action" data-action="edit-form"></button>');
+                $editBtn.append('<i class="fas fa-pen" aria-hidden="true"></i>');
+                $editBtn.append('<span>Edit</span>');
+                const $deleteBtn = $('<button type="button" class="a11y-btn a11y-btn--ghost forms-card__action forms-card__action--danger" data-action="delete-form"></button>');
+                $deleteBtn.append('<i class="fas fa-trash" aria-hidden="true"></i>');
+                $deleteBtn.append('<span>Delete</span>');
+                $actions.append($viewBtn, $editBtn, $deleteBtn);
+                $card.append($actions);
+
+                if($formsGrid.length){
+                    $formsGrid.append($card);
+                }
+            });
+
+            refreshSubmissionStats();
+
+            if($formsGrid.length){
+                $formsGrid.attr('aria-busy', 'false');
+            }
+
+            const $cards = $formsGrid.length ? $formsGrid.find('.forms-library-item') : $();
             if(currentFormId){
-                const activeRow = tbody.find('tr[data-id="'+currentFormId+'"]').first();
-                if(activeRow.length){
-                    loadFormSubmissions(currentFormId, activeRow.find('.name').text());
+                const $activeCard = $cards.filter(function(){
+                    return $(this).data('id') == currentFormId;
+                }).first();
+                if($activeCard.length){
+                    loadFormSubmissions($activeCard.data('id'), getFormCardName($activeCard));
                 } else {
                     resetSubmissionsCard();
-                    const fallbackRow = tbody.find('tr').first();
-                    if(fallbackRow.length){
-                        loadFormSubmissions(fallbackRow.data('id'), fallbackRow.find('.name').text());
+                    const $fallback = $cards.first();
+                    if($fallback.length){
+                        loadFormSubmissions($fallback.data('id'), getFormCardName($fallback));
                     }
                 }
             } else {
-                const firstRow = tbody.find('tr').first();
-                if(firstRow.length){
-                    loadFormSubmissions(firstRow.data('id'), firstRow.find('.name').text());
+                const $firstCard = $cards.first();
+                if($firstCard.length){
+                    loadFormSubmissions($firstCard.data('id'), getFormCardName($firstCard));
                 }
             }
         });
@@ -809,33 +873,57 @@ $(function(){
         }
     });
 
-    $('#formsTable').on('click', '.viewSubmissions', function(){
-        const row = $(this).closest('tr');
-        const id = row.data('id');
-        const name = row.find('.name').text();
+    $formsGrid.on('click', '[data-action="view-submissions"]', function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        const $card = $(this).closest('.forms-library-item');
+        const id = $card.data('id');
         if(id){
-            loadFormSubmissions(id, name);
+            loadFormSubmissions(id, getFormCardName($card));
         }
     });
 
-    $('#formsTable').on('click', 'tbody tr', function(e){
-        if($(e.target).closest('button').length) return;
-        const row = $(this);
-        const id = row.data('id');
+    $formsGrid.on('click', '.forms-library-item', function(event){
+        if($(event.target).closest('button').length){
+            return;
+        }
+        const $card = $(this);
+        const id = $card.data('id');
         if(id){
-            loadFormSubmissions(id, row.find('.name').text());
+            loadFormSubmissions(id, getFormCardName($card));
         }
     });
 
-    $('#formsTable').on('click', '.editForm', function(){
-        const id = $(this).closest('tr').data('id');
+    $formsGrid.on('keydown', '.forms-library-item', function(event){
+        if(event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar'){
+            event.preventDefault();
+            $(this).trigger('click');
+        }
+    });
+
+    $formsGrid.on('click', '[data-action="edit-form"]', function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        const $card = $(this).closest('.forms-library-item');
+        const id = $card.data('id');
+        if(!id){
+            return;
+        }
         $.getJSON('modules/forms/list_forms.php', function(forms){
-            const f = forms.find(x=>x.id==id);
-            if(!f) return;
+            const list = Array.isArray(forms) ? forms : [];
+            formsCache = list;
+            const formData = list.find(function(item){
+                return item && item.id == id;
+            });
+            if(!formData){
+                return;
+            }
             clearFormBuilder();
-            $formId.val(f.id);
-            $formName.val(f.name);
-            (f.fields||[]).forEach(fd=>addField(fd.type, fd, { suppressSelect: true }));
+            $formId.val(formData.id);
+            $formName.val(formData.name);
+            (formData.fields || []).forEach(function(fd){
+                addField(fd.type, fd, { suppressSelect: true });
+            });
             const firstField = $('#formPreview > li').first();
             if(firstField.length){
                 selectField(firstField);
@@ -846,11 +934,17 @@ $(function(){
         });
     });
 
-    $('#formsTable').on('click', '.deleteForm', function(){
-        const row = $(this).closest('tr');
-        confirmModal('Delete this form?').then(ok=>{
+    $formsGrid.on('click', '[data-action="delete-form"]', function(event){
+        event.preventDefault();
+        event.stopPropagation();
+        const $card = $(this).closest('.forms-library-item');
+        const id = $card.data('id');
+        if(!id){
+            return;
+        }
+        confirmModal('Delete this form?').then(function(ok){
             if(ok){
-                $.post('modules/forms/delete_form.php',{id:row.data('id')}, loadForms);
+                $.post('modules/forms/delete_form.php', { id: id }, loadForms);
             }
         });
     });
