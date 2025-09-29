@@ -126,17 +126,13 @@ $lastSubmissionLabel = $latestSubmission > 0
                         <p>Click any form to review submissions, edit the layout, or remove outdated capture points.</p>
                     </div>
                 </header>
-                <div class="forms-table-wrapper">
-                    <table class="data-table forms-table" id="formsTable">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Fields</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <div class="forms-library" aria-live="polite">
+                    <div class="a11y-pages-grid forms-library-grid" id="formsLibrary" role="list" aria-busy="false"></div>
+                    <div class="a11y-empty-state forms-library-empty" id="formsLibraryEmptyState" hidden>
+                        <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                        <h4>Build your first form</h4>
+                        <p>Create a form to start collecting submissions.</p>
+                    </div>
                 </div>
             </section>
 
