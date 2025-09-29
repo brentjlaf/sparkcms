@@ -10,6 +10,38 @@ $(function(){
         let activeFilter = 'all';
         $('#cancelEdit').hide();
 
+        function toastSuccess(message){
+            if(window.AdminNotifications && typeof window.AdminNotifications.showSuccessToast === 'function'){
+                window.AdminNotifications.showSuccessToast(message);
+            } else {
+                alertModal(message);
+            }
+        }
+
+        function toastError(message){
+            if(window.AdminNotifications && typeof window.AdminNotifications.showErrorToast === 'function'){
+                window.AdminNotifications.showErrorToast(message);
+            } else {
+                alertModal(message);
+            }
+        }
+
+        function rememberToast(type, message){
+            if(window.AdminNotifications && typeof window.AdminNotifications.rememberToast === 'function'){
+                window.AdminNotifications.rememberToast(type, message);
+            }
+        }
+
+        function extractErrorMessage(xhr, fallback){
+            if(xhr && xhr.responseJSON && xhr.responseJSON.message){
+                return xhr.responseJSON.message;
+            }
+            if(xhr && typeof xhr.responseText === 'string' && xhr.responseText.trim().length){
+                return xhr.responseText;
+            }
+            return fallback;
+        }
+
         function openPageModal() {
             openModal('pageModal');
         }
@@ -231,15 +263,17 @@ $(function(){
                     if (isEditing) {
                         updatePageRow(pageData);
                         applyPageFilters();
+                        toastSuccess('Page updated successfully.');
                     } else {
                         $('#pageForm')[0].reset();
                         $('#published').prop('checked', false);
+                        rememberToast('success', 'Page created successfully.');
                         location.reload();
                     }
                 })
                 .fail(function(xhr){
-                    const message = xhr && xhr.responseText ? xhr.responseText : 'An unexpected error occurred while saving the page.';
-                    alertModal(message);
+                    const message = extractErrorMessage(xhr, 'An unexpected error occurred while saving the page.');
+                    toastError(message);
                 })
                 .always(function(){
                     $submitButton.prop('disabled', false).html(originalButtonHtml);
@@ -249,10 +283,16 @@ $(function(){
             const row = $(this).closest('tr');
             confirmModal('Delete this page?').then(ok => {
                 if(ok){
-                    $.post('modules/pages/delete_page.php', {id: row.data('id')}, function(){
-                        row.remove();
-                        applyPageFilters();
-                    });
+                    $.post('modules/pages/delete_page.php', {id: row.data('id')})
+                        .done(function(){
+                            row.remove();
+                            applyPageFilters();
+                            toastSuccess('Page deleted successfully.');
+                        })
+                        .fail(function(xhr){
+                            const message = extractErrorMessage(xhr, 'Unable to delete the page.');
+                            toastError(message);
+                        });
                 }
             });
         });
@@ -341,9 +381,15 @@ $(function(){
                 og_description: data.og_description,
                 og_image: data.og_image,
                 access: data.access
-            }, function(){
-                location.reload();
-            });
+            })
+                .done(function(){
+                    rememberToast('success', 'Page duplicated successfully.');
+                    location.reload();
+                })
+                .fail(function(xhr){
+                    const message = extractErrorMessage(xhr, 'Unable to duplicate the page.');
+                    toastError(message);
+                });
         });
 
         $('.togglePublishBtn').on('click', function(){
@@ -363,15 +409,28 @@ $(function(){
                 og_description: data.og_description,
                 og_image: data.og_image,
                 access: data.access
-            }, function(){
-                location.reload();
-            });
+            })
+                .done(function(){
+                    const message = newStatus ? 'Page published successfully.' : 'Page unpublished successfully.';
+                    rememberToast('success', message);
+                    location.reload();
+                })
+                .fail(function(xhr){
+                    const message = extractErrorMessage(xhr, 'Unable to update the publish status.');
+                    toastError(message);
+                });
         });
 
         $('.home-icon.set-home').on('click', function(){
             const row = $(this).closest('tr');
-            $.post('modules/pages/set_home.php', {slug: row.data('slug')}, function(){
-                location.reload();
-            });
+            $.post('modules/pages/set_home.php', {slug: row.data('slug')})
+                .done(function(){
+                    rememberToast('success', 'Homepage updated successfully.');
+                    location.reload();
+                })
+                .fail(function(xhr){
+                    const message = extractErrorMessage(xhr, 'Unable to update the homepage setting.');
+                    toastError(message);
+                });
         });
 });
