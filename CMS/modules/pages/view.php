@@ -107,6 +107,14 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                 <button type="button" class="pages-filter-btn" data-pages-filter="drafts" aria-pressed="false">Drafts <span class="pages-filter-count" data-count="drafts"><?php echo $filterCounts['drafts']; ?></span></button>
                 <button type="button" class="pages-filter-btn" data-pages-filter="restricted" aria-pressed="false">Private <span class="pages-filter-count" data-count="restricted"><?php echo $filterCounts['restricted']; ?></span></button>
             </div>
+            <div class="a11y-view-toggle pages-view-toggle" role="group" aria-label="Toggle page layout">
+                <button type="button" class="a11y-view-btn active" data-pages-view="grid" aria-pressed="true" aria-label="Card view">
+                    <i class="fa-solid fa-grip" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="a11y-view-btn" data-pages-view="list" aria-pressed="false" aria-label="List view">
+                    <i class="fa-solid fa-list" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
 
         <section class="a11y-detail-card table-card pages-table-card" aria-labelledby="pagesInventoryTitle" aria-describedby="pagesInventoryDescription">
@@ -142,7 +150,9 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                     data-og_title="<?php echo htmlspecialchars($p['og_title'] ?? '', ENT_QUOTES); ?>"
                     data-og_description="<?php echo htmlspecialchars($p['og_description'] ?? '', ENT_QUOTES); ?>"
                     data-og_image="<?php echo htmlspecialchars($p['og_image'] ?? '', ENT_QUOTES); ?>"
-                    data-access="<?php echo htmlspecialchars($p['access'] ?? 'public', ENT_QUOTES); ?>">
+                    data-access="<?php echo htmlspecialchars($p['access'] ?? 'public', ENT_QUOTES); ?>"
+                    data-page-item="1"
+                    data-view="card">
                     <div class="pages-card__header">
                         <div class="pages-card__titles">
                             <span class="pages-card__title"><?php echo htmlspecialchars($p['title']); ?></span>
@@ -195,6 +205,106 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                     </div>
                 </article>
 <?php endforeach; ?>
+            </div>
+            <div class="pages-list-view" id="pagesListView" role="table" aria-describedby="pagesInventoryDescription" hidden>
+                <div class="pages-list-header" role="row">
+                    <span role="columnheader">Page</span>
+                    <span role="columnheader">Status</span>
+                    <span role="columnheader">Views</span>
+                    <span role="columnheader">Last updated</span>
+                    <span role="columnheader">Access</span>
+                    <span role="columnheader" class="pages-list-actions-heading">Actions</span>
+                </div>
+                <div class="pages-list-body" role="rowgroup">
+<?php foreach ($pages as $p): ?>
+<?php
+    $isPublished = !empty($p['published']);
+    $accessValue = strtolower((string) ($p['access'] ?? 'public'));
+    $isRestricted = $accessValue !== 'public';
+    $views = (int) ($p['views'] ?? 0);
+    $viewsDisplay = number_format($views);
+    $lastModified = isset($p['last_modified']) ? (int) $p['last_modified'] : 0;
+    $modifiedDisplay = $lastModified > 0 ? date('M j, Y g:i A', $lastModified) : 'No edits yet';
+    $viewUrl = '../?page=' . urlencode($p['slug']);
+    $accessLabel = $isRestricted ? 'Private' : 'Public';
+?>
+                    <div class="pages-list-row"
+                        role="row"
+                        data-id="<?php echo $p['id']; ?>"
+                        data-title="<?php echo htmlspecialchars($p['title'], ENT_QUOTES); ?>"
+                        data-slug="<?php echo htmlspecialchars($p['slug'], ENT_QUOTES); ?>"
+                        data-content="<?php echo htmlspecialchars($p['content'], ENT_QUOTES); ?>"
+                        data-published="<?php echo $isPublished ? 1 : 0; ?>"
+                        data-template="<?php echo htmlspecialchars($p['template'] ?? '', ENT_QUOTES); ?>"
+                        data-meta_title="<?php echo htmlspecialchars($p['meta_title'] ?? '', ENT_QUOTES); ?>"
+                        data-meta_description="<?php echo htmlspecialchars($p['meta_description'] ?? '', ENT_QUOTES); ?>"
+                        data-canonical_url="<?php echo htmlspecialchars($p['canonical_url'] ?? '', ENT_QUOTES); ?>"
+                        data-og_title="<?php echo htmlspecialchars($p['og_title'] ?? '', ENT_QUOTES); ?>"
+                        data-og_description="<?php echo htmlspecialchars($p['og_description'] ?? '', ENT_QUOTES); ?>"
+                        data-og_image="<?php echo htmlspecialchars($p['og_image'] ?? '', ENT_QUOTES); ?>"
+                        data-access="<?php echo htmlspecialchars($p['access'] ?? 'public', ENT_QUOTES); ?>"
+                        data-page-item="1"
+                        data-view="list">
+                        <div class="pages-list-cell pages-list-cell--title" role="cell">
+                            <div class="pages-list-title">
+                                <span class="pages-list-title-text"><?php echo htmlspecialchars($p['title']); ?></span>
+                                <span class="pages-list-slug"><?php echo '/' . htmlspecialchars($p['slug']); ?></span>
+                            </div>
+                            <div class="pages-list-badges">
+                                <?php if ($homepage === $p['slug']): ?>
+                                    <span class="pages-card__badge pages-card__badge--home">
+                                        <i class="fa-solid fa-house" aria-hidden="true"></i>
+                                        Homepage
+                                    </span>
+                                <?php else: ?>
+                                    <button type="button" class="a11y-btn a11y-btn--icon pages-card__home set-home" title="Set as homepage" aria-label="Set as homepage">
+                                        <i class="fa-solid fa-house" aria-hidden="true"></i>
+                                    </button>
+                                <?php endif; ?>
+                                <?php if ($isRestricted): ?>
+                                    <span class="pages-card__badge pages-card__badge--restricted">
+                                        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                                        Private
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="pages-list-cell pages-list-cell--status" role="cell">
+                            <span class="status-badge <?php echo $isPublished ? 'status-published' : 'status-draft'; ?>">
+                                <?php echo $isPublished ? 'Published' : 'Draft'; ?>
+                            </span>
+                        </div>
+                        <div class="pages-list-cell pages-list-cell--views" role="cell">
+                            <span class="pages-list-views"><?php echo $viewsDisplay; ?></span>
+                        </div>
+                        <div class="pages-list-cell pages-list-cell--updated" role="cell">
+                            <span class="pages-list-updated">
+                                <?php if ($lastModified > 0): ?>
+                                    Updated <?php echo htmlspecialchars($modifiedDisplay); ?>
+                                <?php else: ?>
+                                    No edits yet
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                        <div class="pages-list-cell pages-list-cell--access" role="cell">
+                            <span class="pages-list-access"><?php echo htmlspecialchars($accessLabel); ?></span>
+                        </div>
+                        <div class="pages-list-cell pages-list-cell--actions" role="cell">
+                            <div class="pages-list-actions">
+                                <a class="a11y-btn a11y-btn--ghost pages-card__action" data-action="view" href="<?php echo $viewUrl; ?>" target="_blank" rel="noopener">
+                                    View
+                                </a>
+                                <button type="button" class="a11y-btn a11y-btn--secondary pages-card__action editBtn">Settings</button>
+                                <button type="button" class="a11y-btn a11y-btn--ghost pages-card__action copyBtn">Copy</button>
+                                <button type="button" class="a11y-btn a11y-btn--secondary pages-card__action togglePublishBtn">
+                                    <?php echo $isPublished ? 'Unpublish' : 'Publish'; ?>
+                                </button>
+                                <button type="button" class="a11y-btn a11y-btn--danger pages-card__action deleteBtn">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+<?php endforeach; ?>
+                </div>
             </div>
         </section>
 
