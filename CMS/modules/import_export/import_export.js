@@ -9,6 +9,23 @@ $(function(){
     const $datasetSection = $('#importDatasetSection');
     const $datasetSummary = $('#importDatasetSummary');
     const $datasetList = $('#importDatasetList');
+    const $historySection = $('#importHistorySection');
+    const $historyList = $('#importHistoryList');
+    const $historyEmptyState = $('#importHistoryEmpty');
+
+    const datasetDescriptions = {
+        settings: 'Site-wide configuration such as the site name, metadata, themes, and integrations.',
+        pages: 'Published page content, layouts, SEO fields, and routing information.',
+        page_history: 'Revision history for pages, enabling rollbacks to previous versions.',
+        menus: 'Menu structures, links, and hierarchy used throughout the site.',
+        media: 'Records for uploaded images, documents, and other media assets.',
+        blog_posts: 'Blog post articles, metadata, authorship, and publishing status.',
+        forms: 'Form definitions including fields, validations, and notification settings.',
+        form_submissions: 'Entries submitted through site forms with captured response data.',
+        users: 'User accounts, roles, and access permissions for the CMS.',
+        speed_snapshot: 'Performance metrics collected from site speed monitoring tools.',
+        drafts: 'Unpublished draft items stored for future editing or review.',
+    };
 
     function formatTimestamp(value){
         if (!value) {
@@ -101,14 +118,129 @@ $(function(){
 
         $datasetSection.removeAttr('hidden');
         $datasetList.empty();
-        datasets.forEach(function(key){
-            const label = formatDatasetLabel(key);
+        datasets.forEach(function(item){
+            let key = '';
+            let label = '';
+            let description = '';
+
+            if (typeof item === 'string') {
+                key = item;
+            } else if (item && typeof item === 'object') {
+                key = item.key || '';
+                label = item.label || '';
+                description = item.description || '';
+            }
+
+            if (!label) {
+                label = formatDatasetLabel(key);
+            }
+
+            if (!description && key && datasetDescriptions[key]) {
+                description = datasetDescriptions[key];
+            }
+
             const $item = $('<li>', {
                 class: 'import-datasets__item',
+            });
+
+            if (description) {
+                $item.attr('title', description);
+            }
+
+            const $title = $('<span>', {
+                class: 'import-datasets__item-title',
                 text: label || key,
             });
+            $item.append($title);
+
+            if (description) {
+                $item.append($('<span>', {
+                    class: 'import-datasets__item-description',
+                    text: description,
+                }));
+            }
+
             $datasetList.append($item);
         });
+    }
+
+    function renderHistory(historyEntries){
+        if (!$historySection.length || !$historyList.length) {
+            return;
+        }
+
+        $historySection.removeAttr('hidden');
+
+        if (!Array.isArray(historyEntries) || historyEntries.length === 0) {
+            $historyList.empty();
+            if ($historyEmptyState.length) {
+                $historyEmptyState.removeAttr('hidden');
+            }
+            return;
+        }
+
+        $historyList.empty();
+
+        historyEntries.forEach(function(entry){
+            if (!entry || typeof entry !== 'object') {
+                return;
+            }
+
+            const typeRaw = entry.type ? String(entry.type).toLowerCase() : 'activity';
+            const typeClass = typeRaw === 'import' || typeRaw === 'export' ? typeRaw : 'activity';
+            const typeLabel = typeRaw === 'import' ? 'Import' : (typeRaw === 'export' ? 'Export' : 'Activity');
+            const label = entry.label || (typeLabel + ' completed');
+            const timestamp = entry.timestamp || null;
+            const datasetCount = Number.isFinite(entry.dataset_count) ? Number(entry.dataset_count) : null;
+            const fileName = entry.file ? String(entry.file) : '';
+
+            let summary = entry.summary ? String(entry.summary) : '';
+            if (!summary) {
+                const summaryParts = [];
+                if (fileName) {
+                    summaryParts.push(fileName);
+                }
+                if (datasetCount !== null) {
+                    summaryParts.push(datasetCount === 1 ? '1 data set' : datasetCount + ' data sets');
+                }
+                summary = summaryParts.join(' • ');
+            }
+
+            const $item = $('<li>', {
+                class: 'import-history__item',
+            });
+
+            const $header = $('<div>', { class: 'import-history__item-header' });
+            const $typeBadge = $('<span>', {
+                class: 'import-history__item-type import-history__item-type--' + typeClass,
+                text: typeLabel,
+            });
+            const $time = $('<time>', {
+                class: 'import-history__item-time',
+                text: formatTimestamp(timestamp),
+            });
+            $header.append($typeBadge, $time);
+
+            const $title = $('<div>', {
+                class: 'import-history__item-title',
+                text: label,
+            });
+
+            $item.append($header, $title);
+
+            if (summary) {
+                $item.append($('<div>', {
+                    class: 'import-history__item-summary',
+                    text: summary,
+                }));
+            }
+
+            $historyList.append($item);
+        });
+
+        if ($historyEmptyState.length) {
+            $historyEmptyState.attr('hidden', 'hidden');
+        }
     }
 
     function loadStatus(){
@@ -133,13 +265,16 @@ $(function(){
             if ($datasetSummary.length && typeof data.dataset_count === 'number') {
                 const count = data.dataset_count;
                 if (count > 0) {
-                    const label = count === 1 ? '1 data set is included in exports.' : count.toLocaleString() + ' data sets are included in exports.';
-                    $datasetSummary.text(label);
+                    const label = data.dataset_count_label || (count === 1 ? '1 data set' : count.toLocaleString() + ' data sets');
+                    const verb = count === 1 ? ' is ' : ' are ';
+                    $datasetSummary.text(label + verb + 'included in exports.');
                 } else {
                     $datasetSummary.empty();
                 }
             }
-            renderDatasets(data.datasets);
+            const datasetPayload = Array.isArray(data.dataset_details) && data.dataset_details.length > 0 ? data.dataset_details : data.datasets;
+            renderDatasets(datasetPayload);
+            renderHistory(data.history);
         });
         return request;
     }

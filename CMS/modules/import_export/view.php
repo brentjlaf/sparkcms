@@ -41,9 +41,18 @@
                         <div class="import-placeholder">
                             <p id="importExportIntro">Import or export CMS data.</p>
                             <div class="import-datasets" id="importDatasetSection" hidden>
-                                <div class="import-datasets__title">Included in export:</div>
+                                <div class="import-datasets__title">What's included in exports</div>
+                                <p class="import-datasets__subtitle">Review each data set before you transfer content between environments.</p>
                                 <div class="import-datasets__summary" id="importDatasetSummary"></div>
                                 <ul class="import-datasets__list" id="importDatasetList" aria-live="polite"></ul>
+                            </div>
+                            <div class="import-history" id="importHistorySection" hidden>
+                                <div class="import-history__header">
+                                    <div class="import-history__title">Activity history</div>
+                                    <p class="import-history__description">Track recent imports and exports for visibility into your transfer activity.</p>
+                                </div>
+                                <ul class="import-history__list" id="importHistoryList" aria-live="polite"></ul>
+                                <p class="import-history__empty" id="importHistoryEmpty" hidden>No import or export activity recorded yet.</p>
                             </div>
                             <div class="import-status" id="importExportStatus" role="status" aria-live="polite" aria-hidden="true"></div>
                         </div>

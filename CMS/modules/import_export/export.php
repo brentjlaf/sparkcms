@@ -61,6 +61,15 @@ if (!is_array($stats)) {
 $stats['last_export_at'] = gmdate('c');
 $stats['last_export_file'] = $filename;
 $stats['export_count'] = isset($stats['export_count']) ? (int) $stats['export_count'] + 1 : 1;
+$datasetCount = isset($export['meta']['dataset_count']) ? (int) $export['meta']['dataset_count'] : 0;
+$stats = import_export_append_history_entry($stats, [
+    'type' => 'export',
+    'timestamp' => $stats['last_export_at'],
+    'label' => 'Export generated',
+    'summary' => $filename . ' • ' . import_export_format_dataset_count_label($datasetCount),
+    'file' => $filename,
+    'dataset_count' => $datasetCount,
+]);
 write_json_file($statsFile, $stats);
 
 header('Content-Type: application/json; charset=UTF-8');

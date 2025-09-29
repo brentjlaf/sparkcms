@@ -590,37 +590,163 @@
             margin-top: 16px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
 
         .import-datasets__title {
             font-weight: 600;
-            font-size: 14px;
+            font-size: 15px;
             color: #0f172a;
+        }
+
+        .import-datasets__subtitle {
+            font-size: 13px;
+            color: #475569;
+            margin: 0;
         }
 
         .import-datasets__summary {
             font-size: 13px;
-            color: #334155;
+            color: #0f766e;
+            font-weight: 600;
         }
 
         .import-datasets__list {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-direction: column;
+            gap: 12px;
             list-style: none;
             margin: 0;
             padding: 0;
         }
 
         .import-datasets__item {
-            background: rgba(15, 118, 110, 0.14);
-            color: #0f766e;
-            padding: 6px 12px;
-            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 12px 24px rgba(148, 163, 184, 0.16);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .import-datasets__item:hover {
+            border-color: rgba(15, 118, 110, 0.45);
+            box-shadow: 0 16px 32px rgba(15, 118, 110, 0.18);
+        }
+
+        .import-datasets__item-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .import-datasets__item-description {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .import-history {
+            margin-top: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 24px;
+        }
+
+        .import-history__header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .import-history__title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .import-history__description {
+            font-size: 13px;
+            color: #475569;
+            margin: 0;
+        }
+
+        .import-history__list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .import-history__item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .import-history__item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .import-history__item-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             font-size: 12px;
             font-weight: 600;
-            letter-spacing: 0.02em;
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+
+        .import-history__item-type--export {
+            background: rgba(37, 99, 235, 0.12);
+            color: #1d4ed8;
+        }
+
+        .import-history__item-type--import {
+            background: rgba(16, 185, 129, 0.14);
+            color: #047857;
+        }
+
+        .import-history__item-type--activity {
+            background: rgba(79, 70, 229, 0.14);
+            color: #4338ca;
+        }
+
+        .import-history__item-time {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .import-history__item-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .import-history__item-summary {
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .import-history__empty {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 0;
         }
 
         .import-status {
