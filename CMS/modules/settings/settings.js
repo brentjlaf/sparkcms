@@ -152,6 +152,22 @@ $(function(){
         });
     }
 
+    function notifySuccess(message){
+        if(window.AdminNotifications && typeof window.AdminNotifications.showSuccessToast === 'function'){
+            window.AdminNotifications.showSuccessToast(message);
+        } else {
+            alertModal(message);
+        }
+    }
+
+    function notifyError(message){
+        if(window.AdminNotifications && typeof window.AdminNotifications.showErrorToast === 'function'){
+            window.AdminNotifications.showErrorToast(message);
+        } else {
+            alertModal(message);
+        }
+    }
+
     function validateIntegrations(){
         let firstInvalidField = null;
         let hasError = false;
@@ -176,7 +192,7 @@ $(function(){
         });
 
         if(hasError){
-            alertModal('Please fix the highlighted integration fields before saving.');
+            notifyError('Please fix the highlighted integration fields before saving.');
             if(firstInvalidField){
                 firstInvalidField.focus();
             }
@@ -507,14 +523,14 @@ $(function(){
             },
             success: function(response){
                 if(response && response.status === 'ok'){
-                    alertModal('Settings saved');
+                    notifySuccess('Settings saved successfully.');
                     if(response.last_updated){
                         updateHeroMeta(response.last_updated);
                     }
                     loadSettings();
                 } else {
                     const message = (response && response.message) ? response.message : 'Unable to save settings';
-                    alertModal(message);
+                    notifyError(message);
                 }
             },
             error: function(xhr){
@@ -531,7 +547,7 @@ $(function(){
                         // ignore JSON parse errors
                     }
                 }
-                alertModal(message);
+                notifyError(message);
             }
         });
     });

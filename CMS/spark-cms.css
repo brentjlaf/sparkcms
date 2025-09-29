@@ -176,6 +176,90 @@
             border-color: var(--color-border);
         }
 
+        /* Toast notifications */
+        .admin-toast-container {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 1200;
+            pointer-events: none;
+            width: calc(100% - 3rem);
+            max-width: 22rem;
+        }
+
+        @media (max-width: 768px) {
+            .admin-toast-container {
+                left: 1rem;
+                right: 1rem;
+                width: auto;
+                max-width: none;
+            }
+        }
+
+        .admin-toast {
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            border-radius: 0.75rem;
+            border: 1px solid var(--color-border);
+            border-left-width: 6px;
+            box-shadow: var(--shadow-card);
+            padding: 0.9rem 1rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            pointer-events: auto;
+        }
+
+        .admin-toast.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .admin-toast__message {
+            flex: 1 1 auto;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .admin-toast__close {
+            appearance: none;
+            border: none;
+            background: transparent;
+            color: inherit;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .admin-toast__close:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+
+        .admin-toast--success {
+            border-left-color: var(--color-success);
+        }
+
+        .admin-toast--error {
+            border-left-color: var(--color-danger);
+        }
+
+        .admin-toast--info {
+            border-left-color: var(--color-info);
+        }
+
+        .admin-toast--warning {
+            border-left-color: var(--color-warning);
+        }
+
         .card,
         .a11y-detail-card,
         .dashboard-module-card,

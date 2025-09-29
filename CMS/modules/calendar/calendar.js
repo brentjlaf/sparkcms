@@ -59,6 +59,18 @@
 
   let confirmConfig = null;
 
+  function notifySuccess(message) {
+    if (window.AdminNotifications && typeof window.AdminNotifications.showSuccessToast === 'function') {
+      window.AdminNotifications.showSuccessToast(message);
+    }
+  }
+
+  function notifyError(message) {
+    if (window.AdminNotifications && typeof window.AdminNotifications.showErrorToast === 'function') {
+      window.AdminNotifications.showErrorToast(message);
+    }
+  }
+
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, '&amp;')
@@ -1014,11 +1026,13 @@
             state.events = Array.isArray(payload.events) ? payload.events : [];
             state.metrics = payload.metrics || state.metrics;
             setMessage(payload.message || 'Event deleted.', 'success');
+            notifySuccess(payload.message || 'Event deleted.');
             renderEvents();
             renderHeroStats();
           })
           .catch((error) => {
             setMessage(error.message || 'Unable to delete event.', 'error');
+            notifyError(error.message || 'Unable to delete event.');
             throw error;
           });
       },
@@ -1053,12 +1067,14 @@
             state.events = Array.isArray(payload.events) ? payload.events : state.events;
             state.metrics = payload.metrics || state.metrics;
             setMessage(payload.message || 'Category deleted.', 'success');
+            notifySuccess(payload.message || 'Category deleted.');
             renderCategories();
             renderEvents();
             renderHeroStats();
           })
           .catch((error) => {
             setMessage(error.message || 'Unable to delete category.', 'error');
+            notifyError(error.message || 'Unable to delete category.');
             throw error;
           });
       },
@@ -1082,6 +1098,7 @@
           submitButton.disabled = false;
         }
         setMessage('Please complete the required date and time fields.', 'error');
+        notifyError('Please complete the required date and time fields.');
         const firstInvalid = invalidPickers[0];
         if (firstInvalid && typeof firstInvalid.focus === 'function') {
           firstInvalid.focus();
@@ -1112,10 +1129,12 @@
           renderHeroStats();
           closeModal(eventModal);
           setMessage(payload.message || 'Event saved.', 'success');
+          notifySuccess(payload.message || 'Event saved.');
           resetEventForm();
         })
         .catch((error) => {
           setMessage(error.message || 'Unable to save event.', 'error');
+          notifyError(error.message || 'Unable to save event.');
         })
         .finally(() => {
           if (submitButton) {
@@ -1146,6 +1165,7 @@
           state.categories = Array.isArray(payload.categories) ? payload.categories : [];
           state.metrics = payload.metrics || state.metrics;
           setMessage(payload.message || 'Category added.', 'success');
+          notifySuccess(payload.message || 'Category added.');
           renderCategories();
           renderHeroStats();
           categoryForm.reset();
@@ -1156,6 +1176,7 @@
         })
         .catch((error) => {
           setMessage(error.message || 'Unable to add category.', 'error');
+          notifyError(error.message || 'Unable to add category.');
         })
         .finally(() => {
           if (submitButton) {
