@@ -2,7 +2,7 @@
 $(function(){
         $('#pageTabs').tabs();
 
-        const $pagesTable = $('#pagesTable');
+        const $pagesCollection = $('#pagesCollection');
         const $searchInput = $('#pagesSearchInput');
         const $filterButtons = $('[data-pages-filter]');
         const $emptyState = $('#pagesEmptyState');
@@ -51,8 +51,8 @@ $(function(){
             $('#cancelEdit').hide();
         }
 
-        function getPageRows() {
-            return $pagesTable.find('tbody tr');
+        function getPageCards() {
+            return $pagesCollection.find('.pages-card');
         }
 
         function updateVisibleCount(count) {
@@ -63,7 +63,7 @@ $(function(){
             $visibleCount.text(`Showing ${count} ${label}`);
         }
 
-        function refreshFilterCounts($rows) {
+        function refreshFilterCounts($cards) {
             const counts = {
                 all: 0,
                 published: 0,
@@ -71,15 +71,15 @@ $(function(){
                 restricted: 0
             };
 
-            $rows.each(function(){
-                const $row = $(this);
+            $cards.each(function(){
+                const $card = $(this);
                 counts.all++;
-                if ($row.data('published') == 1) {
+                if ($card.data('published') == 1) {
                     counts.published++;
                 } else {
                     counts.drafts++;
                 }
-                const access = (($row.data('access') || 'public') + '').toLowerCase();
+                const access = (($card.data('access') || 'public') + '').toLowerCase();
                 if (access !== 'public') {
                     counts.restricted++;
                 }
@@ -90,14 +90,14 @@ $(function(){
             });
         }
 
-        function rowMatchesFilter($row) {
+        function rowMatchesFilter($card) {
             switch (activeFilter) {
                 case 'published':
-                    return $row.data('published') == 1;
+                    return $card.data('published') == 1;
                 case 'drafts':
-                    return $row.data('published') != 1;
+                    return $card.data('published') != 1;
                 case 'restricted':
-                    return (($row.data('access') || 'public') + '').toLowerCase() !== 'public';
+                    return (($card.data('access') || 'public') + '').toLowerCase() !== 'public';
                 case 'all':
                 default:
                     return true;
@@ -105,26 +105,28 @@ $(function(){
         }
 
         function applyPageFilters() {
-            if (!$pagesTable.length) {
+            if (!$pagesCollection.length) {
                 return;
             }
 
             const query = ($searchInput.val() || '').toString().toLowerCase();
             let visible = 0;
-            const $rows = getPageRows();
+            const $cards = getPageCards();
 
-            $rows.each(function(){
-                const $row = $(this);
-                const title = ($row.find('.pages-title-text').text() || '').toLowerCase();
-                const slug = (($row.data('slug') || '') + '').toLowerCase();
+            $cards.each(function(){
+                const $card = $(this);
+                const title = ($card.find('.pages-card__title').text() || '').toLowerCase();
+                const slugAttr = ($card.attr('data-slug') || '').toLowerCase();
+                const slugData = (($card.data('slug') || '') + '').toLowerCase();
+                const slug = slugAttr || slugData;
                 const matchesQuery = !query || title.indexOf(query) !== -1 || slug.indexOf(query) !== -1;
-                const matchesFilter = rowMatchesFilter($row);
+                const matchesFilter = rowMatchesFilter($card);
 
                 if (matchesQuery && matchesFilter) {
-                    $row.show();
+                    $card.removeAttr('hidden');
                     visible++;
                 } else {
-                    $row.hide();
+                    $card.attr('hidden', 'hidden');
                 }
             });
 
@@ -137,7 +139,7 @@ $(function(){
             }
 
             updateVisibleCount(visible);
-            refreshFilterCounts($rows);
+            refreshFilterCounts($cards);
         }
 
         let slugEdited = false;
@@ -164,18 +166,18 @@ $(function(){
         }
 
         function updatePageRow(data){
-            if (!$pagesTable.length || !data || !data.id) {
+            if (!$pagesCollection.length || !data || !data.id) {
                 return;
             }
 
-            const $row = $pagesTable.find(`tr[data-id="${data.id}"]`);
-            if (!$row.length) {
+            const $card = $pagesCollection.find(`.pages-card[data-id="${data.id}"]`);
+            if (!$card.length) {
                 return;
             }
 
             const publishedFlag = data.published ? 1 : 0;
 
-            $row.attr({
+            $card.attr({
                 'data-title': data.title,
                 'data-slug': data.slug,
                 'data-content': data.content,
@@ -190,35 +192,43 @@ $(function(){
                 'data-published': publishedFlag
             });
 
-            $row.data('title', data.title);
-            $row.data('slug', data.slug);
-            $row.data('content', data.content);
-            $row.data('template', data.template);
-            $row.data('meta_title', data.meta_title);
-            $row.data('meta_description', data.meta_description);
-            $row.data('canonical_url', data.canonical_url);
-            $row.data('og_title', data.og_title);
-            $row.data('og_description', data.og_description);
-            $row.data('og_image', data.og_image);
-            $row.data('access', data.access);
-            $row.data('published', publishedFlag);
+            $card.data('title', data.title);
+            $card.data('slug', data.slug);
+            $card.data('content', data.content);
+            $card.data('template', data.template);
+            $card.data('meta_title', data.meta_title);
+            $card.data('meta_description', data.meta_description);
+            $card.data('canonical_url', data.canonical_url);
+            $card.data('og_title', data.og_title);
+            $card.data('og_description', data.og_description);
+            $card.data('og_image', data.og_image);
+            $card.data('access', data.access);
+            $card.data('published', publishedFlag);
 
-            $row.find('.pages-title-text').text(data.title);
-            $row.find('.pages-slug').text(`/${data.slug}`);
+            $card.find('.pages-card__title').text(data.title);
+            $card.find('.pages-card__slug').text(`/${data.slug}`);
 
-            const $statusBadge = $row.find('.status-badge');
+            const $statusBadge = $card.find('.status-badge');
             $statusBadge.removeClass('status-published status-draft');
             $statusBadge.addClass(publishedFlag ? 'status-published' : 'status-draft');
             $statusBadge.text(publishedFlag ? 'Published' : 'Draft');
 
-            const $viewLink = $row.find('.pages-action-link[href]').first();
+            const $viewLink = $card.find('[data-action="view"]').first();
             if ($viewLink.length) {
                 $viewLink.attr('href', `../?page=${encodeURIComponent(data.slug)}`);
             }
 
-            const $modifiedCell = $row.find('.modified');
-            if ($modifiedCell.length) {
-                $modifiedCell.text(formatTimestamp(new Date()));
+            const $toggleBtn = $card.find('.togglePublishBtn');
+            if ($toggleBtn.length) {
+                $toggleBtn.text(publishedFlag ? 'Unpublish' : 'Publish');
+            }
+
+            const $updatedLabel = $card.find('.pages-card__updated');
+            if ($updatedLabel.length) {
+                const timestamp = formatTimestamp(new Date());
+                if (timestamp) {
+                    $updatedLabel.html(`<i class="fa-regular fa-clock" aria-hidden="true"></i>Updated ${timestamp}`);
+                }
             }
         }
 
@@ -280,7 +290,7 @@ $(function(){
                 });
         });
         $('.deleteBtn').on('click', function(){
-            const row = $(this).closest('tr');
+            const row = $(this).closest('.pages-card');
             confirmModal('Delete this page?').then(ok => {
                 if(ok){
                     $.post('modules/pages/delete_page.php', {id: row.data('id')})
@@ -297,7 +307,7 @@ $(function(){
             });
         });
         $('.editBtn').on('click', function(){
-            const row = $(this).closest('tr');
+            const row = $(this).closest('.pages-card');
             $('#formTitle').text('Page Settings');
             $('#pageId').val(row.data('id'));
             $('#title').val(row.data('title'));
@@ -347,7 +357,7 @@ $(function(){
             slugEdited = false;
         });
 
-        if ($pagesTable.length) {
+        if ($pagesCollection.length) {
             applyPageFilters();
 
             $searchInput.on('input', applyPageFilters);
@@ -360,14 +370,14 @@ $(function(){
                 }
 
                 activeFilter = newFilter;
-                $filterButtons.removeClass('active');
-                $btn.addClass('active');
+                $filterButtons.removeClass('active').attr('aria-pressed', 'false');
+                $btn.addClass('active').attr('aria-pressed', 'true');
                 applyPageFilters();
             });
         }
 
         $('.copyBtn').on('click', function(){
-            const row = $(this).closest('tr');
+            const row = $(this).closest('.pages-card');
             const data = row.data();
             $.post('modules/pages/save_page.php', {
                 title: data.title + ' Copy',
@@ -393,7 +403,7 @@ $(function(){
         });
 
         $('.togglePublishBtn').on('click', function(){
-            const row = $(this).closest('tr');
+            const row = $(this).closest('.pages-card');
             const data = row.data();
             const newStatus = data.published ? 0 : 1;
             $.post('modules/pages/save_page.php', {
@@ -421,8 +431,8 @@ $(function(){
                 });
         });
 
-        $('.home-icon.set-home').on('click', function(){
-            const row = $(this).closest('tr');
+        $('.pages-card__home.set-home').on('click', function(){
+            const row = $(this).closest('.pages-card');
             $.post('modules/pages/set_home.php', {slug: row.data('slug')})
                 .done(function(){
                     rememberToast('success', 'Homepage updated successfully.');
