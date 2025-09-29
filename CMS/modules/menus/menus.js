@@ -239,13 +239,13 @@ $(function () {
             const $actionsCell = $('<div class="menu-table-cell menu-table-actions"></div>');
             const $editBtn = $(
                 '<button type="button" class="menu-btn menu-btn--ghost menu-btn--sm editMenu">' +
-                    '<i class="fas fa-pen" aria-hidden="true"></i>' +
+                    '<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>' +
                     '<span>Edit</span>' +
                 '</button>'
             );
             const $deleteBtn = $(
                 '<button type="button" class="menu-btn menu-btn--danger menu-btn--sm deleteMenu">' +
-                    '<i class="fas fa-trash" aria-hidden="true"></i>' +
+                    '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
                     '<span>Delete</span>' +
                 '</button>'
             );
@@ -318,7 +318,7 @@ $(function () {
             .join('');
         const $li = $('<li></li>');
         const $item = $('<div class="menu-item"></div>');
-        $item.append('<span class="drag-handle" aria-hidden="true" title="Drag to reorder">&#9776;</span>');
+        $item.append('<span class="drag-handle action-icon-button has-tooltip" role="button" tabindex="0" aria-label="Move menu item" data-tooltip="Drag to reorder"><i class="fa-solid fa-up-down-left-right action-icon" aria-hidden="true"></i></span>');
         $item.append('<select class="form-select type-select"><option value="page">Link to Page</option><option value="custom">Custom Link</option></select>');
         $item.append('<select class="form-select page-select">' + pageOptions + '</select>');
         $item.append('<input type="text" class="form-input link-input" placeholder="URL">');

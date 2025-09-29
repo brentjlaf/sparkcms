@@ -67,7 +67,7 @@
                                         <div class="folder-stats" id="folderStats"></div>
                                     </div>
                                     <div class="gallery-actions">
-                                        <button class="btn btn-secondary" id="renameFolderBtn"><i class="fa-solid fa-pen btn-icon" aria-hidden="true"></i><span class="btn-label">Rename</span></button>
+                                        <button class="btn btn-secondary" id="renameFolderBtn"><i class="fa-solid fa-pen-to-square btn-icon" aria-hidden="true"></i><span class="btn-label">Rename</span></button>
                                         <button class="btn btn-danger" id="deleteFolderBtn"><i class="fa-solid fa-trash btn-icon" aria-hidden="true"></i><span class="btn-label">Delete</span></button>
                                     </div>
                                 </div>

@@ -646,13 +646,13 @@ $(function(){
 
                 const $actions = $('<div class="forms-card__actions" role="group" aria-label="Form actions"></div>');
                 const $viewBtn = $('<button type="button" class="a11y-btn a11y-btn--ghost forms-card__action" data-action="view-submissions"></button>');
-                $viewBtn.append('<i class="fas fa-inbox" aria-hidden="true"></i>');
+                $viewBtn.append('<i class="fa-solid fa-eye" aria-hidden="true"></i>');
                 $viewBtn.append('<span>View submissions</span>');
                 const $editBtn = $('<button type="button" class="a11y-btn a11y-btn--secondary forms-card__action" data-action="edit-form"></button>');
-                $editBtn.append('<i class="fas fa-pen" aria-hidden="true"></i>');
+                $editBtn.append('<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>');
                 $editBtn.append('<span>Edit</span>');
                 const $deleteBtn = $('<button type="button" class="a11y-btn a11y-btn--ghost forms-card__action forms-card__action--danger" data-action="delete-form"></button>');
-                $deleteBtn.append('<i class="fas fa-trash" aria-hidden="true"></i>');
+                $deleteBtn.append('<i class="fa-solid fa-trash" aria-hidden="true"></i>');
                 $deleteBtn.append('<span>Delete</span>');
                 $actions.append($viewBtn, $editBtn, $deleteBtn);
                 $card.append($actions);
@@ -699,7 +699,7 @@ $(function(){
         const typeLabel = FIELD_TYPE_LABELS[type] || (type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Field');
         const $li = $('<li class="field-item" data-type="'+type+'"></li>');
         const $bar = $('<div class="field-bar"></div>');
-        $bar.append('<span class="drag-handle" aria-hidden="true">&#9776;</span>');
+        $bar.append('<span class="drag-handle action-icon-button has-tooltip" role="button" tabindex="0" aria-label="Move field" data-tooltip="Drag to reorder"><i class="fa-solid fa-up-down-left-right action-icon" aria-hidden="true"></i></span>');
         $bar.append('<span class="field-type">'+escapeHtml(typeLabel)+'</span>');
         $bar.append('<button type="button" class="btn btn-danger btn-sm removeField" aria-label="Remove '+escapeHtml(typeLabel)+'"><i class="fa-solid fa-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Remove</span></button>');
         const preview = $('<div class="field-preview"></div>');

@@ -327,9 +327,9 @@ $(function(){
                         <div class="image-preview">'+preview+'\
                             <div class="image-overlay">\
                                 <div>\
-                                    <button class="info-btn" data-id="'+img.id+'" aria-label="View info"><i class="fa-solid fa-circle-info" aria-hidden="true"></i></button>\
-                                    <button class="edit-btn" data-id="'+img.id+'" aria-label="Edit"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button>\
-                                    <button class="remove-btn" data-id="'+img.id+'" aria-label="Remove"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>\
+                                    <button type="button" class="info-btn action-icon-button has-tooltip" data-id="'+img.id+'" aria-label="View details" data-tooltip="View details"><i class="fa-solid fa-circle-info action-icon" aria-hidden="true"></i></button>\
+                                    <button type="button" class="edit-btn action-icon-button has-tooltip" data-id="'+img.id+'" aria-label="Edit media" data-tooltip="Edit media"><i class="fa-solid fa-pen-to-square action-icon" aria-hidden="true"></i></button>\
+                                    <button type="button" class="remove-btn action-icon-button has-tooltip" data-id="'+img.id+'" aria-label="Delete media" data-tooltip="Delete media"><i class="fa-solid fa-trash action-icon" aria-hidden="true"></i></button>\
                                 </div>\
                             </div>\
                         </div>\
