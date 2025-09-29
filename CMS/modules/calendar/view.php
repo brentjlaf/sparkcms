@@ -134,12 +134,26 @@ $initialPayload = [
                     <h3>Event library</h3>
                     <p>Review upcoming and past events, update details, or remove outdated sessions.</p>
                 </div>
+                <div class="calendar-table-controls">
+                    <label class="calendar-search" for="calendarEventSearch">
+                        <span class="sr-only">Search events</span>
+                        <input type="search" id="calendarEventSearch" placeholder="Search events" data-calendar-filter="search">
+                    </label>
+                    <label class="calendar-sort" for="calendarEventSort">
+                        <span class="sr-only">Sort events</span>
+                        <select id="calendarEventSort" data-calendar-filter="sort">
+                            <option value="startAsc">Start date (ascending)</option>
+                            <option value="startDesc">Start date (descending)</option>
+                            <option value="titleAsc">Title (A–Z)</option>
+                            <option value="titleDesc">Title (Z–A)</option>
+                        </select>
+                    </label>
+                </div>
             </header>
             <div class="calendar-table-wrapper">
                 <table class="data-table calendar-table">
                     <thead>
                         <tr>
-                            <th class="is-id-column">ID</th>
                             <th>Title</th>
                             <th>Start</th>
                             <th>End</th>
@@ -150,7 +164,7 @@ $initialPayload = [
                     </thead>
                     <tbody data-calendar-events>
                         <tr>
-                            <td colspan="7" class="calendar-empty">Loading events…</td>
+                            <td colspan="6" class="calendar-empty">Loading events…</td>
                         </tr>
                     </tbody>
                 </table>
