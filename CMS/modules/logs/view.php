@@ -227,23 +227,6 @@ if ($uniqueUsersCount === 1) {
                     </div>
                     <p class="logs-activity-description">Monitor edits, publishing events, and system jobs without leaving the dashboard.</p>
                 </div>
-                <div class="logs-controls">
-                    <div class="logs-date-range" aria-label="Filter activity by date range">
-                        <label for="logsStartDate">
-                            <span>From</span>
-                            <input type="date" id="logsStartDate" name="logsStartDate">
-                        </label>
-                        <span class="logs-date-range-separator" aria-hidden="true">–</span>
-                        <label for="logsEndDate">
-                            <span>To</span>
-                            <input type="date" id="logsEndDate" name="logsEndDate">
-                        </label>
-                    </div>
-                    <label class="logs-search" for="logsSearch">
-                        <i class="fas fa-search" aria-hidden="true"></i>
-                        <input type="search" id="logsSearch" placeholder="Search by editor, page, or action" autocomplete="off">
-                    </label>
-                </div>
             </div>
 
             <div class="logs-filters" id="logsFilters">
