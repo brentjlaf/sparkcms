@@ -159,9 +159,11 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
     <td class="views"><?php echo $p['views'] ?? 0; ?></td>
     <td class="home">
         <?php if ($homepage === $p['slug']): ?>
-            <span class="home-icon is-home" title="Homepage"><i class="fa-solid fa-house" aria-hidden="true"></i></span>
+            <span class="home-icon is-home" role="img" aria-label="Homepage" title="Homepage"><i class="fa-solid fa-house" aria-hidden="true"></i></span>
         <?php else: ?>
-            <span class="home-icon set-home" title="Set as homepage"><i class="fa-solid fa-house" aria-hidden="true"></i></span>
+            <button type="button" class="home-icon set-home" title="Set as homepage" aria-label="Set as homepage">
+                <i class="fa-solid fa-house" aria-hidden="true"></i>
+            </button>
         <?php endif; ?>
     </td>
     <td class="modified"><?php echo isset($p['last_modified']) ? date('Y-m-d H:i', $p['last_modified']) : ''; ?></td>

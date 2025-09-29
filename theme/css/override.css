@@ -13,6 +13,19 @@ body {
     background-color: #fafafa;
 }
 
+a,
+button,
+[role="button"] {
+    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.45);
+    outline-offset: 3px;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -75,9 +88,16 @@ body {
     display: block;
 }
 
-.main-nav a:hover {
+.main-nav a:hover,
+.main-nav a:focus-visible {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
+}
+
+.main-nav a:focus-visible {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
+    outline: none;
+    color: #fff;
 }
 
 /* Dropdown Menu */
@@ -125,9 +145,15 @@ body {
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
 }
 
-.cta-btn:hover {
+.cta-btn:hover,
+.cta-btn:focus-visible {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.cta-btn:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 3px;
 }
 
 /* Mobile Menu Toggle */
@@ -140,11 +166,17 @@ body {
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 8px;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.nav-toggle:hover {
+.nav-toggle:hover,
+.nav-toggle:focus-visible {
     background: rgba(255, 255, 255, 0.2);
+}
+
+.nav-toggle:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.45);
+    outline-offset: 3px;
 }
 
 /* Header Search */
@@ -924,8 +956,16 @@ section.container-fluid {
     text-decoration: none;
     color: var(--primary, #1f2937);
 }
-.blog-post-list .blog-title a:hover {
+
+.blog-post-list .blog-title a:hover,
+.blog-post-list .blog-title a:focus-visible {
     text-decoration: underline;
+}
+
+.blog-post-list .blog-title a:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    border-radius: 6px;
 }
 .blog-post-list .blog-meta {
     margin-bottom: 0.75rem;
@@ -954,8 +994,16 @@ section.container-fluid {
     margin-left: 0.35rem;
     transition: transform 0.2s ease;
 }
-.blog-post-list .blog-read-more:hover span {
+
+.blog-post-list .blog-read-more:hover span,
+.blog-post-list .blog-read-more:focus-visible span {
     transform: translateX(4px);
+}
+
+.blog-post-list .blog-read-more:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    border-radius: 999px;
 }
 .blog-post-list .blog-item--placeholder,
 .blog-post-list .blog-item--error {
