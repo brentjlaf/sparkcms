@@ -176,29 +176,50 @@
         });
     }
 
-    function sortPages(pages, sortKey) {
-        const sorted = pages.slice();
-        const sorters = {
-            'score-desc': function (a, b) {
-                const diff = normalizeNumber(b.accessibilityScore) - normalizeNumber(a.accessibilityScore);
-                return diff !== 0 ? diff : compareStrings(a.title, b.title);
-            },
-            'score-asc': function (a, b) {
-                const diff = normalizeNumber(a.accessibilityScore) - normalizeNumber(b.accessibilityScore);
-                return diff !== 0 ? diff : compareStrings(a.title, b.title);
-            },
-            'violations-desc': function (a, b) {
-                const diff = getViolationTotal(b) - getViolationTotal(a);
-                return diff !== 0 ? diff : compareStrings(a.title, b.title);
-            },
-            'title-asc': function (a, b) {
+    function getSortValue(page, key) {
+        if (!page) {
+            return 0;
+        }
+        switch (key) {
+            case 'title':
+                return (page.title || '').toString();
+            case 'violations':
+                return getViolationTotal(page);
+            case 'warnings':
+                return normalizeNumber(page.warnings);
+            case 'score':
+            default:
+                return normalizeNumber(page.accessibilityScore);
+        }
+    }
+
+    function sortPages(pages, key, direction) {
+        if (!Array.isArray(pages)) {
+            return [];
+        }
+        const dir = direction === 'asc' ? 1 : -1;
+        const items = pages.slice();
+        items.sort(function (a, b) {
+            const aVal = getSortValue(a, key);
+            const bVal = getSortValue(b, key);
+
+            if (aVal === bVal) {
                 return compareStrings(a.title, b.title) || compareStrings(a.url, b.url);
             }
-        };
 
-        const sorter = sorters[sortKey] || sorters['score-desc'];
-        sorted.sort(sorter);
-        return sorted;
+            if (typeof aVal === 'string' || typeof bVal === 'string') {
+                return compareStrings(aVal, bVal) * dir;
+            }
+
+            if (aVal < bVal) {
+                return -1 * dir;
+            }
+            if (aVal > bVal) {
+                return 1 * dir;
+            }
+            return 0;
+        });
+        return items;
     }
 
     function updateFilterPills(data, $buttons) {
@@ -245,7 +266,9 @@
         const $empty = $('#a11yEmptyState');
         const $filterButtons = $('[data-a11y-filter]');
         const $viewButtons = $('[data-a11y-view]');
-        const $sortButtons = $('[data-a11y-sort]');
+        const $sortSelect = $('#a11ySortSelect');
+        const $sortDirectionBtn = $('#a11ySortDirection');
+        const $sortDirectionLabel = $('#a11ySortDirectionLabel');
         const $searchInput = $('#a11ySearchInput');
         const $modal = $('#a11yPageDetail');
         const $modalClose = $('#a11yDetailClose');
@@ -263,9 +286,44 @@
 
         let currentFilter = 'all';
         let currentView = 'grid';
-        let currentSort = 'score-desc';
+        let currentSort = 'score';
+        let sortDirection = 'desc';
         let filteredPages = data.slice();
         let activeSlug = null;
+
+        if ($sortSelect.length) {
+            currentSort = $sortSelect.val() || currentSort;
+        }
+        if ($sortDirectionBtn.length) {
+            const dir = $sortDirectionBtn.data('direction');
+            if (dir === 'asc' || dir === 'desc') {
+                sortDirection = dir;
+            }
+        }
+        filteredPages = sortPages(filteredPages, currentSort, sortDirection);
+
+        function updateSortDirectionDisplay() {
+            if (!$sortDirectionBtn.length) {
+                return;
+            }
+            const isAsc = sortDirection === 'asc';
+            let labelText = isAsc ? 'Low to high' : 'High to low';
+            if (currentSort === 'title') {
+                labelText = isAsc ? 'A to Z' : 'Z to A';
+            }
+            $sortDirectionBtn.attr('data-direction', sortDirection);
+            $sortDirectionBtn.attr('aria-label', 'Toggle sort direction (' + labelText + ')');
+            $sortDirectionBtn.attr('aria-pressed', isAsc ? 'false' : 'true');
+            const $icon = $sortDirectionBtn.find('i');
+            if ($icon.length) {
+                $icon.attr('class', isAsc ? 'fas fa-sort-amount-up' : 'fas fa-sort-amount-down-alt');
+            }
+            if ($sortDirectionLabel.length) {
+                $sortDirectionLabel.text(labelText);
+            }
+        }
+
+        updateSortDirectionDisplay();
 
         function closeModal() {
             activeSlug = null;
@@ -413,7 +471,7 @@
 
         function applyFilters() {
             const query = ($searchInput.val() || '').toLowerCase();
-            filteredPages = sortPages(filterPages(data, currentFilter, query), currentSort);
+            filteredPages = sortPages(filterPages(data, currentFilter, query), currentSort, sortDirection);
             render();
         }
 
@@ -430,17 +488,21 @@
             applyFilters();
         });
 
-        $sortButtons.on('click', function () {
-            const $btn = $(this);
-            const sortKey = $btn.data('a11y-sort') || 'score-desc';
-            if (sortKey === currentSort) {
-                return;
-            }
-            currentSort = sortKey;
-            $sortButtons.removeClass('active');
-            $btn.addClass('active');
-            applyFilters();
-        });
+        if ($sortSelect.length) {
+            $sortSelect.on('change', function () {
+                currentSort = $(this).val() || 'score';
+                updateSortDirectionDisplay();
+                applyFilters();
+            });
+        }
+
+        if ($sortDirectionBtn.length) {
+            $sortDirectionBtn.on('click', function () {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                updateSortDirectionDisplay();
+                applyFilters();
+            });
+        }
 
         $viewButtons.on('click', function () {
             const $btn = $(this);
