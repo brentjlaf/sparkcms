@@ -8516,6 +8516,19 @@ body.calendar-modal-open {
     line-height: 1;
 }
 
+.forms-action-btn.viewSubmissions {
+    color: #2563eb;
+    border-color: rgba(37, 99, 235, 0.35);
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.forms-action-btn.viewSubmissions:hover,
+.forms-action-btn.viewSubmissions:focus-visible {
+    color: #1d4ed8;
+    background: rgba(37, 99, 235, 0.16);
+    border-color: rgba(37, 99, 235, 0.45);
+}
+
 .forms-action-btn i {
     font-size: 12px;
 }
