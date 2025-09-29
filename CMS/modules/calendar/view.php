@@ -178,12 +178,24 @@ $initialPayload = [
                                 </select>
                             </div>
                             <div>
-                                <label for="calendarEventStart">Start Date/Time*</label>
-                                <input type="datetime-local" name="start_date" id="calendarEventStart" required>
+                                <label for="calendarEventStartPicker">Start Date/Time*</label>
+                                <div class="calendar-datetime-picker" data-calendar-datetime data-calendar-datetime-required="true">
+                                    <input type="hidden" name="start_date" data-calendar-datetime-input>
+                                    <button type="button" class="calendar-datetime-toggle" id="calendarEventStartPicker" data-calendar-datetime-toggle aria-haspopup="dialog" aria-expanded="false">
+                                        <span data-calendar-datetime-value>Select date &amp; time</span>
+                                    </button>
+                                    <p class="calendar-datetime-helper" data-calendar-datetime-helper></p>
+                                </div>
                             </div>
                             <div>
-                                <label for="calendarEventEnd">End Date/Time</label>
-                                <input type="datetime-local" name="end_date" id="calendarEventEnd">
+                                <label for="calendarEventEndPicker">End Date/Time</label>
+                                <div class="calendar-datetime-picker" data-calendar-datetime>
+                                    <input type="hidden" name="end_date" data-calendar-datetime-input>
+                                    <button type="button" class="calendar-datetime-toggle" id="calendarEventEndPicker" data-calendar-datetime-toggle aria-haspopup="dialog" aria-expanded="false">
+                                        <span data-calendar-datetime-value>Select date &amp; time</span>
+                                    </button>
+                                    <p class="calendar-datetime-helper" data-calendar-datetime-helper></p>
+                                </div>
                             </div>
                             <div>
                                 <label for="calendarEventRecurrence">Recurrence</label>
@@ -196,8 +208,14 @@ $initialPayload = [
                                 </select>
                             </div>
                             <div>
-                                <label for="calendarEventRecurrenceEnd">Recurrence End</label>
-                                <input type="datetime-local" name="recurring_end_date" id="calendarEventRecurrenceEnd">
+                                <label for="calendarEventRecurrenceEndPicker">Recurrence End</label>
+                                <div class="calendar-datetime-picker" data-calendar-datetime>
+                                    <input type="hidden" name="recurring_end_date" data-calendar-datetime-input>
+                                    <button type="button" class="calendar-datetime-toggle" id="calendarEventRecurrenceEndPicker" data-calendar-datetime-toggle aria-haspopup="dialog" aria-expanded="false">
+                                        <span data-calendar-datetime-value>Select date &amp; time</span>
+                                    </button>
+                                    <p class="calendar-datetime-helper" data-calendar-datetime-helper></p>
+                                </div>
                             </div>
                             <div class="span-2">
                                 <label for="calendarEventDescription">Description</label>
