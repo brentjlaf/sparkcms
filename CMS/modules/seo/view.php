@@ -722,7 +722,7 @@ $dashboardStats = [
                     </button>
                     <span class="seo-hero-meta">
                         <i class="fas fa-clock" aria-hidden="true"></i>
-                        Last scan: <?php echo htmlspecialchars($lastScan); ?>
+                        Last scan: <span class="seo-last-scan-value"><?php echo htmlspecialchars($lastScan); ?></span>
                     </span>
                 </div>
             </div>
@@ -875,7 +875,7 @@ $dashboardStats = [
         </div>
 
         <footer class="seo-dashboard-footer">
-            <p>SEO data last analysed on <?php echo htmlspecialchars($lastScan); ?>. Refresh the scan whenever you publish new content or update templates.</p>
+            <p>SEO data last analysed on <span class="seo-last-scan-value"><?php echo htmlspecialchars($lastScan); ?></span>. Refresh the scan whenever you publish new content or update templates.</p>
         </footer>
     </div>
 <?php endif; ?>

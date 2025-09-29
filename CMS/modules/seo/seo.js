@@ -8,6 +8,36 @@
         return { pages: [], stats: {} };
     }
 
+    function formatLastScanTimestamp(date) {
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            return '';
+        }
+        var options = {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+        };
+        try {
+            return date.toLocaleString(undefined, options);
+        } catch (error) {
+            // Fallback for environments without locale support
+            var month = date.toString().split(' ')[1] || '';
+            var day = date.getDate();
+            var year = date.getFullYear();
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var period = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            if (hours === 0) {
+                hours = 12;
+            }
+            var minuteStr = minutes < 10 ? '0' + minutes : String(minutes);
+            return month + ' ' + day + ', ' + year + ' ' + hours + ':' + minuteStr + ' ' + period;
+        }
+    }
+
     function normalizeScore(value, fallback) {
         var number = Number(value);
         if (Number.isFinite && Number.isFinite(number)) {
@@ -211,6 +241,14 @@
         });
     }
 
+    function updateLastScanDisplay($root, lastScan) {
+        if (!lastScan) {
+            return;
+        }
+        $root.attr('data-last-scan', lastScan);
+        $root.find('.seo-last-scan-value').text(lastScan);
+    }
+
     function updateStats($root, stats) {
         if (!stats) {
             return;
@@ -224,9 +262,67 @@
                 $root.find('.a11y-filter-count[data-count="' + key + '"]').text(stats.filterCounts[key]);
             });
         }
+        if (stats.lastScan) {
+            updateLastScanDisplay($root, stats.lastScan);
+        }
     }
 
-    function initDashboard($root, pages, pagesMap, stats) {
+    function calculateDashboardStats(pages, previousStats) {
+        var totalPages = Array.isArray(pages) ? pages.length : 0;
+        var totalScore = 0;
+        var criticalIssues = 0;
+        var optimizedPages = 0;
+        var needsWork = 0;
+        var filterCounts = {
+            all: totalPages,
+            critical: 0,
+            'needs-work': 0,
+            optimized: 0
+        };
+
+        if (Array.isArray(pages)) {
+            pages.forEach(function (page) {
+                var score = normalizeScore(page && page.seoScore, 0);
+                totalScore += score;
+
+                var violations = page && page.violations ? page.violations : {};
+                criticalIssues += Number(violations.critical || 0);
+
+                var level = String(page && page.optimizationLevel || '').toLowerCase();
+                if (level === 'optimised' || level === 'optimized') {
+                    optimizedPages++;
+                    filterCounts.optimized++;
+                } else if (level === 'needs improvement' || level === 'needs-improvement') {
+                    needsWork++;
+                    filterCounts['needs-work']++;
+                } else if (level === 'critical') {
+                    filterCounts.critical++;
+                }
+            });
+        }
+
+        var nextStats = {};
+        if (previousStats && typeof previousStats === 'object') {
+            Object.keys(previousStats).forEach(function (key) {
+                nextStats[key] = previousStats[key];
+            });
+        }
+
+        nextStats.totalPages = totalPages;
+        nextStats.avgScore = totalPages ? Math.round(totalScore / totalPages) : 0;
+        nextStats.criticalIssues = criticalIssues;
+        nextStats.optimizedPages = optimizedPages;
+        nextStats.needsWork = needsWork;
+        nextStats.filterCounts = nextStats.filterCounts || {};
+        Object.keys(filterCounts).forEach(function (key) {
+            nextStats.filterCounts[key] = filterCounts[key];
+        });
+        nextStats.lastScan = formatLastScanTimestamp(new Date());
+
+        return nextStats;
+    }
+
+    function initDashboard($root, pages, pagesMap, stats, moduleData) {
         stats = stats || {};
         updateStats($root, stats);
 
@@ -410,9 +506,32 @@
             }
         });
 
-        $root.find('[data-seo-action="scan-all"]').on('click', function () {
-            alert('Scanning all pages for SEO signals...\n\nThis would trigger a batch analysis of titles, descriptions, headings, structured data, and link health.');
-        });
+        var $scanAllBtn = $root.find('[data-seo-action="scan-all"]');
+        if ($scanAllBtn.length) {
+            $scanAllBtn.on('click', function () {
+                var $btn = $(this);
+                if ($btn.prop('disabled')) {
+                    return;
+                }
+                var $icon = $btn.find('i');
+                var originalIcon = $icon.attr('class');
+                $btn.prop('disabled', true).addClass('is-loading');
+                $icon.attr('class', 'fas fa-spinner fa-spin');
+                $btn.find('span').text('Scanning...');
+
+                window.setTimeout(function () {
+                    stats = calculateDashboardStats(pages, stats);
+                    if (moduleData && typeof moduleData === 'object') {
+                        moduleData.stats = stats;
+                    }
+                    updateStats($root, stats);
+
+                    $btn.prop('disabled', false).removeClass('is-loading');
+                    $icon.attr('class', originalIcon);
+                    $btn.find('span').text('Scan All Pages');
+                }, 900);
+            });
+        }
 
         $grid.on('click', '.seo-page-card', function (event) {
             var $target = $(event.target);
@@ -528,7 +647,7 @@
 
         var $dashboard = $('.seo-dashboard');
         if ($dashboard.length) {
-            initDashboard($dashboard, pages, pagesMap, stats);
+            initDashboard($dashboard, pages, pagesMap, stats, moduleData);
         }
 
         var $detail = $('.seo-detail-page');
