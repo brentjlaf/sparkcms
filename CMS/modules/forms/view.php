@@ -141,26 +141,19 @@ $lastSubmissionLabel = $latestSubmission > 0
             </section>
 
             <section class="a11y-detail-card forms-submissions-card" id="formSubmissionsCard">
-                <header class="forms-card-header">
+                <header class="forms-card-header forms-submissions-header">
                     <div>
                         <h3>Submission activity</h3>
                         <p id="selectedFormName" class="form-submissions-label">Select a form to view submissions</p>
                     </div>
+                    <div class="forms-submissions-meta">
+                        <span class="forms-submissions-count" id="formSubmissionsCount">—</span>
+                    </div>
                 </header>
-                <div class="forms-table-wrapper">
-                    <table class="data-table forms-table" id="formSubmissionsTable">
-                        <thead>
-                            <tr>
-                                <th>Submitted</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="placeholder-row">
-                                <td colspan="2">Select a form to view submissions.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="forms-submissions-container">
+                    <div class="forms-submissions-list" id="formSubmissionsList" role="list" aria-live="polite">
+                        <div class="forms-submissions-empty">Select a form to view submissions.</div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -209,5 +202,20 @@ $lastSubmissionLabel = $latestSubmission > 0
                 </div>
             </form>
         </section>
+    </div>
+    <div class="modal forms-submission-modal" id="submissionDetailModal" role="dialog" aria-modal="true" aria-labelledby="submissionModalTitle" aria-describedby="submissionModalDescription" aria-hidden="true">
+        <div class="modal-content">
+            <button type="button" class="modal-close" id="submissionModalClose" aria-label="Close submission details">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="modal-header forms-submission-modal__header">
+                <span class="forms-submission-modal__eyebrow" id="submissionModalEyebrow">Submission details</span>
+                <h2 class="forms-submission-modal__title" id="submissionModalTitle">Submission details</h2>
+                <p class="forms-submission-modal__meta" id="submissionModalDescription"></p>
+            </header>
+            <div class="modal-body forms-submission-modal__body" id="submissionModalBody">
+                <div class="forms-submission-modal__empty">Select a form submission to view the collected data.</div>
+            </div>
+        </div>
     </div>
 </div>
