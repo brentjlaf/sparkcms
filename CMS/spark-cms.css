@@ -8036,6 +8036,18 @@
 }
 
 /* Calendar module */
+#calendar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.calendar-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
 .calendar-module {
     display: flex;
     flex-direction: column;
@@ -8043,7 +8055,7 @@
 }
 
 .calendar-hero {
-    background: linear-gradient(135deg, #1d4ed8, #6366f1);
+    background: linear-gradient(135deg, #5b21b6, #2563eb);
     box-shadow: 0 28px 56px rgba(79, 70, 229, 0.28);
 }
 

@@ -81,195 +81,197 @@ $initialPayload = [
     'metrics' => $metrics,
 ];
 ?>
-<div class="content-section calendar-module" id="calendarModule">
-    <header class="a11y-hero calendar-hero">
-        <div class="a11y-hero-content calendar-hero-content">
-            <div class="calendar-hero-text">
-                <span class="hero-eyebrow calendar-hero-eyebrow">Calendar Overview</span>
-                <h2 class="a11y-hero-title calendar-hero-title">Manage Calendar Data</h2>
-                <p class="a11y-hero-subtitle calendar-hero-subtitle">
-                    Coordinate upcoming events, recurring schedules, and categories without leaving the dashboard.
-                </p>
+<div class="content-section" id="calendar">
+    <div class="calendar-dashboard a11y-dashboard calendar-module" id="calendarModule">
+        <header class="a11y-hero calendar-hero">
+            <div class="a11y-hero-content calendar-hero-content">
+                <div class="calendar-hero-text">
+                    <span class="hero-eyebrow calendar-hero-eyebrow">Calendar Overview</span>
+                    <h2 class="a11y-hero-title calendar-hero-title">Manage Calendar Data</h2>
+                    <p class="a11y-hero-subtitle calendar-hero-subtitle">
+                        Coordinate upcoming events, recurring schedules, and categories without leaving the dashboard.
+                    </p>
+                </div>
+                <div class="a11y-hero-actions calendar-hero-actions">
+                    <button type="button" class="a11y-btn a11y-btn--primary" data-calendar-open="event">
+                        <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+                        <span>Add new event</span>
+                    </button>
+                    <button type="button" class="a11y-btn a11y-btn--ghost" data-calendar-open="categories">
+                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                        <span>Manage categories</span>
+                    </button>
+                    <span class="a11y-hero-meta calendar-hero-meta" data-calendar-next-event>
+                        <?php echo htmlspecialchars($nextEventLabel, ENT_QUOTES, 'UTF-8'); ?>
+                    </span>
+                </div>
             </div>
-            <div class="a11y-hero-actions calendar-hero-actions">
-                <button type="button" class="a11y-btn a11y-btn--primary" data-calendar-open="event">
-                    <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
-                    <span>Add new event</span>
-                </button>
-                <button type="button" class="a11y-btn a11y-btn--ghost" data-calendar-open="categories">
-                    <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
-                    <span>Manage categories</span>
-                </button>
-                <span class="a11y-hero-meta calendar-hero-meta" data-calendar-next-event>
-                    <?php echo htmlspecialchars($nextEventLabel, ENT_QUOTES, 'UTF-8'); ?>
-                </span>
-            </div>
-        </div>
-        <div class="a11y-overview-grid calendar-overview">
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" data-calendar-stat="total"><?php echo $totalEventsCount; ?></div>
-                <div class="a11y-overview-label">Total events</div>
-            </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" data-calendar-stat="upcoming"><?php echo $upcomingEventsCount; ?></div>
-                <div class="a11y-overview-label">Upcoming</div>
-            </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" data-calendar-stat="recurring"><?php echo $recurringEventsCount; ?></div>
-                <div class="a11y-overview-label">Recurring</div>
-            </div>
-            <div class="a11y-overview-card">
-                <div class="a11y-overview-value" data-calendar-stat="categories"><?php echo $categoryCount; ?></div>
-                <div class="a11y-overview-label">Categories</div>
-            </div>
-        </div>
-    </header>
-
-    <div class="calendar-alert" data-calendar-message aria-live="polite"></div>
-
-    <section class="a11y-detail-card calendar-table-card">
-        <header class="calendar-card-header">
-            <div>
-                <h3>Event library</h3>
-                <p>Review upcoming and past events, update details, or remove outdated sessions.</p>
+            <div class="a11y-overview-grid calendar-overview">
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" data-calendar-stat="total"><?php echo $totalEventsCount; ?></div>
+                    <div class="a11y-overview-label">Total events</div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" data-calendar-stat="upcoming"><?php echo $upcomingEventsCount; ?></div>
+                    <div class="a11y-overview-label">Upcoming</div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" data-calendar-stat="recurring"><?php echo $recurringEventsCount; ?></div>
+                    <div class="a11y-overview-label">Recurring</div>
+                </div>
+                <div class="a11y-overview-card">
+                    <div class="a11y-overview-value" data-calendar-stat="categories"><?php echo $categoryCount; ?></div>
+                    <div class="a11y-overview-label">Categories</div>
+                </div>
             </div>
         </header>
-        <div class="calendar-table-wrapper">
-            <table class="data-table calendar-table">
-                <thead>
-                    <tr>
-                        <th class="is-id-column">ID</th>
-                        <th>Title</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Category</th>
-                        <th>Recurrence</th>
-                        <th class="is-actions-column">Actions</th>
-                    </tr>
-                </thead>
-                <tbody data-calendar-events>
-                    <tr>
-                        <td colspan="7" class="calendar-empty">Loading events…</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
 
-    <div class="calendar-modal-backdrop" data-calendar-modal="event">
-        <div class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendarEventModalTitle">
-            <div class="calendar-modal-header">
-                <h2 class="calendar-modal-title" id="calendarEventModalTitle">Add New Event</h2>
-                <button type="button" class="calendar-close" data-calendar-close>&times;</button>
-            </div>
-            <div class="calendar-modal-body">
-                <form data-calendar-form="event">
-                    <input type="hidden" name="evt_id" value="">
-                    <div class="calendar-form-grid">
-                        <div>
-                            <label for="calendarEventTitle">Title*</label>
-                            <input type="text" name="title" id="calendarEventTitle" required>
-                        </div>
-                        <div>
-                            <label for="calendarEventCategory">Category</label>
-                            <select name="category" id="calendarEventCategory">
-                                <option value="">(None)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="calendarEventStart">Start Date/Time*</label>
-                            <input type="datetime-local" name="start_date" id="calendarEventStart" required>
-                        </div>
-                        <div>
-                            <label for="calendarEventEnd">End Date/Time</label>
-                            <input type="datetime-local" name="end_date" id="calendarEventEnd">
-                        </div>
-                        <div>
-                            <label for="calendarEventRecurrence">Recurrence</label>
-                            <select name="recurring_interval" id="calendarEventRecurrence">
-                                <option value="none">None</option>
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="yearly">Yearly</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="calendarEventRecurrenceEnd">Recurrence End</label>
-                            <input type="datetime-local" name="recurring_end_date" id="calendarEventRecurrenceEnd">
-                        </div>
-                        <div class="span-2">
-                            <label for="calendarEventDescription">Description</label>
-                            <textarea name="description" id="calendarEventDescription"></textarea>
-                        </div>
-                    </div>
-                    <div class="calendar-form-actions">
-                        <button type="button" class="calendar-btn-outline" data-calendar-close>Cancel</button>
-                        <button type="submit" class="calendar-submit-btn">Save Event</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+        <div class="calendar-alert" data-calendar-message aria-live="polite"></div>
 
-    <div class="calendar-modal-backdrop calendar-modal-small" data-calendar-modal="categories">
-        <div class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendarCategoriesTitle">
-            <div class="calendar-modal-header">
-                <h2 class="calendar-modal-title" id="calendarCategoriesTitle">Manage Categories</h2>
-                <button type="button" class="calendar-close" data-calendar-close>&times;</button>
+        <section class="a11y-detail-card calendar-table-card">
+            <header class="calendar-card-header">
+                <div>
+                    <h3>Event library</h3>
+                    <p>Review upcoming and past events, update details, or remove outdated sessions.</p>
+                </div>
+            </header>
+            <div class="calendar-table-wrapper">
+                <table class="data-table calendar-table">
+                    <thead>
+                        <tr>
+                            <th class="is-id-column">ID</th>
+                            <th>Title</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Category</th>
+                            <th>Recurrence</th>
+                            <th class="is-actions-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody data-calendar-events>
+                        <tr>
+                            <td colspan="7" class="calendar-empty">Loading events…</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div class="calendar-modal-body">
-                <section class="calendar-modal-table">
-                    <div class="calendar-table-wrapper">
-                        <table class="data-table calendar-table">
-                            <thead>
-                                <tr>
-                                    <th class="is-id-column">ID</th>
-                                    <th>Name</th>
-                                    <th>Color</th>
-                                    <th class="is-actions-column">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody data-calendar-categories>
-                                <tr>
-                                    <td colspan="4" class="calendar-empty">No categories yet.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                <form data-calendar-form="category" class="calendar-form-grid calendar-category-form">
-                    <div>
-                        <label for="calendarCategoryName">Category Name*</label>
-                        <input type="text" name="cat_name" id="calendarCategoryName" required>
-                    </div>
-                    <div>
-                        <label for="calendarCategoryColor">Color</label>
-                        <input type="color" name="cat_color" id="calendarCategoryColor" value="#ffffff">
-                    </div>
-                    <div class="span-2 calendar-form-actions calendar-form-actions--inline">
-                        <button type="submit" class="calendar-submit-btn">Add Category</button>
-                    </div>
-                </form>
-            </div>
-            <div class="calendar-modal-footer">
-                <button type="button" class="calendar-btn-outline" data-calendar-close>Close</button>
+        </section>
+
+        <div class="calendar-modal-backdrop" data-calendar-modal="event">
+            <div class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendarEventModalTitle">
+                <div class="calendar-modal-header">
+                    <h2 class="calendar-modal-title" id="calendarEventModalTitle">Add New Event</h2>
+                    <button type="button" class="calendar-close" data-calendar-close>&times;</button>
+                </div>
+                <div class="calendar-modal-body">
+                    <form data-calendar-form="event">
+                        <input type="hidden" name="evt_id" value="">
+                        <div class="calendar-form-grid">
+                            <div>
+                                <label for="calendarEventTitle">Title*</label>
+                                <input type="text" name="title" id="calendarEventTitle" required>
+                            </div>
+                            <div>
+                                <label for="calendarEventCategory">Category</label>
+                                <select name="category" id="calendarEventCategory">
+                                    <option value="">(None)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="calendarEventStart">Start Date/Time*</label>
+                                <input type="datetime-local" name="start_date" id="calendarEventStart" required>
+                            </div>
+                            <div>
+                                <label for="calendarEventEnd">End Date/Time</label>
+                                <input type="datetime-local" name="end_date" id="calendarEventEnd">
+                            </div>
+                            <div>
+                                <label for="calendarEventRecurrence">Recurrence</label>
+                                <select name="recurring_interval" id="calendarEventRecurrence">
+                                    <option value="none">None</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="calendarEventRecurrenceEnd">Recurrence End</label>
+                                <input type="datetime-local" name="recurring_end_date" id="calendarEventRecurrenceEnd">
+                            </div>
+                            <div class="span-2">
+                                <label for="calendarEventDescription">Description</label>
+                                <textarea name="description" id="calendarEventDescription"></textarea>
+                            </div>
+                        </div>
+                        <div class="calendar-form-actions">
+                            <button type="button" class="calendar-btn-outline" data-calendar-close>Cancel</button>
+                            <button type="submit" class="calendar-submit-btn">Save Event</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="calendar-modal-backdrop calendar-modal-small" data-calendar-modal="confirm">
-        <div class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendarConfirmTitle">
-            <div class="calendar-modal-header">
-                <h2 class="calendar-modal-title" id="calendarConfirmTitle" data-calendar-confirm-title>Confirm Action</h2>
-                <button type="button" class="calendar-close" data-calendar-close>&times;</button>
+        <div class="calendar-modal-backdrop calendar-modal-small" data-calendar-modal="categories">
+            <div class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendarCategoriesTitle">
+                <div class="calendar-modal-header">
+                    <h2 class="calendar-modal-title" id="calendarCategoriesTitle">Manage Categories</h2>
+                    <button type="button" class="calendar-close" data-calendar-close>&times;</button>
+                </div>
+                <div class="calendar-modal-body">
+                    <section class="calendar-modal-table">
+                        <div class="calendar-table-wrapper">
+                            <table class="data-table calendar-table">
+                                <thead>
+                                    <tr>
+                                        <th class="is-id-column">ID</th>
+                                        <th>Name</th>
+                                        <th>Color</th>
+                                        <th class="is-actions-column">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-calendar-categories>
+                                    <tr>
+                                        <td colspan="4" class="calendar-empty">No categories yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <form data-calendar-form="category" class="calendar-form-grid calendar-category-form">
+                        <div>
+                            <label for="calendarCategoryName">Category Name*</label>
+                            <input type="text" name="cat_name" id="calendarCategoryName" required>
+                        </div>
+                        <div>
+                            <label for="calendarCategoryColor">Color</label>
+                            <input type="color" name="cat_color" id="calendarCategoryColor" value="#ffffff">
+                        </div>
+                        <div class="span-2 calendar-form-actions calendar-form-actions--inline">
+                            <button type="submit" class="calendar-submit-btn">Add Category</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="calendar-modal-footer">
+                    <button type="button" class="calendar-btn-outline" data-calendar-close>Close</button>
+                </div>
             </div>
-            <div class="calendar-modal-body">
-                <p data-calendar-confirm-message>Are you sure?</p>
-            </div>
-            <div class="calendar-modal-footer">
-                <button type="button" class="calendar-btn-outline" data-calendar-close>Cancel</button>
-                <button type="button" class="calendar-confirm-btn calendar-confirm-btn--danger" data-calendar-confirm-accept>Confirm</button>
+        </div>
+
+        <div class="calendar-modal-backdrop calendar-modal-small" data-calendar-modal="confirm">
+            <div class="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendarConfirmTitle">
+                <div class="calendar-modal-header">
+                    <h2 class="calendar-modal-title" id="calendarConfirmTitle" data-calendar-confirm-title>Confirm Action</h2>
+                    <button type="button" class="calendar-close" data-calendar-close>&times;</button>
+                </div>
+                <div class="calendar-modal-body">
+                    <p data-calendar-confirm-message>Are you sure?</p>
+                </div>
+                <div class="calendar-modal-footer">
+                    <button type="button" class="calendar-btn-outline" data-calendar-close>Cancel</button>
+                    <button type="button" class="calendar-confirm-btn calendar-confirm-btn--danger" data-calendar-confirm-accept>Confirm</button>
+                </div>
             </div>
         </div>
     </div>
