@@ -4,6 +4,9 @@ $(function(){
 
     let currentField = null;
     let currentFormId = null;
+    let currentFormName = '';
+    let currentSubmissions = [];
+    let lastSubmissionTrigger = null;
     let formsCache = [];
 
     const $drawer = $('#formBuilderDrawer');
@@ -215,11 +218,18 @@ $(function(){
 
     function resetSubmissionsCard(message){
         currentFormId = null;
+        currentFormName = '';
+        currentSubmissions = [];
+        closeSubmissionModal();
         const text = message || 'Select a form to view submissions';
-        const rowMessage = /[.!?]$/.test(text) ? text : text + '.';
+        const placeholder = /[.!?]$/.test(text) ? text : text + '.';
         $('#formsTable tbody tr').removeClass('selected');
         $('#selectedFormName').text(text);
-        $('#formSubmissionsTable tbody').html('<tr class="placeholder-row"><td colspan="2">'+escapeHtml(rowMessage)+'</td></tr>');
+        $('#formSubmissionsCount').text('—');
+        $('#formSubmissionsList')
+            .attr('data-state', 'empty')
+            .attr('aria-busy', 'false')
+            .html('<div class="forms-submissions-empty">'+escapeHtml(placeholder)+'</div>');
     }
 
     function formatSubmissionDate(value){
@@ -273,53 +283,201 @@ $(function(){
         return String(value);
     }
 
+    function normalizeSubmissionRecord(submission){
+        const submittedAt = formatSubmissionDate(submission && (submission.submitted_at || submission.created_at || submission.timestamp));
+        const fields = submission && submission.data && typeof submission.data === 'object' ? submission.data : {};
+        const meta = submission && submission.meta && typeof submission.meta === 'object' ? Object.assign({}, submission.meta) : {};
+        if(submission && submission.source && !meta.source){
+            meta.source = submission.source;
+        }
+        if(submission && submission.id && !meta.id){
+            meta.id = submission.id;
+        }
+        const fieldEntries = Object.keys(fields)
+            .sort((a, b) => a.localeCompare(b))
+            .map(function(key){
+                return { key: key, value: normalizeSubmissionValue(fields[key]) };
+            });
+        const metaEntries = Object.keys(meta)
+            .sort((a, b) => a.localeCompare(b))
+            .map(function(key){
+                return { key: key, value: normalizeSubmissionValue(meta[key]) };
+            });
+        const identifierEntry = metaEntries.find(function(entry){
+            return entry.key && entry.key.toLowerCase() === 'id';
+        });
+        const sourceEntry = metaEntries.find(function(entry){
+            return entry.key && entry.key.toLowerCase() === 'source';
+        });
+        return {
+            submittedAt: submittedAt,
+            fieldEntries: fieldEntries,
+            metaEntries: metaEntries,
+            identifier: identifierEntry ? identifierEntry.value : (submission && submission.id ? normalizeSubmissionValue(submission.id) : ''),
+            source: sourceEntry ? sourceEntry.value : (submission && submission.source ? normalizeSubmissionValue(submission.source) : ''),
+            raw: submission || {}
+        };
+    }
+
     function loadFormSubmissions(formId, formName){
         currentFormId = formId;
+        currentFormName = formName;
+        currentSubmissions = [];
         $('#formsTable tbody tr').removeClass('selected');
         $('#formsTable tbody tr').filter(function(){ return $(this).data('id') == formId; }).addClass('selected');
         $('#selectedFormName').text(formName);
-        const tbody = $('#formSubmissionsTable tbody').empty();
-        tbody.append('<tr class="loading-row"><td colspan="2">Loading submissions...</td></tr>');
+        $('#formSubmissionsCount').text('—');
+        const $list = $('#formSubmissionsList');
+        $list
+            .attr('data-state', 'loading')
+            .attr('aria-busy', 'true')
+            .html('<div class="forms-submissions-empty">Loading submissions...</div>');
         $.getJSON('modules/forms/list_submissions.php', { form_id: formId }, function(data){
-            tbody.empty();
             const submissions = Array.isArray(data) ? data : [];
-            if(!submissions.length){
-                tbody.append('<tr class="empty-row"><td colspan="2">No submissions yet.</td></tr>');
+            currentSubmissions = submissions.map(normalizeSubmissionRecord);
+            if(!currentSubmissions.length){
+                $('#formSubmissionsCount').text('0 submissions');
+                $list
+                    .attr('data-state', 'empty')
+                    .attr('aria-busy', 'false')
+                    .html('<div class="forms-submissions-empty">No submissions yet.</div>');
                 return;
             }
-            submissions.forEach(function(submission){
-                const submittedAt = formatSubmissionDate(submission.submitted_at || submission.created_at || submission.timestamp);
-                const fields = submission.data && typeof submission.data === 'object' ? submission.data : {};
-                const meta = submission.meta && typeof submission.meta === 'object' ? Object.assign({}, submission.meta) : {};
-                if(submission.source && !meta.source){
-                    meta.source = submission.source;
+            const countLabel = currentSubmissions.length === 1 ? '1 submission' : currentSubmissions.length + ' submissions';
+            $('#formSubmissionsCount').text(countLabel);
+            $list.attr('data-state', 'ready').attr('aria-busy', 'false').empty();
+            currentSubmissions.forEach(function(record, index){
+                const $card = $('<article class="forms-submission-card" role="listitem"></article>');
+                const $header = $('<div class="forms-submission-card__header"></div>');
+                $header.append('<span class="forms-submission-card__timestamp">'+escapeHtml(record.submittedAt || 'Unknown')+'</span>');
+                const $badges = $('<div class="forms-submission-card__badges"></div>');
+                const identifier = record.identifier && String(record.identifier).trim();
+                const source = record.source && String(record.source).trim();
+                if(identifier){
+                    $badges.append('<span class="forms-submission-card__badge forms-submission-card__badge--id">ID '+escapeHtml(identifier)+'</span>');
                 }
-                if(submission.id && !meta.id){
-                    meta.id = submission.id;
+                if(source){
+                    $badges.append('<span class="forms-submission-card__badge">'+escapeHtml(source)+'</span>');
                 }
-                const fieldKeys = Object.keys(fields).sort();
-                const metaKeys = Object.keys(meta).sort();
-                const details = [];
-                fieldKeys.forEach(function(key){
-                    const value = normalizeSubmissionValue(fields[key]);
-                    details.push('<div class="submission-detail"><div class="submission-label">'+escapeHtml(key)+'</div><div class="submission-value">'+escapeHtml(value)+'</div></div>');
-                });
-                if(metaKeys.length){
-                    details.push('<div class="submission-meta-group"><div class="submission-meta-title">Metadata</div>');
-                    metaKeys.forEach(function(key){
-                        const value = normalizeSubmissionValue(meta[key]);
-                        details.push('<div class="submission-detail"><div class="submission-label">'+escapeHtml(key)+'</div><div class="submission-value">'+escapeHtml(value)+'</div></div>');
+                if(!$badges.children().length){
+                    $badges.append('<span class="forms-submission-card__badge forms-submission-card__badge--muted">Submission '+escapeHtml(String(index + 1))+'</span>');
+                }
+                $header.append($badges);
+                $card.append($header);
+
+                const $preview = $('<div class="forms-submission-card__preview"></div>');
+                const previewFields = record.fieldEntries.slice(0, 3);
+                if(previewFields.length){
+                    previewFields.forEach(function(entry){
+                        const $field = $('<div class="forms-submission-card__field"></div>');
+                        $field.append('<span class="forms-submission-card__field-label">'+escapeHtml(entry.key)+'</span>');
+                        $field.append('<span class="forms-submission-card__field-value">'+escapeHtml(entry.value)+'</span>');
+                        $preview.append($field);
                     });
-                    details.push('</div>');
+                    if(record.fieldEntries.length > 3){
+                        const remaining = record.fieldEntries.length - 3;
+                        $preview.append('<span class="forms-submission-card__more">+'+escapeHtml(String(remaining))+' more field'+(remaining === 1 ? '' : 's')+'</span>');
+                    }
+                } else {
+                    $preview.append('<div class="forms-submission-card__empty">No submission data provided.</div>');
                 }
-                if(!details.length){
-                    details.push('<div class="submission-detail"><div class="submission-label">Details</div><div class="submission-value"><em>No submission data provided.</em></div></div>');
-                }
-                tbody.append('<tr><td class="submitted">'+escapeHtml(submittedAt)+'</td><td class="details">'+details.join('')+'</td></tr>');
+                $card.append($preview);
+
+                const $actions = $('<div class="forms-submission-card__actions"></div>');
+                const $button = $('<button type="button" class="a11y-btn a11y-btn--ghost forms-submission-view"><i class="fa-solid fa-eye" aria-hidden="true"></i><span>View details</span></button>');
+                $button.on('click', function(){
+                    openSubmissionModal(index, this);
+                });
+                $actions.append($button);
+                $card.append($actions);
+
+                $list.append($card);
             });
         }).fail(function(){
-            tbody.empty().append('<tr class="error-row"><td colspan="2">Unable to load submissions.</td></tr>');
+            $('#formSubmissionsCount').text('—');
+            $list
+                .attr('data-state', 'error')
+                .attr('aria-busy', 'false')
+                .html('<div class="forms-submissions-empty">Unable to load submissions.</div>');
         });
+    }
+
+    function buildModalDescription(record){
+        const segments = [];
+        if(currentFormName){
+            segments.push('Form: ' + currentFormName);
+        }
+        if(record && record.submittedAt && record.submittedAt !== 'Unknown'){
+            segments.push('Submitted ' + record.submittedAt);
+        }
+        return segments.join(' • ');
+    }
+
+    function openSubmissionModal(index, trigger){
+        if(!currentSubmissions[index]){
+            return;
+        }
+        const record = currentSubmissions[index];
+        lastSubmissionTrigger = trigger ? $(trigger) : null;
+        const $modal = $('#submissionDetailModal');
+        const $body = $('#submissionModalBody').empty();
+        const identifier = record.identifier && String(record.identifier).trim();
+        $('#submissionModalTitle').text(identifier ? 'Submission ID ' + identifier : 'Submission details');
+        $('#submissionModalDescription').text(buildModalDescription(record));
+
+        if(record.fieldEntries.length){
+            const $fieldsSection = $('<section class="forms-submission-modal__section"></section>');
+            $fieldsSection.append('<h3 class="forms-submission-modal__section-title">Submitted fields</h3>');
+            const $fieldList = $('<dl class="forms-submission-modal__details"></dl>');
+            record.fieldEntries.forEach(function(entry){
+                const $item = $('<div class="forms-submission-modal__detail"></div>');
+                $item.append('<dt>'+escapeHtml(entry.key)+'</dt>');
+                $item.append('<dd>'+escapeHtml(entry.value)+'</dd>');
+                $fieldList.append($item);
+            });
+            $fieldsSection.append($fieldList);
+            $body.append($fieldsSection);
+        }
+
+        if(record.metaEntries.length){
+            const $metaSection = $('<section class="forms-submission-modal__section"></section>');
+            $metaSection.append('<h3 class="forms-submission-modal__section-title">Metadata</h3>');
+            const $metaList = $('<dl class="forms-submission-modal__details"></dl>');
+            record.metaEntries.forEach(function(entry){
+                const $item = $('<div class="forms-submission-modal__detail"></div>');
+                $item.append('<dt>'+escapeHtml(entry.key)+'</dt>');
+                $item.append('<dd>'+escapeHtml(entry.value)+'</dd>');
+                $metaList.append($item);
+            });
+            $metaSection.append($metaList);
+            $body.append($metaSection);
+        }
+
+        if(!$body.children().length){
+            $body.append('<div class="forms-submission-modal__empty">No additional information available for this submission.</div>');
+        }
+
+        $modal.addClass('active').attr('aria-hidden', 'false');
+        setTimeout(function(){
+            $('#submissionModalClose').trigger('focus');
+        }, 0);
+    }
+
+    function closeSubmissionModal(){
+        const $modal = $('#submissionDetailModal');
+        if(!$modal.hasClass('active')){
+            return;
+        }
+        $modal.removeClass('active').attr('aria-hidden', 'true');
+        $('#submissionModalTitle').text('Submission details');
+        $('#submissionModalDescription').text('');
+        $('#submissionModalBody')
+            .empty()
+            .append('<div class="forms-submission-modal__empty">Select a form submission to view the collected data.</div>');
+        if(lastSubmissionTrigger && lastSubmissionTrigger.length){
+            lastSubmissionTrigger.trigger('focus');
+        }
+        lastSubmissionTrigger = null;
     }
 
     function updatePreview($li){
@@ -828,6 +986,22 @@ $(function(){
 
     $('#fieldSettings').on('input change', '.field-body input, .field-body textarea', function(){
         if(currentField) updatePreview(currentField);
+    });
+
+    $('#submissionModalClose').on('click', function(){
+        closeSubmissionModal();
+    });
+
+    $('#submissionDetailModal').on('click', function(event){
+        if(event.target === this){
+            closeSubmissionModal();
+        }
+    });
+
+    $(document).on('keydown.formsSubmissionModal', function(event){
+        if(event.key === 'Escape'){
+            closeSubmissionModal();
+        }
     });
 
     bootstrapStatsFromDataset();
