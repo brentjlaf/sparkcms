@@ -5,7 +5,7 @@
         <dt>Background Image</dt>
         <dd>
             <input type="text" name="custom_bg" id="custom_bg" value="">
-            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_bg')">Browse</button>
+            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_bg')"><i class="fa-solid fa-image-portrait btn-icon" aria-hidden="true"></i><span class="btn-label">Browse</span></button>
         </dd>
     </dl>
     

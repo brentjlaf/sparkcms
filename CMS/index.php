@@ -216,6 +216,7 @@ if ($templateFile && (!$logged_in || $preview_mode)) {
     <meta property="og:image" content="<?php echo htmlspecialchars($page['og_image']); ?>">
 <?php endif; ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <?php if ($logged_in): ?>
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/root.css">
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/skin.css">
@@ -239,7 +240,10 @@ if ($templateFile && (!$logged_in || $preview_mode)) {
         <?php endif; ?>
         </div>
         <div>
-            <a class="btn btn-primary" href="<?php echo $scriptBase; ?>/CMS/admin.php">Admin</a>
+            <a class="btn btn-primary" href="<?php echo $scriptBase; ?>/CMS/admin.php">
+                <i class="fa-solid fa-gauge-high btn-icon" aria-hidden="true"></i>
+                <span class="btn-label">Admin</span>
+            </a>
         </div>
     </div>
     <div class="content">

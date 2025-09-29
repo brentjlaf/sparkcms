@@ -110,7 +110,8 @@ function renderFooterMenu($items){
                         
                         <!-- Contact Button -->
                         <a href="<?php echo $scriptBase; ?>/contact-us" class="btn btn-primary">
-                            <i class="fas fa-envelope me-1"></i>Contact Us
+                            <i class="fas fa-envelope btn-icon" aria-hidden="true"></i>
+                            <span class="btn-label">Contact Us</span>
                         </a>
                     </div>
                 </div>

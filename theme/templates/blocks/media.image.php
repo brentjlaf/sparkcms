@@ -5,7 +5,7 @@
         <dt>Source</dt>
         <dd>
             <input type="text" name="custom_src" id="custom_src" value="">
-            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_src')">Browse</button>
+            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_src')"><i class="fa-solid fa-images btn-icon" aria-hidden="true"></i><span class="btn-label">Browse</span></button>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">

@@ -470,22 +470,57 @@ button:focus {
 
 /* Button Block */
 .btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: var(--btn-md-padding-y) var(--btn-md-padding-x);
+    border: var(--btn-border-width) var(--btn-border-style) transparent;
+    border-radius: var(--btn-border-radius-rounded);
+    background: transparent;
+    color: inherit;
+    font-family: var(--btn-font-family);
+    font-weight: var(--btn-font-weight);
+    font-size: var(--btn-md-font-size);
+    letter-spacing: var(--btn-letter-spacing);
+    line-height: 1.2;
     text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--transition-200), color var(--transition-200), box-shadow var(--transition-200), transform var(--transition-200), border-color var(--transition-200);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
+}
+
+.btn:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.4);
+    outline-offset: 2px;
+}
+
+.btn .btn-icon,
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.btn .btn-label {
+    line-height: 1;
 }
 
 .btn-primary {
-    background-color: #667eea;
-    color: #fff;
-    border: none;
+    background: linear-gradient(135deg, var(--primary), var(--primary-5));
+    color: var(--text-color-on-primary);
+    border-color: var(--primary-5);
 }
 
 .btn-primary:hover {
-    background-color: #556cd6;
+    background: var(--primary-5);
 }
 
 /* Divider Block */
@@ -595,20 +630,6 @@ section.container-fluid {
 }
 .row[data-tpl-tooltip="Columns"] > .col {
     min-width: 0;
-}
-
-/* Button Block */
-.btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    background: #3498db;
-    color: #fff;
-    text-decoration: none;
-    transition: background 0.3s ease;
-}
-.btn:hover {
-    background: #2980b9;
 }
 
 /* Quote Block */
@@ -985,13 +1006,14 @@ section.container-fluid {
 }
 
 .btn-secondary {
-    background-color: #e2e8f0;
-    color: #4a5568;
-    border: none;
+    background: var(--gray-2);
+    color: var(--dark);
+    border-color: rgba(148, 163, 184, 0.35);
 }
 
 .btn-secondary:hover {
-    background-color: #cbd5e0;
+    background: var(--gray-3);
+    color: var(--gray-9);
 }
 
 .color-options label {

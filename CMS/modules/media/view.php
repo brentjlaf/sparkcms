@@ -67,8 +67,8 @@
                                         <div class="folder-stats" id="folderStats"></div>
                                     </div>
                                     <div class="gallery-actions">
-                                        <button class="btn btn-secondary" id="renameFolderBtn"><i class="fa-solid fa-pen" aria-hidden="true"></i><span>Rename</span></button>
-                                        <button class="btn btn-danger" id="deleteFolderBtn"><i class="fa-solid fa-trash" aria-hidden="true"></i><span>Delete</span></button>
+                                        <button class="btn btn-secondary" id="renameFolderBtn"><i class="fa-solid fa-pen btn-icon" aria-hidden="true"></i><span class="btn-label">Rename</span></button>
+                                        <button class="btn btn-danger" id="deleteFolderBtn"><i class="fa-solid fa-trash btn-icon" aria-hidden="true"></i><span class="btn-label">Delete</span></button>
                                     </div>
                                 </div>
                                 <div class="gallery-content" id="galleryContent">
@@ -139,8 +139,8 @@
                                 <input type="text" id="newFolderName" placeholder="Folder name">
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                                <button class="btn btn-primary" id="confirmCreateBtn">Create</button>
+                                <button class="btn btn-secondary" id="cancelBtn"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
+                                <button class="btn btn-primary" id="confirmCreateBtn"><i class="fa-solid fa-folder-plus btn-icon" aria-hidden="true"></i><span class="btn-label">Create</span></button>
                             </div>
                         </div>
                     </div>
@@ -157,8 +157,8 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" id="cancelRenameFolderBtn">Cancel</button>
-                                <button class="btn btn-primary" id="confirmRenameFolderBtn">Rename</button>
+                                <button class="btn btn-secondary" id="cancelRenameFolderBtn"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
+                                <button class="btn btn-primary" id="confirmRenameFolderBtn"><i class="fa-solid fa-pen-to-square btn-icon" aria-hidden="true"></i><span class="btn-label">Rename</span></button>
                             </div>
                         </div>
                     </div>
@@ -194,8 +194,8 @@
                                         </div>
                                     </div>
                                     <div class="form-actions" id="infoActions">
-                                        <button class="btn btn-danger" id="deleteBtn">Delete</button>
-                                        <button class="btn btn-primary" id="saveEditBtn">Save</button>
+                                        <button class="btn btn-danger" id="deleteBtn"><i class="fa-solid fa-trash btn-icon" aria-hidden="true"></i><span class="btn-label">Delete</span></button>
+                                        <button class="btn btn-primary" id="saveEditBtn"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button>
                                     </div>
                                 </div>
                             </div>
@@ -212,10 +212,10 @@
                                 </div>
                                 <div class="crop-sidebar">
                                     <div class="form-group">
-                                        <button class="btn btn-secondary" id="flipHorizontal">Flip Horizontal</button>
+                                        <button class="btn btn-secondary" id="flipHorizontal"><i class="fa-solid fa-arrows-left-right btn-icon" aria-hidden="true"></i><span class="btn-label">Flip Horizontal</span></button>
                                     </div>
                                     <div class="form-group">
-                                        <button class="btn btn-secondary" id="flipVertical">Flip Vertical</button>
+                                        <button class="btn btn-secondary" id="flipVertical"><i class="fa-solid fa-arrows-up-down btn-icon" aria-hidden="true"></i><span class="btn-label">Flip Vertical</span></button>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="scaleSlider">Scale</label>
@@ -245,8 +245,8 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" id="imageEditCancel">Cancel</button>
-                                <button class="btn btn-primary" id="imageEditSave">Save</button>
+                                <button class="btn btn-secondary" id="imageEditCancel"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
+                                <button class="btn btn-primary" id="imageEditSave"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button>
                             </div>
                         </div>
                     </div>
