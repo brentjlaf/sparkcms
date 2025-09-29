@@ -800,10 +800,10 @@ $dashboardStats = [
                         <?php endforeach; ?>
                     </div>
                     <footer>
-                        <span class="seo-card-link" aria-hidden="true">
-                            View detailed recommendations
+                        <button type="button" class="seo-card-link" aria-label="See detailed SEO guidance for <?php echo htmlspecialchars($page['title']); ?>">
+                            <span>See detailed SEO guidance</span>
                             <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                        </span>
+                        </button>
                         <span class="sr-only">Press Enter to open SEO details for <?php echo htmlspecialchars($page['title']); ?>.</span>
                     </footer>
                 </article>

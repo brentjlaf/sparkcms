@@ -9477,15 +9477,20 @@ body.calendar-modal-open {
 }
 
 .seo-card-link {
+    background: none;
+    border: none;
     color: #1e40af;
+    font: inherit;
     font-weight: 600;
-    text-decoration: none;
+    padding: 0;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+    cursor: pointer;
 }
 
-.seo-card-link:hover {
+.seo-card-link:hover,
+.seo-card-link:focus-visible {
     text-decoration: underline;
 }
 
