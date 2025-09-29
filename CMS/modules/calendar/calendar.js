@@ -10,6 +10,10 @@
     categories: [],
     metrics: null,
   };
+  const filters = {
+    search: '',
+    sort: 'startAsc',
+  };
 
   const initial = window.sparkCalendarInitial || {};
   if (Array.isArray(initial.events)) {
@@ -48,6 +52,8 @@
     recurring: root.querySelector('[data-calendar-stat="recurring"]'),
     categories: root.querySelector('[data-calendar-stat="categories"]'),
   };
+  const searchInput = root.querySelector('[data-calendar-filter="search"]');
+  const sortSelect = root.querySelector('[data-calendar-filter="sort"]');
 
   const recurrenceLabels = {
     none: 'None',
@@ -755,27 +761,116 @@
     categorySelect.innerHTML = options.join('');
   }
 
+  function getEventTimestamp(value) {
+    const parsed = Date.parse(value || '');
+    if (!Number.isFinite(parsed)) {
+      return 0;
+    }
+    return parsed;
+  }
+
+  function compareByStartAsc(a, b) {
+    const diff = getEventTimestamp(a.start_date) - getEventTimestamp(b.start_date);
+    if (diff !== 0) {
+      return diff;
+    }
+    return (a.id || 0) - (b.id || 0);
+  }
+
+  function compareByStartDesc(a, b) {
+    const diff = getEventTimestamp(b.start_date) - getEventTimestamp(a.start_date);
+    if (diff !== 0) {
+      return diff;
+    }
+    return (b.id || 0) - (a.id || 0);
+  }
+
+  function compareByTitleAsc(a, b) {
+    const titleA = String(a.title || '').toLowerCase();
+    const titleB = String(b.title || '').toLowerCase();
+    if (titleA < titleB) return -1;
+    if (titleA > titleB) return 1;
+    return compareByStartAsc(a, b);
+  }
+
+  function compareByTitleDesc(a, b) {
+    const titleA = String(a.title || '').toLowerCase();
+    const titleB = String(b.title || '').toLowerCase();
+    if (titleA < titleB) return 1;
+    if (titleA > titleB) return -1;
+    return compareByStartDesc(a, b);
+  }
+
+  function getFilteredEvents() {
+    if (!Array.isArray(state.events)) {
+      return [];
+    }
+
+    const query = filters.search.trim().toLowerCase();
+    let result = state.events.slice();
+
+    if (query !== '') {
+      result = result.filter((event) => {
+        const fields = [
+          event.id,
+          event.title,
+          event.category,
+          event.description,
+          event.location,
+          formatReadableDate(event.start_date),
+          formatReadableDate(event.end_date),
+        ];
+        return fields.some((field) => {
+          if (field === null || field === undefined) {
+            return false;
+          }
+          const normalized = String(field).toLowerCase();
+          if (normalized === '') {
+            return false;
+          }
+          return normalized.includes(query);
+        });
+      });
+    }
+
+    let comparator = compareByStartAsc;
+    switch (filters.sort) {
+      case 'startDesc':
+        comparator = compareByStartDesc;
+        break;
+      case 'titleAsc':
+        comparator = compareByTitleAsc;
+        break;
+      case 'titleDesc':
+        comparator = compareByTitleDesc;
+        break;
+      default:
+        comparator = compareByStartAsc;
+    }
+
+    return result.sort(comparator);
+  }
+
   function renderEvents() {
     if (!eventsTableBody) {
       return;
     }
 
-    if (!Array.isArray(state.events) || state.events.length === 0) {
+    const filteredEvents = getFilteredEvents();
+
+    if (!Array.isArray(filteredEvents) || filteredEvents.length === 0) {
+      const hasQuery = filters.search.trim() !== '';
+      const emptyMessage = hasQuery
+        ? 'No events match your filters.'
+        : 'No events found.';
       eventsTableBody.innerHTML =
-        '<tr><td colspan="7" class="calendar-empty">No events found.</td></tr>';
+        '<tr><td colspan="6" class="calendar-empty">' +
+        emptyMessage +
+        '</td></tr>';
       return;
     }
 
-    const rows = state.events
-      .slice()
-      .sort((a, b) => {
-        const aTime = Date.parse(a.start_date || '') || 0;
-        const bTime = Date.parse(b.start_date || '') || 0;
-        if (aTime === bTime) {
-          return (a.id || 0) - (b.id || 0);
-        }
-        return aTime - bTime;
-      })
+    const rows = filteredEvents
       .map((event) => {
         const recurrence = recurrenceLabels[event.recurring_interval] || 'None';
         const categoryMeta = getCategoryMeta(event.category);
@@ -790,7 +885,6 @@
           '<tr data-event-id="' +
           String(event.id || '') +
           '">' +
-          '<td>' + escapeHtml(event.id || '') + '</td>' +
           '<td>' + escapeHtml(event.title || '') + '</td>' +
           '<td>' + formatDisplayDate(event.start_date) + '</td>' +
           '<td>' + formatDisplayDate(event.end_date) + '</td>' +
@@ -1272,6 +1366,27 @@
       closeModal(target);
     }
   });
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (event) => {
+      const value = event.target && typeof event.target.value === 'string'
+        ? event.target.value
+        : '';
+      filters.search = value;
+      renderEvents();
+    });
+  }
+
+  if (sortSelect) {
+    sortSelect.value = filters.sort;
+    sortSelect.addEventListener('change', (event) => {
+      const value = event.target && typeof event.target.value === 'string'
+        ? event.target.value
+        : 'startAsc';
+      filters.sort = value || 'startAsc';
+      renderEvents();
+    });
+  }
 
   renderCategories();
   renderEvents();
