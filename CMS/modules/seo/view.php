@@ -315,6 +315,14 @@ foreach ($pages as $page) {
         $metrics['wordCount'] = extract_word_count($pageHtml);
     }
 
+    if ($metrics['metaDescriptionLength'] === 0) {
+        $fallbackDescription = trim((string)($page['meta_description'] ?? ''));
+        if ($fallbackDescription !== '') {
+            $metrics['metaDescription'] = $fallbackDescription;
+            $metrics['metaDescriptionLength'] = seo_strlen($fallbackDescription);
+        }
+    }
+
     $issues = [];
     $violations = [
         'critical' => 0,
