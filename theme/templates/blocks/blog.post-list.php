@@ -18,9 +18,9 @@
         <dt>Number of Posts</dt>
         <dd>
             <select name="custom_limit" class="form-select">
-                <option value="3" selected>3 Posts</option>
+                <option value="3">3 Posts</option>
                 <option value="4">4 Posts</option>
-                <option value="6">6 Posts</option>
+                <option value="6" selected>6 Posts</option>
                 <option value="9">9 Posts</option>
                 <option value="12">12 Posts</option>
             </select>

@@ -54,7 +54,7 @@
   function parseLimit(value) {
     var limit = parseInt(value, 10);
     if (!Number.isFinite(limit) || limit < 1) {
-      return 3;
+      return 6;
     }
     return limit;
   }
