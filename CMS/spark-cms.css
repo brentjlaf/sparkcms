@@ -4300,11 +4300,131 @@
             font-size: 14px;
         }
 
+        .settings-layout {
+            display: grid;
+            gap: 24px;
+        }
+
+        .settings-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .settings-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding-inline: 18px;
+            transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .settings-tab[aria-selected="true"] {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-strong));
+            color: var(--color-text-inverse);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.24);
+        }
+
+        .settings-tab[aria-selected="true"]:hover {
+            transform: translateY(-1px);
+        }
+
+        .settings-tab-panel {
+            display: block;
+        }
+
+        .settings-tab-panel[hidden] {
+            display: none;
+        }
+
+        .settings-accordion {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            margin: 16px 0;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .settings-accordion:first-of-type {
+            margin-top: 0;
+        }
+
+        .settings-accordion:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .settings-accordion > summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 18px 24px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .settings-accordion > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .settings-accordion > summary::after {
+            content: "\f107";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            font-size: 14px;
+            color: #64748b;
+            transition: transform 0.2s ease;
+        }
+
+        .settings-accordion[open] > summary::after {
+            transform: rotate(180deg);
+        }
+
+        .settings-accordion__body {
+            padding: 0 24px 24px;
+            display: grid;
+            gap: 18px;
+        }
+
         .settings-file-input {
             display: flex;
             align-items: center;
             gap: 16px;
             flex-wrap: wrap;
+        }
+
+        .settings-file-input__field {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            border: 0;
+            clip: rect(0 0 0 0);
+            clip-path: inset(50%);
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .settings-file-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .settings-file-trigger:hover,
+        .settings-file-trigger:focus-visible {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .settings-file-name {
+            font-size: 13px;
+            color: #475569;
         }
 
         .settings-file-preview {
