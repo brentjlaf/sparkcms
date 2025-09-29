@@ -183,5 +183,23 @@ file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 
 file_put_contents($pagesFile, json_encode($pages, JSON_PRETTY_PRINT));
 // Regenerate sitemap whenever pages are modified
+// Capture the output from the sitemap generator so we don't surface raw
+// JSON responses in the page editor.
+ob_start();
 require_once __DIR__ . '/../sitemap/generate.php';
+$sitemapOutput = ob_get_clean();
+
+// Reset the response headers to a plain text response for this endpoint
+// (generate.php sets JSON headers when run directly).
+header('Content-Type: text/plain; charset=UTF-8');
+
+if ($sitemapOutput !== '') {
+    $decoded = json_decode($sitemapOutput, true);
+    if (is_array($decoded) && isset($decoded['success']) && !$decoded['success']) {
+        http_response_code(500);
+        echo $decoded['message'] ?? 'Failed to regenerate sitemap.';
+        exit;
+    }
+}
+
 echo 'OK';
