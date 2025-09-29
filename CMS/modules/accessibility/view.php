@@ -618,21 +618,16 @@ $dashboardStats = [
                 <button type="button" class="a11y-filter-btn" data-a11y-filter="compliant">WCAG Compliant <span class="a11y-filter-count" data-count="compliant"><?php echo $filterCounts['compliant']; ?></span></button>
             </div>
             <div class="a11y-sort-group" role="group" aria-label="Sort pages">
-                <button type="button" class="a11y-sort-btn active" data-a11y-sort="score-desc">
-                    <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
-                    <span>Score (High–Low)</span>
-                </button>
-                <button type="button" class="a11y-sort-btn" data-a11y-sort="score-asc">
-                    <i class="fas fa-sort-amount-up" aria-hidden="true"></i>
-                    <span>Score (Low–High)</span>
-                </button>
-                <button type="button" class="a11y-sort-btn" data-a11y-sort="violations-desc">
-                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
-                    <span>Most Issues</span>
-                </button>
-                <button type="button" class="a11y-sort-btn" data-a11y-sort="title-asc">
-                    <i class="fas fa-sort-alpha-down" aria-hidden="true"></i>
-                    <span>Title (A–Z)</span>
+                <label for="a11ySortSelect">Sort by</label>
+                <select id="a11ySortSelect">
+                    <option value="score" selected>Accessibility score</option>
+                    <option value="title">Title</option>
+                    <option value="violations">Total violations</option>
+                    <option value="warnings">Warnings</option>
+                </select>
+                <button type="button" class="a11y-sort-direction" id="a11ySortDirection" data-direction="desc" aria-label="Toggle sort direction (High to low)" aria-pressed="true">
+                    <i class="fas fa-sort-amount-down-alt" aria-hidden="true"></i>
+                    <span class="a11y-sort-direction__text" id="a11ySortDirectionLabel">High to low</span>
                 </button>
             </div>
             <div class="a11y-view-toggle" role="group" aria-label="Toggle layout">
