@@ -1,62 +1,111 @@
 // File: blogs.js
 $(document).ready(function(){
-    let posts = [
-        {
-            id: 1,
-            title: "Getting Started with Web Development",
-            slug: "getting-started-web-development",
-            excerpt: "A comprehensive guide for beginners looking to start their journey in web development.",
-            content: "<p>Welcome to the world of web development! This guide will help you understand the basics...</p>",
-            category: "Technology",
-            author: "John Doe",
-            status: "published",
-            publishDate: "2024-01-15T10:00:00",
-            tags: "web development, beginner, tutorial",
-            image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=900&q=80",
-            imageAlt: "Developer workstation with laptop and code editor",
-            createdAt: new Date("2024-01-15T10:00:00")
-        },
-        {
-            id: 2,
-            title: "Advanced JavaScript Techniques",
-            slug: "advanced-javascript-techniques",
-            excerpt: "Explore advanced JavaScript concepts and techniques used by professional developers.",
-            content: "<p>JavaScript has evolved significantly over the years. In this post, we'll explore...</p>",
-            category: "Programming",
-            author: "Jane Smith",
-            status: "draft",
-            publishDate: "",
-            tags: "javascript, advanced, programming",
-            image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=900&q=80",
-            imageAlt: "Code snippets on a computer screen with notes",
-            createdAt: new Date("2024-01-20T14:30:00")
-        },
-        {
-            id: 3,
-            title: "The Future of AI in Web Design",
-            slug: "future-ai-web-design",
-            excerpt: "How artificial intelligence is revolutionizing the way we approach web design and user experience.",
-            content: "<p>Artificial Intelligence is changing every industry, and web design is no exception...</p>",
-            category: "Design",
-            author: "Mike Johnson",
-            status: "scheduled",
-            publishDate: "2024-02-01T09:00:00",
-            tags: "ai, web design, future, ux",
-            image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80",
-            imageAlt: "Abstract illustration of artificial intelligence concept",
-            createdAt: new Date("2024-01-25T16:45:00")
-        }
-    ];
-
-    let categories = ["Technology", "Programming", "Design", "Marketing", "Business"];
+    let posts = [];
+    let categories = [];
     let authors = [];
-    let nextPostId = 4;
+    let nextPostId = 1;
+    let isLoadingPosts = false;
+    let postsLoadError = false;
+
+    const $postsTableBody = $('#postsTableBody');
+    const $postsCountLabel = $('#postsCount');
     let mediaItems = [];
     let mediaLoaded = false;
 
     const $searchInput = $('#blogSearchInput');
     const $statusFilterButtons = $('[data-blog-filter]');
     let activeStatusFilter = 'all';
+
+    function renderTableMessage(message, options={}){
+        const opts = Object.assign({ isError: false, countLabel: null }, options);
+        const className = opts.isError ? 'text-danger' : 'text-muted';
+        $postsTableBody.html(`<tr><td colspan="6" class="text-center ${className}">${message}</td></tr>`);
+        if(typeof opts.countLabel === 'string'){
+            $postsCountLabel.text(opts.countLabel);
+        }
+    }
+
+    function normalizePostFromServer(rawPost){
+        const post = Object.assign({}, rawPost || {});
+        const parsedId = parseInt(post.id, 10);
+        post.id = Number.isNaN(parsedId) ? post.id : parsedId;
+        post.title = (post.title || '').trim() || 'Untitled Post';
+        post.slug = (post.slug || '').trim();
+        post.excerpt = (post.excerpt || '').trim();
+        post.content = post.content || '';
+        post.category = (post.category || '').trim() || 'Uncategorized';
+        post.author = (post.author || '').trim() || 'Unknown Author';
+        const status = (post.status || '').trim().toLowerCase();
+        post.status = status || 'draft';
+        if(Array.isArray(post.tags)){
+            post.tags = post.tags.join(', ');
+        }else{
+            post.tags = (post.tags || '').toString();
+        }
+        post.publishDate = (post.publishDate || '').trim();
+        post.image = (post.image || '').trim();
+        post.imageAlt = (post.imageAlt || '').trim();
+        if(!post.createdAt){
+            post.createdAt = post.publishDate || new Date().toISOString();
+        }
+        return post;
+    }
+
+    function refreshCategoriesFromPosts(){
+        const unique = new Set(categories);
+        posts.forEach(post => {
+            if(post.category){
+                unique.add(post.category);
+            }
+        });
+        categories = Array.from(unique).sort((a,b)=>a.localeCompare(b));
+    }
+
+    function loadPostsFromServer(){
+        if(isLoadingPosts){
+            return;
+        }
+        isLoadingPosts = true;
+        postsLoadError = false;
+        renderTableMessage('Loading posts…', { countLabel: 'Loading posts…' });
+        $.getJSON('modules/blogs/list_posts.php')
+            .done(function(data){
+                if(Array.isArray(data)){
+                    postsLoadError = false;
+                    posts = data.map(normalizePostFromServer);
+                    const maxId = posts.reduce((max, post) => {
+                        const id = parseInt(post.id, 10);
+                        return Number.isNaN(id) ? max : Math.max(max, id);
+                    }, 0);
+                    nextPostId = maxId + 1;
+                    refreshCategoriesFromPosts();
+                    updateStats();
+                    populateFilters();
+                    renderPosts();
+                    renderCategories();
+                }else{
+                    postsLoadError = false;
+                    posts = [];
+                    refreshCategoriesFromPosts();
+                    updateStats();
+                    populateFilters();
+                    renderTableMessage('No blog posts found.', { countLabel: 'Showing 0 posts' });
+                    renderCategories();
+                }
+            })
+            .fail(function(){
+                postsLoadError = true;
+                posts = [];
+                refreshCategoriesFromPosts();
+                updateStats();
+                populateFilters();
+                renderTableMessage('Unable to load blog posts. Please try again later.', { isError: true, countLabel: 'Showing 0 posts' });
+                renderCategories();
+            })
+            .always(function(){
+                isLoadingPosts = false;
+            });
+    }
 
     function getCmsBasePath(){
         if(window.__cmsBasePath !== undefined){
@@ -273,11 +322,9 @@ $(document).ready(function(){
         }
     }
 
-    updateStats();
-    loadAuthors();
-    populateFilters();
     setActiveStatusFilter('all');
-    renderPosts();
+    loadAuthors();
+    loadPostsFromServer();
 
     loadTinyMCE(function(){
         tinymce.init({
@@ -469,6 +516,15 @@ $(document).ready(function(){
     }
 
     function renderPosts(){
+        if(postsLoadError){
+            renderTableMessage('Unable to load blog posts. Please try again later.', { isError: true, countLabel: 'Showing 0 posts' });
+            return;
+        }
+        if(isLoadingPosts && !posts.length){
+            renderTableMessage('Loading posts…', { countLabel: 'Loading posts…' });
+            return;
+        }
+
         let filtered = [...posts];
         const category = $('#categoryFilter').val();
         const author = $('#authorFilter').val();
@@ -502,9 +558,18 @@ $(document).ready(function(){
         filtered.sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
 
         const countLabel = filtered.length === 1 ? 'post' : 'posts';
-        $('#postsCount').text(`Showing ${filtered.length} ${countLabel}`);
+        $postsCountLabel.text(`Showing ${filtered.length} ${countLabel}`);
 
-        const tbody = $('#postsTableBody');
+        if(!filtered.length){
+            const message = posts.length
+                ? 'No posts match the current filters.'
+                : 'No blog posts available yet.';
+            $postsTableBody.html(`<tr><td colspan="6" class="text-center text-muted">${message}</td></tr>`);
+            updateLastUpdated();
+            return;
+        }
+
+        const tbody = $postsTableBody;
         tbody.empty();
         filtered.forEach(post=>{
             const safeAlt = escapeAttribute(post.imageAlt || `Featured image for ${post.title || 'blog post'}`);
@@ -641,8 +706,11 @@ $(document).ready(function(){
         confirmModal('Are you sure you want to delete this post?').then(ok => {
             if(ok){
                 posts = posts.filter(p=>p.id!==id);
+                refreshCategoriesFromPosts();
+                populateFilters();
                 renderPosts();
                 updateStats();
+                renderCategories();
             }
         });
     }
@@ -673,12 +741,15 @@ $(document).ready(function(){
             posts[idx] = {...posts[idx], ...data};
         } else {
             data.id = nextPostId++;
-            data.createdAt = new Date();
+            data.createdAt = new Date().toISOString();
             posts.push(data);
         }
+        refreshCategoriesFromPosts();
+        populateFilters();
         closeModal('postModal');
         renderPosts();
         updateStats();
+        renderCategories();
     }
 
     function publishPost(id){
