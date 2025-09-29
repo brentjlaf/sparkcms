@@ -165,49 +165,53 @@ $lastSubmissionLabel = $latestSubmission > 0
             </section>
         </div>
 
-        <section class="a11y-detail-card forms-builder-card" id="formBuilderCard" style="display:none;">
-            <header class="forms-card-header">
-                <div>
-                    <h3 id="formBuilderTitle">Add form</h3>
-                    <p>Drag inputs from the palette to build your ideal flow, then fine-tune settings on the right.</p>
-                </div>
-            </header>
-            <form id="formBuilderForm" class="forms-builder-form">
-                <input type="hidden" name="id" id="formId">
-                <div class="form-group">
-                    <label class="form-label" for="formName">Form name</label>
-                    <input type="text" class="form-input" id="formName" name="name" required aria-describedby="formNameHint">
-                    <p class="form-hint" id="formNameHint">Use a descriptive name so teammates can quickly identify the form.</p>
-                </div>
-                <div class="form-alert" id="formBuilderAlert" role="alert" aria-live="assertive" style="display:none;"></div>
-                <p class="builder-tip">Drag inputs from the palette or press Enter on a field type to add it instantly.</p>
-                <div class="builder-container">
-                    <div id="fieldPalette" aria-label="Form fields palette">
-                        <div class="palette-heading">Field types</div>
-                        <div class="palette-item" data-type="text" role="button" tabindex="0">Text input</div>
-                        <div class="palette-item" data-type="email" role="button" tabindex="0">Email</div>
-                        <div class="palette-item" data-type="password" role="button" tabindex="0">Password</div>
-                        <div class="palette-item" data-type="number" role="button" tabindex="0">Number</div>
-                        <div class="palette-item" data-type="date" role="button" tabindex="0">Date</div>
-                        <div class="palette-item" data-type="textarea" role="button" tabindex="0">Textarea</div>
-                        <div class="palette-item" data-type="select" role="button" tabindex="0">Select</div>
-                        <div class="palette-item" data-type="checkbox" role="button" tabindex="0">Checkbox</div>
-                        <div class="palette-item" data-type="radio" role="button" tabindex="0">Radio</div>
-                        <div class="palette-item" data-type="file" role="button" tabindex="0">File upload</div>
-                        <div class="palette-item" data-type="submit" role="button" tabindex="0">Submit button</div>
+        <div class="a11y-page-detail forms-drawer" id="formBuilderDrawer" hidden role="dialog" aria-modal="true" aria-labelledby="formBuilderTitle" aria-describedby="formBuilderDescription">
+            <div class="a11y-detail-content">
+                <button type="button" class="a11y-detail-close" id="closeFormBuilder" aria-label="Close form builder">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+                <header class="a11y-detail-modal-header forms-drawer-header">
+                    <span class="forms-drawer-subtitle">Form builder</span>
+                    <h2 id="formBuilderTitle">Add form</h2>
+                    <p class="forms-drawer-description" id="formBuilderDescription">Drag inputs from the palette to build your ideal flow, then fine-tune settings on the right.</p>
+                </header>
+                <form id="formBuilderForm" class="forms-builder-form">
+                    <input type="hidden" name="id" id="formId">
+                    <div class="form-group">
+                        <label class="form-label" for="formName">Form name</label>
+                        <input type="text" class="form-input" id="formName" name="name" required aria-describedby="formNameHint">
+                        <p class="form-hint" id="formNameHint">Use a descriptive name so teammates can quickly identify the form.</p>
                     </div>
-                    <div class="builder-columns">
-                        <ul id="formPreview" class="field-list" aria-label="Form preview" data-placeholder="Drop fields here"></ul>
-                        <div id="fieldSettings" class="field-settings">
-                            <p>Select a field in the preview to edit its settings.</p>
+                    <div class="form-alert" id="formBuilderAlert" role="alert" aria-live="assertive" style="display:none;"></div>
+                    <p class="builder-tip">Drag inputs from the palette or press Enter on a field type to add it instantly.</p>
+                    <div class="builder-container">
+                        <div id="fieldPalette" aria-label="Form fields palette">
+                            <div class="palette-heading">Field types</div>
+                            <div class="palette-item" data-type="text" role="button" tabindex="0">Text input</div>
+                            <div class="palette-item" data-type="email" role="button" tabindex="0">Email</div>
+                            <div class="palette-item" data-type="password" role="button" tabindex="0">Password</div>
+                            <div class="palette-item" data-type="number" role="button" tabindex="0">Number</div>
+                            <div class="palette-item" data-type="date" role="button" tabindex="0">Date</div>
+                            <div class="palette-item" data-type="textarea" role="button" tabindex="0">Textarea</div>
+                            <div class="palette-item" data-type="select" role="button" tabindex="0">Select</div>
+                            <div class="palette-item" data-type="checkbox" role="button" tabindex="0">Checkbox</div>
+                            <div class="palette-item" data-type="radio" role="button" tabindex="0">Radio</div>
+                            <div class="palette-item" data-type="file" role="button" tabindex="0">File upload</div>
+                            <div class="palette-item" data-type="submit" role="button" tabindex="0">Submit button</div>
+                        </div>
+                        <div class="builder-columns">
+                            <ul id="formPreview" class="field-list" aria-label="Form preview" data-placeholder="Drop fields here"></ul>
+                            <div id="fieldSettings" class="field-settings">
+                                <p>Select a field in the preview to edit its settings.</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="form-actions forms-builder-actions">
-                    <button type="submit" class="a11y-btn a11y-btn--primary">Save form</button>
-                    <button type="button" class="a11y-btn a11y-btn--ghost" id="cancelFormEdit">Cancel</button>
-                </div>
-            </form>
-        </section>
+                    <div class="form-actions forms-builder-actions">
+                        <button type="submit" class="a11y-btn a11y-btn--primary">Save form</button>
+                        <button type="button" class="a11y-btn a11y-btn--ghost" id="cancelFormEdit">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
