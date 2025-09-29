@@ -6,6 +6,15 @@ $(function(){
     let currentFormId = null;
     let formsCache = [];
 
+    const $drawer = $('#formBuilderDrawer');
+    const $form = $('#formBuilderForm');
+    const $formId = $('#formId');
+    const $formName = $('#formName');
+    const $formTitle = $('#formBuilderTitle');
+    const $formPreview = $('#formPreview');
+    const $cancelFormEdit = $('#cancelFormEdit');
+    const $closeFormBuilder = $('#closeFormBuilder');
+
     const FIELD_TYPE_LABELS = {
         text: 'Text input',
         email: 'Email',
@@ -374,27 +383,42 @@ $(function(){
     }
 
     function focusFormBuilder(){
-        const card = document.getElementById('formBuilderCard');
-        if(card && typeof card.scrollIntoView === 'function'){
-            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if(!$formName.length){
+            return;
         }
-        const nameInput = document.getElementById('formName');
-        if(nameInput){
-            try {
-                nameInput.focus({ preventScroll: true });
-            } catch (err) {
-                nameInput.focus();
-            }
+        try {
+            $formName[0].focus({ preventScroll: true });
+        } catch (err) {
+            $formName[0].focus();
         }
     }
 
-    function revealFormBuilder(title){
+    function clearFormBuilder(){
+        if($form.length && $form[0]){
+            $form[0].reset();
+        }
+        $formId.val('');
+        $formPreview.empty();
+        selectField(null);
+        hideBuilderAlert();
+    }
+
+    function openFormBuilder(title){
         if(typeof title === 'string' && title){
-            $('#formBuilderTitle').text(title);
+            $formTitle.text(title);
         }
         hideBuilderAlert();
-        $('#formBuilderCard').show();
-        setTimeout(focusFormBuilder, 60);
+        $drawer.attr('hidden', false).addClass('is-visible');
+        setTimeout(focusFormBuilder, 80);
+    }
+
+    function closeFormBuilder(){
+        $drawer.attr('hidden', true).removeClass('is-visible');
+    }
+
+    function dismissFormBuilder(){
+        closeFormBuilder();
+        clearFormBuilder();
     }
 
     function loadForms(){
@@ -561,7 +585,7 @@ $(function(){
         $li.on('click', function(){ selectField($li); });
 
         updatePreview($li);
-        $('#formPreview').append($li);
+        $formPreview.append($li);
         if(!suppressSelect){
             selectField($li);
         }
@@ -588,7 +612,7 @@ $(function(){
 
     $('.palette-item').draggable({ helper:'clone', revert:'invalid' });
 
-    $('#formPreview').sortable({ placeholder:'ui-sortable-placeholder' }).droppable({
+    $formPreview.sortable({ placeholder:'ui-sortable-placeholder' }).droppable({
         accept:'.palette-item',
         drop:function(e,ui){
             const type = ui.draggable.data('type');
@@ -599,26 +623,32 @@ $(function(){
     });
 
     $('#newFormBtn').on('click', function(){
-        const form = document.getElementById('formBuilderForm');
-        if(form){
-            form.reset();
-        }
-        $('#formId').val('');
-        $('#formPreview').empty();
-        selectField(null);
-        hideBuilderAlert();
-        revealFormBuilder('Add Form');
+        clearFormBuilder();
+        openFormBuilder('Add form');
     });
 
-    $('#cancelFormEdit').on('click', function(){
-        $('#formBuilderCard').hide();
-        const form = document.getElementById('formBuilderForm');
-        if(form){
-            form.reset();
+    $cancelFormEdit.on('click', function(){
+        dismissFormBuilder();
+    });
+
+    $closeFormBuilder.on('click', function(){
+        if(!$drawer.hasClass('is-visible')){
+            return;
         }
-        $('#formPreview').empty();
-        selectField(null);
-        hideBuilderAlert();
+        dismissFormBuilder();
+    });
+
+    $drawer.on('click', function(event){
+        if(event.target === this){
+            dismissFormBuilder();
+        }
+    });
+
+    $(document).off('keydown.formsBuilder').on('keydown.formsBuilder', function(event){
+        if(event.key === 'Escape' && $drawer.hasClass('is-visible')){
+            event.preventDefault();
+            dismissFormBuilder();
+        }
     });
 
     $('#formsTable').on('click', '.viewSubmissions', function(){
@@ -644,15 +674,9 @@ $(function(){
         $.getJSON('modules/forms/list_forms.php', function(forms){
             const f = forms.find(x=>x.id==id);
             if(!f) return;
-            const form = document.getElementById('formBuilderForm');
-            if(form){
-                form.reset();
-            }
-            $('#formId').val(f.id);
-            $('#formName').val(f.name);
-            $('#formPreview').empty();
-            selectField(null);
-            hideBuilderAlert();
+            clearFormBuilder();
+            $formId.val(f.id);
+            $formName.val(f.name);
             (f.fields||[]).forEach(fd=>addField(fd.type, fd, { suppressSelect: true }));
             const firstField = $('#formPreview > li').first();
             if(firstField.length){
@@ -660,7 +684,7 @@ $(function(){
             } else {
                 selectField(null);
             }
-            revealFormBuilder('Edit Form');
+            openFormBuilder('Edit form');
         });
     });
 
@@ -776,21 +800,14 @@ $(function(){
         });
 
         const payload = {
-            id: $('#formId').val(),
+            id: $formId.val(),
             name: formName,
             fields: JSON.stringify(fields)
         };
 
         $.post('modules/forms/save_form.php', payload)
             .done(function(){
-                $('#formBuilderCard').hide();
-                const form = document.getElementById('formBuilderForm');
-                if(form){
-                    form.reset();
-                }
-                $('#formPreview').empty();
-                selectField(null);
-                hideBuilderAlert();
+                dismissFormBuilder();
                 loadForms();
             })
             .fail(function(){
@@ -798,7 +815,7 @@ $(function(){
             });
     });
 
-    $('#formPreview').on('click','.removeField',function(e){
+    $formPreview.on('click','.removeField',function(e){
         e.stopPropagation();
         const li = $(this).closest('li');
         if(currentField && currentField[0] === li[0]) selectField(null);

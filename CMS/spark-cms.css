@@ -8675,17 +8675,37 @@ body.calendar-modal-open {
     background: rgba(255, 255, 255, 0.9);
 }
 
-.forms-builder-card {
+.forms-drawer .a11y-detail-content {
+    max-width: 960px;
     padding-bottom: 32px;
 }
 
-.forms-builder-form {
+.forms-drawer-header {
+    margin-bottom: 24px;
+}
+
+.forms-drawer-subtitle {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6366f1;
+    margin-bottom: 6px;
+}
+
+.forms-drawer-description {
+    margin: 0;
+    color: #475569;
+}
+
+.forms-drawer .forms-builder-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.forms-builder-actions {
+.forms-drawer .forms-builder-actions {
     justify-content: flex-start;
     gap: 12px;
 }
