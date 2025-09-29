@@ -25,8 +25,229 @@ if (substr($scriptBase, -4) === '/CMS') {
 }
 $scriptBase = rtrim($scriptBase, '/');
 
+function sparkcms_parse_blog_limit($value) {
+    $limit = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    return $limit ?: 6;
+}
+
+function sparkcms_normalize_blog_category($value) {
+    return strtolower(trim((string) $value));
+}
+
+function sparkcms_format_blog_date($value) {
+    if (empty($value)) {
+        return '';
+    }
+    $timestamp = strtotime($value);
+    if ($timestamp === false) {
+        return '';
+    }
+    return date('M j, Y', $timestamp);
+}
+
+function sparkcms_resolve_blog_detail_url($scriptBase, $prefix, $slug) {
+    if (empty($slug)) {
+        return '#';
+    }
+    $detail = trim((string) $prefix);
+    if ($detail === '') {
+        $detail = '/blog';
+    }
+    if (preg_match('#^https?://#i', $detail)) {
+        return rtrim($detail, '/') . '/' . rawurlencode($slug);
+    }
+    $detail = trim($detail, '/');
+    $base = trim((string) $scriptBase);
+    $path = $detail !== '' ? $detail . '/' . rawurlencode($slug) : rawurlencode($slug);
+    if ($base === '' || $base === '/') {
+        return '/' . $path;
+    }
+    return rtrim($base, '/') . '/' . $path;
+}
+
+function sparkcms_add_class(DOMElement $element, $class) {
+    $classes = preg_split('/\s+/', trim($element->getAttribute('class')));
+    $classes = array_filter($classes, 'strlen');
+    if (!in_array($class, $classes, true)) {
+        $classes[] = $class;
+    }
+    if ($classes) {
+        $element->setAttribute('class', implode(' ', $classes));
+    }
+}
+
+function sparkcms_remove_class(DOMElement $element, $class) {
+    $classes = preg_split('/\s+/', trim($element->getAttribute('class')));
+    $classes = array_filter($classes, function ($item) use ($class) {
+        return $item !== '' && $item !== $class;
+    });
+    if ($classes) {
+        $element->setAttribute('class', implode(' ', $classes));
+    } else {
+        $element->removeAttribute('class');
+    }
+}
+
+function sparkcms_create_blog_article(DOMDocument $dom, array $post, $detailUrl, $metaEnabled, $excerptEnabled) {
+    $article = $dom->createElement('article');
+    $article->setAttribute('class', 'blog-item');
+
+    $titleEl = $dom->createElement('h3');
+    $titleEl->setAttribute('class', 'blog-title');
+    $linkEl = $dom->createElement('a');
+    $linkEl->setAttribute('href', $detailUrl);
+    $titleText = $post['title'] ?? 'Untitled Post';
+    $linkEl->appendChild($dom->createTextNode($titleText));
+    $titleEl->appendChild($linkEl);
+    $article->appendChild($titleEl);
+
+    if ($metaEnabled) {
+        $parts = [];
+        if (!empty($post['author'])) {
+            $parts[] = $post['author'];
+        }
+        $dateValue = sparkcms_format_blog_date($post['publishDate'] ?? $post['createdAt'] ?? '');
+        if ($dateValue !== '') {
+            $parts[] = $dateValue;
+        }
+        if ($parts) {
+            $metaEl = $dom->createElement('div');
+            $metaEl->setAttribute('class', 'blog-meta');
+            foreach ($parts as $value) {
+                $span = $dom->createElement('span');
+                $span->appendChild($dom->createTextNode($value));
+                $metaEl->appendChild($span);
+            }
+            $article->appendChild($metaEl);
+        }
+    }
+
+    if ($excerptEnabled && !empty($post['excerpt'])) {
+        $excerptEl = $dom->createElement('p');
+        $excerptEl->setAttribute('class', 'blog-excerpt');
+        $excerptEl->appendChild($dom->createTextNode(strip_tags($post['excerpt'])));
+        $article->appendChild($excerptEl);
+    }
+
+    $readMoreEl = $dom->createElement('a');
+    $readMoreEl->setAttribute('class', 'blog-read-more');
+    $readMoreEl->setAttribute('href', $detailUrl);
+    $readMoreEl->appendChild($dom->createTextNode('Read more '));
+    $arrow = $dom->createElement('span');
+    $arrow->setAttribute('aria-hidden', 'true');
+    $arrow->appendChild($dom->createTextNode('→'));
+    $readMoreEl->appendChild($arrow);
+    $article->appendChild($readMoreEl);
+
+    return $article;
+}
+
+function sparkcms_hydrate_blog_lists($html, $scriptBase) {
+    global $blogPosts;
+    if (strpos($html, 'data-blog-list') === false || !class_exists('DOMDocument')) {
+        return $html;
+    }
+    $published = array_values(array_filter($blogPosts, function ($post) {
+        return is_array($post) && strtolower($post['status'] ?? '') === 'published';
+    }));
+
+    $libxmlState = libxml_use_internal_errors(true);
+    $dom = new DOMDocument('1.0', 'UTF-8');
+    $loaded = $dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    libxml_clear_errors();
+    libxml_use_internal_errors($libxmlState);
+    if (!$loaded) {
+        return $html;
+    }
+
+    $xpath = new DOMXPath($dom);
+    $containers = $xpath->query('//*[@data-blog-list]');
+    if (!$containers->length) {
+        return $html;
+    }
+
+    foreach ($containers as $container) {
+        if (!$container instanceof DOMElement) {
+            continue;
+        }
+
+        $limit = sparkcms_parse_blog_limit($container->getAttribute('data-limit'));
+        $category = sparkcms_normalize_blog_category($container->getAttribute('data-category'));
+        $showExcerpt = strtolower((string) $container->getAttribute('data-show-excerpt'));
+        $showMeta = strtolower((string) $container->getAttribute('data-show-meta'));
+        $emptyMessage = trim($container->getAttribute('data-empty')) ?: 'No posts available.';
+        $detailBase = $container->getAttribute('data-base');
+
+        $itemsHostNodeList = $xpath->query('.//*[@data-blog-items]', $container);
+        $itemsHost = $itemsHostNodeList->length ? $itemsHostNodeList->item(0) : $container;
+        if (!$itemsHost instanceof DOMElement) {
+            continue;
+        }
+
+        while ($itemsHost->firstChild) {
+            $itemsHost->removeChild($itemsHost->firstChild);
+        }
+
+        $filtered = array_filter($published, function ($post) use ($category) {
+            if ($category === '') {
+                return true;
+            }
+            return sparkcms_normalize_blog_category($post['category'] ?? '') === $category;
+        });
+
+        usort($filtered, function ($a, $b) {
+            $aDate = $a['publishDate'] ?? $a['createdAt'] ?? '';
+            $bDate = $b['publishDate'] ?? $b['createdAt'] ?? '';
+            $aTime = strtotime($aDate) ?: 0;
+            $bTime = strtotime($bDate) ?: 0;
+            return $bTime <=> $aTime;
+        });
+
+        if ($limit && count($filtered) > $limit) {
+            $filtered = array_slice($filtered, 0, $limit);
+        }
+
+        $emptyNodeList = $xpath->query('.//*[@data-blog-empty]', $container);
+        $emptyNode = $emptyNodeList->length ? $emptyNodeList->item(0) : null;
+
+        $excerptEnabled = !in_array($showExcerpt, ['no', 'false', '0'], true);
+        $metaEnabled = !in_array($showMeta, ['no', 'false', '0'], true);
+
+        if (!$filtered) {
+            if ($emptyNode instanceof DOMElement) {
+                while ($emptyNode->firstChild) {
+                    $emptyNode->removeChild($emptyNode->firstChild);
+                }
+                $emptyNode->appendChild($dom->createTextNode($emptyMessage));
+                sparkcms_remove_class($emptyNode, 'd-none');
+            } else {
+                $notice = $dom->createElement('div');
+                $notice->setAttribute('class', 'blog-item blog-item--placeholder');
+                $notice->appendChild($dom->createTextNode($emptyMessage));
+                $itemsHost->appendChild($notice);
+            }
+            $container->setAttribute('data-blog-rendered', 'server');
+            continue;
+        }
+
+        if ($emptyNode instanceof DOMElement) {
+            sparkcms_add_class($emptyNode, 'd-none');
+        }
+
+        foreach ($filtered as $post) {
+            $detailUrl = sparkcms_resolve_blog_detail_url($scriptBase, $detailBase, $post['slug'] ?? '');
+            $article = sparkcms_create_blog_article($dom, $post, $detailUrl, $metaEnabled, $excerptEnabled);
+            $itemsHost->appendChild($article);
+        }
+
+        $container->setAttribute('data-blog-rendered', 'server');
+    }
+
+    return $dom->saveHTML();
+}
+
 function render_theme_page($templateFile, $page, $scriptBase) {
-    global $settings, $menus, $logged_in;
+    global $settings, $menus, $logged_in, $blogPosts;
     $themeBase = $scriptBase . '/theme';
     ob_start();
     include $templateFile;
@@ -38,6 +259,9 @@ function render_theme_page($templateFile, $page, $scriptBase) {
         $html = str_replace('draggable="true"', '', $html);
         $html = preg_replace('#\sdata-ts="[^"]*"#i', '', $html);
         $html = preg_replace('#\sdata-(?:blockid|template|original|active|custom_[A-Za-z0-9_-]+)="[^"]*"#i', '', $html);
+    }
+    if (!$logged_in) {
+        $html = sparkcms_hydrate_blog_lists($html, $scriptBase);
     }
     echo $html;
 }

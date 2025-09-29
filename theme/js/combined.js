@@ -132,6 +132,9 @@
     if (!(container instanceof HTMLElement)) {
       return;
     }
+    if (container.dataset.blogRendered === 'server') {
+      return;
+    }
     var itemsHost = container.querySelector('[data-blog-items]');
     if (!itemsHost) {
       itemsHost = container;
