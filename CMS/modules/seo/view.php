@@ -331,6 +331,17 @@ foreach ($pages as $page) {
     };
 
     if ($metrics['titleLength'] === 0) {
+        $fallbackTitle = trim((string)($page['meta_title'] ?? ''));
+        if ($fallbackTitle === '') {
+            $fallbackTitle = trim((string)($page['title'] ?? ''));
+        }
+        if ($fallbackTitle !== '') {
+            $metrics['title'] = $fallbackTitle;
+            $metrics['titleLength'] = seo_strlen($fallbackTitle);
+        }
+    }
+
+    if ($metrics['titleLength'] === 0) {
         $addIssue('Page title is missing', 'critical');
     } else {
         if ($metrics['titleLength'] < 30 || $metrics['titleLength'] > 65) {
