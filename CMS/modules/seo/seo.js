@@ -154,29 +154,51 @@
         return 'review';
     }
 
-    function sortPages(pages, sortKey) {
-        var sorted = pages.slice();
-        var sorters = {
-            'score-desc': function (a, b) {
-                var diff = normalizeScore(b.seoScore, 0) - normalizeScore(a.seoScore, 0);
-                return diff !== 0 ? diff : compareStrings(a.title, b.title);
-            },
-            'score-asc': function (a, b) {
-                var diff = normalizeScore(a.seoScore, 0) - normalizeScore(b.seoScore, 0);
-                return diff !== 0 ? diff : compareStrings(a.title, b.title);
-            },
-            'issues-desc': function (a, b) {
-                var diff = (b.violations && b.violations.total || 0) - (a.violations && a.violations.total || 0);
-                return diff !== 0 ? diff : compareStrings(a.title, b.title);
-            },
-            'title-asc': function (a, b) {
-                return compareStrings(a.title, b.title) || compareStrings(a.url, b.url);
-            }
-        };
+    function getSortValue(page, key) {
+        if (!page) {
+            return 0;
+        }
 
-        var sorter = sorters[sortKey] || sorters['score-desc'];
-        sorted.sort(sorter);
-        return sorted;
+        switch (key) {
+            case 'title':
+                return (page.title || '').toLowerCase();
+            case 'issues':
+                if (page.violations && typeof page.violations.total === 'number') {
+                    return page.violations.total;
+                }
+                return 0;
+            case 'score':
+            default:
+                return normalizeScore(page.seoScore, 0);
+        }
+    }
+
+    function sortPages(pages, sortKey, direction) {
+        if (!Array.isArray(pages)) {
+            return [];
+        }
+
+        var dir = direction === 'asc' ? 1 : -1;
+        var items = pages.slice();
+
+        items.sort(function (a, b) {
+            var aVal = getSortValue(a, sortKey);
+            var bVal = getSortValue(b, sortKey);
+
+            if (aVal === bVal) {
+                return compareStrings(a && a.title, b && b.title) || compareStrings(a && a.url, b && b.url);
+            }
+
+            if (aVal < bVal) {
+                return -1 * dir;
+            }
+            if (aVal > bVal) {
+                return 1 * dir;
+            }
+            return 0;
+        });
+
+        return items;
     }
 
     function matchesFilter(page, filter) {
@@ -327,7 +349,8 @@
         updateStats($root, stats);
 
         var currentFilter = 'all';
-        var currentSort = 'score-desc';
+        var currentSortKey = 'score';
+        var sortDirection = 'desc';
         var currentView = 'grid';
         var searchQuery = '';
         var detailBaseUrl = stats.detailBaseUrl || '';
@@ -348,6 +371,9 @@
         var $modalMetrics = $('#seoDetailMetrics');
         var $modalIssues = $('#seoDetailIssues');
         var $fullAuditBtn = $modal.find('[data-seo-action="full-audit"]');
+        var $sortSelect = $root.find('#seoSortSelect');
+        var $sortDirectionBtn = $root.find('#seoSortDirection');
+        var $sortDirectionLabel = $root.find('#seoSortDirectionLabel');
         var activeSlug = null;
         var lastFocusedElement = null;
 
@@ -435,13 +461,31 @@
             }
         }
 
+        function updateSortDirectionControl(direction) {
+            if (!$sortDirectionBtn.length) {
+                return;
+            }
+
+            var isDesc = direction !== 'asc';
+            var iconClass = isDesc ? 'fas fa-sort-amount-down-alt' : 'fas fa-sort-amount-up';
+            var labelText = isDesc ? 'High to low' : 'Low to high';
+
+            $sortDirectionBtn.attr('data-direction', direction);
+            $sortDirectionBtn.attr('aria-label', 'Toggle sort direction (' + labelText + ')');
+            $sortDirectionBtn.attr('aria-pressed', isDesc ? 'true' : 'false');
+            $sortDirectionBtn.find('i').attr('class', iconClass);
+            if ($sortDirectionLabel.length) {
+                $sortDirectionLabel.text(labelText);
+            }
+        }
+
         function applyFilters() {
             var normalizedQuery = searchQuery.trim().toLowerCase();
             var filtered = pages.filter(function (page) {
                 return matchesFilter(page, currentFilter) && matchesQuery(page, normalizedQuery);
             });
 
-            var sorted = sortPages(filtered, currentSort);
+            var sorted = sortPages(filtered, currentSortKey, sortDirection);
             var order = sorted.map(function (page) { return page.slug || ''; });
             var visibleSet = new Set(order);
 
@@ -463,6 +507,27 @@
             updateVisibility($tableRows, visibleSet);
         }
 
+        if ($sortSelect.length) {
+            currentSortKey = String($sortSelect.val() || currentSortKey);
+            $sortSelect.on('change', function () {
+                currentSortKey = String($(this).val() || 'score');
+                applyFilters();
+            });
+        }
+
+        if ($sortDirectionBtn.length) {
+            var direction = String($sortDirectionBtn.data('direction') || sortDirection);
+            if (direction === 'asc' || direction === 'desc') {
+                sortDirection = direction;
+            }
+            updateSortDirectionControl(sortDirection);
+            $sortDirectionBtn.on('click', function () {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                updateSortDirectionControl(sortDirection);
+                applyFilters();
+            });
+        }
+
         applyFilters();
 
         $root.find('.a11y-filter-btn').on('click', function () {
@@ -470,15 +535,6 @@
             var filter = String($btn.data('seo-filter') || 'all');
             currentFilter = filter;
             $root.find('.a11y-filter-btn').removeClass('active').attr('aria-pressed', 'false');
-            $btn.addClass('active').attr('aria-pressed', 'true');
-            applyFilters();
-        });
-
-        $root.find('.a11y-sort-btn').on('click', function () {
-            var $btn = $(this);
-            var sortKey = String($btn.data('seo-sort') || 'score-desc');
-            currentSort = sortKey;
-            $root.find('.a11y-sort-btn').removeClass('active').attr('aria-pressed', 'false');
             $btn.addClass('active').attr('aria-pressed', 'true');
             applyFilters();
         });
