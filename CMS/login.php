@@ -26,6 +26,7 @@ $user = find_user($username);
     <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Login - <?php echo htmlspecialchars($settings['site_name'] ?? 'SparkCMS'); ?></title>
+    <link rel="stylesheet" href="design-system.css">
     <link rel="stylesheet" href="spark-cms.css">
 </head>
 <body>

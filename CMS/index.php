@@ -220,6 +220,7 @@ if ($templateFile && (!$logged_in || $preview_mode)) {
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/root.css">
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/skin.css">
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/override.css">
+<link rel="stylesheet" href="<?php echo $scriptBase; ?>/CMS/design-system.css">
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/spark-cms.css">
 <?php else: ?>
 <link rel="stylesheet" href="<?php echo $scriptBase; ?>/theme/css/root.css">

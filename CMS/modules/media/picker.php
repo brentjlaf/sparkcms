@@ -14,6 +14,7 @@ $media = read_json_file($mediaFile);
 <head>
     <meta charset="UTF-8">
     <title>Select Image</title>
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($base . '/CMS/design-system.css'); ?>">
     <link rel="stylesheet" href="<?php echo htmlspecialchars($base . '/CMS/spark-cms.css'); ?>">
     <style>
         .picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:20px;}

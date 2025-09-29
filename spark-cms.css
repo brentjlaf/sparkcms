@@ -1,36 +1,21 @@
 /* File: spark-cms.css */
 body {
-    font-family: 'Poppins', sans-serif;
-    background: #f5f7fa;
+    font-family: var(--ds-font-family-sans, 'Poppins', sans-serif);
+    background: var(--color-surface-subtle, #f5f7fa);
     margin: 0;
-    color: #2d3748;
+    color: var(--color-text-primary, #2d3748);
 }
 
 .sidebar {
     width: 280px;
-    background: linear-gradient(135deg, #314dcc 0%, #1c0137 100%);
-    color: white;
+    background: var(--ds-gradient-sidebar, linear-gradient(135deg, #314dcc 0%, #1c0137 100%));
+    color: var(--color-text-inverse, #fff);
     position: sticky;
     top: 0;
     height: 100vh;
     overflow-y: auto;
     z-index: 1000;
 }
-
-/* Global */
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.btn-primary { background: #667eea; color: #fff; }
-.btn-secondary { background: #e2e8f0; color: #4a5568; }
-.btn-danger { background: #e53e3e; color: #fff; }
-.btn-success { background: #48bb78; color: #fff; }
-.btn-success:hover { background: #38a169; }
 
 /* Frontend layout */
 .header {
@@ -39,8 +24,8 @@ body {
     left: 0;
     right: 0;
     height: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
+    background: var(--ds-gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    color: var(--color-text-inverse, #fff);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -61,8 +46,8 @@ body {
 
 /* Footer */
 .footer {
-    background: #f0f0f0;
-    color: #4a5568;
+    background: var(--color-surface-subtle, #f0f0f0);
+    color: var(--color-text-secondary, #4a5568);
     text-align: center;
     padding: 20px;
 }
@@ -83,25 +68,25 @@ body {
 }
 
 .gallery-pagination .pagination-btn {
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
+    background: var(--color-surface-subtle, #f1f5f9);
+    border: 1px solid var(--color-border, #cbd5e1);
     border-radius: 6px;
     padding: 6px 12px;
-    color: #1e293b;
+    color: var(--color-text-primary, #1e293b);
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, border 0.2s ease;
 }
 
 .gallery-pagination .pagination-btn:hover:not(.is-disabled) {
-    background: #2563eb;
-    border-color: #2563eb;
-    color: #fff;
+    background: var(--ds-color-info-600, #2563eb);
+    border-color: var(--ds-color-info-600, #2563eb);
+    color: var(--color-text-inverse, #fff);
 }
 
 .gallery-pagination .pagination-btn.is-active {
-    background: #2563eb;
-    border-color: #2563eb;
-    color: #fff;
+    background: var(--ds-color-info-600, #2563eb);
+    border-color: var(--ds-color-info-600, #2563eb);
+    color: var(--color-text-inverse, #fff);
     cursor: default;
 }
 
