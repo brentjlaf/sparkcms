@@ -628,21 +628,12 @@ $(function(){
                 $card.data('formName', formName);
 
                 const $header = $('<div class="forms-card__header"></div>');
+                const $heading = $('<div class="forms-card__heading"></div>');
                 const $title = $('<h4 class="forms-card__title"></h4>').text(formName);
                 const $badge = $('<span class="forms-card__badge" aria-label="'+escapeHtml(fieldLabel)+'"></span>');
                 $badge.append('<i class="fas fa-layer-group" aria-hidden="true"></i>');
                 $badge.append('<span>'+escapeHtml(fieldLabel)+'</span>');
-                $header.append($title).append($badge);
-                $card.append($header);
-
-                if(f.id){
-                    const $meta = $('<div class="forms-card__meta"></div>');
-                    const $metaItem = $('<span class="forms-card__meta-item"></span>');
-                    $metaItem.append('<i class="fas fa-hashtag" aria-hidden="true"></i>');
-                    $metaItem.append('<span>Form ID '+escapeHtml(String(f.id))+'</span>');
-                    $meta.append($metaItem);
-                    $card.append($meta);
-                }
+                $heading.append($title).append($badge);
 
                 const $actions = $('<div class="forms-card__actions" role="group" aria-label="Form actions"></div>');
                 const $viewBtn = $('<button type="button" class="a11y-btn a11y-btn--ghost forms-card__action" data-action="view-submissions"></button>');
@@ -655,7 +646,18 @@ $(function(){
                 $deleteBtn.append('<i class="fas fa-trash" aria-hidden="true"></i>');
                 $deleteBtn.append('<span>Delete</span>');
                 $actions.append($viewBtn, $editBtn, $deleteBtn);
-                $card.append($actions);
+
+                $header.append($heading).append($actions);
+                $card.append($header);
+
+                if(f.id){
+                    const $meta = $('<div class="forms-card__meta"></div>');
+                    const $metaItem = $('<span class="forms-card__meta-item"></span>');
+                    $metaItem.append('<i class="fas fa-hashtag" aria-hidden="true"></i>');
+                    $metaItem.append('<span>Form ID '+escapeHtml(String(f.id))+'</span>');
+                    $meta.append($metaItem);
+                    $card.append($meta);
+                }
 
                 if($formsGrid.length){
                     $formsGrid.append($card);
