@@ -347,6 +347,20 @@
             margin-right: 15px;
             color: var(--color-text-primary);
             cursor: pointer;
+            border-radius: 50%;
+            padding: 8px;
+            transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .menu-toggle:hover,
+        .menu-toggle:focus-visible {
+            background: rgba(99, 102, 241, 0.12);
+            color: #4f46e5;
+        }
+
+        .menu-toggle:focus-visible {
+            outline: 2px solid rgba(79, 70, 229, 0.45);
+            outline-offset: 2px;
         }
 
         .top-bar-actions {
@@ -391,7 +405,7 @@
     cursor: pointer;
     padding: 8px;
     border-radius: 8px;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
 }
 
         .social-preview {
@@ -504,8 +518,14 @@
             }
         }
 
-.notification-btn:hover {
+.notification-btn:hover,
+.notification-btn:focus-visible {
             background: #f7fafc;
+        }
+
+.notification-btn:focus-visible {
+            outline: 2px solid rgba(99, 102, 241, 0.4);
+            outline-offset: 2px;
         }
 
         /* Logs module */
@@ -2473,6 +2493,7 @@
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             color: #64748b;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
         }
 
         .pages-search i {
@@ -2486,6 +2507,16 @@
             font-size: 14px;
             color: #1f2937;
             background: transparent;
+        }
+
+        .pages-search:focus-within {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            color: #312e81;
+        }
+
+        .pages-search input:focus-visible {
+            outline: none;
         }
 
         .pages-filter-group {
@@ -2523,6 +2554,7 @@
         }
 
         .pages-filter-btn:hover,
+        .pages-filter-btn:focus-visible,
         .pages-filter-btn.active {
             background: #312e81;
             color: #fff;
@@ -2531,9 +2563,15 @@
         }
 
         .pages-filter-btn:hover .pages-filter-count,
+        .pages-filter-btn:focus-visible .pages-filter-count,
         .pages-filter-btn.active .pages-filter-count {
             background: rgba(255,255,255,0.24);
             color: #fff;
+        }
+
+        .pages-filter-btn:focus-visible {
+            outline: 3px solid rgba(99, 102, 241, 0.35);
+            outline-offset: 2px;
         }
 
         .pages-table-card {
@@ -5200,16 +5238,37 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            line-height: 1;
+            border: none;
+            background: none;
+            color: #2c5282;
+            padding: 4px;
+            border-radius: 999px;
+            transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
         }
 
         .home-icon.set-home {
-            color: #a0aec0;
+            color: #64748b;
             cursor: pointer;
-            opacity: .4;
+            opacity: 0.65;
+        }
+
+        .home-icon.set-home:hover,
+        .home-icon.set-home:focus-visible {
+            color: #2563eb;
+            opacity: 1;
+            background-color: rgba(99, 102, 241, 0.12);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+        }
+
+        .home-icon.set-home:focus-visible {
+            outline: 2px solid rgba(37, 99, 235, 0.45);
+            outline-offset: 2px;
         }
 
         .home-icon.is-home {
             color: #2c5282;
+            cursor: default;
         }
 
         /* Forms */
