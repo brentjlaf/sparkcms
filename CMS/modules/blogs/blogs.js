@@ -54,6 +54,10 @@ $(document).ready(function(){
     let mediaItems = [];
     let mediaLoaded = false;
 
+    const $searchInput = $('#blogSearchInput');
+    const $statusFilterButtons = $('[data-blog-filter]');
+    let activeStatusFilter = 'all';
+
     function getCmsBasePath(){
         if(window.__cmsBasePath !== undefined){
             return window.__cmsBasePath;
@@ -257,12 +261,22 @@ $(document).ready(function(){
 
     function populateAuthorOptions(){
         const authorOptions = authors.map(a=>`<option value="${a}">${a}</option>`).join('');
-        $('#authorFilter, #postAuthor').empty().append(`<option value="">All Authors</option>` + authorOptions);
+        const currentFilterAuthor = $('#authorFilter').val() || '';
+        const currentPostAuthor = $('#postAuthor').val() || '';
+        $('#authorFilter').html(`<option value="">All Authors</option>${authorOptions}`);
+        $('#postAuthor').html(`<option value="">Select Author</option>${authorOptions}`);
+        if(currentFilterAuthor && authors.includes(currentFilterAuthor)){
+            $('#authorFilter').val(currentFilterAuthor);
+        }
+        if(currentPostAuthor && authors.includes(currentPostAuthor)){
+            $('#postAuthor').val(currentPostAuthor);
+        }
     }
 
     updateStats();
     loadAuthors();
     populateFilters();
+    setActiveStatusFilter('all');
     renderPosts();
 
     loadTinyMCE(function(){
@@ -310,15 +324,24 @@ $(document).ready(function(){
             addCategory();
         }
     });
-    $('#statusFilter, #categoryFilter, #authorFilter').change(function(){
+    $('#categoryFilter, #authorFilter').change(function(){
         renderPosts();
     });
-    $('#searchFilter').on('input', function(){
+    $searchInput.on('input', function(){
+        renderPosts();
+    });
+    $statusFilterButtons.on('click', function(){
+        const filter = $(this).data('blog-filter');
+        if(!filter || filter === activeStatusFilter){
+            return;
+        }
+        setActiveStatusFilter(filter);
         renderPosts();
     });
     $('#clearFilters').click(function(){
-        $('#statusFilter, #categoryFilter, #authorFilter').val('');
-        $('#searchFilter').val('');
+        $('#categoryFilter, #authorFilter').val('');
+        $searchInput.val('');
+        setActiveStatusFilter('all');
         renderPosts();
     });
     $('#postTitle').on('input', function(){
@@ -401,38 +424,85 @@ $(document).ready(function(){
     function updateStats(){
         const total = posts.length;
         const published = posts.filter(p=>p.status==='published').length;
-        const draft = posts.filter(p=>p.status==='draft').length;
+        const drafts = posts.filter(p=>p.status==='draft').length;
         const scheduled = posts.filter(p=>p.status==='scheduled').length;
         $('#totalPosts').text(total);
         $('#publishedPosts').text(published);
-        $('#draftPosts').text(draft);
+        $('#draftPosts').text(drafts);
         $('#scheduledPosts').text(scheduled);
+        updateStatusFilterCounts({
+            all: total,
+            published,
+            drafts,
+            scheduled
+        });
     }
 
     function populateFilters(){
         const categoryOptions = categories.map(c=>`<option value="${c}">${c}</option>`).join('');
-        $('#categoryFilter, #postCategory').append(categoryOptions);
+        const currentFilterCategory = $('#categoryFilter').val() || '';
+        const currentPostCategory = $('#postCategory').val() || '';
+        $('#categoryFilter').html(`<option value="">All Categories</option>${categoryOptions}`);
+        $('#postCategory').html(`<option value="">Select Category</option>${categoryOptions}`);
+        if(currentFilterCategory && categories.includes(currentFilterCategory)){
+            $('#categoryFilter').val(currentFilterCategory);
+        }
+        if(currentPostCategory && categories.includes(currentPostCategory)){
+            $('#postCategory').val(currentPostCategory);
+        }
         populateAuthorOptions();
+    }
+
+    function setActiveStatusFilter(filter){
+        activeStatusFilter = filter;
+        $statusFilterButtons.removeClass('active').attr('aria-pressed', 'false');
+        const $target = $statusFilterButtons.filter(`[data-blog-filter="${filter}"]`);
+        if($target.length){
+            $target.addClass('active').attr('aria-pressed', 'true');
+        }
+    }
+
+    function updateStatusFilterCounts(counts){
+        Object.entries(counts).forEach(([key, value])=>{
+            $(`.blog-filter-count[data-count="${key}"]`).text(value);
+        });
     }
 
     function renderPosts(){
         let filtered = [...posts];
-        const status = $('#statusFilter').val();
         const category = $('#categoryFilter').val();
         const author = $('#authorFilter').val();
-        const search = $('#searchFilter').val().toLowerCase();
+        const search = ($searchInput.val() || '').toString().toLowerCase().trim();
 
-        if(status) filtered = filtered.filter(p=>p.status===status);
+        switch(activeStatusFilter){
+            case 'published':
+                filtered = filtered.filter(p=>p.status==='published');
+                break;
+            case 'drafts':
+                filtered = filtered.filter(p=>p.status==='draft');
+                break;
+            case 'scheduled':
+                filtered = filtered.filter(p=>p.status==='scheduled');
+                break;
+            default:
+                break;
+        }
+
         if(category) filtered = filtered.filter(p=>p.category===category);
         if(author) filtered = filtered.filter(p=>p.author===author);
         if(search){
-            filtered = filtered.filter(p=>
-                p.title.toLowerCase().includes(search) ||
-                p.excerpt.toLowerCase().includes(search) ||
-                p.tags.toLowerCase().includes(search)
-            );
+            filtered = filtered.filter(p=>{
+                const title = (p.title || '').toLowerCase();
+                const slug = (p.slug || '').toLowerCase();
+                const excerpt = (p.excerpt || '').toLowerCase();
+                const tags = (p.tags || '').toLowerCase();
+                return title.includes(search) || slug.includes(search) || excerpt.includes(search) || tags.includes(search);
+            });
         }
         filtered.sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+
+        const countLabel = filtered.length === 1 ? 'post' : 'posts';
+        $('#postsCount').text(`Showing ${filtered.length} ${countLabel}`);
 
         const tbody = $('#postsTableBody');
         tbody.empty();
@@ -474,7 +544,6 @@ $(document).ready(function(){
             );
             tbody.append(row);
         });
-        $('#postsCount').text(`${filtered.length} posts`);
         updateLastUpdated();
         $('.view-btn').click(function(){
             const id = parseInt($(this).data('id'));
