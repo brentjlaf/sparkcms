@@ -127,14 +127,14 @@ $initialPayload = [
 
     <div class="calendar-alert" data-calendar-message aria-live="polite"></div>
 
-    <section class="a11y-detail-card calendar-table-card">
-        <header class="calendar-card-header">
+    <section class="a11y-detail-card table-card calendar-table-card">
+        <header class="table-header calendar-card-header">
             <div>
                 <h3>Event library</h3>
                 <p>Review upcoming and past events, update details, or remove outdated sessions.</p>
             </div>
         </header>
-        <div class="calendar-table-wrapper">
+        <div class="table-content calendar-table-wrapper">
             <table class="data-table calendar-table">
                 <thead>
                     <tr>

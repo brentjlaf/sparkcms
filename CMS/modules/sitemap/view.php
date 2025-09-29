@@ -83,16 +83,16 @@ $statusMessage = $entryCount > 0
             </div>
         </header>
 
-        <section class="a11y-detail-card sitemap-status-card">
-            <header class="sitemap-status-card__header">
+        <section class="a11y-detail-card table-card sitemap-status-card">
+            <header class="table-header sitemap-status-card__header">
                 <div class="sitemap-status-card__intro">
                     <h3 class="sitemap-status-card__title">Sitemap status</h3>
                     <p class="sitemap-status-card__description">Keep search engines informed of your published content.</p>
                 </div>
-                <span class="sitemap-status-card__meta" id="sitemapStatusMessage"><?php echo htmlspecialchars($statusMessage); ?></span>
+                <span class="table-meta sitemap-status-card__meta" id="sitemapStatusMessage"><?php echo htmlspecialchars($statusMessage); ?></span>
             </header>
             <div class="sitemap-status-card__body">
-                <div class="sitemap-table"<?php echo $entries ? '' : ' style="display:none;"'; ?>>
+                <div class="table-content sitemap-table"<?php echo $entries ? '' : ' style="display:none;"'; ?>>
                     <table class="data-table">
                         <thead>
                             <tr><th scope="col">Title</th><th scope="col">URL</th><th scope="col">Last modified</th></tr>

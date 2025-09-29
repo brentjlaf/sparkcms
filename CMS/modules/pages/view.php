@@ -117,7 +117,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                 </div>
                 <span class="table-meta pages-table-meta" id="pagesVisibleCount" aria-live="polite">Showing <?php echo $totalPages . ' ' . $pagesWord; ?></span>
             </header>
-            <div class="pages-table-wrapper">
+            <div class="table-content pages-table-wrapper">
                 <table class="data-table pages-table" id="pagesTable" aria-describedby="pagesInventoryDescription">
                     <thead>
                         <tr>

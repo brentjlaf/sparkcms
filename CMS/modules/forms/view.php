@@ -119,14 +119,14 @@ $lastSubmissionLabel = $latestSubmission > 0
         </header>
 
         <div class="forms-main-grid">
-            <section class="a11y-detail-card forms-table-card">
-                <header class="forms-card-header">
+            <section class="a11y-detail-card table-card forms-table-card">
+                <header class="table-header forms-card-header">
                     <div>
                         <h3>Forms library</h3>
                         <p>Click any form to review submissions, edit the layout, or remove outdated capture points.</p>
                     </div>
                 </header>
-                <div class="forms-table-wrapper">
+                <div class="table-content forms-table-wrapper">
                     <table class="data-table forms-table" id="formsTable">
                         <thead>
                             <tr>
@@ -140,14 +140,14 @@ $lastSubmissionLabel = $latestSubmission > 0
                 </div>
             </section>
 
-            <section class="a11y-detail-card forms-submissions-card" id="formSubmissionsCard">
-                <header class="forms-card-header">
+            <section class="a11y-detail-card table-card forms-submissions-card" id="formSubmissionsCard">
+                <header class="table-header forms-card-header">
                     <div>
                         <h3>Submission activity</h3>
                         <p id="selectedFormName" class="form-submissions-label">Select a form to view submissions</p>
                     </div>
                 </header>
-                <div class="forms-table-wrapper">
+                <div class="table-content forms-table-wrapper">
                     <table class="data-table forms-table" id="formSubmissionsTable">
                         <thead>
                             <tr>

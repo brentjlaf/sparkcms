@@ -88,15 +88,15 @@ foreach ($results as $entry) {
             </div>
         </header>
 
-        <section class="a11y-detail-card search-results-card">
-            <header class="search-results-card__header">
+        <section class="a11y-detail-card table-card search-results-card">
+            <header class="table-header search-results-card__header">
                 <div class="search-results-card__intro">
                     <h3 class="search-results-card__title">Search results</h3>
                     <p class="search-results-card__description">Review matches across pages, posts, and media.</p>
                 </div>
-                <span class="search-results-card__meta"><?php echo $resultSummary . $querySuffix; ?></span>
+                <span class="table-meta search-results-card__meta"><?php echo $resultSummary . $querySuffix; ?></span>
             </header>
-            <div class="search-results-table">
+            <div class="table-content search-results-table">
                 <table class="data-table search-table">
                     <thead>
                         <tr><th scope="col">Type</th><th scope="col">Title</th><th scope="col">Slug</th><th scope="col">Status</th><th scope="col">Actions</th></tr>
@@ -119,12 +119,80 @@ foreach ($results as $entry) {
                                         $status = !empty($r['published']) ? 'Published' : 'Draft';
                                     }
                                 ?>
+                                <?php
+                                    $type = $r['type'] ?? '';
+                                    $typeLabel = $type !== '' ? $type : 'Unknown';
+                                    $iconClass = '';
+                                    $icon = 'fa-solid fa-file-lines';
+                                    if ($type === 'Page') {
+                                        $icon = 'fa-solid fa-file-lines';
+                                        $iconClass = 'table-cell__icon--page';
+                                    } elseif ($type === 'Post') {
+                                        $icon = 'fa-solid fa-newspaper';
+                                        $iconClass = 'table-cell__icon--post';
+                                    } elseif ($type === 'Media') {
+                                        $icon = 'fa-solid fa-image';
+                                        $iconClass = 'table-cell__icon--media';
+                                    }
+
+                                    $statusClass = 'status-neutral';
+                                    $statusLabel = '';
+
+                                    if ($type === 'Post') {
+                                        $statusValue = strtolower($r['status'] ?? 'draft');
+                                        if ($statusValue === 'published') {
+                                            $statusClass = 'status-published';
+                                        } elseif ($statusValue === 'scheduled') {
+                                            $statusClass = 'status-scheduled';
+                                        } else {
+                                            $statusClass = 'status-draft';
+                                        }
+                                        $statusLabel = ucfirst($statusValue);
+                                    } elseif ($type === 'Media') {
+                                        $statusClass = 'status-info';
+                                        $sizeBytes = isset($r['size']) ? (int) $r['size'] : 0;
+                                        if ($sizeBytes > 0) {
+                                            $sizeKilobytes = max(1, (int) round($sizeBytes / 1024));
+                                            $statusLabel = $sizeKilobytes . ' KB';
+                                        } else {
+                                            $statusLabel = 'Media asset';
+                                        }
+                                    } else {
+                                        $isPublished = !empty($r['published']);
+                                        $statusClass = $isPublished ? 'status-published' : 'status-draft';
+                                        $statusLabel = $isPublished ? 'Published' : 'Draft';
+                                    }
+
+                                    if ($statusLabel === '') {
+                                        $statusLabel = 'Unknown';
+                                    }
+                                ?>
                                 <tr data-id="<?php echo $r['id']; ?>">
-                                    <td><?php echo htmlspecialchars($r['type'] ?? ''); ?></td>
-                                    <td><?php echo htmlspecialchars($r['title']); ?></td>
-                                    <td><?php echo htmlspecialchars($r['slug']); ?></td>
-                                    <td><?php echo htmlspecialchars($status); ?></td>
-                                    <td><a class="btn btn-secondary" href="<?php echo $viewUrl; ?>" target="_blank">View</a></td>
+                                    <td>
+                                        <span class="table-cell">
+                                            <span class="table-cell__icon <?php echo $iconClass; ?>">
+                                                <i class="<?php echo $icon; ?>" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="table-cell__title"><?php echo htmlspecialchars($typeLabel); ?></span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="table-cell__title"><?php echo htmlspecialchars($r['title']); ?></span>
+                                    </td>
+                                    <td><span class="table-cell__subtitle table-cell__slug"><?php echo htmlspecialchars($r['slug']); ?></span></td>
+                                    <td>
+                                        <span class="status-badge <?php echo $statusClass; ?>">
+                                            <?php echo htmlspecialchars($statusLabel); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="table-actions">
+                                            <a class="table-action table-action--ghost" href="<?php echo $viewUrl; ?>" target="_blank" rel="noopener">
+                                                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                                                <span>Open</span>
+                                            </a>
+                                        </span>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>

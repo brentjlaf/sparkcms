@@ -86,9 +86,9 @@
                     <h3>Content pipeline</h3>
                     <p>Track statuses, schedules, and author activity at a glance.</p>
                 </div>
-                <span class="blog-posts-count" id="postsCount">0 posts</span>
+                <span class="table-meta blog-posts-count" id="postsCount">0 posts</span>
             </header>
-            <div class="blog-table-wrapper">
+            <div class="table-content blog-table-wrapper">
                 <table class="data-table blog-table">
                     <thead>
                         <tr>
