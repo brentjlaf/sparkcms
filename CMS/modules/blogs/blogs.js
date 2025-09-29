@@ -465,7 +465,7 @@ $(document).ready(function(){
                     <td>
                         <div class="actions">
                             <button class="btn btn-sm btn-secondary view-btn" data-id="${post.id}"><i class="fa-solid fa-eye btn-icon" aria-hidden="true"></i><span class="btn-label">View</span></button>
-                            <button class="btn btn-sm btn-secondary edit-post-btn" data-id="${post.id}"><i class="fa-solid fa-pen btn-icon" aria-hidden="true"></i><span class="btn-label">Edit</span></button>
+                            <button class="btn btn-sm btn-secondary edit-post-btn" data-id="${post.id}"><i class="fa-solid fa-pen-to-square btn-icon" aria-hidden="true"></i><span class="btn-label">Edit</span></button>
                             ${post.status !== 'published' ? `<button class="btn btn-sm btn-primary publish-btn" data-id="${post.id}"><i class="fa-solid fa-paper-plane btn-icon" aria-hidden="true"></i><span class="btn-label">Publish</span></button>` : ''}
                             <button class="btn btn-sm btn-danger delete-btn" data-id="${post.id}"><i class="fa-solid fa-trash btn-icon" aria-hidden="true"></i><span class="btn-label">Delete</span></button>
                         </div>

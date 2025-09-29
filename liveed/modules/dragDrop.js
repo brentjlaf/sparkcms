@@ -32,7 +32,7 @@ let dragSource = null;
 let fromPalette = false;
 // caching block control markup avoids rebuilding the DOM for each block
 const controlsTemplate = `
-  <span class="control edit" title="Edit"><i class="fa-solid fa-pen"></i></span>
+  <span class="control edit" title="Edit"><i class="fa-solid fa-pen-to-square"></i></span>
   <span class="control drag" title="Drag"><i class="fa-solid fa-arrows-up-down-left-right"></i></span>
   <span class="control duplicate" title="Duplicate"><i class="fa-solid fa-clone"></i></span>
   <span class="control delete" title="Delete"><i class="fa-solid fa-trash"></i></span>
