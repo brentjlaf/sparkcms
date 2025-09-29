@@ -5,6 +5,8 @@ $(function(){
         const $pagesCollection = $('#pagesCollection');
         const $searchInput = $('#pagesSearchInput');
         const $filterButtons = $('[data-pages-filter]');
+        const $listView = $('#pagesListView');
+        const $viewToggleButtons = $('[data-pages-view]');
         const $emptyState = $('#pagesEmptyState');
         const $visibleCount = $('#pagesVisibleCount');
         let activeFilter = 'all';
@@ -52,7 +54,17 @@ $(function(){
         }
 
         function getPageCards() {
-            return $pagesCollection.find('.pages-card');
+            if (!$pagesCollection.length) {
+                return $();
+            }
+            return $pagesCollection.find('[data-page-item][data-view="card"]');
+        }
+
+        function getPageRows() {
+            if (!$listView.length) {
+                return $();
+            }
+            return $listView.find('[data-page-item][data-view="list"]');
         }
 
         function updateVisibleCount(count) {
@@ -112,6 +124,13 @@ $(function(){
             const query = ($searchInput.val() || '').toString().toLowerCase();
             let visible = 0;
             const $cards = getPageCards();
+            const $rows = getPageRows();
+            const rowIndex = {};
+
+            $rows.each(function(){
+                const $row = $(this);
+                rowIndex[$row.data('id')] = $row;
+            });
 
             $cards.each(function(){
                 const $card = $(this);
@@ -121,12 +140,19 @@ $(function(){
                 const slug = slugAttr || slugData;
                 const matchesQuery = !query || title.indexOf(query) !== -1 || slug.indexOf(query) !== -1;
                 const matchesFilter = rowMatchesFilter($card);
+                const $row = rowIndex[$card.data('id')];
 
                 if (matchesQuery && matchesFilter) {
                     $card.removeAttr('hidden');
+                    if ($row && $row.length) {
+                        $row.removeAttr('hidden');
+                    }
                     visible++;
                 } else {
                     $card.attr('hidden', 'hidden');
+                    if ($row && $row.length) {
+                        $row.attr('hidden', 'hidden');
+                    }
                 }
             });
 
@@ -135,6 +161,17 @@ $(function(){
                     $emptyState.removeAttr('hidden');
                 } else {
                     $emptyState.attr('hidden', 'hidden');
+                }
+            }
+
+            if ($listView.length) {
+                const $header = $listView.children('.pages-list-header');
+                if ($header.length) {
+                    if (visible === 0) {
+                        $header.attr('hidden', 'hidden');
+                    } else {
+                        $header.removeAttr('hidden');
+                    }
                 }
             }
 
@@ -166,18 +203,15 @@ $(function(){
         }
 
         function updatePageRow(data){
-            if (!$pagesCollection.length || !data || !data.id) {
+            if (!data || !data.id) {
                 return;
             }
 
-            const $card = $pagesCollection.find(`.pages-card[data-id="${data.id}"]`);
-            if (!$card.length) {
-                return;
-            }
+            const $card = $pagesCollection.find(`[data-page-item][data-id="${data.id}"][data-view="card"]`);
+            const $row = $listView.find(`[data-page-item][data-id="${data.id}"][data-view="list"]`);
 
             const publishedFlag = data.published ? 1 : 0;
-
-            $card.attr({
+            const sharedAttributes = {
                 'data-title': data.title,
                 'data-slug': data.slug,
                 'data-content': data.content,
@@ -190,46 +224,126 @@ $(function(){
                 'data-og_image': data.og_image,
                 'data-access': data.access,
                 'data-published': publishedFlag
-            });
+            };
 
-            $card.data('title', data.title);
-            $card.data('slug', data.slug);
-            $card.data('content', data.content);
-            $card.data('template', data.template);
-            $card.data('meta_title', data.meta_title);
-            $card.data('meta_description', data.meta_description);
-            $card.data('canonical_url', data.canonical_url);
-            $card.data('og_title', data.og_title);
-            $card.data('og_description', data.og_description);
-            $card.data('og_image', data.og_image);
-            $card.data('access', data.access);
-            $card.data('published', publishedFlag);
+            const timestamp = formatTimestamp(new Date());
+            const accessLabel = ((data.access || 'public') + '').toLowerCase() !== 'public' ? 'Private' : 'Public';
 
-            $card.find('.pages-card__title').text(data.title);
-            $card.find('.pages-card__slug').text(`/${data.slug}`);
+            if ($card.length) {
+                $card.attr(sharedAttributes);
 
-            const $statusBadge = $card.find('.status-badge');
-            $statusBadge.removeClass('status-published status-draft');
-            $statusBadge.addClass(publishedFlag ? 'status-published' : 'status-draft');
-            $statusBadge.text(publishedFlag ? 'Published' : 'Draft');
+                $card.data('title', data.title);
+                $card.data('slug', data.slug);
+                $card.data('content', data.content);
+                $card.data('template', data.template);
+                $card.data('meta_title', data.meta_title);
+                $card.data('meta_description', data.meta_description);
+                $card.data('canonical_url', data.canonical_url);
+                $card.data('og_title', data.og_title);
+                $card.data('og_description', data.og_description);
+                $card.data('og_image', data.og_image);
+                $card.data('access', data.access);
+                $card.data('published', publishedFlag);
 
-            const $viewLink = $card.find('[data-action="view"]').first();
-            if ($viewLink.length) {
-                $viewLink.attr('href', `../?page=${encodeURIComponent(data.slug)}`);
-            }
+                $card.find('.pages-card__title').text(data.title);
+                $card.find('.pages-card__slug').text(`/${data.slug}`);
 
-            const $toggleBtn = $card.find('.togglePublishBtn');
-            if ($toggleBtn.length) {
-                $toggleBtn.text(publishedFlag ? 'Unpublish' : 'Publish');
-            }
+                const $statusBadge = $card.find('.status-badge');
+                $statusBadge.removeClass('status-published status-draft');
+                $statusBadge.addClass(publishedFlag ? 'status-published' : 'status-draft');
+                $statusBadge.text(publishedFlag ? 'Published' : 'Draft');
 
-            const $updatedLabel = $card.find('.pages-card__updated');
-            if ($updatedLabel.length) {
-                const timestamp = formatTimestamp(new Date());
-                if (timestamp) {
+                const $viewLink = $card.find('[data-action="view"]').first();
+                if ($viewLink.length) {
+                    $viewLink.attr('href', `../?page=${encodeURIComponent(data.slug)}`);
+                }
+
+                const $toggleBtn = $card.find('.togglePublishBtn');
+                if ($toggleBtn.length) {
+                    $toggleBtn.text(publishedFlag ? 'Unpublish' : 'Publish');
+                }
+
+                const $updatedLabel = $card.find('.pages-card__updated');
+                if ($updatedLabel.length && timestamp) {
                     $updatedLabel.html(`<i class="fa-regular fa-clock" aria-hidden="true"></i>Updated ${timestamp}`);
                 }
             }
+
+            if ($row.length) {
+                $row.attr(sharedAttributes);
+
+                $row.data('title', data.title);
+                $row.data('slug', data.slug);
+                $row.data('content', data.content);
+                $row.data('template', data.template);
+                $row.data('meta_title', data.meta_title);
+                $row.data('meta_description', data.meta_description);
+                $row.data('canonical_url', data.canonical_url);
+                $row.data('og_title', data.og_title);
+                $row.data('og_description', data.og_description);
+                $row.data('og_image', data.og_image);
+                $row.data('access', data.access);
+                $row.data('published', publishedFlag);
+
+                $row.find('.pages-list-title-text').text(data.title);
+                $row.find('.pages-list-slug').text(`/${data.slug}`);
+
+                const $rowStatusBadge = $row.find('.status-badge');
+                $rowStatusBadge.removeClass('status-published status-draft');
+                $rowStatusBadge.addClass(publishedFlag ? 'status-published' : 'status-draft');
+                $rowStatusBadge.text(publishedFlag ? 'Published' : 'Draft');
+
+                const $rowViewLink = $row.find('[data-action="view"]').first();
+                if ($rowViewLink.length) {
+                    $rowViewLink.attr('href', `../?page=${encodeURIComponent(data.slug)}`);
+                }
+
+                const $rowToggleBtn = $row.find('.togglePublishBtn');
+                if ($rowToggleBtn.length) {
+                    $rowToggleBtn.text(publishedFlag ? 'Unpublish' : 'Publish');
+                }
+
+                const $rowUpdated = $row.find('.pages-list-updated');
+                if ($rowUpdated.length && timestamp) {
+                    $rowUpdated.text(`Updated ${timestamp}`);
+                }
+
+                const $rowAccess = $row.find('.pages-list-access');
+                if ($rowAccess.length) {
+                    $rowAccess.text(accessLabel);
+                }
+            }
+        }
+
+        function findPageItem($el){
+            return $el.closest('[data-page-item]');
+        }
+
+        function getPageItemsById(id){
+            return $(`[data-page-item][data-id="${id}"]`);
+        }
+
+        function setActiveView(view){
+            if (!$pagesCollection.length || !$viewToggleButtons.length) {
+                return;
+            }
+
+            const normalizedView = view === 'list' ? 'list' : 'grid';
+
+            if (normalizedView === 'list') {
+                $pagesCollection.attr('hidden', 'hidden');
+                if ($listView.length) {
+                    $listView.removeAttr('hidden');
+                }
+            } else {
+                $pagesCollection.removeAttr('hidden');
+                if ($listView.length) {
+                    $listView.attr('hidden', 'hidden');
+                }
+            }
+
+            $viewToggleButtons.removeClass('active').attr('aria-pressed', 'false');
+            $viewToggleButtons.filter(`[data-pages-view="${normalizedView}"]`).addClass('active').attr('aria-pressed', 'true');
         }
 
         $('#pageForm').on('submit', function(e){
@@ -290,12 +404,16 @@ $(function(){
                 });
         });
         $('.deleteBtn').on('click', function(){
-            const row = $(this).closest('.pages-card');
+            const row = findPageItem($(this));
+            if (!row.length) {
+                return;
+            }
+            const pageId = row.data('id');
             confirmModal('Delete this page?').then(ok => {
                 if(ok){
-                    $.post('modules/pages/delete_page.php', {id: row.data('id')})
+                    $.post('modules/pages/delete_page.php', {id: pageId})
                         .done(function(){
-                            row.remove();
+                            getPageItemsById(pageId).remove();
                             applyPageFilters();
                             toastSuccess('Page deleted successfully.');
                         })
@@ -307,7 +425,10 @@ $(function(){
             });
         });
         $('.editBtn').on('click', function(){
-            const row = $(this).closest('.pages-card');
+            const row = findPageItem($(this));
+            if (!row.length) {
+                return;
+            }
             $('#formTitle').text('Page Settings');
             $('#pageId').val(row.data('id'));
             $('#title').val(row.data('title'));
@@ -374,10 +495,26 @@ $(function(){
                 $btn.addClass('active').attr('aria-pressed', 'true');
                 applyPageFilters();
             });
+
+            if ($viewToggleButtons.length) {
+                $viewToggleButtons.on('click', function(){
+                    const $btn = $(this);
+                    const view = $btn.data('pagesView');
+                    if (!view) {
+                        return;
+                    }
+                    setActiveView(view);
+                });
+
+                setActiveView('grid');
+            }
         }
 
         $('.copyBtn').on('click', function(){
-            const row = $(this).closest('.pages-card');
+            const row = findPageItem($(this));
+            if (!row.length) {
+                return;
+            }
             const data = row.data();
             $.post('modules/pages/save_page.php', {
                 title: data.title + ' Copy',
@@ -403,7 +540,10 @@ $(function(){
         });
 
         $('.togglePublishBtn').on('click', function(){
-            const row = $(this).closest('.pages-card');
+            const row = findPageItem($(this));
+            if (!row.length) {
+                return;
+            }
             const data = row.data();
             const newStatus = data.published ? 0 : 1;
             $.post('modules/pages/save_page.php', {
@@ -432,7 +572,10 @@ $(function(){
         });
 
         $('.pages-card__home.set-home').on('click', function(){
-            const row = $(this).closest('.pages-card');
+            const row = findPageItem($(this));
+            if (!row.length) {
+                return;
+            }
             $.post('modules/pages/set_home.php', {slug: row.data('slug')})
                 .done(function(){
                     rememberToast('success', 'Homepage updated successfully.');

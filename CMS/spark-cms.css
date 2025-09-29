@@ -2674,6 +2674,10 @@
             outline-offset: 2px;
         }
 
+        .pages-view-toggle {
+            margin-left: auto;
+        }
+
         .pages-table-card {
             background: #fff;
             border-radius: 16px;
@@ -2729,6 +2733,107 @@
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
             padding: 0 24px 24px;
+        }
+
+        .pages-list-view {
+            padding: 0 0 24px;
+        }
+
+        .pages-list-header,
+        .pages-list-row {
+            display: grid;
+            grid-template-columns: minmax(220px, 1.8fr) 120px 120px 180px 120px minmax(240px, 1fr);
+            gap: 16px;
+            align-items: center;
+        }
+
+        .pages-list-header {
+            padding: 18px 24px;
+            background: #f8fafc;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #475569;
+        }
+
+        .pages-list-actions-heading {
+            text-align: right;
+        }
+
+        .pages-list-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pages-list-row {
+            padding: 18px 24px;
+            border-top: 1px solid #f1f5f9;
+            transition: background 0.2s ease;
+        }
+
+        .pages-list-row:hover {
+            background: #f8fafc;
+        }
+
+        .pages-list-row[hidden] {
+            display: none;
+        }
+
+        .pages-list-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .pages-list-cell--actions {
+            align-items: flex-end;
+        }
+
+        .pages-list-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .pages-list-title-text {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .pages-list-slug {
+            font-family: "Fira Code", "Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .pages-list-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pages-list-views,
+        .pages-list-access {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .pages-list-updated {
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .pages-list-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .pages-list-actions .a11y-btn {
+            white-space: nowrap;
         }
 
         .pages-card {
@@ -2920,6 +3025,24 @@
             .pages-table-meta {
                 align-self: flex-start;
             }
+
+            .pages-list-header,
+            .pages-list-row {
+                grid-template-columns: minmax(200px, 1.6fr) 120px 120px 1fr;
+            }
+
+            .pages-list-actions-heading {
+                display: none;
+            }
+
+            .pages-list-cell--actions {
+                grid-column: 1 / -1;
+                align-items: flex-start;
+            }
+
+            .pages-list-actions {
+                justify-content: flex-start;
+            }
         }
 
         @media (max-width: 768px) {
@@ -2948,6 +3071,45 @@
 
             .pages-card__actions .a11y-btn {
                 width: 100%;
+            }
+
+            .pages-list-view {
+                padding-bottom: 20px;
+            }
+
+            .pages-list-header {
+                display: none;
+            }
+
+            .pages-list-row {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                padding: 18px 20px;
+            }
+
+            .pages-list-cell {
+                align-items: flex-start;
+            }
+
+            .pages-list-cell--status,
+            .pages-list-cell--views,
+            .pages-list-cell--updated,
+            .pages-list-cell--access {
+                flex-direction: row;
+                gap: 10px;
+            }
+
+            .pages-list-cell--actions {
+                align-items: stretch;
+            }
+
+            .pages-list-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .pages-list-actions .a11y-btn {
+                flex: 1 1 45%;
             }
         }
 
