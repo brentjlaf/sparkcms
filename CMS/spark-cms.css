@@ -1696,16 +1696,17 @@
 
         .dashboard-overview-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 18px;
             margin-top: 28px;
         }
 
         .dashboard-overview-card {
             display: flex;
+            flex-direction: column;
             align-items: flex-start;
-            gap: 16px;
-            padding: 18px 20px;
+            gap: 12px;
+            padding: 18px;
             border-radius: 16px;
             background: rgba(255, 255, 255, 0.14);
             backdrop-filter: blur(6px);
@@ -1718,6 +1719,19 @@
             position: relative;
             z-index: 1;
             transition: opacity 0.2s ease;
+        }
+
+        .dashboard-overview-card .a11y-overview-value {
+            font-size: var(--font-size-3xl);
+            font-weight: 600;
+            line-height: var(--line-height-tight);
+        }
+
+        .dashboard-overview-card .a11y-overview-label {
+            font-size: var(--font-size-xs);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            opacity: 0.85;
         }
 
         .dashboard-overview-card.is-loading .dashboard-overview-icon,
