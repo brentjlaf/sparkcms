@@ -8342,6 +8342,286 @@
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.calendar-picker {
+    position: relative;
+}
+
+.calendar-picker-field {
+    position: relative;
+}
+
+.calendar-picker-input {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 12px 44px 12px 14px;
+    font-size: 15px;
+    line-height: 1.4;
+    background: #fff;
+    color: #1f2937;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calendar-picker-input::placeholder {
+    color: #9ca3af;
+}
+
+.calendar-picker:hover .calendar-picker-input,
+.calendar-picker.is-open .calendar-picker-input {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+}
+
+.calendar-picker-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
+}
+
+.calendar-picker.is-invalid .calendar-picker-input {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+
+.calendar-picker-icon {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    color: #7c3aed;
+    pointer-events: none;
+    font-size: 16px;
+}
+
+.calendar-picker-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 40;
+    width: 320px;
+    max-width: min(320px, calc(100vw - 40px));
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+    padding: 16px;
+    display: none;
+}
+
+.calendar-picker.is-open .calendar-picker-panel {
+    display: block;
+}
+
+.calendar-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.calendar-picker-month {
+    font-weight: 700;
+    color: #4c1d95;
+}
+
+.calendar-picker-nav {
+    border: none;
+    background: rgba(124, 58, 237, 0.08);
+    color: #5b21b6;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.calendar-picker-nav:hover,
+.calendar-picker-nav:focus-visible {
+    background: rgba(124, 58, 237, 0.18);
+    color: #4c1d95;
+    outline: none;
+}
+
+.calendar-picker-grid {
+    display: grid;
+    gap: 6px;
+}
+
+.calendar-picker-weekdays,
+.calendar-picker-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-picker-weekdays span {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #7e22ce;
+    letter-spacing: 0.04em;
+}
+
+.calendar-picker-day {
+    border: none;
+    background: #f3e8ff;
+    color: #5b21b6;
+    border-radius: 12px;
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.calendar-picker-day:hover,
+.calendar-picker-day:focus-visible {
+    outline: none;
+    background: #7c3aed;
+    color: #ffffff;
+}
+
+.calendar-picker-day.is-selected {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+}
+
+.calendar-picker-day.is-today {
+    box-shadow: inset 0 0 0 2px rgba(124, 58, 237, 0.4);
+}
+
+.calendar-picker-day.is-outside {
+    background: transparent;
+    color: #c4b5fd;
+    cursor: default;
+}
+
+.calendar-picker-day.is-outside:hover,
+.calendar-picker-day.is-outside:focus-visible {
+    background: transparent;
+    color: #c4b5fd;
+}
+
+.calendar-picker-time {
+    margin-top: 14px;
+    padding: 12px;
+    background: #f5f3ff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.calendar-picker-time-label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #5b21b6;
+}
+
+.calendar-picker-time-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.calendar-picker-time-controls select {
+    border: 1px solid rgba(124, 58, 237, 0.45);
+    border-radius: 10px;
+    padding: 6px 10px;
+    background: #ffffff;
+    color: #4c1d95;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calendar-picker-time-controls select:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+.calendar-picker-time-separator {
+    font-weight: 700;
+    color: #7c3aed;
+}
+
+.calendar-picker-footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.calendar-picker-action {
+    flex: 1;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calendar-picker-action--muted {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.calendar-picker-action--primary {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #ffffff;
+    box-shadow: 0 12px 25px rgba(124, 58, 237, 0.3);
+}
+
+.calendar-picker-action:hover,
+.calendar-picker-action:focus-visible {
+    outline: none;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(124, 58, 237, 0.32);
+}
+
+.calendar-picker-action--muted:hover,
+.calendar-picker-action--muted:focus-visible {
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.18);
+}
+
+.calendar-picker-action--muted:focus-visible {
+    background: #e0d7ff;
+}
+
+.calendar-picker-action--primary:hover,
+.calendar-picker-action--primary:focus-visible {
+    background: linear-gradient(135deg, #6d28d9, #9333ea);
+}
+
+.calendar-picker.is-open {
+    z-index: 50;
+}
+
+.calendar-picker-panel::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 28px;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    transform: rotate(45deg);
+    box-shadow: -2px -2px 5px rgba(15, 23, 42, 0.08);
+}
+
+.calendar-picker-panel[hidden] {
+    display: none;
+}
+
 .calendar-form-grid textarea {
     min-height: 120px;
     resize: vertical;

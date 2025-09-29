@@ -178,11 +178,81 @@ $initialPayload = [
                         </div>
                         <div>
                             <label for="calendarEventStart">Start Date/Time*</label>
-                            <input type="datetime-local" name="start_date" id="calendarEventStart" required>
+                            <div class="calendar-picker" data-calendar-picker="start_date" data-calendar-picker-required="true" data-calendar-picker-placeholder="Select date &amp; time">
+                                <input type="hidden" name="start_date" data-calendar-picker-value>
+                                <div class="calendar-picker-field">
+                                    <input type="text" id="calendarEventStart" class="calendar-picker-input" data-calendar-picker-display readonly placeholder="Select date &amp; time" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendarEventStartPanel">
+                                    <span class="calendar-picker-icon" aria-hidden="true">
+                                        <i class="fa-regular fa-calendar"></i>
+                                    </span>
+                                </div>
+                                <div class="calendar-picker-panel" id="calendarEventStartPanel" data-calendar-picker-panel hidden>
+                                    <div class="calendar-picker-header">
+                                        <button type="button" class="calendar-picker-nav" data-calendar-picker-prev aria-label="Previous month">
+                                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="calendar-picker-month" data-calendar-picker-month>Month</div>
+                                        <button type="button" class="calendar-picker-nav" data-calendar-picker-next aria-label="Next month">
+                                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div class="calendar-picker-grid">
+                                        <div class="calendar-picker-weekdays" data-calendar-picker-weekdays></div>
+                                        <div class="calendar-picker-days" data-calendar-picker-days></div>
+                                    </div>
+                                    <div class="calendar-picker-time">
+                                        <span class="calendar-picker-time-label">Time</span>
+                                        <div class="calendar-picker-time-controls">
+                                            <select data-calendar-picker-hour></select>
+                                            <span class="calendar-picker-time-separator">:</span>
+                                            <select data-calendar-picker-minute></select>
+                                        </div>
+                                    </div>
+                                    <div class="calendar-picker-footer">
+                                        <button type="button" class="calendar-picker-action calendar-picker-action--muted" data-calendar-picker-clear>Clear</button>
+                                        <button type="button" class="calendar-picker-action calendar-picker-action--primary" data-calendar-picker-apply>Apply</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label for="calendarEventEnd">End Date/Time</label>
-                            <input type="datetime-local" name="end_date" id="calendarEventEnd">
+                            <div class="calendar-picker" data-calendar-picker="end_date" data-calendar-picker-placeholder="Optional date &amp; time">
+                                <input type="hidden" name="end_date" data-calendar-picker-value>
+                                <div class="calendar-picker-field">
+                                    <input type="text" id="calendarEventEnd" class="calendar-picker-input" data-calendar-picker-display readonly placeholder="Optional date &amp; time" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendarEventEndPanel">
+                                    <span class="calendar-picker-icon" aria-hidden="true">
+                                        <i class="fa-regular fa-calendar"></i>
+                                    </span>
+                                </div>
+                                <div class="calendar-picker-panel" id="calendarEventEndPanel" data-calendar-picker-panel hidden>
+                                    <div class="calendar-picker-header">
+                                        <button type="button" class="calendar-picker-nav" data-calendar-picker-prev aria-label="Previous month">
+                                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="calendar-picker-month" data-calendar-picker-month>Month</div>
+                                        <button type="button" class="calendar-picker-nav" data-calendar-picker-next aria-label="Next month">
+                                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div class="calendar-picker-grid">
+                                        <div class="calendar-picker-weekdays" data-calendar-picker-weekdays></div>
+                                        <div class="calendar-picker-days" data-calendar-picker-days></div>
+                                    </div>
+                                    <div class="calendar-picker-time">
+                                        <span class="calendar-picker-time-label">Time</span>
+                                        <div class="calendar-picker-time-controls">
+                                            <select data-calendar-picker-hour></select>
+                                            <span class="calendar-picker-time-separator">:</span>
+                                            <select data-calendar-picker-minute></select>
+                                        </div>
+                                    </div>
+                                    <div class="calendar-picker-footer">
+                                        <button type="button" class="calendar-picker-action calendar-picker-action--muted" data-calendar-picker-clear>Clear</button>
+                                        <button type="button" class="calendar-picker-action calendar-picker-action--primary" data-calendar-picker-apply>Apply</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label for="calendarEventRecurrence">Recurrence</label>
@@ -196,7 +266,42 @@ $initialPayload = [
                         </div>
                         <div>
                             <label for="calendarEventRecurrenceEnd">Recurrence End</label>
-                            <input type="datetime-local" name="recurring_end_date" id="calendarEventRecurrenceEnd">
+                            <div class="calendar-picker" data-calendar-picker="recurring_end_date" data-calendar-picker-placeholder="Optional date &amp; time">
+                                <input type="hidden" name="recurring_end_date" data-calendar-picker-value>
+                                <div class="calendar-picker-field">
+                                    <input type="text" id="calendarEventRecurrenceEnd" class="calendar-picker-input" data-calendar-picker-display readonly placeholder="Optional date &amp; time" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendarEventRecurrenceEndPanel">
+                                    <span class="calendar-picker-icon" aria-hidden="true">
+                                        <i class="fa-regular fa-calendar"></i>
+                                    </span>
+                                </div>
+                                <div class="calendar-picker-panel" id="calendarEventRecurrenceEndPanel" data-calendar-picker-panel hidden>
+                                    <div class="calendar-picker-header">
+                                        <button type="button" class="calendar-picker-nav" data-calendar-picker-prev aria-label="Previous month">
+                                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="calendar-picker-month" data-calendar-picker-month>Month</div>
+                                        <button type="button" class="calendar-picker-nav" data-calendar-picker-next aria-label="Next month">
+                                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div class="calendar-picker-grid">
+                                        <div class="calendar-picker-weekdays" data-calendar-picker-weekdays></div>
+                                        <div class="calendar-picker-days" data-calendar-picker-days></div>
+                                    </div>
+                                    <div class="calendar-picker-time">
+                                        <span class="calendar-picker-time-label">Time</span>
+                                        <div class="calendar-picker-time-controls">
+                                            <select data-calendar-picker-hour></select>
+                                            <span class="calendar-picker-time-separator">:</span>
+                                            <select data-calendar-picker-minute></select>
+                                        </div>
+                                    </div>
+                                    <div class="calendar-picker-footer">
+                                        <button type="button" class="calendar-picker-action calendar-picker-action--muted" data-calendar-picker-clear>Clear</button>
+                                        <button type="button" class="calendar-picker-action calendar-picker-action--primary" data-calendar-picker-apply>Apply</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="span-2">
                             <label for="calendarEventDescription">Description</label>

@@ -59,6 +59,480 @@
 
   let confirmConfig = null;
 
+  const MONTH_NAMES = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const datePickers = [];
+  let activeDatePicker = null;
+
+  function parseLocalDateTime(value) {
+    if (!value) {
+      return null;
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+    return date;
+  }
+
+  function formatLocalDateTime(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+      return '';
+    }
+    const pad = (num) => String(num).padStart(2, '0');
+    return (
+      date.getFullYear() +
+      '-' +
+      pad(date.getMonth() + 1) +
+      '-' +
+      pad(date.getDate()) +
+      'T' +
+      pad(date.getHours()) +
+      ':' +
+      pad(date.getMinutes())
+    );
+  }
+
+  function createDefaultDate() {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    return now;
+  }
+
+  function ensureMinuteOption(select, minute) {
+    if (!select) {
+      return minute;
+    }
+    const options = Array.from(select.options).map((option) => Number(option.value));
+    if (options.length === 0) {
+      return minute;
+    }
+    if (options.includes(minute)) {
+      return minute;
+    }
+    return options.reduce((closest, current) => {
+      const diffCurrent = Math.abs(current - minute);
+      const diffClosest = Math.abs(closest - minute);
+      if (diffCurrent < diffClosest) {
+        return current;
+      }
+      if (diffCurrent === diffClosest && current < closest) {
+        return current;
+      }
+      return closest;
+    }, options[0]);
+  }
+
+  function commitDatePickerValue(picker, localValue) {
+    if (!picker) {
+      return;
+    }
+    const value = localValue || '';
+    picker.value = value;
+    if (picker.hiddenInput) {
+      picker.hiddenInput.value = value;
+    }
+    picker.selectedDate = value ? parseLocalDateTime(value) : null;
+    picker.tempDate = null;
+    if (picker.displayInput) {
+      if (value) {
+        const friendly = formatReadableDate(value);
+        picker.displayInput.value = friendly || value;
+      } else {
+        picker.displayInput.value = '';
+        picker.displayInput.placeholder = picker.placeholder || '';
+      }
+      picker.displayInput.setAttribute('aria-expanded', 'false');
+    }
+    picker.element.classList.toggle('is-empty', !value);
+    if (value) {
+      picker.element.classList.remove('is-invalid');
+    }
+  }
+
+  function renderDatePicker(picker) {
+    if (!picker || !picker.panel) {
+      return;
+    }
+    if (!picker.viewDate) {
+      const base = picker.tempDate || picker.selectedDate || createDefaultDate();
+      picker.viewDate = new Date(base.getFullYear(), base.getMonth(), 1);
+    }
+    const viewYear = picker.viewDate.getFullYear();
+    const viewMonth = picker.viewDate.getMonth();
+    if (picker.monthLabel) {
+      picker.monthLabel.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+    }
+
+    if (picker.weekdaysContainer && !picker.weekdaysContainer.childElementCount) {
+      const fragment = document.createDocumentFragment();
+      DAY_NAMES.forEach((name) => {
+        const span = document.createElement('span');
+        span.textContent = name;
+        fragment.appendChild(span);
+      });
+      picker.weekdaysContainer.appendChild(fragment);
+    }
+
+    if (picker.daysContainer) {
+      picker.daysContainer.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+      const firstDayOfMonth = new Date(viewYear, viewMonth, 1);
+      const startIndex = firstDayOfMonth.getDay();
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const totalCells = 42;
+      const selected = picker.tempDate || picker.selectedDate;
+      const selectedYear = selected ? selected.getFullYear() : null;
+      const selectedMonth = selected ? selected.getMonth() : null;
+      const selectedDay = selected ? selected.getDate() : null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      for (let index = 0; index < totalCells; index += 1) {
+        const dayNumber = index - startIndex + 1;
+        const cellDate = new Date(viewYear, viewMonth, dayNumber);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'calendar-picker-day';
+        if (dayNumber < 1 || dayNumber > daysInMonth) {
+          button.textContent = String(cellDate.getDate());
+          button.disabled = true;
+          button.classList.add('is-outside');
+        } else {
+          button.textContent = String(dayNumber);
+          button.setAttribute('data-calendar-picker-day', String(dayNumber));
+          if (
+            selectedYear === viewYear &&
+            selectedMonth === viewMonth &&
+            selectedDay === dayNumber
+          ) {
+            button.classList.add('is-selected');
+          }
+          const normalizedCell = new Date(cellDate);
+          normalizedCell.setHours(0, 0, 0, 0);
+          if (normalizedCell.getTime() === today.getTime()) {
+            button.classList.add('is-today');
+          }
+        }
+        fragment.appendChild(button);
+      }
+      picker.daysContainer.appendChild(fragment);
+    }
+  }
+
+  function openDatePicker(picker) {
+    if (!picker || !picker.panel) {
+      return;
+    }
+    datePickers.forEach((other) => {
+      if (other !== picker) {
+        closeDatePicker(other);
+      }
+    });
+    const base = picker.selectedDate ? new Date(picker.selectedDate.getTime()) : createDefaultDate();
+    picker.tempDate = new Date(base.getTime());
+    picker.viewDate = new Date(base.getFullYear(), base.getMonth(), 1);
+    if (picker.hourSelect) {
+      picker.hourSelect.value = String(base.getHours());
+    }
+    if (picker.minuteSelect) {
+      const minute = ensureMinuteOption(picker.minuteSelect, base.getMinutes());
+      picker.minuteSelect.value = String(minute);
+      picker.tempDate.setMinutes(minute);
+    }
+    picker.tempDate.setSeconds(0, 0);
+    picker.panel.hidden = false;
+    picker.element.classList.add('is-open');
+    if (picker.displayInput) {
+      picker.displayInput.setAttribute('aria-expanded', 'true');
+    }
+    activeDatePicker = picker;
+    renderDatePicker(picker);
+  }
+
+  function closeDatePicker(picker) {
+    if (!picker || !picker.panel || picker.panel.hidden) {
+      return;
+    }
+    picker.panel.hidden = true;
+    picker.element.classList.remove('is-open');
+    picker.tempDate = null;
+    if (picker.displayInput) {
+      picker.displayInput.setAttribute('aria-expanded', 'false');
+    }
+    if (activeDatePicker === picker) {
+      activeDatePicker = null;
+    }
+  }
+
+  function changeDatePickerMonth(picker, offset) {
+    if (!picker) {
+      return;
+    }
+    if (!picker.viewDate) {
+      picker.viewDate = new Date();
+      picker.viewDate.setDate(1);
+    }
+    picker.viewDate.setMonth(picker.viewDate.getMonth() + offset);
+    renderDatePicker(picker);
+  }
+
+  function clearAllDatePickers() {
+    datePickers.forEach((picker) => {
+      commitDatePickerValue(picker, '');
+      picker.viewDate = null;
+      picker.element.classList.remove('is-invalid');
+    });
+  }
+
+  function findDatePicker(fieldName) {
+    return datePickers.find((picker) => picker.fieldName === fieldName);
+  }
+
+  function setDatePickerValue(fieldName, localValue) {
+    const picker = findDatePicker(fieldName);
+    if (picker) {
+      commitDatePickerValue(picker, localValue);
+    } else if (eventForm) {
+      const fallback = eventForm.querySelector(`input[name="${fieldName}"]`);
+      if (fallback) {
+        fallback.value = localValue || '';
+      }
+    }
+  }
+
+  function setDatePickerIsoValue(fieldName, isoValue) {
+    const localValue = toDateTimeLocal(isoValue);
+    setDatePickerValue(fieldName, localValue);
+  }
+
+  function validateDatePickers() {
+    let valid = true;
+    let firstInvalid = null;
+    datePickers.forEach((picker) => {
+      if (picker.required && !picker.value) {
+        picker.element.classList.add('is-invalid');
+        if (!firstInvalid) {
+          firstInvalid = picker;
+        }
+        valid = false;
+      }
+    });
+    return { valid, firstInvalid };
+  }
+
+  function initDatePickers() {
+    if (!eventForm) {
+      return;
+    }
+    const pickerElements = Array.from(eventForm.querySelectorAll('[data-calendar-picker]'));
+    pickerElements.forEach((element) => {
+      if (datePickers.some((existing) => existing.element === element)) {
+        return;
+      }
+      const hiddenInput = element.querySelector('[data-calendar-picker-value]');
+      const displayInput = element.querySelector('[data-calendar-picker-display]');
+      const panel = element.querySelector('[data-calendar-picker-panel]');
+      if (!hiddenInput || !displayInput || !panel) {
+        return;
+      }
+      const picker = {
+        element,
+        hiddenInput,
+        displayInput,
+        panel,
+        hourSelect: panel.querySelector('[data-calendar-picker-hour]'),
+        minuteSelect: panel.querySelector('[data-calendar-picker-minute]'),
+        monthLabel: panel.querySelector('[data-calendar-picker-month]'),
+        weekdaysContainer: panel.querySelector('[data-calendar-picker-weekdays]'),
+        daysContainer: panel.querySelector('[data-calendar-picker-days]'),
+        applyButton: panel.querySelector('[data-calendar-picker-apply]'),
+        clearButton: panel.querySelector('[data-calendar-picker-clear]'),
+        prevButton: panel.querySelector('[data-calendar-picker-prev]'),
+        nextButton: panel.querySelector('[data-calendar-picker-next]'),
+        placeholder: element.getAttribute('data-calendar-picker-placeholder') || displayInput.placeholder || '',
+        required: element.hasAttribute('data-calendar-picker-required'),
+        fieldName: hiddenInput.getAttribute('name') || '',
+        selectedDate: null,
+        tempDate: null,
+        viewDate: null,
+        value: hiddenInput.value || '',
+      };
+
+      displayInput.setAttribute('aria-expanded', 'false');
+      displayInput.setAttribute('aria-readonly', 'true');
+      displayInput.setAttribute('role', 'combobox');
+      displayInput.setAttribute('autocomplete', 'off');
+      displayInput.setAttribute('spellcheck', 'false');
+
+      panel.hidden = true;
+
+      if (picker.hourSelect && !picker.hourSelect.childElementCount) {
+        for (let hour = 0; hour < 24; hour += 1) {
+          const option = document.createElement('option');
+          option.value = String(hour);
+          option.textContent = String(hour).padStart(2, '0');
+          picker.hourSelect.appendChild(option);
+        }
+      }
+
+      if (picker.minuteSelect && !picker.minuteSelect.childElementCount) {
+        for (let minute = 0; minute < 60; minute += 5) {
+          const option = document.createElement('option');
+          option.value = String(minute);
+          option.textContent = String(minute).padStart(2, '0');
+          picker.minuteSelect.appendChild(option);
+        }
+      }
+
+      displayInput.addEventListener('click', (event) => {
+        event.preventDefault();
+        picker.element.classList.remove('is-invalid');
+        openDatePicker(picker);
+      });
+
+      displayInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          picker.element.classList.remove('is-invalid');
+          openDatePicker(picker);
+          return;
+        }
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          picker.element.classList.remove('is-invalid');
+          openDatePicker(picker);
+          return;
+        }
+        if (event.key === 'Escape') {
+          closeDatePicker(picker);
+        }
+      });
+
+      if (picker.prevButton) {
+        picker.prevButton.addEventListener('click', (event) => {
+          event.preventDefault();
+          changeDatePickerMonth(picker, -1);
+        });
+      }
+
+      if (picker.nextButton) {
+        picker.nextButton.addEventListener('click', (event) => {
+          event.preventDefault();
+          changeDatePickerMonth(picker, 1);
+        });
+      }
+
+      if (picker.daysContainer) {
+        picker.daysContainer.addEventListener('click', (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLElement)) {
+            return;
+          }
+          const button = target.closest('button[data-calendar-picker-day]');
+          if (!button || button.disabled) {
+            return;
+          }
+          const dayValue = Number(button.getAttribute('data-calendar-picker-day'));
+          if (!Number.isFinite(dayValue)) {
+            return;
+          }
+          const hour = picker.hourSelect ? Number(picker.hourSelect.value || 0) : 0;
+          const minute = picker.minuteSelect ? Number(picker.minuteSelect.value || 0) : 0;
+          if (!picker.viewDate) {
+            picker.viewDate = new Date();
+            picker.viewDate.setDate(1);
+          }
+          picker.tempDate = new Date(
+            picker.viewDate.getFullYear(),
+            picker.viewDate.getMonth(),
+            dayValue,
+            hour,
+            minute,
+            0,
+            0
+          );
+          renderDatePicker(picker);
+        });
+      }
+
+      if (picker.hourSelect) {
+        picker.hourSelect.addEventListener('change', () => {
+          const hour = Number(picker.hourSelect.value || 0);
+          const base = picker.tempDate || picker.selectedDate || createDefaultDate();
+          picker.tempDate = new Date(base.getTime());
+          picker.tempDate.setHours(hour);
+          picker.tempDate.setSeconds(0, 0);
+          picker.viewDate = new Date(picker.tempDate.getFullYear(), picker.tempDate.getMonth(), 1);
+          renderDatePicker(picker);
+        });
+      }
+
+      if (picker.minuteSelect) {
+        picker.minuteSelect.addEventListener('change', () => {
+          const minute = Number(picker.minuteSelect.value || 0);
+          const base = picker.tempDate || picker.selectedDate || createDefaultDate();
+          picker.tempDate = new Date(base.getTime());
+          picker.tempDate.setMinutes(minute);
+          picker.tempDate.setSeconds(0, 0);
+          picker.viewDate = new Date(picker.tempDate.getFullYear(), picker.tempDate.getMonth(), 1);
+          renderDatePicker(picker);
+        });
+      }
+
+      if (picker.applyButton) {
+        picker.applyButton.addEventListener('click', (event) => {
+          event.preventDefault();
+          const commitDate = picker.tempDate
+            ? new Date(picker.tempDate.getTime())
+            : picker.selectedDate
+            ? new Date(picker.selectedDate.getTime())
+            : null;
+          if (commitDate) {
+            commitDate.setSeconds(0, 0);
+            commitDatePickerValue(picker, formatLocalDateTime(commitDate));
+          } else {
+            commitDatePickerValue(picker, '');
+          }
+          closeDatePicker(picker);
+          if (picker.displayInput) {
+            picker.displayInput.focus();
+          }
+        });
+      }
+
+      if (picker.clearButton) {
+        picker.clearButton.addEventListener('click', (event) => {
+          event.preventDefault();
+          commitDatePickerValue(picker, '');
+          picker.viewDate = null;
+          closeDatePicker(picker);
+          if (picker.displayInput) {
+            picker.displayInput.focus();
+          }
+        });
+      }
+
+      commitDatePickerValue(picker, picker.value);
+      datePickers.push(picker);
+    });
+  }
+
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, '&amp;')
@@ -437,6 +911,7 @@
       return;
     }
     eventForm.reset();
+    clearAllDatePickers();
     const hiddenId = eventForm.querySelector('input[name="evt_id"]');
     if (hiddenId) {
       hiddenId.value = '';
@@ -466,22 +941,13 @@
     if (categorySelect) {
       categorySelect.value = event.category || '';
     }
-    const startInput = eventForm.querySelector('input[name="start_date"]');
-    if (startInput) {
-      startInput.value = toDateTimeLocal(event.start_date);
-    }
-    const endInput = eventForm.querySelector('input[name="end_date"]');
-    if (endInput) {
-      endInput.value = toDateTimeLocal(event.end_date);
-    }
+    setDatePickerIsoValue('start_date', event.start_date);
+    setDatePickerIsoValue('end_date', event.end_date);
     const recurrenceSelect = eventForm.querySelector('select[name="recurring_interval"]');
     if (recurrenceSelect) {
       recurrenceSelect.value = event.recurring_interval || 'none';
     }
-    const recurrenceEndInput = eventForm.querySelector('input[name="recurring_end_date"]');
-    if (recurrenceEndInput) {
-      recurrenceEndInput.value = toDateTimeLocal(event.recurring_end_date);
-    }
+    setDatePickerIsoValue('recurring_end_date', event.recurring_end_date);
     const descriptionField = eventForm.querySelector('textarea[name="description"]');
     if (descriptionField) {
       descriptionField.value = event.description || '';
@@ -574,12 +1040,57 @@
     });
   }
 
+  initDatePickers();
+
+  document.addEventListener('mousedown', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+    datePickers.forEach((picker) => {
+      if (!picker.panel || picker.panel.hidden) {
+        return;
+      }
+      if (picker.element.contains(target)) {
+        return;
+      }
+      closeDatePicker(picker);
+    });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && activeDatePicker) {
+      const current = activeDatePicker;
+      closeDatePicker(current);
+      if (current && current.displayInput) {
+        current.displayInput.focus();
+      }
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (activeDatePicker) {
+      closeDatePicker(activeDatePicker);
+    }
+  });
+
   if (eventForm) {
     eventForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const submitButton = eventForm.querySelector('button[type="submit"]');
       if (submitButton) {
         submitButton.disabled = true;
+      }
+      const validation = validateDatePickers();
+      if (!validation.valid) {
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+        setMessage('Please choose a start date and time.', 'error');
+        if (validation.firstInvalid && validation.firstInvalid.displayInput) {
+          validation.firstInvalid.displayInput.focus();
+        }
+        return;
       }
       const formData = new FormData(eventForm);
       fetch('modules/calendar/api.php?action=save_event', {
