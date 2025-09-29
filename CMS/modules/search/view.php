@@ -124,7 +124,7 @@ foreach ($results as $entry) {
                                     <td><?php echo htmlspecialchars($r['title']); ?></td>
                                     <td><?php echo htmlspecialchars($r['slug']); ?></td>
                                     <td><?php echo htmlspecialchars($status); ?></td>
-                                    <td><a class="btn btn-secondary" href="<?php echo $viewUrl; ?>" target="_blank">View</a></td>
+                                    <td><a class="btn btn-secondary" href="<?php echo $viewUrl; ?>" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square btn-icon" aria-hidden="true"></i><span class="btn-label">View</span></a></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>

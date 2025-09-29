@@ -26,6 +26,7 @@ $user = find_user($username);
     <meta charset="UTF-8">  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Login - <?php echo htmlspecialchars($settings['site_name'] ?? 'SparkCMS'); ?></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="spark-cms.css">
 </head>
 <body>
@@ -37,7 +38,10 @@ $user = find_user($username);
         <form method="post">
             <label>Username <input type="text" name="username" required></label>
             <label>Password <input type="password" name="password" required></label>
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-right-to-bracket btn-icon" aria-hidden="true"></i>
+                <span class="btn-label">Login</span>
+            </button>
         </form>
     </div>
 </body>

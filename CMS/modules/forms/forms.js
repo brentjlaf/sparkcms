@@ -455,7 +455,7 @@ $(function(){
         const $bar = $('<div class="field-bar"></div>');
         $bar.append('<span class="drag-handle" aria-hidden="true">&#9776;</span>');
         $bar.append('<span class="field-type">'+escapeHtml(typeLabel)+'</span>');
-        $bar.append('<button type="button" class="btn btn-danger btn-sm removeField" aria-label="Remove '+escapeHtml(typeLabel)+'">×</button>');
+        $bar.append('<button type="button" class="btn btn-danger btn-sm removeField" aria-label="Remove '+escapeHtml(typeLabel)+'"><i class="fa-solid fa-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Remove</span></button>');
         const preview = $('<div class="field-preview"></div>');
         const body = $('<div class="field-body"></div>');
 

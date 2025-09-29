@@ -5,16 +5,78 @@
 
 /* Button Block */
 .btn {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    background: #3498db;
-    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: var(--btn-md-padding-y) var(--btn-md-padding-x);
+    border: var(--btn-border-width) var(--btn-border-style) transparent;
+    border-radius: var(--btn-border-radius-rounded);
+    background: transparent;
+    color: inherit;
+    font-family: var(--btn-font-family);
+    font-weight: var(--btn-font-weight);
+    font-size: var(--btn-md-font-size);
+    letter-spacing: var(--btn-letter-spacing);
+    line-height: 1.2;
     text-decoration: none;
-    transition: background 0.3s ease;
+    cursor: pointer;
+    transition: background-color var(--transition-200), color var(--transition-200), box-shadow var(--transition-200), transform var(--transition-200), border-color var(--transition-200);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
 }
+
 .btn:hover {
-    background: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.18);
+}
+
+.btn:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.4);
+    outline-offset: 2px;
+}
+
+.btn .btn-icon,
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.btn .btn-label {
+    line-height: 1;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-5));
+    color: var(--text-color-on-primary);
+    border-color: var(--primary-5);
+}
+
+.btn-primary:hover {
+    background: var(--primary-5);
+}
+
+.btn-secondary {
+    background: var(--gray-2);
+    color: var(--dark);
+    border-color: rgba(148, 163, 184, 0.35);
+}
+
+.btn-secondary:hover {
+    background: var(--gray-3);
+    color: var(--gray-9);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger), var(--danger-5));
+    color: var(--text-color-on-danger);
+    border-color: var(--danger-5);
+}
+
+.btn-danger:hover {
+    background: var(--danger-5);
 }
 
 /* Divider Block */
