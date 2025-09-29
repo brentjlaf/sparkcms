@@ -9291,7 +9291,14 @@ body.calendar-modal-open {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
+    gap: 24px;
+}
+
+.forms-card__heading {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
 }
 
 .forms-card__title {
@@ -9351,7 +9358,9 @@ body.calendar-modal-open {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 18px;
+    margin-top: 0;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .forms-card__action {
@@ -9391,7 +9400,9 @@ body.calendar-modal-open {
     }
 
     .forms-card__actions {
+        justify-content: flex-start;
         width: 100%;
+        margin-top: 12px;
     }
 
     .forms-card__actions .a11y-btn {
