@@ -128,26 +128,69 @@ $initialPayload = [
 
         <div class="calendar-alert" data-calendar-message aria-live="polite"></div>
 
+        <?php
+        $otherModules = [
+            ['label' => 'Dashboard', 'target' => '#dashboard'],
+            ['label' => 'Analytics', 'target' => '#analytics'],
+            ['label' => 'Accessibility', 'target' => '#accessibility'],
+            ['label' => 'Blogs', 'target' => '#blogs'],
+            ['label' => 'Forms', 'target' => '#forms'],
+            ['label' => 'Import & Export', 'target' => '#import'],
+            ['label' => 'Logs', 'target' => '#logs'],
+            ['label' => 'Media', 'target' => '#media'],
+            ['label' => 'Menus', 'target' => '#menus'],
+            ['label' => 'Pages', 'target' => '#pages'],
+            ['label' => 'Search', 'target' => '#search'],
+            ['label' => 'SEO', 'target' => '#seo'],
+            ['label' => 'Settings', 'target' => '#settings'],
+            ['label' => 'Sitemap', 'target' => '#sitemap'],
+            ['label' => 'Speed', 'target' => '#performance'],
+            ['label' => 'Users', 'target' => '#users'],
+        ];
+        ?>
         <section class="a11y-detail-card calendar-table-card">
             <header class="calendar-card-header">
-                <div>
+                <div class="calendar-card-heading">
                     <h3>Event library</h3>
                     <p>Review upcoming and past events, update details, or remove outdated sessions.</p>
                 </div>
-                <div class="calendar-table-controls">
-                    <label class="calendar-search" for="calendarEventSearch">
-                        <span class="sr-only">Search events</span>
-                        <input type="search" id="calendarEventSearch" placeholder="Search events" data-calendar-filter="search">
-                    </label>
-                    <label class="calendar-sort" for="calendarEventSort">
-                        <span class="sr-only">Sort events</span>
-                        <select id="calendarEventSort" data-calendar-filter="sort">
-                            <option value="startAsc">Start date (ascending)</option>
-                            <option value="startDesc">Start date (descending)</option>
-                            <option value="titleAsc">Title (A–Z)</option>
-                            <option value="titleDesc">Title (Z–A)</option>
-                        </select>
-                    </label>
+                <div class="calendar-card-tools">
+                    <div class="calendar-table-controls">
+                        <label class="calendar-search" for="calendarEventSearch">
+                            <span class="sr-only">Search events</span>
+                            <span class="calendar-input-icon" aria-hidden="true">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="search" id="calendarEventSearch" placeholder="Search events" data-calendar-filter="search">
+                        </label>
+                        <label class="calendar-sort" for="calendarEventSort">
+                            <span class="sr-only">Sort events</span>
+                            <span class="calendar-input-icon" aria-hidden="true">
+                                <i class="fa-solid fa-arrow-down-wide-short"></i>
+                            </span>
+                            <select id="calendarEventSort" data-calendar-filter="sort">
+                                <option value="startAsc">Start date (ascending)</option>
+                                <option value="startDesc">Start date (descending)</option>
+                                <option value="titleAsc">Title (A–Z)</option>
+                                <option value="titleDesc">Title (Z–A)</option>
+                            </select>
+                            <span class="calendar-select-chevron" aria-hidden="true">
+                                <i class="fa-solid fa-angle-down"></i>
+                            </span>
+                        </label>
+                    </div>
+                    <nav class="calendar-card-meta" aria-label="Other modules">
+                        <span class="calendar-card-meta-label">Other modules</span>
+                        <ul class="calendar-module-links" role="list">
+                            <?php foreach ($otherModules as $module): ?>
+                                <li>
+                                    <a href="<?php echo htmlspecialchars($module['target'], ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?php echo htmlspecialchars($module['label'], ENT_QUOTES, 'UTF-8'); ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </nav>
                 </div>
             </header>
             <div class="calendar-table-wrapper">
