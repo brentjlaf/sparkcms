@@ -69,8 +69,6 @@
             title: state.events.get(String(eventId))?.title || 'Event',
             tickets_sold: metrics.tickets_sold ?? 0,
             revenue: metrics.revenue ?? 0,
-            checked_in: metrics.checked_in ?? 0,
-            attendance_rate: 0,
             status: state.events.get(String(eventId))?.status || 'draft',
         }));
     }
@@ -89,7 +87,6 @@
                 amount: order.amount,
                 status: String(order.status || 'paid').toLowerCase(),
                 ordered_at: order.ordered_at,
-                checked_in: order.checked_in ?? 0,
             };
         });
     }
@@ -273,7 +270,7 @@
         if (filtered.length === 0) {
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 7;
+            cell.colSpan = 4;
             cell.className = 'events-empty';
             cell.textContent = 'No events match the current filters.';
             row.appendChild(cell);
@@ -320,7 +317,7 @@
         if (!Array.isArray(state.orders) || state.orders.length === 0) {
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 7;
+            cell.colSpan = 6;
             cell.className = 'events-empty';
             cell.textContent = 'No orders found for the selected filters.';
             row.appendChild(cell);
@@ -337,14 +334,6 @@
                 <td>${formatCurrency(order.amount ?? 0)}</td>
                 <td><span class="events-status events-status--${order.status}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></td>
                 <td>${formatDate(order.ordered_at)}</td>
-                <td>
-                    <div class="events-order-checkin" data-order="${order.id}" data-total="${totalTickets}">
-                        <span>${order.checked_in ?? 0} / ${totalTickets}</span>
-                        <button type="button" class="events-action" data-order-checkin="${order.id}">
-                            <i class="fa-solid fa-user-check"></i><span class="sr-only">Update check-in</span>
-                        </button>
-                    </div>
-                </td>
             `;
             selectors.orders.body.appendChild(tr);
         });
@@ -359,7 +348,7 @@
         if (!Array.isArray(state.salesSummary) || state.salesSummary.length === 0) {
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 6;
+            cell.colSpan = 4;
             cell.className = 'events-empty';
             cell.textContent = 'No report data available yet.';
             row.appendChild(cell);
@@ -368,18 +357,12 @@
         }
         state.salesSummary.forEach((report) => {
             const row = document.createElement('tr');
-            const attendanceValue = Number.parseFloat(report.attendance_rate);
-            const attendance = Number.isFinite(attendanceValue)
-                ? `${attendanceValue % 1 === 0 ? attendanceValue.toFixed(0) : attendanceValue.toFixed(1)}%`
-                : '0%';
             row.innerHTML = `
                 <td>
                     <div class="events-table-title">${report.title || 'Untitled event'}</div>
                 </td>
                 <td>${report.tickets_sold ?? 0}</td>
                 <td>${formatCurrency(report.revenue ?? 0)}</td>
-                <td>${report.checked_in ?? 0}</td>
-                <td>${attendance}</td>
                 <td data-status></td>
             `;
             const statusCell = row.querySelector('[data-status]');
@@ -443,8 +426,6 @@
         form.querySelector('[name="start"]').value = eventData?.start ? eventData.start.substring(0, 16) : '';
         form.querySelector('[name="end"]').value = eventData?.end ? eventData.end.substring(0, 16) : '';
         form.querySelector(`[name="status"][value="${eventData?.status || 'draft'}"]`).checked = true;
-        const toggle = form.querySelector('[name="track_attendance"]');
-        toggle.checked = Boolean(eventData?.track_attendance);
         const editor = form.querySelector('[data-events-editor]');
         const target = form.querySelector('[data-events-editor-target]');
         if (editor && target) {
@@ -540,7 +521,6 @@
             const data = new FormData(form);
             const payload = Object.fromEntries(data.entries());
             payload.tickets = gatherTickets(form.querySelector('[data-events-tickets]'));
-            payload.track_attendance = form.querySelector('[name="track_attendance"]').checked;
             return fetchJSON('save_event', { method: 'POST', body: payload })
                 .then((response) => {
                     if (response?.event?.id) {
@@ -760,33 +740,6 @@
                 window.open(`${endpoint}?action=export_orders`, '_blank');
             });
         }
-        if (selectors.orders.body) {
-            selectors.orders.body.addEventListener('click', (event) => {
-                const button = event.target.closest('[data-order-checkin]');
-                if (!button) {
-                    return;
-                }
-                const wrapper = button.closest('[data-order]');
-                const orderId = button.dataset.orderCheckin;
-                const total = parseInt(wrapper?.dataset.total || '0', 10);
-                const current = parseInt(wrapper?.querySelector('span')?.textContent.split('/')[0] || '0', 10);
-                const nextValue = prompt('Tickets checked in', current);
-                if (nextValue === null) {
-                    return;
-                }
-                const checkedIn = Math.max(0, Math.min(parseInt(nextValue, 10) || 0, total));
-                fetchJSON('update_checkin', { method: 'POST', body: { order_id: orderId, checked_in: checkedIn } })
-                    .then(() => {
-                        showToast('Check-in updated.');
-                        refreshOrders();
-                        refreshReportsSummary();
-                        refreshOverview();
-                    })
-                    .catch(() => {
-                        showToast('Unable to update check-in.', 'error');
-                    });
-            });
-        }
         root.addEventListener('click', (event) => {
             if (event.target.matches('[data-events-open="event"]')) {
                 openEventModal(null);
@@ -796,13 +749,12 @@
         reportButtons.forEach((button) => {
             button.addEventListener('click', () => {
                 const type = button.dataset.eventsReportDownload;
-                const rows = [['Event', 'Tickets Sold', 'Revenue', 'Attendance Rate', 'Status']];
+                const rows = [['Event', 'Tickets Sold', 'Revenue', 'Status']];
                 state.salesSummary.forEach((item) => {
                     rows.push([
                         item.title,
                         item.tickets_sold,
                         item.revenue,
-                        `${item.attendance_rate ?? 0}%`,
                         item.status,
                     ]);
                 });

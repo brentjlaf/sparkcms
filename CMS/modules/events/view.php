@@ -168,12 +168,11 @@ $initialPayload = [
                             <th scope="col">Amount</th>
                             <th scope="col">Status</th>
                             <th scope="col">Order Date</th>
-                            <th scope="col">Checked In</th>
                         </tr>
                     </thead>
                     <tbody data-events-orders>
                         <tr>
-                            <td colspan="7" class="events-empty">Loading orders…</td>
+                            <td colspan="6" class="events-empty">Loading orders…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -184,11 +183,10 @@ $initialPayload = [
             <header class="events-section-header">
                 <div>
                     <h3 class="events-section-title" id="eventsReportsTitle">Reports</h3>
-                    <p class="events-section-description">Download ticket sales, attendance, and revenue summaries whenever you need them.</p>
+                    <p class="events-section-description">Download ticket sales and revenue summaries whenever you need them.</p>
                 </div>
                 <div class="events-section-actions">
                     <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report="tickets">Ticket sales report</button>
-                    <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report="attendance">Attendance report</button>
                     <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report="revenue">Revenue report</button>
                 </div>
             </header>
@@ -197,11 +195,6 @@ $initialPayload = [
                     <h4>Ticket sales</h4>
                     <p>Download totals per event and ticket type to share with finance.</p>
                     <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report-download="tickets">Export CSV</button>
-                </article>
-                <article class="events-report-card">
-                    <h4>Attendance</h4>
-                    <p>Review how many guests checked in versus tickets sold across events.</p>
-                    <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report-download="attendance">Export CSV</button>
                 </article>
                 <article class="events-report-card">
                     <h4>Revenue</h4>
@@ -216,14 +209,12 @@ $initialPayload = [
                             <th scope="col">Event</th>
                             <th scope="col">Tickets sold</th>
                             <th scope="col">Revenue</th>
-                            <th scope="col">Checked in</th>
-                            <th scope="col">Attendance rate</th>
                             <th scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody data-events-reports-table>
                         <tr>
-                            <td colspan="6" class="events-empty">Loading report data…</td>
+                            <td colspan="4" class="events-empty">Loading report data…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -279,10 +270,6 @@ $initialPayload = [
                             <span>Publish now</span>
                         </label>
                     </fieldset>
-                    <label class="events-toggle">
-                        <input type="checkbox" name="track_attendance">
-                        <span>Track attendance for this event</span>
-                    </label>
                 </div>
 
                 <section class="events-ticketing" aria-labelledby="eventsTicketsTitle">

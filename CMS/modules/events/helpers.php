@@ -111,13 +111,11 @@ if (!function_exists('events_normalize_event')) {
         $event['status'] = in_array($event['status'] ?? '', ['draft', 'published', 'ended'], true)
             ? $event['status']
             : 'draft';
-        $event['track_attendance'] = filter_var($event['track_attendance'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $event['tickets'] = array_values(array_map('events_normalize_ticket', $event['tickets'] ?? []));
         if (!isset($event['published_at']) && $event['status'] === 'published') {
             $event['published_at'] = $now;
         }
         $event['updated_at'] = $now;
-        $event['attended'] = max(0, (int) ($event['attended'] ?? 0));
         return $event;
     }
 }
@@ -168,8 +166,6 @@ if (!function_exists('events_compute_sales')) {
                 'tickets_sold' => 0,
                 'revenue' => 0.0,
                 'refunded' => 0.0,
-                'checked_in' => max(0, (int) ($event['attended'] ?? 0)),
-                'checked_in_orders' => 0,
             ];
         }
         foreach ($orders as $order) {
@@ -189,14 +185,8 @@ if (!function_exists('events_compute_sales')) {
                 $salesByEvent[$eventId]['tickets_sold'] += $quantity;
                 $salesByEvent[$eventId]['revenue'] += $amount;
             }
-            $salesByEvent[$eventId]['checked_in_orders'] += max(0, (int) ($order['checked_in'] ?? 0));
         }
 
-        foreach ($salesByEvent as $eventId => &$metrics) {
-            $metrics['checked_in'] = max($metrics['checked_in'], $metrics['checked_in_orders']);
-            unset($metrics['checked_in_orders']);
-        }
-        unset($metrics);
         return $salesByEvent;
     }
 }
