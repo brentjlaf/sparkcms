@@ -1276,6 +1276,196 @@ section.container-fluid {
 }
 
 
+/* Calendar Block */
+.calendar-block {
+    background: var(--white, #ffffff);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 18px 35px rgba(15, 23, 42, 0.06);
+    backdrop-filter: blur(4px);
+}
+
+.calendar-block__items {
+    display: grid;
+    gap: 1rem;
+}
+
+.calendar-block__item {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.875rem;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.9);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calendar-block__item:hover,
+.calendar-block__item:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.calendar-block__item--placeholder {
+    justify-content: center;
+    text-align: center;
+    border-style: dashed;
+    color: var(--gray-6, #6c757d);
+    background: rgba(248, 249, 250, 0.7);
+    box-shadow: none;
+}
+
+.calendar-block__date {
+    min-width: 4.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, var(--primary-1, #e3f2fd), var(--primary-3, #64b5f6));
+    color: var(--primary-6, #0d47a1);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+.calendar-block__date-month {
+    font-size: 0.85rem;
+}
+
+.calendar-block__date-day {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.calendar-block__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.calendar-block__title {
+    font-size: 1.125rem;
+    margin: 0;
+    color: var(--gray-9, #212529);
+}
+
+.calendar-block__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    font-size: 0.95rem;
+    color: var(--gray-7, #495057);
+}
+
+.calendar-block__meta-line {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.calendar-block__time {
+    font-weight: 500;
+}
+
+.calendar-block__category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(102, 126, 234, 0.12);
+    color: var(--primary-6, #0d47a1);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.calendar-block__description {
+    margin: 0;
+    color: var(--gray-7, #495057);
+}
+
+.calendar-block__empty {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background: rgba(248, 249, 252, 0.9);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    color: var(--gray-7, #495057);
+}
+
+.calendar-block--layout-cards .calendar-block__items {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.calendar-block--layout-cards .calendar-block__item {
+    flex-direction: column;
+}
+
+.calendar-block--layout-cards .calendar-block__date {
+    align-self: flex-start;
+}
+
+.calendar-block--layout-compact .calendar-block__item {
+    padding: 0.75rem 1rem;
+}
+
+.calendar-block--layout-compact .calendar-block__date {
+    min-width: 3.5rem;
+    padding: 0.5rem 0.35rem;
+    border-radius: 0.65rem;
+}
+
+.calendar-block--layout-compact .calendar-block__title {
+    font-size: 1rem;
+}
+
+.calendar-block--layout-compact .calendar-block__meta {
+    font-size: 0.9rem;
+}
+
+.calendar-block--layout-compact .calendar-block__description {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .calendar-block {
+        padding: 1.25rem;
+    }
+
+    .calendar-block__item {
+        flex-direction: column;
+    }
+
+    .calendar-block__date {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 0.75rem;
+        background: transparent;
+        color: var(--gray-7, #495057);
+        padding: 0;
+    }
+
+    .calendar-block__date-month {
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+    }
+
+    .calendar-block__date-day {
+        font-size: 1.5rem;
+        color: var(--primary-5, #1565c0);
+    }
+}
+
+
 .rich-text {
     width: 100%;
 }
