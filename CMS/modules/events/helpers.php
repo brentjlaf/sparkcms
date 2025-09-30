@@ -183,6 +183,18 @@ if (!function_exists('events_find_event')) {
     }
 }
 
+if (!function_exists('events_find_order')) {
+    function events_find_order(array $orders, $id): ?array
+    {
+        foreach ($orders as $order) {
+            if ((string) ($order['id'] ?? '') === (string) $id) {
+                return $order;
+            }
+        }
+        return null;
+    }
+}
+
 if (!function_exists('events_normalize_ticket')) {
     function events_normalize_ticket(array $ticket): array
     {
@@ -282,6 +294,217 @@ if (!function_exists('events_ticket_price_lookup')) {
             ];
         }
         return $lookup;
+    }
+}
+
+if (!function_exists('events_event_ticket_options')) {
+    function events_event_ticket_options(?array $event): array
+    {
+        if (!is_array($event)) {
+            return [];
+        }
+        $options = [];
+        foreach ($event['tickets'] ?? [] as $ticket) {
+            if (!is_array($ticket)) {
+                continue;
+            }
+            $ticketId = (string) ($ticket['id'] ?? '');
+            if ($ticketId === '') {
+                continue;
+            }
+            $options[] = [
+                'ticket_id' => $ticketId,
+                'name' => (string) ($ticket['name'] ?? 'Ticket'),
+                'price' => (float) ($ticket['price'] ?? 0),
+            ];
+        }
+        usort($options, static function ($a, $b) {
+            return strcasecmp($a['name'], $b['name']);
+        });
+        return array_values($options);
+    }
+}
+
+if (!function_exists('events_normalize_order_tickets')) {
+    function events_normalize_order_tickets(array $tickets, array $events, string $eventId): array
+    {
+        $lookup = [];
+        if ($eventId !== '') {
+            $event = events_find_event($events, $eventId);
+            if ($event) {
+                $lookup = events_ticket_price_lookup($event);
+            }
+        }
+        $normalized = [];
+        foreach ($tickets as $ticket) {
+            if (!is_array($ticket)) {
+                continue;
+            }
+            $ticketId = (string) ($ticket['ticket_id'] ?? '');
+            if ($ticketId === '') {
+                continue;
+            }
+            $quantity = max(0, (int) ($ticket['quantity'] ?? 0));
+            $price = isset($ticket['price']) ? (float) $ticket['price'] : ($lookup[$ticketId]['price'] ?? 0);
+            if ($quantity === 0) {
+                continue;
+            }
+            if (!isset($normalized[$ticketId])) {
+                $normalized[$ticketId] = [
+                    'ticket_id' => $ticketId,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                ];
+            } else {
+                $normalized[$ticketId]['quantity'] += $quantity;
+                $normalized[$ticketId]['price'] = $price;
+            }
+        }
+        return array_values($normalized);
+    }
+}
+
+if (!function_exists('events_normalize_order')) {
+    function events_normalize_order(array $order, array $events, ?array $original = null): array
+    {
+        $id = isset($order['id']) ? trim((string) $order['id']) : '';
+        if ($id === '' && $original) {
+            $id = (string) ($original['id'] ?? '');
+        }
+        $order['id'] = $id;
+        $eventId = isset($order['event_id']) ? trim((string) $order['event_id']) : '';
+        if ($eventId === '' && $original) {
+            $eventId = (string) ($original['event_id'] ?? '');
+        }
+        $order['event_id'] = $eventId;
+        $order['buyer_name'] = trim((string) ($order['buyer_name'] ?? ($original['buyer_name'] ?? '')));
+        $status = strtolower((string) ($order['status'] ?? ($original['status'] ?? 'paid')));
+        $allowed = ['paid', 'pending', 'refunded'];
+        if (!in_array($status, $allowed, true)) {
+            $status = 'paid';
+        }
+        $order['status'] = $status;
+        $orderedAt = $order['ordered_at'] ?? ($original['ordered_at'] ?? '');
+        if ($orderedAt !== '') {
+            $timestamp = strtotime((string) $orderedAt);
+            if ($timestamp !== false) {
+                $order['ordered_at'] = gmdate('c', $timestamp);
+            } elseif ($original && isset($original['ordered_at'])) {
+                $order['ordered_at'] = $original['ordered_at'];
+            }
+        } elseif ($original && isset($original['ordered_at'])) {
+            $order['ordered_at'] = $original['ordered_at'];
+        } else {
+            $order['ordered_at'] = '';
+        }
+
+        $order['tickets'] = events_normalize_order_tickets($order['tickets'] ?? [], $events, $eventId);
+
+        $amount = 0.0;
+        foreach ($order['tickets'] as $ticket) {
+            $amount += (float) $ticket['price'] * (int) $ticket['quantity'];
+        }
+        $order['amount'] = round($amount, 2);
+
+        $now = gmdate('c');
+        if ($original && isset($original['created_at'])) {
+            $order['created_at'] = $original['created_at'];
+        } elseif (empty($order['created_at'])) {
+            $order['created_at'] = $now;
+        }
+        $order['updated_at'] = $now;
+
+        return $order;
+    }
+}
+
+if (!function_exists('events_order_line_items')) {
+    function events_order_line_items(array $order, array $events): array
+    {
+        $event = events_find_event($events, $order['event_id'] ?? '');
+        $lookup = $event ? events_ticket_price_lookup($event) : [];
+        $lines = [];
+        foreach ($order['tickets'] ?? [] as $ticket) {
+            if (!is_array($ticket)) {
+                continue;
+            }
+            $ticketId = (string) ($ticket['ticket_id'] ?? '');
+            if ($ticketId === '') {
+                continue;
+            }
+            $quantity = max(0, (int) ($ticket['quantity'] ?? 0));
+            $price = (float) ($ticket['price'] ?? 0);
+            if ($quantity === 0) {
+                continue;
+            }
+            $name = $lookup[$ticketId]['name'] ?? ($ticket['name'] ?? 'Ticket');
+            if ($price === 0 && isset($lookup[$ticketId]['price'])) {
+                $price = (float) $lookup[$ticketId]['price'];
+            }
+            $lines[] = [
+                'ticket_id' => $ticketId,
+                'name' => $name,
+                'price' => round($price, 2),
+                'quantity' => $quantity,
+                'subtotal' => round($price * $quantity, 2),
+            ];
+        }
+        return $lines;
+    }
+}
+
+if (!function_exists('events_order_summary')) {
+    function events_order_summary(array $order, array $events): array
+    {
+        $lines = events_order_line_items($order, $events);
+        $tickets = 0;
+        $amount = 0.0;
+        foreach ($lines as $line) {
+            $tickets += (int) $line['quantity'];
+            $amount += (float) $line['subtotal'];
+        }
+        $status = strtolower((string) ($order['status'] ?? 'paid'));
+        $event = events_find_event($events, $order['event_id'] ?? '');
+        return [
+            'id' => (string) ($order['id'] ?? ''),
+            'event_id' => (string) ($order['event_id'] ?? ''),
+            'event' => $event['title'] ?? 'Event',
+            'buyer_name' => (string) ($order['buyer_name'] ?? ''),
+            'tickets' => $tickets,
+            'amount' => round($amount, 2),
+            'status' => $status,
+            'ordered_at' => (string) ($order['ordered_at'] ?? ''),
+            'line_items' => $lines,
+        ];
+    }
+}
+
+if (!function_exists('events_order_detail')) {
+    function events_order_detail(array $order, array $events): array
+    {
+        $summary = events_order_summary($order, $events);
+        $event = events_find_event($events, $summary['event_id']);
+        $subtotal = (float) $summary['amount'];
+        $isRefunded = $summary['status'] === 'refunded';
+        $refunds = $isRefunded ? $subtotal : 0.0;
+        return [
+            'id' => $summary['id'],
+            'event_id' => $summary['event_id'],
+            'event' => [
+                'id' => $event['id'] ?? '',
+                'title' => $event['title'] ?? ($summary['event'] ?? 'Event'),
+            ],
+            'buyer_name' => $summary['buyer_name'],
+            'status' => $summary['status'],
+            'ordered_at' => $summary['ordered_at'],
+            'line_items' => $summary['line_items'],
+            'totals' => [
+                'subtotal' => round($subtotal, 2),
+                'refunds' => round($refunds, 2),
+                'net' => round($subtotal - $refunds, 2),
+            ],
+            'available_tickets' => events_event_ticket_options($event),
+        ];
     }
 }
 

@@ -34,6 +34,31 @@
         },
         reports: {
             tableBody: root.querySelector('[data-events-reports-table]'),
+            metrics: {
+                container: root.querySelector('[data-events-report-metrics]'),
+                revenue: root.querySelector('[data-events-report-metric="revenue"]'),
+                averageOrder: root.querySelector('[data-events-report-metric="average_order"]'),
+                refunds: root.querySelector('[data-events-report-metric="refunds"]'),
+            },
+            insights: root.querySelector('[data-events-insights]'),
+            downloads: root.querySelector('[data-events-downloads]'),
+        },
+        orderEditor: {
+            modal: document.querySelector('[data-events-modal="order"]'),
+            form: document.querySelector('[data-events-form="order"]'),
+            title: document.querySelector('[data-events-order-title]'),
+            event: document.querySelector('[data-events-order-event]'),
+            status: document.querySelector('[data-events-order-status]'),
+            lines: document.querySelector('[data-events-order-lines]'),
+            summary: document.querySelector('[data-events-order-summary]'),
+            totals: {
+                subtotal: document.querySelector('[data-order-total="subtotal"]'),
+                refunds: document.querySelector('[data-order-total="refunds"]'),
+                net: document.querySelector('[data-order-total="net"]'),
+            },
+            breakdown: document.querySelector('[data-events-order-breakdown]'),
+            addSelect: document.querySelector('[data-events-order-add-select]'),
+            addButton: document.querySelector('[data-events-order-add]'),
         },
         modal: document.querySelector('[data-events-modal="event"]'),
         confirmModal: document.querySelector('[data-events-modal="confirm"]'),
@@ -71,6 +96,9 @@
             loading: false,
             currentSetter: null,
         },
+        orderEditor: {
+            detail: null,
+        },
     };
 
     if (Array.isArray(initialPayload.events)) {
@@ -89,26 +117,14 @@
             title: state.events.get(String(eventId))?.title || 'Event',
             tickets_sold: metrics.tickets_sold ?? 0,
             revenue: metrics.revenue ?? 0,
+            refunded: metrics.refunded ?? 0,
             status: state.events.get(String(eventId))?.status || 'draft',
         }));
     }
     if (Array.isArray(initialPayload.orders)) {
-        state.orders = initialPayload.orders.map((order) => {
-            const event = state.events.get(String(order.event_id || ''));
-            const tickets = Array.isArray(order.tickets)
-                ? order.tickets.reduce((sum, ticket) => sum + (parseInt(ticket.quantity, 10) || 0), 0)
-                : 0;
-            return {
-                id: order.id,
-                event: event ? event.title : '',
-                event_id: order.event_id,
-                buyer_name: order.buyer_name,
-                tickets,
-                amount: order.amount,
-                status: String(order.status || 'paid').toLowerCase(),
-                ordered_at: order.ordered_at,
-            };
-        });
+        state.orders = initialPayload.orders
+            .map((order) => normalizeOrderRow(order))
+            .filter((order) => order !== null);
     }
 
     function formatDate(value) {
@@ -134,6 +150,30 @@
             currency: 'USD',
             minimumFractionDigits: 2,
         }).format(Number(value || 0));
+    }
+
+    function toLocalDateTimeInput(value) {
+        if (!value) {
+            return '';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return '';
+        }
+        const offset = date.getTimezoneOffset();
+        const local = new Date(date.getTime() - offset * 60000);
+        return local.toISOString().slice(0, 16);
+    }
+
+    function fromLocalDateTimeInput(value) {
+        if (!value) {
+            return '';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return '';
+        }
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
     }
 
     function escapeHtml(value) {
@@ -167,6 +207,84 @@
             .slice()
             .filter((item) => item && item.id && item.name)
             .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' }));
+    }
+
+    function normalizeOrderRow(order) {
+        if (!order || typeof order !== 'object') {
+            return null;
+        }
+        const id = String(order.id || '').trim();
+        if (id === '') {
+            return null;
+        }
+        const eventId = String(order.event_id || '').trim();
+        const event = eventId ? state.events.get(eventId) : null;
+        const ticketLookup = (() => {
+            if (!event || !Array.isArray(event.tickets)) {
+                return new Map();
+            }
+            return new Map(
+                event.tickets
+                    .filter((ticket) => ticket && ticket.id)
+                    .map((ticket) => [String(ticket.id), ticket]),
+            );
+        })();
+
+        let lineItems = [];
+        if (Array.isArray(order.line_items) && order.line_items.length > 0) {
+            lineItems = order.line_items;
+        } else if (Array.isArray(order.tickets)) {
+            lineItems = order.tickets.map((ticket) => ({
+                ticket_id: ticket.ticket_id,
+                quantity: ticket.quantity,
+                price: ticket.price,
+            }));
+        }
+
+        const normalizedLines = [];
+        let ticketsTotal = 0;
+        let amountTotal = 0;
+
+        lineItems.forEach((item) => {
+            if (!item || typeof item !== 'object') {
+                return;
+            }
+            const ticketId = String(item.ticket_id || '').trim();
+            if (ticketId === '') {
+                return;
+            }
+            const ticketInfo = ticketLookup.get(ticketId) || {};
+            const name = item.name || ticketInfo.name || 'Ticket';
+            const price = Math.max(0, Number.parseFloat(item.price ?? ticketInfo.price ?? 0));
+            const quantity = Math.max(0, Number.parseInt(item.quantity ?? 0, 10));
+            const subtotal = price * quantity;
+            ticketsTotal += quantity;
+            amountTotal += subtotal;
+            normalizedLines.push({
+                ticket_id: ticketId,
+                name,
+                price,
+                quantity,
+                subtotal,
+            });
+        });
+
+        const status = String(order.status || 'paid').toLowerCase();
+        const orderedAt = order.ordered_at || '';
+        const fallbackAmount = Number(order.amount || 0) || 0;
+        const computedAmount = Number.isFinite(amountTotal) ? amountTotal : 0;
+
+        return {
+            id,
+            event_id: eventId,
+            event: event ? event.title || 'Untitled event' : String(order.event || ''),
+            buyer_name: order.buyer_name || '',
+            tickets: ticketsTotal,
+            amount: computedAmount || fallbackAmount,
+            status,
+            ordered_at: orderedAt,
+            line_items: normalizedLines,
+        };
     }
 
     function getCategoryOptionsContainer() {
@@ -689,7 +807,7 @@
         if (!Array.isArray(state.orders) || state.orders.length === 0) {
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 6;
+            cell.colSpan = 8;
             cell.className = 'events-empty';
             cell.textContent = 'No orders found for the selected filters.';
             row.appendChild(cell);
@@ -698,15 +816,32 @@
         }
         state.orders.forEach((order) => {
             const tr = document.createElement('tr');
-            const totalTickets = order.tickets ?? 0;
+            const totalTickets = typeof order.tickets === 'number'
+                ? order.tickets
+                : Array.isArray(order.line_items)
+                    ? order.line_items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+                    : 0;
             tr.innerHTML = `
-                <td>${order.id}</td>
-                <td>${order.buyer_name || ''}</td>
+                <td>${escapeHtml(order.id || '')}</td>
+                <td>
+                    <div class="events-table-title">${escapeHtml(order.event || 'Event')}</div>
+                    ${order.event_id ? `<div class="events-table-sub">#${escapeHtml(order.event_id)}</div>` : ''}
+                </td>
+                <td>${escapeHtml(order.buyer_name || '')}</td>
                 <td>${totalTickets}</td>
                 <td>${formatCurrency(order.amount ?? 0)}</td>
-                <td><span class="events-status events-status--${order.status}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></td>
+                <td data-status></td>
                 <td>${formatDate(order.ordered_at)}</td>
+                <td class="is-actions">
+                    <button type="button" class="events-order-manage" data-events-order-manage data-id="${escapeAttribute(order.id)}">
+                        Manage
+                    </button>
+                </td>
             `;
+            const statusCell = tr.querySelector('[data-status]');
+            if (statusCell) {
+                statusCell.appendChild(createStatusBadge(order.status));
+            }
             selectors.orders.body.appendChild(tr);
         });
     }
@@ -720,7 +855,7 @@
         if (!Array.isArray(state.salesSummary) || state.salesSummary.length === 0) {
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 4;
+            cell.colSpan = 5;
             cell.className = 'events-empty';
             cell.textContent = 'No report data available yet.';
             row.appendChild(cell);
@@ -731,10 +866,11 @@
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>
-                    <div class="events-table-title">${report.title || 'Untitled event'}</div>
+                    <div class="events-table-title">${escapeHtml(report.title || 'Untitled event')}</div>
                 </td>
                 <td>${report.tickets_sold ?? 0}</td>
                 <td>${formatCurrency(report.revenue ?? 0)}</td>
+                <td>${formatCurrency(report.refunded ?? 0)}</td>
                 <td data-status></td>
             `;
             const statusCell = row.querySelector('[data-status]');
@@ -743,6 +879,626 @@
             }
             table.appendChild(row);
         });
+    }
+
+    function collectOrderLines() {
+        const container = selectors.orderEditor.lines;
+        if (!container) {
+            return [];
+        }
+        const rows = Array.from(container.querySelectorAll('[data-order-line]'));
+        return rows.map((row) => {
+            updateLineTotal(row);
+            const priceInput = row.querySelector('[data-order-line-price]');
+            const quantityInput = row.querySelector('[data-order-line-quantity]');
+            let price = Number.parseFloat(priceInput?.value ?? '0');
+            if (!Number.isFinite(price) || price < 0) {
+                price = 0;
+            }
+            let quantity = Number.parseInt(quantityInput?.value ?? '0', 10);
+            if (!Number.isFinite(quantity) || quantity < 0) {
+                quantity = 0;
+            }
+            return {
+                ticket_id: row.dataset.ticketId || '',
+                name: row.dataset.ticketName || 'Ticket',
+                price,
+                quantity,
+                subtotal: price * quantity,
+            };
+        });
+    }
+
+    function updateLineTotal(row) {
+        if (!row) {
+            return;
+        }
+        const priceInput = row.querySelector('[data-order-line-price]');
+        const quantityInput = row.querySelector('[data-order-line-quantity]');
+        let price = Number.parseFloat(priceInput?.value ?? '0');
+        if (!Number.isFinite(price) || price < 0) {
+            price = 0;
+        }
+        let quantity = Number.parseInt(quantityInput?.value ?? '0', 10);
+        if (!Number.isFinite(quantity) || quantity < 0) {
+            quantity = 0;
+        }
+        if (priceInput) {
+            priceInput.value = price.toFixed(2);
+        }
+        if (quantityInput) {
+            quantityInput.value = String(quantity);
+        }
+        const total = price * quantity;
+        const totalEl = row.querySelector('[data-order-line-total]');
+        if (totalEl) {
+            totalEl.textContent = formatCurrency(total);
+        }
+    }
+
+    function createOrderLine(line) {
+        const row = document.createElement('div');
+        row.className = 'events-order-line';
+        row.dataset.orderLine = 'true';
+        row.dataset.ticketId = line.ticket_id || '';
+        row.dataset.ticketName = line.name || 'Ticket';
+        row.innerHTML = `
+            <div class="events-order-line-header">
+                <div>
+                    <div class="events-order-line-name">${escapeHtml(line.name || 'Ticket')}</div>
+                    <div class="events-order-line-meta">ID ${escapeHtml(line.ticket_id || '')}</div>
+                </div>
+                <button type="button" class="events-order-line-remove" data-order-line-remove>&times;<span class="sr-only">Remove ticket</span></button>
+            </div>
+            <div class="events-order-line-grid">
+                <label class="events-order-line-field">
+                    <span>Price</span>
+                    <input type="number" min="0" step="0.01" value="${Number(line.price || 0).toFixed(2)}" data-order-line-price>
+                </label>
+                <label class="events-order-line-field">
+                    <span>Quantity</span>
+                    <input type="number" min="0" step="1" value="${Math.max(0, Number.parseInt(line.quantity ?? 0, 10) || 0)}" data-order-line-quantity>
+                </label>
+                <div class="events-order-line-total" data-order-line-total>${formatCurrency((line.price || 0) * (line.quantity || 0))}</div>
+            </div>
+        `;
+        return row;
+    }
+
+    function renderOrderLines(lines) {
+        const container = selectors.orderEditor.lines;
+        if (!container) {
+            return;
+        }
+        container.innerHTML = '';
+        if (!Array.isArray(lines) || lines.length === 0) {
+            container.innerHTML = '<p class="events-order-empty">No tickets on this order yet.</p>';
+            return;
+        }
+        lines.forEach((line) => {
+            const row = createOrderLine(line);
+            container.appendChild(row);
+            updateLineTotal(row);
+        });
+    }
+
+    function updateOrderAddOptions(detail = state.orderEditor.detail) {
+        const select = selectors.orderEditor.addSelect;
+        if (!select) {
+            return;
+        }
+        select.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Choose ticket type';
+        select.appendChild(placeholder);
+        const available = detail?.available_tickets;
+        if (!Array.isArray(available) || available.length === 0) {
+            select.disabled = true;
+            if (selectors.orderEditor.addButton) {
+                selectors.orderEditor.addButton.disabled = true;
+            }
+            return;
+        }
+        const used = new Set();
+        if (selectors.orderEditor.lines) {
+            selectors.orderEditor.lines.querySelectorAll('[data-order-line]').forEach((row) => {
+                used.add(row.dataset.ticketId || '');
+            });
+        }
+        available.forEach((ticket) => {
+            const ticketId = String(ticket.ticket_id || '').trim();
+            if (ticketId === '' || used.has(ticketId)) {
+                return;
+            }
+            const option = document.createElement('option');
+            option.value = ticketId;
+            option.textContent = `${ticket.name || 'Ticket'} — ${formatCurrency(ticket.price || 0)}`;
+            select.appendChild(option);
+        });
+        select.disabled = select.options.length <= 1;
+        if (selectors.orderEditor.addButton) {
+            selectors.orderEditor.addButton.disabled = select.disabled;
+        }
+        if (!select.disabled) {
+            select.value = '';
+        }
+    }
+
+    function updateOrderSummary() {
+        const totals = selectors.orderEditor.totals;
+        const statusValue = selectors.orderEditor.status?.value || 'paid';
+        const lines = collectOrderLines();
+        const subtotal = lines.reduce((sum, line) => sum + (line.price * line.quantity), 0);
+        const refunds = statusValue === 'refunded' ? subtotal : 0;
+        const net = subtotal - refunds;
+        if (totals.subtotal) {
+            totals.subtotal.textContent = formatCurrency(subtotal);
+        }
+        if (totals.refunds) {
+            totals.refunds.textContent = formatCurrency(refunds);
+        }
+        if (totals.net) {
+            totals.net.textContent = formatCurrency(net);
+        }
+        const breakdown = selectors.orderEditor.breakdown;
+        if (breakdown) {
+            breakdown.innerHTML = '';
+            if (lines.length === 0) {
+                const empty = document.createElement('p');
+                empty.className = 'events-order-empty';
+                empty.textContent = 'Ticket breakdown will appear here.';
+                breakdown.appendChild(empty);
+            } else {
+                const list = document.createElement('ul');
+                list.className = 'events-order-breakdown-list';
+                lines.forEach((line) => {
+                    const item = document.createElement('li');
+                    item.className = 'events-order-breakdown-item';
+                    item.innerHTML = `
+                        <span class="events-order-breakdown-name">${escapeHtml(line.name || 'Ticket')}</span>
+                        <span class="events-order-breakdown-meta">${line.quantity} × ${formatCurrency(line.price)} = ${formatCurrency(line.price * line.quantity)}</span>
+                    `;
+                    list.appendChild(item);
+                });
+                breakdown.appendChild(list);
+            }
+        }
+        return { subtotal, refunds, net, lines };
+    }
+
+    function fillOrderEditor(detail) {
+        const form = selectors.orderEditor.form;
+        if (!form || !detail) {
+            return;
+        }
+        state.orderEditor.detail = {
+            ...detail,
+            available_tickets: Array.isArray(detail.available_tickets) ? detail.available_tickets : [],
+        };
+        const idInput = form.querySelector('[name="id"]');
+        if (idInput) {
+            idInput.value = detail.id || '';
+        }
+        const eventIdInput = form.querySelector('[name="event_id"]');
+        if (eventIdInput) {
+            eventIdInput.value = detail.event_id || '';
+        }
+        const buyerInput = form.querySelector('[name="buyer_name"]');
+        if (buyerInput) {
+            buyerInput.value = detail.buyer_name || '';
+        }
+        const orderedAtInput = form.querySelector('[name="ordered_at"]');
+        if (orderedAtInput) {
+            orderedAtInput.value = toLocalDateTimeInput(detail.ordered_at);
+        }
+        if (selectors.orderEditor.status) {
+            selectors.orderEditor.status.value = detail.status || 'paid';
+        }
+        if (selectors.orderEditor.title) {
+            selectors.orderEditor.title.textContent = detail.id ? `Order ${detail.id}` : 'Order';
+        }
+        if (selectors.orderEditor.event) {
+            selectors.orderEditor.event.textContent = detail.event?.title || 'Event';
+        }
+        renderOrderLines(Array.isArray(detail.line_items) ? detail.line_items : []);
+        updateOrderAddOptions(state.orderEditor.detail);
+        updateOrderSummary();
+    }
+
+    function resetOrderEditor() {
+        state.orderEditor.detail = null;
+        if (selectors.orderEditor.form) {
+            selectors.orderEditor.form.reset();
+            const idInput = selectors.orderEditor.form.querySelector('[name="id"]');
+            if (idInput) {
+                idInput.value = '';
+            }
+            const eventIdInput = selectors.orderEditor.form.querySelector('[name="event_id"]');
+            if (eventIdInput) {
+                eventIdInput.value = '';
+            }
+        }
+        if (selectors.orderEditor.lines) {
+            selectors.orderEditor.lines.innerHTML = '<p class="events-order-empty">No tickets on this order yet.</p>';
+        }
+        if (selectors.orderEditor.breakdown) {
+            selectors.orderEditor.breakdown.innerHTML = '<p class="events-order-empty">Ticket breakdown will appear here.</p>';
+        }
+        if (selectors.orderEditor.totals) {
+            if (selectors.orderEditor.totals.subtotal) {
+                selectors.orderEditor.totals.subtotal.textContent = formatCurrency(0);
+            }
+            if (selectors.orderEditor.totals.refunds) {
+                selectors.orderEditor.totals.refunds.textContent = formatCurrency(0);
+            }
+            if (selectors.orderEditor.totals.net) {
+                selectors.orderEditor.totals.net.textContent = formatCurrency(0);
+            }
+        }
+        if (selectors.orderEditor.addSelect) {
+            selectors.orderEditor.addSelect.innerHTML = '';
+            selectors.orderEditor.addSelect.disabled = true;
+        }
+        if (selectors.orderEditor.addButton) {
+            selectors.orderEditor.addButton.disabled = true;
+        }
+        if (selectors.orderEditor.title) {
+            selectors.orderEditor.title.textContent = 'Order';
+        }
+        if (selectors.orderEditor.event) {
+            selectors.orderEditor.event.textContent = '';
+        }
+    }
+
+    function addOrderLine() {
+        const detail = state.orderEditor.detail;
+        if (!detail) {
+            return;
+        }
+        const select = selectors.orderEditor.addSelect;
+        if (!select) {
+            return;
+        }
+        let ticketId = select.value;
+        if (!ticketId && select.options.length > 1) {
+            ticketId = select.options[1].value;
+            select.value = ticketId;
+        }
+        if (!ticketId) {
+            showToast('No additional ticket types available.', 'error');
+            return;
+        }
+        const ticket = detail.available_tickets.find((item) => String(item.ticket_id) === ticketId);
+        if (!ticket) {
+            showToast('Ticket type not found.', 'error');
+            return;
+        }
+        const container = selectors.orderEditor.lines;
+        if (!container) {
+            return;
+        }
+        const existing = container.querySelector(`[data-order-line][data-ticket-id="${ticketId}"]`);
+        if (existing) {
+            const quantityInput = existing.querySelector('[data-order-line-quantity]');
+            if (quantityInput) {
+                quantityInput.value = String(Number.parseInt(quantityInput.value || '0', 10) + 1);
+                updateLineTotal(existing);
+                updateOrderSummary();
+                updateOrderAddOptions(detail);
+                select.value = '';
+            }
+            return;
+        }
+        if (container.querySelector('.events-order-empty')) {
+            container.innerHTML = '';
+        }
+        const row = createOrderLine({
+            ticket_id: ticket.ticket_id,
+            name: ticket.name,
+            price: ticket.price,
+            quantity: 1,
+        });
+        container.appendChild(row);
+        updateLineTotal(row);
+        updateOrderSummary();
+        updateOrderAddOptions(detail);
+        select.value = '';
+    }
+
+    function openOrderModal(orderId) {
+        const modal = selectors.orderEditor.modal;
+        if (!modal || !orderId) {
+            return;
+        }
+        fetchJSON('get_order', { params: { id: orderId } })
+            .then((response) => {
+                if (!response || !response.order) {
+                    throw new Error('Order not found');
+                }
+                fillOrderEditor(response.order);
+                openModal(modal);
+            })
+            .catch(() => {
+                showToast('Unable to load order.', 'error');
+            });
+    }
+
+    function serializeOrderForm() {
+        const form = selectors.orderEditor.form;
+        if (!form) {
+            return null;
+        }
+        updateOrderSummary();
+        const formData = new FormData(form);
+        const id = String(formData.get('id') || '').trim();
+        if (id === '') {
+            showToast('Missing order information.', 'error');
+            return null;
+        }
+        const buyerName = String(formData.get('buyer_name') || '').trim();
+        if (buyerName === '') {
+            showToast('Buyer name is required.', 'error');
+            return null;
+        }
+        const status = String(formData.get('status') || 'paid').toLowerCase();
+        const orderedAtRaw = String(formData.get('ordered_at') || '').trim();
+        const orderedAt = orderedAtRaw ? fromLocalDateTimeInput(orderedAtRaw) : '';
+        const lines = collectOrderLines().filter((line) => line.ticket_id && line.quantity > 0);
+        const tickets = lines.map((line) => {
+            const priceValue = Number.isFinite(line.price) ? line.price : 0;
+            return {
+                ticket_id: line.ticket_id,
+                quantity: line.quantity,
+                price: Number(priceValue.toFixed(2)),
+            };
+        });
+
+        return {
+            id,
+            event_id: String(formData.get('event_id') || '').trim(),
+            buyer_name: buyerName,
+            status,
+            ordered_at,
+            tickets,
+        };
+    }
+
+    function computeRevenueMetrics() {
+        const totalRevenue = state.salesSummary.reduce((sum, report) => sum + (Number(report.revenue) || 0), 0);
+        const refunds = state.salesSummary.reduce((sum, report) => sum + (Number(report.refunded) || 0), 0);
+        const totalOrders = state.orders.length;
+        let paidTotal = 0;
+        let paidCount = 0;
+        let refundOrders = 0;
+        state.orders.forEach((order) => {
+            const amount = Number(order.amount || 0);
+            if (order.status === 'refunded') {
+                refundOrders += 1;
+            } else if (order.status === 'paid') {
+                paidTotal += amount;
+                paidCount += 1;
+            }
+        });
+        const averageOrder = paidCount > 0 ? paidTotal / paidCount : 0;
+        return {
+            totalRevenue,
+            netRevenue: totalRevenue - refunds,
+            totalOrders,
+            averageOrder,
+            paidOrdersCount: paidCount,
+            refundsTotal: refunds,
+            refundOrders,
+        };
+    }
+
+    function renderReportMetrics(metrics) {
+        const metricEls = selectors.reports.metrics;
+        if (!metricEls) {
+            return;
+        }
+        const revenueEl = metricEls.revenue;
+        if (revenueEl) {
+            const value = revenueEl.querySelector('[data-value]');
+            const meta = revenueEl.querySelector('[data-meta]');
+            if (value) {
+                value.textContent = formatCurrency(metrics.totalRevenue);
+            }
+            if (meta) {
+                const netText = formatCurrency(metrics.netRevenue);
+                const ordersText = metrics.totalOrders === 1 ? '1 order' : `${metrics.totalOrders} orders`;
+                meta.textContent = `${ordersText} · Net ${netText}`;
+            }
+        }
+        const averageEl = metricEls.averageOrder;
+        if (averageEl) {
+            const value = averageEl.querySelector('[data-value]');
+            const meta = averageEl.querySelector('[data-meta]');
+            if (value) {
+                value.textContent = formatCurrency(metrics.averageOrder);
+            }
+            if (meta) {
+                meta.textContent = metrics.paidOrdersCount > 0
+                    ? (metrics.paidOrdersCount === 1 ? '1 paid order' : `${metrics.paidOrdersCount} paid orders`)
+                    : 'No paid orders yet.';
+            }
+        }
+        const refundsEl = metricEls.refunds;
+        if (refundsEl) {
+            const value = refundsEl.querySelector('[data-value]');
+            const meta = refundsEl.querySelector('[data-meta]');
+            if (value) {
+                value.textContent = formatCurrency(metrics.refundsTotal);
+            }
+            if (meta) {
+                meta.textContent = metrics.refundOrders
+                    ? `${metrics.refundOrders} refunded ${metrics.refundOrders === 1 ? 'order' : 'orders'}.`
+                    : 'No refunds issued.';
+            }
+        }
+    }
+
+    function computeInsights() {
+        const topEvent = [...state.salesSummary]
+            .filter((item) => (Number(item.revenue) || 0) > 0)
+            .sort((a, b) => (Number(b.revenue) || 0) - (Number(a.revenue) || 0))[0] || null;
+        const ticketTotals = new Map();
+        state.orders.forEach((order) => {
+            (order.line_items || []).forEach((line) => {
+                if (!line || !line.ticket_id) {
+                    return;
+                }
+                const key = String(line.ticket_id);
+                const quantity = Number(line.quantity || 0);
+                if (!ticketTotals.has(key)) {
+                    ticketTotals.set(key, {
+                        id: key,
+                        name: line.name || key,
+                        quantity: 0,
+                    });
+                }
+                ticketTotals.get(key).quantity += quantity;
+            });
+        });
+        const topTicket = [...ticketTotals.values()]
+            .filter((item) => item.quantity > 0)
+            .sort((a, b) => b.quantity - a.quantity)[0] || null;
+        const buyerTotals = new Map();
+        state.orders.forEach((order) => {
+            if (order.status === 'refunded') {
+                return;
+            }
+            const buyer = order.buyer_name || 'Unknown buyer';
+            const amount = Number(order.amount || 0);
+            buyerTotals.set(buyer, (buyerTotals.get(buyer) || 0) + amount);
+        });
+        const topBuyerEntry = [...buyerTotals.entries()]
+            .filter(([, amount]) => amount > 0)
+            .sort((a, b) => b[1] - a[1])[0];
+        const topBuyer = topBuyerEntry ? { name: topBuyerEntry[0], amount: topBuyerEntry[1] } : null;
+        return { topEvent, topTicket, topBuyer };
+    }
+
+    function renderInsights(insights) {
+        const container = selectors.reports.insights;
+        if (!container) {
+            return;
+        }
+        container.querySelectorAll('[data-insight]').forEach((card) => {
+            const type = card.dataset.insight;
+            const valueEl = card.querySelector('[data-insight-value]');
+            const metaEl = card.querySelector('[data-insight-meta]');
+            let valueText = '—';
+            let metaText = 'No data available yet.';
+            switch (type) {
+                case 'top-event': {
+                    const topEvent = insights.topEvent;
+                    if (topEvent && (Number(topEvent.revenue) || 0) > 0) {
+                        valueText = topEvent.title || 'Event';
+                        metaText = `${formatCurrency(Number(topEvent.revenue) || 0)} total revenue`;
+                    } else {
+                        metaText = 'No revenue recorded yet.';
+                    }
+                    break;
+                }
+                case 'top-ticket': {
+                    const topTicket = insights.topTicket;
+                    if (topTicket && topTicket.quantity > 0) {
+                        valueText = topTicket.name || 'Ticket';
+                        metaText = `${topTicket.quantity} tickets sold`;
+                    } else {
+                        metaText = 'No ticket sales yet.';
+                    }
+                    break;
+                }
+                case 'top-buyer': {
+                    const topBuyer = insights.topBuyer;
+                    if (topBuyer && (Number(topBuyer.amount) || 0) > 0) {
+                        valueText = topBuyer.name || 'Customer';
+                        metaText = `${formatCurrency(Number(topBuyer.amount) || 0)} in purchases`;
+                    } else {
+                        metaText = 'No paid customers yet.';
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            if (valueEl) {
+                valueEl.textContent = valueText;
+            }
+            if (metaEl) {
+                metaEl.textContent = metaText;
+            }
+        });
+    }
+
+    function updateInsightsAndMetrics() {
+        renderReportMetrics(computeRevenueMetrics());
+        renderInsights(computeInsights());
+    }
+
+    function handleOrderForm() {
+        const form = selectors.orderEditor.form;
+        if (!form) {
+            return;
+        }
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const payload = serializeOrderForm();
+            if (!payload) {
+                return;
+            }
+            fetchJSON('save_order', { method: 'POST', body: payload })
+                .then(() => {
+                    showToast('Order updated.');
+                    closeModal(selectors.orderEditor.modal);
+                    refreshAll();
+                })
+                .catch(() => {
+                    showToast('Unable to save order.', 'error');
+                });
+        });
+        if (selectors.orderEditor.lines) {
+            selectors.orderEditor.lines.addEventListener('input', (event) => {
+                const row = event.target.closest('[data-order-line]');
+                if (!row) {
+                    return;
+                }
+                if (event.target.matches('[data-order-line-price], [data-order-line-quantity]')) {
+                    updateLineTotal(row);
+                    updateOrderSummary();
+                    updateOrderAddOptions();
+                }
+            });
+            selectors.orderEditor.lines.addEventListener('click', (event) => {
+                const removeBtn = event.target.closest('[data-order-line-remove]');
+                if (!removeBtn) {
+                    return;
+                }
+                event.preventDefault();
+                const row = removeBtn.closest('[data-order-line]');
+                if (row) {
+                    row.remove();
+                }
+                const container = selectors.orderEditor.lines;
+                if (container && !container.querySelector('[data-order-line]')) {
+                    container.innerHTML = '<p class="events-order-empty">No tickets on this order yet.</p>';
+                }
+                updateOrderSummary();
+                updateOrderAddOptions();
+            });
+        }
+        if (selectors.orderEditor.status) {
+            selectors.orderEditor.status.addEventListener('change', () => {
+                updateOrderSummary();
+            });
+        }
+        if (selectors.orderEditor.addButton) {
+            selectors.orderEditor.addButton.addEventListener('click', () => {
+                addOrderLine();
+            });
+        }
     }
 
     function openModal(modal) {
@@ -759,6 +1515,10 @@
         modal.classList.remove('is-open');
         if (modal === selectors.mediaModal) {
             state.media.currentSetter = null;
+        }
+        if (modal === selectors.orderEditor.modal) {
+            resetOrderEditor();
+            return;
         }
         const form = modal.querySelector('form');
         if (form) {
@@ -793,6 +1553,7 @@
                 closeModal(selectors.modal);
                 closeModal(selectors.confirmModal);
                 closeModal(selectors.mediaModal);
+                closeModal(selectors.orderEditor.modal);
                 closeCategoryModal();
             }
         });
@@ -1019,8 +1780,12 @@
     function refreshOrders() {
         return fetchJSON('list_orders', { params: state.ordersFilter })
             .then((response) => {
-                state.orders = Array.isArray(response.orders) ? response.orders : [];
+                const orders = Array.isArray(response.orders) ? response.orders : [];
+                state.orders = orders
+                    .map((order) => normalizeOrderRow(order))
+                    .filter((order) => order !== null);
                 renderOrdersTable();
+                updateInsightsAndMetrics();
             })
             .catch(() => {
                 showToast('Unable to load orders.', 'error');
@@ -1069,8 +1834,13 @@
     function refreshReportsSummary() {
         return fetchJSON('reports_summary')
             .then((response) => {
-                state.salesSummary = Array.isArray(response.reports) ? response.reports : [];
+                const reports = Array.isArray(response.reports) ? response.reports : [];
+                state.salesSummary = reports.map((report) => ({
+                    ...report,
+                    refunded: report.refunded ?? 0,
+                }));
                 renderReportsTable();
+                updateInsightsAndMetrics();
             })
             .catch(() => {
                 showToast('Unable to load reports data.', 'error');
@@ -1159,6 +1929,16 @@
                     break;
             }
         });
+        root.addEventListener('click', (event) => {
+            const manage = event.target.closest('[data-events-order-manage]');
+            if (!manage) {
+                return;
+            }
+            const id = manage.dataset.id;
+            if (id) {
+                openOrderModal(id);
+            }
+        });
         if (selectors.orders.filterEvent) {
             selectors.orders.filterEvent.addEventListener('change', (event) => {
                 state.ordersFilter.event = event.target.value;
@@ -1180,12 +1960,13 @@
         reportButtons.forEach((button) => {
             button.addEventListener('click', () => {
                 const type = button.dataset.eventsReportDownload;
-                const rows = [['Event', 'Tickets Sold', 'Revenue', 'Status']];
+                const rows = [['Event', 'Tickets Sold', 'Revenue', 'Refunded', 'Status']];
                 state.salesSummary.forEach((item) => {
                     rows.push([
                         item.title,
                         item.tickets_sold,
                         item.revenue,
+                        item.refunded ?? 0,
                         item.status,
                     ]);
                 });
@@ -1289,6 +2070,7 @@
         bindModalDismissals();
         attachConfirmHandler();
         handleEventForm();
+        handleOrderForm();
         handleCategoryForm();
         initMediaPicker();
         attachEventListeners();
@@ -1298,6 +2080,7 @@
         renderReportsTable();
         renderCategoryOptions();
         renderCategoryList();
+        updateInsightsAndMetrics();
         refreshAll();
     }
 
