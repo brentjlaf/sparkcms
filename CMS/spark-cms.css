@@ -2573,6 +2573,7 @@
             border: 1px solid #e2e8f0;
             box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
             padding: 0;
+            overflow-x: auto;
         }
 
         .pages-table-header {
@@ -2625,48 +2626,57 @@
         }
 
         .pages-list-view {
-            padding: 0 0 24px;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 960px;
         }
 
-        .pages-list-header,
-        .pages-list-row {
-            display: grid;
-            grid-template-columns: minmax(220px, 1.8fr) 120px 120px 180px 120px minmax(240px, 1fr);
-            gap: 16px;
-            align-items: center;
+        .pages-list-view[hidden] {
+            display: none;
         }
 
-        .pages-list-header {
-            padding: 18px 24px;
+        .pages-list-view thead th {
             background: #f8fafc;
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             color: #475569;
+            padding: 16px 24px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .pages-list-actions-heading {
+        .pages-list-view thead th:first-child {
+            border-top-left-radius: 14px;
+        }
+
+        .pages-list-view thead th:last-child {
+            border-top-right-radius: 14px;
+        }
+
+        .pages-list-actions-heading,
+        .pages-list-view thead th.pages-list-actions-heading {
             text-align: right;
         }
 
-        .pages-list-body {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .pages-list-row {
-            padding: 18px 24px;
-            border-top: 1px solid #f1f5f9;
+        .pages-list-view tbody tr {
+            border-bottom: 1px solid #f1f5f9;
             transition: background 0.2s ease;
         }
 
-        .pages-list-row:hover {
+        .pages-list-view tbody tr:hover {
             background: #f8fafc;
         }
 
         .pages-list-row[hidden] {
             display: none;
+        }
+
+        .pages-list-view td {
+            padding: 18px 24px;
+            vertical-align: top;
         }
 
         .pages-list-cell {
@@ -2702,6 +2712,12 @@
             gap: 8px;
         }
 
+        .pages-list-template {
+            font-family: "Fira Code", "Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 13px;
+            color: #475569;
+        }
+
         .pages-list-views,
         .pages-list-access {
             font-size: 14px;
@@ -2723,6 +2739,46 @@
 
         .pages-list-actions .a11y-btn {
             white-space: nowrap;
+        }
+
+        .pages-sort-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font: inherit;
+            color: inherit;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            text-transform: inherit;
+            letter-spacing: inherit;
+        }
+
+        .pages-sort-btn .pages-sort-indicator::before {
+            content: '\21F5';
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .pages-sort-btn.is-active {
+            color: #1f2937;
+        }
+
+        .pages-sort-btn.sort-asc .pages-sort-indicator::before {
+            content: '\25B2';
+            color: #4338ca;
+        }
+
+        .pages-sort-btn.sort-desc .pages-sort-indicator::before {
+            content: '\25BC';
+            color: #4338ca;
+        }
+
+        .pages-sort-btn:focus-visible {
+            outline: 2px solid #4338ca;
+            outline-offset: 2px;
+            border-radius: 6px;
         }
 
         .pages-card {
@@ -2915,22 +2971,8 @@
                 align-self: flex-start;
             }
 
-            .pages-list-header,
-            .pages-list-row {
-                grid-template-columns: minmax(200px, 1.6fr) 120px 120px 1fr;
-            }
-
-            .pages-list-actions-heading {
-                display: none;
-            }
-
-            .pages-list-cell--actions {
-                grid-column: 1 / -1;
-                align-items: flex-start;
-            }
-
-            .pages-list-actions {
-                justify-content: flex-start;
+            .pages-list-view {
+                min-width: 100%;
             }
         }
 
@@ -2962,30 +3004,53 @@
                 width: 100%;
             }
 
-            .pages-list-view {
-                padding-bottom: 20px;
+            .pages-table-card {
+                overflow-x: visible;
             }
 
-            .pages-list-header {
+            .pages-list-view {
+                border-collapse: separate;
+                min-width: 100%;
+            }
+
+            .pages-list-view thead {
                 display: none;
             }
 
-            .pages-list-row {
-                grid-template-columns: 1fr;
-                gap: 14px;
+            .pages-list-view tbody {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                padding: 0 20px 24px;
+            }
+
+            .pages-list-view tbody .pages-list-row {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
                 padding: 18px 20px;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                background: #fff;
+                box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
             }
 
-            .pages-list-cell {
-                align-items: flex-start;
+            .pages-list-view tbody .pages-list-row:hover {
+                background: #fff;
             }
 
-            .pages-list-cell--status,
-            .pages-list-cell--views,
-            .pages-list-cell--updated,
-            .pages-list-cell--access {
-                flex-direction: row;
-                gap: 10px;
+            .pages-list-view tbody .pages-list-cell {
+                padding: 0;
+                gap: 6px;
+            }
+
+            .pages-list-view tbody .pages-list-cell::before {
+                content: attr(data-label);
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                color: #64748b;
             }
 
             .pages-list-cell--actions {
@@ -2998,7 +3063,7 @@
             }
 
             .pages-list-actions .a11y-btn {
-                flex: 1 1 45%;
+                width: 100%;
             }
         }
 
