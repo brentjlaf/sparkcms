@@ -93,6 +93,14 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
                 </div>
 
                 <div class="nav-section">
+                    <div class="nav-section-title">Commerce</div>
+                    <div class="nav-item" data-section="commerce">
+                        <div class="nav-icon"><i class="fas fa-store"></i></div>
+                        <div class="nav-text">Commerce</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
                     <div class="nav-section-title">Administration</div>
                     <div class="nav-item" data-section="users">
                         <div class="nav-icon"><i class="fas fa-users"></i></div>
