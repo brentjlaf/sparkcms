@@ -12168,6 +12168,131 @@ body.calendar-modal-open {
     flex-wrap: wrap;
 }
 
+.commerce-management-grid {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+@media (min-width: 960px) {
+    .commerce-management-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.commerce-card--form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.commerce-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.commerce-form-grid {
+    display: grid;
+    gap: 16px;
+}
+
+@media (min-width: 720px) {
+    .commerce-form-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+.commerce-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.commerce-form-label {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.commerce-form-input {
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    background: var(--color-surface);
+}
+
+.commerce-form-input:focus {
+    outline: 2px solid var(--color-primary-soft);
+    border-color: var(--color-primary);
+}
+
+.commerce-form-help {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.commerce-form-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.commerce-form-meta {
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
+}
+
+.commerce-form-meta-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--color-text-secondary);
+}
+
+.commerce-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.commerce-chip {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+}
+
+.commerce-table-actions {
+    text-align: right;
+}
+
+.commerce-inline-action {
+    border: none;
+    background: transparent;
+    color: var(--color-primary-strong);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.commerce-inline-action:hover,
+.commerce-inline-action:focus {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary-strong);
+    outline: none;
+}
+
 .commerce-search {
     position: relative;
     display: inline-flex;
