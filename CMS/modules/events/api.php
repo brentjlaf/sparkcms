@@ -38,6 +38,9 @@ switch ($action) {
     case 'list_orders':
         handle_list_orders($orders, $events);
         break;
+    case 'save_order':
+        handle_save_order($orders, $events);
+        break;
     case 'export_orders':
         handle_export_orders($orders, $events);
         break;
@@ -277,11 +280,11 @@ function handle_list_orders(array $orders, array $events): void
             }
         }
 
-        $quantity = 0;
-        foreach (($order['tickets'] ?? []) as $ticket) {
-            $quantity += max(0, (int) ($ticket['quantity'] ?? 0));
-        }
-
+        $tickets = array_map('events_normalize_order_ticket', is_array($order['tickets'] ?? null) ? $order['tickets'] : []);
+        $quantity = events_order_ticket_quantity($tickets);
+        $amount = isset($order['amount'])
+            ? round((float) $order['amount'], 2)
+            : events_calculate_order_amount($tickets);
         $event = events_find_event($events, $order['event_id'] ?? '');
 
         $rows[] = [
@@ -289,8 +292,9 @@ function handle_list_orders(array $orders, array $events): void
             'event' => $event['title'] ?? 'Event',
             'event_id' => $order['event_id'] ?? '',
             'buyer_name' => $order['buyer_name'] ?? '',
-            'tickets' => $quantity,
-            'amount' => (float) ($order['amount'] ?? 0),
+            'tickets' => $tickets,
+            'ticket_quantity' => $quantity,
+            'amount' => $amount,
             'status' => $status,
             'ordered_at' => $order['ordered_at'] ?? '',
         ];
@@ -305,22 +309,102 @@ function handle_list_orders(array $orders, array $events): void
     respond_json(['orders' => $rows]);
 }
 
+function handle_save_order(array $orders, array $events): void
+{
+    $payload = parse_json_body();
+    if (empty($payload)) {
+        $payload = $_POST;
+        if (isset($payload['tickets']) && is_string($payload['tickets'])) {
+            $decoded = json_decode($payload['tickets'], true);
+            if (is_array($decoded)) {
+                $payload['tickets'] = $decoded;
+            }
+        }
+    }
+
+    $id = trim((string) ($payload['id'] ?? ''));
+    $eventId = trim((string) ($payload['event_id'] ?? ''));
+    if ($id === '' || $eventId === '') {
+        respond_json(['error' => 'Order ID and event are required.'], 400);
+    }
+
+    $tickets = $payload['tickets'] ?? [];
+    if (is_string($tickets)) {
+        $decodedTickets = json_decode($tickets, true);
+        if (is_array($decodedTickets)) {
+            $tickets = $decodedTickets;
+        }
+    }
+
+    $orderData = [
+        'id' => $id,
+        'event_id' => $eventId,
+        'buyer_name' => $payload['buyer_name'] ?? '',
+        'status' => $payload['status'] ?? 'paid',
+        'ordered_at' => $payload['ordered_at'] ?? '',
+        'tickets' => is_array($tickets) ? $tickets : [],
+        'amount' => $payload['amount'] ?? null,
+    ];
+
+    $orderData = events_normalize_order($orderData);
+
+    if ($orderData['id'] === '' || $orderData['event_id'] === '') {
+        respond_json(['error' => 'Invalid order details.'], 400);
+    }
+
+    $originalId = trim((string) ($payload['original_id'] ?? $orderData['id']));
+    $ordersAssoc = [];
+    foreach ($orders as $order) {
+        if (!is_array($order) || !isset($order['id'])) {
+            continue;
+        }
+        $ordersAssoc[(string) $order['id']] = $order;
+    }
+
+    if ($originalId !== '' && $originalId !== $orderData['id']) {
+        unset($ordersAssoc[$originalId]);
+    }
+
+    $ordersAssoc[$orderData['id']] = array_merge($ordersAssoc[$orderData['id']] ?? [], $orderData);
+
+    if (!events_write_orders(array_values($ordersAssoc))) {
+        respond_json(['error' => 'Unable to save order.'], 500);
+    }
+
+    $event = events_find_event($events, $orderData['event_id']);
+    $responseOrder = [
+        'id' => $orderData['id'],
+        'event_id' => $orderData['event_id'],
+        'event' => $event['title'] ?? 'Event',
+        'buyer_name' => $orderData['buyer_name'],
+        'status' => $orderData['status'],
+        'ordered_at' => $orderData['ordered_at'],
+        'amount' => $orderData['amount'],
+        'ticket_quantity' => events_order_ticket_quantity($orderData['tickets']),
+        'tickets' => $orderData['tickets'],
+    ];
+
+    respond_json(['success' => true, 'order' => $responseOrder]);
+}
+
 function handle_export_orders(array $orders, array $events): void
 {
     $rows = [];
     $rows[] = ['Order ID', 'Event', 'Buyer', 'Tickets', 'Amount', 'Status', 'Ordered At'];
     foreach ($orders as $order) {
         $event = events_find_event($events, $order['event_id'] ?? '');
-        $quantity = 0;
-        foreach (($order['tickets'] ?? []) as $ticket) {
-            $quantity += max(0, (int) ($ticket['quantity'] ?? 0));
+        $tickets = array_map('events_normalize_order_ticket', is_array($order['tickets'] ?? null) ? $order['tickets'] : []);
+        $quantity = events_order_ticket_quantity($tickets);
+        $amount = events_calculate_order_amount($tickets);
+        if (isset($order['amount']) && is_numeric($order['amount'])) {
+            $amount = (float) $order['amount'];
         }
         $rows[] = [
             $order['id'] ?? '',
             $event['title'] ?? 'Event',
             $order['buyer_name'] ?? '',
             $quantity,
-            number_format((float) ($order['amount'] ?? 0), 2, '.', ''),
+            number_format($amount, 2, '.', ''),
             strtoupper((string) ($order['status'] ?? 'paid')),
             $order['ordered_at'] ?? '',
         ];

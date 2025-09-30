@@ -146,6 +146,10 @@ $initialPayload = [
                     <p class="events-section-description">Monitor purchases, refund status, and export reports for finance.</p>
                 </div>
                 <div class="events-section-actions">
+                    <button type="button" class="a11y-btn a11y-btn--secondary" data-events-open="order">
+                        <i class="fa-solid fa-cart-plus" aria-hidden="true"></i>
+                        <span>New order</span>
+                    </button>
                     <label class="events-filter">
                         <span class="sr-only">Filter by event</span>
                         <select data-events-orders-filter="event"></select>
@@ -174,11 +178,12 @@ $initialPayload = [
                             <th scope="col">Amount</th>
                             <th scope="col">Status</th>
                             <th scope="col">Order Date</th>
+                            <th scope="col" class="is-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody data-events-orders>
                         <tr>
-                            <td colspan="6" class="events-empty">Loading orders…</td>
+                            <td colspan="7" class="events-empty">Loading orders…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -226,6 +231,81 @@ $initialPayload = [
                 </table>
             </div>
         </section>
+    </div>
+</div>
+
+<div class="events-modal-backdrop" data-events-modal="order">
+    <div class="events-modal" role="dialog" aria-modal="true" aria-labelledby="eventsOrderTitle">
+        <header class="events-modal-header">
+            <h2 class="events-modal-title" id="eventsOrderTitle" data-events-order-title>Edit order</h2>
+            <button type="button" class="events-modal-close" data-events-close>&times;<span class="sr-only">Close</span></button>
+        </header>
+        <div class="events-modal-body">
+            <form data-events-form="order">
+                <input type="hidden" name="original_id" value="">
+                <div class="events-form-grid">
+                    <label class="events-form-field">
+                        <span>Order ID</span>
+                        <input type="text" name="id" required>
+                    </label>
+                    <label class="events-form-field">
+                        <span>Event</span>
+                        <select name="event_id" required data-events-order-event></select>
+                    </label>
+                    <label class="events-form-field">
+                        <span>Buyer name</span>
+                        <input type="text" name="buyer_name" placeholder="Customer or attendee">
+                    </label>
+                    <label class="events-form-field">
+                        <span>Status</span>
+                        <select name="status">
+                            <option value="paid">Paid</option>
+                            <option value="refunded">Refunded</option>
+                        </select>
+                    </label>
+                    <label class="events-form-field">
+                        <span>Order date &amp; time</span>
+                        <input type="datetime-local" name="ordered_at">
+                    </label>
+                    <label class="events-form-field">
+                        <span>Total amount</span>
+                        <input type="number" name="amount" min="0" step="0.01" placeholder="0.00">
+                    </label>
+                </div>
+
+                <section class="events-ticketing" aria-labelledby="eventsOrderTicketsTitle">
+                    <header class="events-ticketing-header">
+                        <div>
+                            <h3 id="eventsOrderTicketsTitle">Ticket line items</h3>
+                            <p>Add or adjust ticket quantities to keep sales accurate.</p>
+                        </div>
+                        <button type="button" class="a11y-btn a11y-btn--secondary" data-events-order-add-ticket>
+                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                            <span>Add line item</span>
+                        </button>
+                    </header>
+                    <div class="events-ticket-list" data-events-order-tickets>
+                        <div class="events-ticket-empty">No ticket line items yet. Add one to record sales.</div>
+                    </div>
+                </section>
+
+                <div class="events-order-summary">
+                    <div class="events-order-summary-item">
+                        <span class="events-order-summary-label">Total tickets</span>
+                        <span data-events-order-total-tickets>0</span>
+                    </div>
+                    <div class="events-order-summary-item">
+                        <span class="events-order-summary-label">Calculated total</span>
+                        <span data-events-order-total-amount>$0.00</span>
+                    </div>
+                </div>
+
+                <footer class="events-form-actions">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" data-events-close>Cancel</button>
+                    <button type="submit" class="a11y-btn a11y-btn--primary">Save order</button>
+                </footer>
+            </form>
+        </div>
     </div>
 </div>
 

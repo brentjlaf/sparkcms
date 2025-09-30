@@ -132,6 +132,108 @@ if (!function_exists('events_write_orders')) {
     }
 }
 
+if (!function_exists('events_normalize_order_ticket')) {
+    function events_normalize_order_ticket(array $ticket): array
+    {
+        $ticketId = trim((string) ($ticket['ticket_id'] ?? ''));
+        if ($ticketId === '') {
+            $ticketId = uniqid('ticket_', false);
+        }
+        $quantity = max(0, (int) ($ticket['quantity'] ?? 0));
+        $price = round(max(0, (float) ($ticket['price'] ?? 0)), 2);
+        return [
+            'ticket_id' => $ticketId,
+            'quantity' => $quantity,
+            'price' => $price,
+        ];
+    }
+}
+
+if (!function_exists('events_order_ticket_quantity')) {
+    function events_order_ticket_quantity(array $tickets): int
+    {
+        $quantity = 0;
+        foreach ($tickets as $ticket) {
+            if (!is_array($ticket)) {
+                continue;
+            }
+            $quantity += max(0, (int) ($ticket['quantity'] ?? 0));
+        }
+        return $quantity;
+    }
+}
+
+if (!function_exists('events_calculate_order_amount')) {
+    function events_calculate_order_amount(array $tickets): float
+    {
+        $amount = 0.0;
+        foreach ($tickets as $ticket) {
+            if (!is_array($ticket)) {
+                continue;
+            }
+            $quantity = max(0, (int) ($ticket['quantity'] ?? 0));
+            $price = (float) ($ticket['price'] ?? 0);
+            $amount += $quantity * $price;
+        }
+        return round($amount, 2);
+    }
+}
+
+if (!function_exists('events_normalize_datetime')) {
+    function events_normalize_datetime(?string $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+        $timestamp = strtotime((string) $value);
+        if ($timestamp === false) {
+            return '';
+        }
+        return gmdate('c', $timestamp);
+    }
+}
+
+if (!function_exists('events_normalize_order')) {
+    function events_normalize_order(array $order): array
+    {
+        $now = gmdate('c');
+        $orderId = trim((string) ($order['id'] ?? ''));
+        $eventId = trim((string) ($order['event_id'] ?? ''));
+        $buyerName = trim((string) ($order['buyer_name'] ?? ''));
+        $status = strtolower((string) ($order['status'] ?? 'paid'));
+        if (!in_array($status, ['paid', 'refunded'], true)) {
+            $status = 'paid';
+        }
+        $tickets = [];
+        foreach ($order['tickets'] ?? [] as $ticket) {
+            if (!is_array($ticket)) {
+                continue;
+            }
+            $tickets[] = events_normalize_order_ticket($ticket);
+        }
+        $tickets = array_values(array_filter($tickets, static function ($ticket) {
+            return ($ticket['quantity'] ?? 0) > 0 || ($ticket['price'] ?? 0) > 0;
+        }));
+        $amount = $order['amount'] ?? null;
+        if (!is_numeric($amount)) {
+            $amount = events_calculate_order_amount($tickets);
+        }
+        $amount = round(max(0, (float) $amount), 2);
+        $orderedAt = events_normalize_datetime($order['ordered_at'] ?? '');
+
+        return [
+            'id' => $orderId,
+            'event_id' => $eventId,
+            'buyer_name' => $buyerName,
+            'tickets' => $tickets,
+            'amount' => $amount,
+            'status' => $status,
+            'ordered_at' => $orderedAt,
+            'updated_at' => $now,
+        ];
+    }
+}
+
 if (!function_exists('events_sort_categories')) {
     function events_sort_categories(array $categories): array
     {

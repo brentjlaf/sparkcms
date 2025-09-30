@@ -31,6 +31,7 @@
             filterEvent: root.querySelector('[data-events-orders-filter="event"]'),
             filterStatus: root.querySelector('[data-events-orders-filter="status"]'),
             exportBtn: root.querySelector('[data-events-export]'),
+            modal: document.querySelector('[data-events-modal="order"]'),
         },
         reports: {
             tableBody: root.querySelector('[data-events-reports-table]'),
@@ -45,6 +46,19 @@
         categoriesReset: document.querySelector('[data-events-category-reset]'),
         toast: document.querySelector('[data-events-toast]'),
     };
+
+    selectors.orderForm = selectors.orders.modal?.querySelector('[data-events-form="order"]') || null;
+    selectors.orderEventSelect = selectors.orderForm?.querySelector('[data-events-order-event]') || null;
+    selectors.orderTickets = selectors.orderForm?.querySelector('[data-events-order-tickets]') || null;
+    selectors.orderAddTicket = selectors.orders.modal?.querySelector('[data-events-order-add-ticket]') || null;
+    selectors.orderTotals = {
+        tickets: selectors.orders.modal?.querySelector('[data-events-order-total-tickets]') || null,
+        amount: selectors.orders.modal?.querySelector('[data-events-order-total-amount]') || null,
+    };
+    selectors.orderTitle = selectors.orders.modal?.querySelector('[data-events-order-title]') || null;
+    selectors.orderAmountInput = selectors.orderForm?.querySelector('[name="amount"]') || null;
+
+    const ORDER_TICKETS_EMPTY_HTML = '<div class="events-ticket-empty">No ticket line items yet. Add one to record sales.</div>';
 
     const state = {
         events: new Map(),
@@ -84,22 +98,7 @@
         }));
     }
     if (Array.isArray(initialPayload.orders)) {
-        state.orders = initialPayload.orders.map((order) => {
-            const event = state.events.get(String(order.event_id || ''));
-            const tickets = Array.isArray(order.tickets)
-                ? order.tickets.reduce((sum, ticket) => sum + (parseInt(ticket.quantity, 10) || 0), 0)
-                : 0;
-            return {
-                id: order.id,
-                event: event ? event.title : '',
-                event_id: order.event_id,
-                buyer_name: order.buyer_name,
-                tickets,
-                amount: order.amount,
-                status: String(order.status || 'paid').toLowerCase(),
-                ordered_at: order.ordered_at,
-            };
-        });
+        state.orders = normalizeOrders(initialPayload.orders);
     }
 
     function formatDate(value) {
@@ -125,6 +124,62 @@
             currency: 'USD',
             minimumFractionDigits: 2,
         }).format(Number(value || 0));
+    }
+
+    function calculateTicketTotals(items) {
+        if (!Array.isArray(items)) {
+            return { quantity: 0, amount: 0 };
+        }
+        return items.reduce((acc, item) => {
+            const quantity = parseInt(item?.quantity, 10) || 0;
+            const price = parseFloat(item?.price) || 0;
+            acc.quantity += quantity;
+            acc.amount += quantity * price;
+            return acc;
+        }, { quantity: 0, amount: 0 });
+    }
+
+    function normalizeOrder(order) {
+        if (!order || typeof order !== 'object') {
+            return null;
+        }
+        const eventId = String(order.event_id || '');
+        const event = state.events.get(eventId);
+        const rawItems = Array.isArray(order.items)
+            ? order.items
+            : (Array.isArray(order.tickets) ? order.tickets : []);
+        const items = rawItems.map((item) => ({
+            ticket_id: String(item?.ticket_id || ''),
+            quantity: parseInt(item?.quantity, 10) || 0,
+            price: parseFloat(item?.price) || 0,
+        }));
+        const totals = calculateTicketTotals(items);
+        let amount = typeof order.amount === 'number'
+            ? order.amount
+            : parseFloat(order.amount || totals.amount);
+        if (!Number.isFinite(amount)) {
+            amount = totals.amount;
+        }
+        amount = Math.round((amount || 0) * 100) / 100;
+        const status = String(order.status || 'paid').toLowerCase();
+        return {
+            id: String(order.id || ''),
+            event_id: eventId,
+            event: order.event || event?.title || '',
+            buyer_name: order.buyer_name || '',
+            status,
+            ordered_at: order.ordered_at || '',
+            ticket_quantity: typeof order.ticket_quantity === 'number' ? order.ticket_quantity : totals.quantity,
+            amount,
+            items,
+        };
+    }
+
+    function normalizeOrders(list) {
+        if (!Array.isArray(list)) {
+            return [];
+        }
+        return list.map((order) => normalizeOrder(order)).filter((order) => order && order.id);
     }
 
     function sortCategories(list) {
@@ -431,16 +486,27 @@
         });
     }
 
-    function populateEventSelect(select) {
+    function populateEventSelect(select, options = {}) {
         if (!select) {
             return;
         }
-        const current = select.value;
+        const {
+            includeAllOption = true,
+            placeholder = includeAllOption ? 'All events' : 'Select event',
+            selected = null,
+        } = options;
+        const previous = select.value;
         select.innerHTML = '';
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = 'All events';
-        select.appendChild(defaultOption);
+        if (placeholder !== null) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = placeholder;
+            select.appendChild(option);
+            if (!includeAllOption) {
+                option.disabled = true;
+                option.selected = true;
+            }
+        }
         Array.from(state.events.values())
             .sort((a, b) => {
                 const aTime = a.start ? new Date(a.start).getTime() : 0;
@@ -453,8 +519,11 @@
                 option.textContent = event.title || 'Untitled event';
                 select.appendChild(option);
             });
-        if (current && select.querySelector(`option[value="${current}"]`)) {
-            select.value = current;
+        const preferred = selected || previous;
+        if (preferred && select.querySelector(`option[value="${preferred}"]`)) {
+            select.value = preferred;
+        } else if (!includeAllOption) {
+            select.selectedIndex = 0;
         }
     }
 
@@ -466,7 +535,7 @@
         if (!Array.isArray(state.orders) || state.orders.length === 0) {
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 6;
+            cell.colSpan = 7;
             cell.className = 'events-empty';
             cell.textContent = 'No orders found for the selected filters.';
             row.appendChild(cell);
@@ -475,16 +544,278 @@
         }
         state.orders.forEach((order) => {
             const tr = document.createElement('tr');
-            const totalTickets = order.tickets ?? 0;
             tr.innerHTML = `
                 <td>${order.id}</td>
                 <td>${order.buyer_name || ''}</td>
-                <td>${totalTickets}</td>
+                <td>${order.ticket_quantity ?? 0}</td>
                 <td>${formatCurrency(order.amount ?? 0)}</td>
                 <td><span class="events-status events-status--${order.status}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></td>
                 <td>${formatDate(order.ordered_at)}</td>
+                <td class="events-table-actions">
+                    <button type="button" class="events-action" data-events-order-edit data-id="${order.id}">
+                        <i class="fa-solid fa-pen"></i><span class="sr-only">Edit order</span>
+                    </button>
+                </td>
             `;
             selectors.orders.body.appendChild(tr);
+        });
+    }
+
+    function setOrderSummary(quantity, amount) {
+        if (selectors.orderTotals.tickets) {
+            selectors.orderTotals.tickets.textContent = String(quantity ?? 0);
+        }
+        if (selectors.orderTotals.amount) {
+            selectors.orderTotals.amount.textContent = formatCurrency(amount ?? 0);
+        }
+    }
+
+    function getOrderTicketsContainer() {
+        return selectors.orderTickets || null;
+    }
+
+    function resetOrderTickets() {
+        const container = getOrderTicketsContainer();
+        if (!container) {
+            return;
+        }
+        container.innerHTML = ORDER_TICKETS_EMPTY_HTML;
+    }
+
+    function addOrderTicketRow(container, item = {}) {
+        if (!container) {
+            return;
+        }
+        const row = document.createElement('div');
+        row.className = 'events-ticket-row';
+        row.dataset.orderTicket = 'true';
+        row.innerHTML = `
+            <label>
+                <span>Ticket ID</span>
+                <input type="text" data-order-ticket-field="ticket_id" value="${item.ticket_id || ''}">
+            </label>
+            <label>
+                <span>Quantity</span>
+                <input type="number" min="0" step="1" data-order-ticket-field="quantity" value="${item.quantity ?? 0}">
+            </label>
+            <label>
+                <span>Price</span>
+                <input type="number" min="0" step="0.01" data-order-ticket-field="price" value="${item.price ?? 0}">
+            </label>
+            <button type="button" class="events-action danger" data-order-ticket-remove>
+                <i class="fa-solid fa-times"></i><span class="sr-only">Remove line item</span>
+            </button>
+        `;
+        const empty = container.querySelector('.events-ticket-empty');
+        if (empty) {
+            empty.remove();
+        }
+        container.appendChild(row);
+    }
+
+    function renderOrderItems(items = []) {
+        const container = getOrderTicketsContainer();
+        if (!container) {
+            return;
+        }
+        container.innerHTML = '';
+        if (!Array.isArray(items) || items.length === 0) {
+            container.innerHTML = ORDER_TICKETS_EMPTY_HTML;
+            return;
+        }
+        items.forEach((item) => addOrderTicketRow(container, item));
+    }
+
+    function collectOrderItems() {
+        const container = getOrderTicketsContainer();
+        if (!container) {
+            return [];
+        }
+        const rows = Array.from(container.querySelectorAll('[data-order-ticket]'));
+        if (rows.length === 0) {
+            return [];
+        }
+        return rows.map((row) => {
+            const ticketId = row.querySelector('[data-order-ticket-field="ticket_id"]')?.value.trim() || '';
+            const quantity = Math.max(0, parseInt(row.querySelector('[data-order-ticket-field="quantity"]')?.value || '0', 10) || 0);
+            const priceValue = parseFloat(row.querySelector('[data-order-ticket-field="price"]')?.value || '0') || 0;
+            const price = Math.round(Math.max(0, priceValue) * 100) / 100;
+            return {
+                ticket_id: ticketId,
+                quantity,
+                price,
+            };
+        }).filter((item) => item.ticket_id !== '' || item.quantity > 0 || item.price > 0);
+    }
+
+    function updateOrderTotals() {
+        const items = collectOrderItems();
+        const totals = calculateTicketTotals(items);
+        setOrderSummary(totals.quantity, totals.amount);
+        return totals;
+    }
+
+    function toDateTimeLocal(value) {
+        if (!value) {
+            return '';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return '';
+        }
+        const offset = date.getTimezoneOffset();
+        const local = new Date(date.getTime() - offset * 60000);
+        return local.toISOString().slice(0, 16);
+    }
+
+    function fromDateTimeLocal(value) {
+        if (!value) {
+            return '';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return '';
+        }
+        return date.toISOString();
+    }
+
+    function openOrderModal(orderId) {
+        const modal = selectors.orders.modal;
+        const form = selectors.orderForm;
+        if (!modal || !form) {
+            return;
+        }
+        const order = state.orders.find((item) => String(item.id) === String(orderId)) || null;
+        if (selectors.orderTitle) {
+            selectors.orderTitle.textContent = order ? 'Edit order' : 'New order';
+        }
+        form.reset();
+        populateEventSelect(selectors.orderEventSelect, {
+            includeAllOption: false,
+            placeholder: 'Select event',
+            selected: order?.event_id || '',
+        });
+        form.querySelector('[name="original_id"]').value = order?.id || '';
+        form.querySelector('[name="id"]').value = order?.id || '';
+        form.querySelector('[name="buyer_name"]').value = order?.buyer_name || '';
+        const statusField = form.querySelector('[name="status"]');
+        if (statusField) {
+            statusField.value = order?.status || 'paid';
+        }
+        const orderedAt = form.querySelector('[name="ordered_at"]');
+        if (orderedAt) {
+            orderedAt.value = toDateTimeLocal(order?.ordered_at || '');
+        }
+        if (selectors.orderAmountInput) {
+            if (order && typeof order.amount === 'number') {
+                selectors.orderAmountInput.value = order.amount.toFixed(2);
+            } else {
+                selectors.orderAmountInput.value = '';
+            }
+        }
+        if (selectors.orderEventSelect && order?.event_id) {
+            selectors.orderEventSelect.value = order.event_id;
+        }
+        renderOrderItems(order?.items || []);
+        updateOrderTotals();
+        openModal(modal);
+    }
+
+    function serializeOrderForm() {
+        const form = selectors.orderForm;
+        if (!form) {
+            return null;
+        }
+        const id = form.querySelector('[name="id"]').value.trim();
+        const eventId = form.querySelector('[name="event_id"]').value.trim();
+        if (id === '') {
+            showToast('Enter an order ID before saving.', 'error');
+            return null;
+        }
+        if (eventId === '') {
+            showToast('Select an event for this order.', 'error');
+            return null;
+        }
+        const items = collectOrderItems();
+        const totals = calculateTicketTotals(items);
+        const amountInput = selectors.orderAmountInput;
+        let amount = amountInput ? parseFloat(amountInput.value || '') : NaN;
+        if (!Number.isFinite(amount) || amount < 0) {
+            amount = totals.amount;
+        }
+        amount = Math.round((amount || 0) * 100) / 100;
+        if (amountInput) {
+            amountInput.value = amount.toFixed(2);
+        }
+        const orderedAtField = form.querySelector('[name="ordered_at"]');
+        const payload = {
+            original_id: form.querySelector('[name="original_id"]').value.trim(),
+            id,
+            event_id: eventId,
+            buyer_name: form.querySelector('[name="buyer_name"]').value.trim(),
+            status: (form.querySelector('[name="status"]').value || 'paid').toLowerCase(),
+            ordered_at: fromDateTimeLocal(orderedAtField ? orderedAtField.value : ''),
+            amount,
+            tickets: items,
+        };
+        return payload;
+    }
+
+    function handleOrderForm() {
+        const modal = selectors.orders.modal;
+        const form = selectors.orderForm;
+        if (!modal || !form) {
+            return;
+        }
+        resetOrderTickets();
+        setOrderSummary(0, 0);
+        if (selectors.orderAddTicket) {
+            selectors.orderAddTicket.addEventListener('click', () => {
+                const container = getOrderTicketsContainer();
+                addOrderTicketRow(container);
+                updateOrderTotals();
+            });
+        }
+        const ticketsContainer = getOrderTicketsContainer();
+        if (ticketsContainer) {
+            ticketsContainer.addEventListener('input', (event) => {
+                if (event.target.matches('[data-order-ticket-field]')) {
+                    updateOrderTotals();
+                }
+            });
+        }
+        modal.addEventListener('click', (event) => {
+            const removeBtn = event.target.closest('[data-order-ticket-remove]');
+            if (removeBtn) {
+                const row = removeBtn.closest('[data-order-ticket]');
+                if (row) {
+                    row.remove();
+                }
+                const container = getOrderTicketsContainer();
+                if (container && container.querySelectorAll('[data-order-ticket]').length === 0) {
+                    container.innerHTML = ORDER_TICKETS_EMPTY_HTML;
+                }
+                updateOrderTotals();
+            }
+        });
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const payload = serializeOrderForm();
+            if (!payload) {
+                return;
+            }
+            fetchJSON('save_order', { method: 'POST', body: payload })
+                .then(() => {
+                    showToast('Order saved successfully.');
+                    closeModal(modal);
+                    refreshOrders();
+                    refreshEvents();
+                    refreshOverview();
+                    refreshReportsSummary();
+                })
+                .catch(() => {
+                    showToast('Unable to save order.', 'error');
+                });
         });
     }
 
@@ -544,6 +875,18 @@
             const tickets = form.querySelector('[data-events-tickets]');
             if (tickets) {
                 tickets.innerHTML = '<div class="events-ticket-empty">No ticket types yet. Add one to begin selling.</div>';
+            }
+            const orderTickets = form.querySelector('[data-events-order-tickets]');
+            if (orderTickets) {
+                orderTickets.innerHTML = ORDER_TICKETS_EMPTY_HTML;
+            }
+            const summaryTickets = form.querySelector('[data-events-order-total-tickets]');
+            if (summaryTickets) {
+                summaryTickets.textContent = '0';
+            }
+            const summaryAmount = form.querySelector('[data-events-order-total-amount]');
+            if (summaryAmount) {
+                summaryAmount.textContent = formatCurrency(0);
             }
         }
     }
@@ -775,7 +1118,7 @@
     function refreshOrders() {
         return fetchJSON('list_orders', { params: state.ordersFilter })
             .then((response) => {
-                state.orders = Array.isArray(response.orders) ? response.orders : [];
+                state.orders = normalizeOrders(response.orders);
                 renderOrdersTable();
             })
             .catch(() => {
@@ -790,12 +1133,29 @@
                 response.events.forEach((row) => {
                     const existing = state.events.get(row.id);
                     if (existing) {
+                        existing.title = row.title;
+                        existing.start = row.start;
+                        existing.end = row.end;
                         existing.status = row.status;
                         existing.categories = Array.isArray(row.categories) ? row.categories : [];
+                    } else {
+                        state.events.set(row.id, {
+                            id: row.id,
+                            title: row.title,
+                            start: row.start,
+                            end: row.end,
+                            status: row.status,
+                            categories: Array.isArray(row.categories) ? row.categories : [],
+                        });
                     }
                 });
                 renderEventsTable();
                 populateEventSelect(selectors.orders.filterEvent);
+                populateEventSelect(selectors.orderEventSelect, {
+                    includeAllOption: false,
+                    placeholder: 'Select event',
+                    selected: selectors.orderEventSelect?.value || '',
+                });
             })
             .catch(() => {
                 showToast('Unable to load events.', 'error');
@@ -912,6 +1272,12 @@
                     break;
                 default:
                     break;
+            }
+        });
+        root.addEventListener('click', (event) => {
+            const editOrder = event.target.closest('[data-events-order-edit]');
+            if (editOrder) {
+                openOrderModal(editOrder.dataset.id || '');
             }
         });
         if (selectors.orders.filterEvent) {
@@ -1045,6 +1411,7 @@
         attachConfirmHandler();
         handleEventForm();
         handleCategoryForm();
+        handleOrderForm();
         attachEventListeners();
         populateEventSelect(selectors.orders.filterEvent);
         renderEventsTable();
@@ -1065,6 +1432,8 @@
             openEventModal(null);
         } else if (type === 'categories') {
             openCategoriesModal();
+        } else if (type === 'order') {
+            openOrderModal(null);
         }
     });
 
