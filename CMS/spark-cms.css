@@ -10805,7 +10805,7 @@ body.calendar-modal-open {
         }
 
         .content-section :is(div, section)[class*='table-card'] {
-            padding: 0;
+            padding: 24px;
             overflow: hidden;
         }
 
