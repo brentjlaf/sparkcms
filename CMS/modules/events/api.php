@@ -37,12 +37,6 @@ switch ($action) {
     case 'list_orders':
         handle_list_orders($orders, $events);
         break;
-    case 'update_checkin':
-        handle_update_checkin($orders, $events);
-        break;
-    case 'update_attendance':
-        handle_update_attendance($events);
-        break;
     case 'export_orders':
         handle_export_orders($orders, $events);
         break;
@@ -97,21 +91,9 @@ function handle_overview(array $events, array $orders, array $salesByEvent): voi
         'total_revenue' => array_sum(array_column($salesByEvent, 'revenue')),
     ];
 
-    $attendance = 0;
-    $capacity = 0;
-    foreach ($events as $event) {
-        $id = (string) ($event['id'] ?? '');
-        $capacity += events_ticket_capacity($event, true);
-        $attendance += $salesByEvent[$id]['checked_in'] ?? 0;
-    }
-
     respond_json([
         'upcoming' => $upcomingPreview,
         'stats' => $stats,
-        'attendance' => [
-            'checked_in' => $attendance,
-            'capacity' => $capacity,
-        ],
     ]);
 }
 
@@ -185,7 +167,6 @@ function handle_save_event(array $events): void
         'start' => $payload['start'] ?? '',
         'end' => $payload['end'] ?? '',
         'status' => $payload['status'] ?? 'draft',
-        'track_attendance' => $payload['track_attendance'] ?? false,
         'tickets' => $payload['tickets'] ?? [],
     ];
 
@@ -300,7 +281,6 @@ function handle_list_orders(array $orders, array $events): void
             'amount' => (float) ($order['amount'] ?? 0),
             'status' => $status,
             'ordered_at' => $order['ordered_at'] ?? '',
-            'checked_in' => (int) ($order['checked_in'] ?? 0),
         ];
     }
 
@@ -311,74 +291,6 @@ function handle_list_orders(array $orders, array $events): void
     });
 
     respond_json(['orders' => $rows]);
-}
-
-function handle_update_checkin(array $orders, array $events): void
-{
-    $payload = parse_json_body();
-    $orderId = trim((string) ($payload['order_id'] ?? ($_POST['order_id'] ?? '')));
-    $checkedIn = isset($payload['checked_in']) ? (int) $payload['checked_in'] : (int) ($_POST['checked_in'] ?? 0);
-
-    if ($orderId === '') {
-        respond_json(['error' => 'Missing order id.'], 400);
-    }
-
-    $updated = false;
-    foreach ($orders as &$order) {
-        if ((string) ($order['id'] ?? '') === $orderId) {
-            $max = 0;
-            foreach (($order['tickets'] ?? []) as $ticket) {
-                $max += max(0, (int) ($ticket['quantity'] ?? 0));
-            }
-            $checkedIn = max(0, min($checkedIn, $max));
-            $order['checked_in'] = $checkedIn;
-            $updated = true;
-            break;
-        }
-    }
-    unset($order);
-
-    if (!$updated) {
-        respond_json(['error' => 'Order not found.'], 404);
-    }
-
-    if (!events_write_orders($orders)) {
-        respond_json(['error' => 'Unable to update order.'], 500);
-    }
-
-    respond_json(['success' => true]);
-}
-
-function handle_update_attendance(array $events): void
-{
-    $payload = parse_json_body();
-    $eventId = trim((string) ($payload['event_id'] ?? ($_POST['event_id'] ?? '')));
-    $attended = isset($payload['attended']) ? (int) $payload['attended'] : (int) ($_POST['attended'] ?? 0);
-
-    if ($eventId === '') {
-        respond_json(['error' => 'Missing event id.'], 400);
-    }
-
-    $updated = false;
-    foreach ($events as &$event) {
-        if ((string) ($event['id'] ?? '') === $eventId) {
-            $event['attended'] = max(0, $attended);
-            $event['updated_at'] = gmdate('c');
-            $updated = true;
-            break;
-        }
-    }
-    unset($event);
-
-    if (!$updated) {
-        respond_json(['error' => 'Event not found.'], 404);
-    }
-
-    if (!events_write_events($events)) {
-        respond_json(['error' => 'Unable to update attendance.'], 500);
-    }
-
-    respond_json(['success' => true]);
 }
 
 function handle_export_orders(array $orders, array $events): void
@@ -421,15 +333,12 @@ function handle_reports_summary(array $events, array $orders, array $salesByEven
     $reports = [];
     foreach ($events as $event) {
         $id = (string) ($event['id'] ?? '');
-        $metrics = $salesByEvent[$id] ?? ['tickets_sold' => 0, 'revenue' => 0, 'checked_in' => 0];
-        $capacity = events_ticket_capacity($event, true);
+        $metrics = $salesByEvent[$id] ?? ['tickets_sold' => 0, 'revenue' => 0];
         $reports[] = [
             'event_id' => $id,
             'title' => $event['title'] ?? 'Event',
             'tickets_sold' => $metrics['tickets_sold'] ?? 0,
             'revenue' => $metrics['revenue'] ?? 0,
-            'checked_in' => $metrics['checked_in'] ?? 0,
-            'attendance_rate' => $capacity > 0 ? round((($metrics['checked_in'] ?? 0) / $capacity) * 100, 1) : 0,
             'status' => $event['status'] ?? 'draft',
         ];
     }
