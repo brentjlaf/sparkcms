@@ -1,0 +1,914 @@
+/* File: modules/events/events.js */
+(function () {
+    const root = document.querySelector('.events-dashboard');
+    if (!root) {
+        return;
+    }
+
+    const endpoint = root.dataset.eventsEndpoint || '';
+    const initialPayload = (() => {
+        try {
+            return JSON.parse(root.dataset.eventsInitial || '{}');
+        } catch (error) {
+            return {};
+        }
+    })();
+
+    const selectors = {
+        stats: {
+            events: root.querySelector('[data-events-stat="events"]'),
+            tickets: root.querySelector('[data-events-stat="tickets"]'),
+            revenue: root.querySelector('[data-events-stat="revenue"]'),
+        },
+        upcoming: root.querySelector('[data-events-upcoming]'),
+        tableBody: root.querySelector('[data-events-table]'),
+        filters: {
+            status: root.querySelector('[data-events-filter="status"]'),
+            search: root.querySelector('[data-events-filter="search"]'),
+        },
+        orders: {
+            body: root.querySelector('[data-events-orders]'),
+            filterEvent: root.querySelector('[data-events-orders-filter="event"]'),
+            filterStatus: root.querySelector('[data-events-orders-filter="status"]'),
+            exportBtn: root.querySelector('[data-events-export]'),
+        },
+        attendance: {
+            wrapper: root.querySelector('[data-events-attendance]'),
+            event: root.querySelector('[data-events-attendance="event"]'),
+            stats: root.querySelector('[data-events-attendance="stats"]'),
+            rate: root.querySelector('.events-attendance-rate'),
+            detail: root.querySelector('.events-attendance-detail'),
+            input: root.querySelector('[data-events-attendance="input"]'),
+            apply: root.querySelector('[data-events-attendance="apply"]'),
+            list: root.querySelector('[data-events-attendance="orders"]'),
+        },
+        modal: document.querySelector('[data-events-modal="event"]'),
+        confirmModal: document.querySelector('[data-events-modal="confirm"]'),
+        toast: document.querySelector('[data-events-toast]'),
+    };
+
+    const state = {
+        events: new Map(),
+        eventRows: [],
+        orders: [],
+        salesSummary: [],
+        filters: {
+            status: '',
+            search: '',
+        },
+        ordersFilter: {
+            event: '',
+            status: '',
+        },
+        confirm: null,
+    };
+
+    if (Array.isArray(initialPayload.events)) {
+        initialPayload.events.forEach((event) => {
+            if (event && event.id) {
+                state.events.set(String(event.id), event);
+            }
+        });
+    }
+    if (initialPayload.sales && typeof initialPayload.sales === 'object') {
+        state.salesSummary = Object.entries(initialPayload.sales).map(([eventId, metrics]) => ({
+            event_id: eventId,
+            title: state.events.get(String(eventId))?.title || 'Event',
+            tickets_sold: metrics.tickets_sold ?? 0,
+            revenue: metrics.revenue ?? 0,
+            checked_in: metrics.checked_in ?? 0,
+            attendance_rate: 0,
+            status: state.events.get(String(eventId))?.status || 'draft',
+        }));
+    }
+    if (Array.isArray(initialPayload.orders)) {
+        state.orders = initialPayload.orders.map((order) => {
+            const event = state.events.get(String(order.event_id || ''));
+            const tickets = Array.isArray(order.tickets)
+                ? order.tickets.reduce((sum, ticket) => sum + (parseInt(ticket.quantity, 10) || 0), 0)
+                : 0;
+            return {
+                id: order.id,
+                event: event ? event.title : '',
+                event_id: order.event_id,
+                buyer_name: order.buyer_name,
+                tickets,
+                amount: order.amount,
+                status: String(order.status || 'paid').toLowerCase(),
+                ordered_at: order.ordered_at,
+                checked_in: order.checked_in ?? 0,
+            };
+        });
+    }
+
+    function formatDate(value) {
+        if (!value) {
+            return 'Date TBD';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return 'Date TBD';
+        }
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        }).format(date);
+    }
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+        }).format(Number(value || 0));
+    }
+
+    function showToast(message, type = 'success') {
+        if (!selectors.toast) {
+            return;
+        }
+        selectors.toast.dataset.type = type;
+        selectors.toast.querySelector('[data-events-toast-message]').textContent = message;
+        selectors.toast.hidden = false;
+        selectors.toast.classList.add('is-visible');
+        setTimeout(() => {
+            selectors.toast.classList.remove('is-visible');
+            selectors.toast.hidden = true;
+        }, 2400);
+    }
+
+    function buildQuery(params) {
+        const query = new URLSearchParams();
+        Object.entries(params || {}).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && String(value) !== '') {
+                query.append(key, value);
+            }
+        });
+        return query.toString();
+    }
+
+    function fetchJSON(action, options = {}) {
+        const method = options.method || 'GET';
+        const headers = options.headers || {};
+        let url = `${endpoint}?action=${encodeURIComponent(action)}`;
+        const fetchOptions = { method, headers: { ...headers } };
+        if (method === 'GET' && options.params) {
+            const query = buildQuery(options.params);
+            if (query) {
+                url += `&${query}`;
+            }
+        }
+        if (method !== 'GET' && options.body) {
+            fetchOptions.body = JSON.stringify(options.body);
+            fetchOptions.headers['Content-Type'] = 'application/json';
+        }
+        return fetch(url, fetchOptions).then((response) => {
+            if (!response.ok) {
+                throw new Error('Request failed');
+            }
+            return response.json();
+        });
+    }
+
+    function renderStats(stats) {
+        if (selectors.stats.events) {
+            selectors.stats.events.textContent = stats.total_events ?? state.eventRows.length;
+        }
+        if (selectors.stats.tickets) {
+            selectors.stats.tickets.textContent = stats.total_tickets_sold ?? 0;
+        }
+        if (selectors.stats.revenue) {
+            const revenue = stats.total_revenue ?? 0;
+            selectors.stats.revenue.textContent = formatCurrency(revenue);
+        }
+        const heroMeta = selectors.attendance.wrapper;
+        if (heroMeta) {
+            const count = stats.attendance_checked_in ?? stats.checked_in ?? 0;
+            const capacity = stats.attendance_capacity ?? stats.capacity ?? 0;
+            const countNode = heroMeta.querySelector('.events-hero-count');
+            const labelNode = heroMeta.querySelector('.events-hero-label');
+            if (countNode) {
+                countNode.textContent = count;
+            }
+            if (labelNode) {
+                labelNode.textContent = `Checked-in of ${Math.max(capacity, 1)} capacity`;
+            }
+        }
+    }
+
+    function renderUpcoming(list) {
+        if (!selectors.upcoming) {
+            return;
+        }
+        selectors.upcoming.innerHTML = '';
+        if (!Array.isArray(list) || list.length === 0) {
+            const li = document.createElement('li');
+            li.className = 'events-empty';
+            li.textContent = 'No upcoming events scheduled. Create one to get started.';
+            selectors.upcoming.appendChild(li);
+            return;
+        }
+        list.forEach((item) => {
+            const li = document.createElement('li');
+            li.className = 'events-upcoming-item';
+            li.dataset.eventId = item.id;
+            li.innerHTML = `
+                <div class="events-upcoming-primary">
+                    <span class="events-upcoming-title">${item.title || 'Untitled event'}</span>
+                    <span class="events-upcoming-date">${formatDate(item.start)}</span>
+                </div>
+                <div class="events-upcoming-meta">
+                    <span class="events-upcoming-stat" data-label="Tickets sold">${item.tickets_sold ?? 0}</span>
+                    <span class="events-upcoming-stat" data-label="Revenue">${formatCurrency(item.revenue ?? 0)}</span>
+                </div>
+            `;
+            selectors.upcoming.appendChild(li);
+        });
+    }
+
+    function createStatusBadge(status) {
+        const span = document.createElement('span');
+        const value = String(status || 'draft');
+        span.className = `events-status events-status--${value}`;
+        span.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+        return span;
+    }
+
+    function createEventRow(row) {
+        const tr = document.createElement('tr');
+        tr.dataset.eventId = row.id;
+        const startLabel = formatDate(row.start);
+        const endLabel = row.end ? formatDate(row.end) : '';
+        tr.innerHTML = `
+            <td>
+                <div class="events-table-title">${row.title}</div>
+                <div class="events-table-sub">${row.location || ''}</div>
+            </td>
+            <td>
+                <div>${startLabel}</div>
+                ${endLabel ? `<div class="events-table-sub">Ends ${endLabel}</div>` : ''}
+            </td>
+            <td>${row.location || 'TBA'}</td>
+            <td>${row.tickets_sold ?? 0} / ${row.capacity ?? 0}</td>
+            <td>${formatCurrency(row.revenue ?? 0)}</td>
+            <td data-status></td>
+            <td class="events-table-actions">
+                <button type="button" class="events-action" data-events-action="edit" data-id="${row.id}">
+                    <i class="fa-solid fa-pen"></i><span class="sr-only">Edit</span>
+                </button>
+                <button type="button" class="events-action" data-events-action="sales" data-id="${row.id}">
+                    <i class="fa-solid fa-chart-column"></i><span class="sr-only">View sales</span>
+                </button>
+                <button type="button" class="events-action" data-events-action="end" data-id="${row.id}">
+                    <i class="fa-solid fa-flag-checkered"></i><span class="sr-only">End event</span>
+                </button>
+                <button type="button" class="events-action danger" data-events-action="delete" data-id="${row.id}">
+                    <i class="fa-solid fa-trash"></i><span class="sr-only">Delete</span>
+                </button>
+            </td>
+        `;
+        const badgeCell = tr.querySelector('[data-status]');
+        badgeCell.appendChild(createStatusBadge(row.status));
+        return tr;
+    }
+
+    function applyEventFilters(rows) {
+        return rows.filter((row) => {
+            const matchesStatus = !state.filters.status || row.status === state.filters.status;
+            const term = state.filters.search.trim().toLowerCase();
+            const matchesSearch = !term || `${row.title} ${row.location}`.toLowerCase().includes(term);
+            return matchesStatus && matchesSearch;
+        });
+    }
+
+    function renderEventsTable() {
+        if (!selectors.tableBody) {
+            return;
+        }
+        selectors.tableBody.innerHTML = '';
+        const filtered = applyEventFilters(state.eventRows);
+        if (filtered.length === 0) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 7;
+            cell.className = 'events-empty';
+            cell.textContent = 'No events match the current filters.';
+            row.appendChild(cell);
+            selectors.tableBody.appendChild(row);
+            return;
+        }
+        filtered.forEach((row) => {
+            selectors.tableBody.appendChild(createEventRow(row));
+        });
+    }
+
+    function populateEventSelect(select) {
+        if (!select) {
+            return;
+        }
+        const current = select.value;
+        select.innerHTML = '';
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'All events';
+        select.appendChild(defaultOption);
+        Array.from(state.events.values())
+            .sort((a, b) => {
+                const aTime = a.start ? new Date(a.start).getTime() : 0;
+                const bTime = b.start ? new Date(b.start).getTime() : 0;
+                return aTime - bTime;
+            })
+            .forEach((event) => {
+                const option = document.createElement('option');
+                option.value = event.id;
+                option.textContent = event.title || 'Untitled event';
+                select.appendChild(option);
+            });
+        if (current && select.querySelector(`option[value="${current}"]`)) {
+            select.value = current;
+        }
+    }
+
+    function renderOrdersTable() {
+        if (!selectors.orders.body) {
+            return;
+        }
+        selectors.orders.body.innerHTML = '';
+        if (!Array.isArray(state.orders) || state.orders.length === 0) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 7;
+            cell.className = 'events-empty';
+            cell.textContent = 'No orders found for the selected filters.';
+            row.appendChild(cell);
+            selectors.orders.body.appendChild(row);
+            return;
+        }
+        state.orders.forEach((order) => {
+            const tr = document.createElement('tr');
+            const totalTickets = order.tickets ?? 0;
+            tr.innerHTML = `
+                <td>${order.id}</td>
+                <td>${order.buyer_name || ''}</td>
+                <td>${totalTickets}</td>
+                <td>${formatCurrency(order.amount ?? 0)}</td>
+                <td><span class="events-status events-status--${order.status}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span></td>
+                <td>${formatDate(order.ordered_at)}</td>
+                <td>
+                    <div class="events-order-checkin" data-order="${order.id}" data-total="${totalTickets}">
+                        <span>${order.checked_in ?? 0} / ${totalTickets}</span>
+                        <button type="button" class="events-action" data-order-checkin="${order.id}">
+                            <i class="fa-solid fa-user-check"></i><span class="sr-only">Update check-in</span>
+                        </button>
+                    </div>
+                </td>
+            `;
+            selectors.orders.body.appendChild(tr);
+        });
+    }
+
+    function updateAttendancePanel() {
+        if (!selectors.attendance.event) {
+            return;
+        }
+        const eventId = selectors.attendance.event.value;
+        if (!eventId) {
+            selectors.attendance.rate.textContent = '0% attended';
+            selectors.attendance.detail.textContent = '0 of 0 tickets';
+            selectors.attendance.input.value = '0';
+            selectors.attendance.list.innerHTML = '<li class="events-empty">Select an event to begin tracking attendance.</li>';
+            return;
+        }
+        const event = state.events.get(eventId);
+        const metrics = state.eventRows.find((row) => row.id === eventId);
+        const sales = state.salesSummary.find((row) => row.event_id === eventId);
+        const capacity = metrics ? (metrics.capacity ?? 0) : 0;
+        const checkedIn = sales ? (sales.checked_in ?? 0) : 0;
+        const sold = metrics ? (metrics.tickets_sold ?? 0) : 0;
+        const rate = capacity > 0 ? Math.round((checkedIn / capacity) * 100) : 0;
+        selectors.attendance.rate.textContent = `${rate}% attended`;
+        selectors.attendance.detail.textContent = `${checkedIn} of ${sold || capacity} tickets`;
+        selectors.attendance.input.value = String(checkedIn);
+        if (event && event.track_attendance) {
+            selectors.attendance.input.removeAttribute('disabled');
+            selectors.attendance.apply.removeAttribute('disabled');
+        } else {
+            selectors.attendance.input.setAttribute('disabled', 'true');
+            selectors.attendance.apply.setAttribute('disabled', 'true');
+        }
+
+        const relatedOrders = state.orders.filter((order) => order.event === (event ? event.title : '') || order.event_id === eventId);
+        selectors.attendance.list.innerHTML = '';
+        if (relatedOrders.length === 0) {
+            const li = document.createElement('li');
+            li.className = 'events-empty';
+            li.textContent = 'No orders yet. Attendance will appear as sales come in.';
+            selectors.attendance.list.appendChild(li);
+        } else {
+            relatedOrders.slice(0, 5).forEach((order) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${order.buyer_name || order.id}</strong> checked in ${order.checked_in ?? 0} of ${order.tickets ?? 0}`;
+                selectors.attendance.list.appendChild(li);
+            });
+        }
+    }
+
+    function updateAttendanceOptions() {
+        populateEventSelect(selectors.orders.filterEvent);
+        const attendanceSelect = selectors.attendance.event;
+        if (!attendanceSelect) {
+            return;
+        }
+        const current = attendanceSelect.value;
+        attendanceSelect.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Select event';
+        attendanceSelect.appendChild(placeholder);
+        Array.from(state.events.values()).forEach((event) => {
+            const option = document.createElement('option');
+            option.value = event.id;
+            option.textContent = event.title || 'Untitled event';
+            if (!event.track_attendance) {
+                option.dataset.disabled = 'true';
+                option.textContent += ' (tracking off)';
+            }
+            attendanceSelect.appendChild(option);
+        });
+        if (current && attendanceSelect.querySelector(`option[value="${current}"]`)) {
+            attendanceSelect.value = current;
+        }
+        updateAttendancePanel();
+    }
+
+    function openModal(modal) {
+        if (!modal) {
+            return;
+        }
+        modal.classList.add('is-open');
+    }
+
+    function closeModal(modal) {
+        if (!modal) {
+            return;
+        }
+        modal.classList.remove('is-open');
+        const form = modal.querySelector('form');
+        if (form) {
+            form.reset();
+            const editor = form.querySelector('[data-events-editor]');
+            if (editor) {
+                editor.innerHTML = '';
+            }
+            const tickets = form.querySelector('[data-events-tickets]');
+            if (tickets) {
+                tickets.innerHTML = '<div class="events-ticket-empty">No ticket types yet. Add one to begin selling.</div>';
+            }
+        }
+    }
+
+    function bindModalDismissals() {
+        document.querySelectorAll('[data-events-close]').forEach((button) => {
+            button.addEventListener('click', () => {
+                closeModal(button.closest('.events-modal-backdrop'));
+            });
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeModal(selectors.modal);
+                closeModal(selectors.confirmModal);
+            }
+        });
+    }
+
+    function fillEventForm(eventData) {
+        const modal = selectors.modal;
+        if (!modal) {
+            return;
+        }
+        const form = modal.querySelector('[data-events-form="event"]');
+        form.reset();
+        form.querySelector('[name="id"]').value = eventData?.id || '';
+        form.querySelector('[name="title"]').value = eventData?.title || '';
+        form.querySelector('[name="location"]').value = eventData?.location || '';
+        form.querySelector('[name="start"]').value = eventData?.start ? eventData.start.substring(0, 16) : '';
+        form.querySelector('[name="end"]').value = eventData?.end ? eventData.end.substring(0, 16) : '';
+        form.querySelector(`[name="status"][value="${eventData?.status || 'draft'}"]`).checked = true;
+        const toggle = form.querySelector('[name="track_attendance"]');
+        toggle.checked = Boolean(eventData?.track_attendance);
+        const editor = form.querySelector('[data-events-editor]');
+        const target = form.querySelector('[data-events-editor-target]');
+        if (editor && target) {
+            editor.innerHTML = eventData?.description || '';
+            target.value = eventData?.description || '';
+        }
+        const ticketContainer = form.querySelector('[data-events-tickets]');
+        ticketContainer.innerHTML = '';
+        const tickets = Array.isArray(eventData?.tickets) ? eventData.tickets : [];
+        if (tickets.length === 0) {
+            ticketContainer.innerHTML = '<div class="events-ticket-empty">No ticket types yet. Add one to begin selling.</div>';
+        } else {
+            tickets.forEach((ticket) => addTicketRow(ticketContainer, ticket));
+        }
+    }
+
+    function addTicketRow(container, ticket = {}) {
+        if (!container) {
+            return;
+        }
+        const row = document.createElement('div');
+        row.className = 'events-ticket-row';
+        row.innerHTML = `
+            <input type="hidden" data-ticket-field="id" value="${ticket.id || ''}">
+            <label>
+                <span>Name</span>
+                <input type="text" data-ticket-field="name" value="${ticket.name || ''}" required>
+            </label>
+            <label>
+                <span>Price</span>
+                <input type="number" min="0" step="0.01" data-ticket-field="price" value="${ticket.price ?? 0}" required>
+            </label>
+            <label>
+                <span>Quantity</span>
+                <input type="number" min="0" step="1" data-ticket-field="quantity" value="${ticket.quantity ?? 0}" required>
+            </label>
+            <label class="events-ticket-toggle">
+                <input type="checkbox" data-ticket-field="enabled" ${ticket.enabled === false ? '' : 'checked'}>
+                <span>Enabled</span>
+            </label>
+            <button type="button" class="events-action danger" data-ticket-remove>
+                <i class="fa-solid fa-times"></i><span class="sr-only">Remove ticket</span>
+            </button>
+        `;
+        const empty = container.querySelector('.events-ticket-empty');
+        if (empty) {
+            empty.remove();
+        }
+        container.appendChild(row);
+    }
+
+    function gatherTickets(container) {
+        const rows = Array.from(container.querySelectorAll('.events-ticket-row'));
+        return rows.map((row) => ({
+            id: row.querySelector('[data-ticket-field="id"]').value || undefined,
+            name: row.querySelector('[data-ticket-field="name"]').value.trim(),
+            price: parseFloat(row.querySelector('[data-ticket-field="price"]').value || '0'),
+            quantity: parseInt(row.querySelector('[data-ticket-field="quantity"]').value || '0', 10),
+            enabled: row.querySelector('[data-ticket-field="enabled"]').checked,
+        })).filter((ticket) => ticket.name !== '');
+    }
+
+    function setupEditor(form) {
+        const toolbar = form.querySelector('.events-editor-toolbar');
+        const editor = form.querySelector('[data-events-editor]');
+        const target = form.querySelector('[data-events-editor-target]');
+        if (!toolbar || !editor || !target) {
+            return;
+        }
+        toolbar.addEventListener('click', (event) => {
+            const command = event.target.closest('[data-editor-command]')?.dataset.editorCommand;
+            if (!command) {
+                return;
+            }
+            event.preventDefault();
+            document.execCommand(command, false, null);
+            target.value = editor.innerHTML;
+        });
+        editor.addEventListener('input', () => {
+            target.value = editor.innerHTML;
+        });
+    }
+
+    function handleEventForm() {
+        const modal = selectors.modal;
+        if (!modal) {
+            return;
+        }
+        const form = modal.querySelector('[data-events-form="event"]');
+        setupEditor(form);
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const data = new FormData(form);
+            const payload = Object.fromEntries(data.entries());
+            payload.tickets = gatherTickets(form.querySelector('[data-events-tickets]'));
+            payload.track_attendance = form.querySelector('[name="track_attendance"]').checked;
+            return fetchJSON('save_event', { method: 'POST', body: payload })
+                .then((response) => {
+                    if (response?.event?.id) {
+                        state.events.set(response.event.id, response.event);
+                    }
+                    closeModal(selectors.modal);
+                    showToast('Event saved successfully.');
+                    refreshAll();
+                })
+                .catch(() => {
+                    showToast('Unable to save event.', 'error');
+                });
+        });
+        modal.addEventListener('click', (event) => {
+            if (event.target.matches('[data-ticket-remove]')) {
+                const row = event.target.closest('.events-ticket-row');
+                if (row) {
+                    row.remove();
+                }
+                const container = modal.querySelector('[data-events-tickets]');
+                if (container && container.children.length === 0) {
+                    container.innerHTML = '<div class="events-ticket-empty">No ticket types yet. Add one to begin selling.</div>';
+                }
+            }
+        });
+        const addTicketBtn = modal.querySelector('[data-events-ticket-add]');
+        addTicketBtn.addEventListener('click', () => {
+            addTicketRow(modal.querySelector('[data-events-tickets]'));
+        });
+    }
+
+    function openEventModal(eventId) {
+        const modal = selectors.modal;
+        if (!modal) {
+            return;
+        }
+        const title = modal.querySelector('.events-modal-title');
+        title.textContent = eventId ? 'Edit event' : 'Create event';
+        if (eventId) {
+            fetchJSON('get_event', { params: { id: eventId } })
+                .then((response) => {
+                    fillEventForm(response.event || {});
+                    openModal(modal.closest('.events-modal-backdrop'));
+                })
+                .catch(() => {
+                    showToast('Unable to load event.', 'error');
+                });
+        } else {
+            fillEventForm({});
+            openModal(modal.closest('.events-modal-backdrop'));
+        }
+    }
+
+    function openConfirm(message, onConfirm) {
+        const modal = selectors.confirmModal;
+        if (!modal) {
+            return;
+        }
+        modal.querySelector('[data-events-confirm-message]').textContent = message;
+        state.confirm = onConfirm;
+        openModal(modal);
+    }
+
+    function attachConfirmHandler() {
+        if (!selectors.confirmModal) {
+            return;
+        }
+        selectors.confirmModal.querySelector('[data-events-confirm]').addEventListener('click', () => {
+            if (typeof state.confirm === 'function') {
+                state.confirm();
+            }
+            state.confirm = null;
+            closeModal(selectors.confirmModal);
+        });
+    }
+
+    function refreshOrders() {
+        return fetchJSON('list_orders', { params: state.ordersFilter })
+            .then((response) => {
+                state.orders = Array.isArray(response.orders) ? response.orders : [];
+                renderOrdersTable();
+                updateAttendancePanel();
+            })
+            .catch(() => {
+                showToast('Unable to load orders.', 'error');
+            });
+    }
+
+    function refreshEvents() {
+        return fetchJSON('list_events')
+            .then((response) => {
+                state.eventRows = Array.isArray(response.events) ? response.events : [];
+                response.events.forEach((row) => {
+                    const existing = state.events.get(row.id);
+                    if (existing) {
+                        existing.status = row.status;
+                    }
+                });
+                renderEventsTable();
+                updateAttendanceOptions();
+            })
+            .catch(() => {
+                showToast('Unable to load events.', 'error');
+            });
+    }
+
+    function refreshOverview() {
+        return fetchJSON('overview')
+            .then((response) => {
+                renderStats({
+                    total_events: response.stats?.total_events,
+                    total_tickets_sold: response.stats?.total_tickets_sold,
+                    total_revenue: response.stats?.total_revenue,
+                    attendance_checked_in: response.attendance?.checked_in,
+                    attendance_capacity: response.attendance?.capacity,
+                });
+                const upcoming = (response.upcoming || []).map((item) => ({
+                    ...item,
+                    revenue: item.revenue,
+                }));
+                renderUpcoming(upcoming);
+            })
+            .catch(() => {
+                showToast('Unable to refresh overview.', 'error');
+            });
+    }
+
+    function refreshReportsSummary() {
+        return fetchJSON('reports_summary')
+            .then((response) => {
+                state.salesSummary = Array.isArray(response.reports) ? response.reports : [];
+                updateAttendancePanel();
+            })
+            .catch(() => {
+                showToast('Unable to load reports data.', 'error');
+            });
+    }
+
+    function refreshAll() {
+        refreshEvents();
+        refreshOrders();
+        refreshOverview();
+        refreshReportsSummary();
+    }
+
+    function attachEventListeners() {
+        if (selectors.filters.status) {
+            selectors.filters.status.addEventListener('change', (event) => {
+                state.filters.status = event.target.value;
+                renderEventsTable();
+            });
+        }
+        if (selectors.filters.search) {
+            selectors.filters.search.addEventListener('input', (event) => {
+                state.filters.search = event.target.value;
+                renderEventsTable();
+            });
+        }
+        root.addEventListener('click', (event) => {
+            const action = event.target.closest('[data-events-action]');
+            if (!action) {
+                return;
+            }
+            const id = action.dataset.id;
+            switch (action.dataset.eventsAction) {
+                case 'edit':
+                    openEventModal(id);
+                    break;
+                case 'sales':
+                    document.getElementById('eventsOrdersTitle')?.scrollIntoView({ behavior: 'smooth' });
+                    if (selectors.orders.filterEvent) {
+                        selectors.orders.filterEvent.value = id;
+                        state.ordersFilter.event = id;
+                        refreshOrders();
+                    }
+                    break;
+                case 'end':
+                    openConfirm('End this event? It will move to the ended state.', () => {
+                        fetchJSON('end_event', { method: 'POST', body: { id } })
+                            .then(() => {
+                                showToast('Event ended.');
+                                refreshAll();
+                            })
+                            .catch(() => {
+                                showToast('Unable to end event.', 'error');
+                            });
+                    });
+                    break;
+                case 'delete':
+                    openConfirm('Delete this event? This cannot be undone.', () => {
+                        fetchJSON('delete_event', { method: 'POST', body: { id } })
+                            .then(() => {
+                                state.events.delete(id);
+                                showToast('Event deleted.');
+                                refreshAll();
+                            })
+                            .catch(() => {
+                                showToast('Unable to delete event.', 'error');
+                            });
+                    });
+                    break;
+                default:
+                    break;
+            }
+        });
+        if (selectors.orders.filterEvent) {
+            selectors.orders.filterEvent.addEventListener('change', (event) => {
+                state.ordersFilter.event = event.target.value;
+                refreshOrders();
+            });
+        }
+        if (selectors.orders.filterStatus) {
+            selectors.orders.filterStatus.addEventListener('change', (event) => {
+                state.ordersFilter.status = event.target.value;
+                refreshOrders();
+            });
+        }
+        if (selectors.orders.exportBtn) {
+            selectors.orders.exportBtn.addEventListener('click', () => {
+                window.open(`${endpoint}?action=export_orders`, '_blank');
+            });
+        }
+        if (selectors.attendance.event) {
+            selectors.attendance.event.addEventListener('change', updateAttendancePanel);
+        }
+        if (selectors.attendance.apply) {
+            selectors.attendance.apply.addEventListener('click', () => {
+                const eventId = selectors.attendance.event.value;
+                const value = parseInt(selectors.attendance.input.value || '0', 10);
+                if (!eventId) {
+                    showToast('Select an event first.', 'error');
+                    return;
+                }
+                fetchJSON('update_attendance', { method: 'POST', body: { event_id: eventId, attended: value } })
+                    .then(() => {
+                        showToast('Attendance updated.');
+                        refreshReportsSummary();
+                        refreshOverview();
+                    })
+                    .catch(() => {
+                        showToast('Unable to update attendance.', 'error');
+                    });
+            });
+        }
+        if (selectors.orders.body) {
+            selectors.orders.body.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-order-checkin]');
+                if (!button) {
+                    return;
+                }
+                const wrapper = button.closest('[data-order]');
+                const orderId = button.dataset.orderCheckin;
+                const total = parseInt(wrapper?.dataset.total || '0', 10);
+                const current = parseInt(wrapper?.querySelector('span')?.textContent.split('/')[0] || '0', 10);
+                const nextValue = prompt('Tickets checked in', current);
+                if (nextValue === null) {
+                    return;
+                }
+                const checkedIn = Math.max(0, Math.min(parseInt(nextValue, 10) || 0, total));
+                fetchJSON('update_checkin', { method: 'POST', body: { order_id: orderId, checked_in: checkedIn } })
+                    .then(() => {
+                        showToast('Check-in updated.');
+                        refreshOrders();
+                        refreshReportsSummary();
+                        refreshOverview();
+                    })
+                    .catch(() => {
+                        showToast('Unable to update check-in.', 'error');
+                    });
+            });
+        }
+        root.addEventListener('click', (event) => {
+            if (event.target.matches('[data-events-open="event"]')) {
+                openEventModal(null);
+            }
+        });
+        const reportButtons = root.querySelectorAll('[data-events-report-download]');
+        reportButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const type = button.dataset.eventsReportDownload;
+                const rows = [['Event', 'Tickets Sold', 'Revenue', 'Attendance Rate', 'Status']];
+                state.salesSummary.forEach((item) => {
+                    rows.push([
+                        item.title,
+                        item.tickets_sold,
+                        item.revenue,
+                        `${item.attendance_rate ?? 0}%`,
+                        item.status,
+                    ]);
+                });
+                const csv = rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `events-${type}-report.csv`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            });
+        });
+    }
+
+    function init() {
+        bindModalDismissals();
+        attachConfirmHandler();
+        handleEventForm();
+        attachEventListeners();
+        populateEventSelect(selectors.orders.filterEvent);
+        updateAttendanceOptions();
+        renderEventsTable();
+        renderOrdersTable();
+        refreshAll();
+    }
+
+    init();
+})();

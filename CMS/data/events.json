@@ -1,0 +1,84 @@
+[
+  {
+    "id": "evt_2024summit",
+    "title": "Spark Growth Summit",
+    "description": "<p>A full-day conference covering marketing automation, customer journeys, and retention strategies.</p>",
+    "location": "Riverfront Convention Center",
+    "start": "2024-11-14T09:00:00-05:00",
+    "end": "2024-11-14T18:00:00-05:00",
+    "status": "published",
+    "track_attendance": true,
+    "tickets": [
+      {
+        "id": "tkt_vip_1",
+        "name": "VIP",
+        "price": 249,
+        "quantity": 80,
+        "enabled": true
+      },
+      {
+        "id": "tkt_gen_1",
+        "name": "General Admission",
+        "price": 129,
+        "quantity": 320,
+        "enabled": true
+      }
+    ],
+    "created_at": "2024-06-01T12:00:00Z",
+    "published_at": "2024-06-01T12:05:00Z",
+    "updated_at": "2024-06-01T12:05:00Z",
+    "attended": 0
+  },
+  {
+    "id": "evt_masterclass25",
+    "title": "Content Strategy Masterclass",
+    "description": "<p>An immersive workshop focused on editorial planning and AI-assisted production workflows.</p>",
+    "location": "SparkCMS Studio",
+    "start": "2025-01-22T13:30:00-05:00",
+    "end": "2025-01-22T17:00:00-05:00",
+    "status": "draft",
+    "track_attendance": true,
+    "tickets": [
+      {
+        "id": "tkt_master_general",
+        "name": "General Admission",
+        "price": 89,
+        "quantity": 60,
+        "enabled": true
+      },
+      {
+        "id": "tkt_master_virtual",
+        "name": "Virtual Pass",
+        "price": 49,
+        "quantity": 200,
+        "enabled": true
+      }
+    ],
+    "created_at": "2024-08-15T10:00:00Z",
+    "updated_at": "2024-08-15T10:00:00Z",
+    "attended": 0
+  },
+  {
+    "id": "evt_brandlabs",
+    "title": "BrandLabs Meetup",
+    "description": "<p>Evening networking session with product showcases and lightning talks from partner teams.</p>",
+    "location": "Warehouse Eight",
+    "start": "2024-09-05T18:00:00-05:00",
+    "end": "2024-09-05T21:00:00-05:00",
+    "status": "published",
+    "track_attendance": false,
+    "tickets": [
+      {
+        "id": "tkt_brand_admit",
+        "name": "General Admission",
+        "price": 45,
+        "quantity": 150,
+        "enabled": true
+      }
+    ],
+    "created_at": "2024-05-10T09:15:00Z",
+    "published_at": "2024-05-12T11:00:00Z",
+    "updated_at": "2024-05-12T11:00:00Z",
+    "attended": 0
+  }
+]
