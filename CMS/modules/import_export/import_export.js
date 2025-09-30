@@ -1,5 +1,7 @@
 // File: import_export.js
 $(function(){
+    const $importBtn = $('#startImportBtn');
+    const $importInput = $('#importFileInput');
     const $exportBtn = $('#startExportBtn');
     const $importLastRun = $('#importLastRun');
     const $exportLastRun = $('#exportLastRun');
@@ -85,7 +87,7 @@ $(function(){
             .text(message);
     }
 
-    function setButtonLoading($button, loading){
+    function setButtonLoading($button, loading, loadingLabel){
         if (!$button.length) {
             return;
         }
@@ -96,7 +98,8 @@ $(function(){
         }
 
         if (loading) {
-            $label.text('Generating…');
+            const label = typeof loadingLabel === 'string' && loadingLabel !== '' ? loadingLabel : 'Generating…';
+            $label.text(label);
             $button.addClass('is-loading').prop('disabled', true).attr('aria-busy', 'true');
         } else {
             $label.text($button.data('defaultLabel'));
@@ -281,7 +284,7 @@ $(function(){
 
     function triggerExport(){
         clearStatus();
-        setButtonLoading($exportBtn, true);
+        setButtonLoading($exportBtn, true, 'Generating…');
 
         $.ajax({
             url: 'modules/import_export/export.php',
@@ -335,6 +338,79 @@ $(function(){
     if ($exportBtn.length) {
         $exportBtn.on('click', function(){
             triggerExport();
+        });
+    }
+
+    function resetImportInput(){
+        if ($importInput.length) {
+            $importInput.val('');
+        }
+    }
+
+    function triggerImport(file){
+        if (!$importBtn.length || !file) {
+            return;
+        }
+
+        clearStatus();
+        setButtonLoading($importBtn, true, 'Importing…');
+
+        const formData = new FormData();
+        formData.append('import_file', file, file.name || 'import.json');
+
+        $.ajax({
+            url: 'modules/import_export/import.php',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+        }).done(function(response){
+            const message = response && response.message ? response.message : 'Import completed successfully.';
+            setStatus(message, 'success');
+            loadStatus().fail(function(){
+                setStatus('Import completed, but the latest status could not be loaded.', 'info');
+            });
+        }).fail(function(jqXHR){
+            let message = 'Unable to complete the import. Please verify the file and try again.';
+            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                message = jqXHR.responseJSON.error;
+            }
+            setStatus(message, 'error');
+        }).always(function(){
+            setButtonLoading($importBtn, false);
+            resetImportInput();
+        });
+    }
+
+    if ($importBtn.length && $importInput.length) {
+        $importBtn.on('click', function(){
+            $importInput.trigger('click');
+        });
+
+        $importInput.on('change', function(event){
+            const files = event.target && event.target.files ? event.target.files : [];
+            const file = files.length > 0 ? files[0] : null;
+            if (!file) {
+                return;
+            }
+
+            if (file.size === 0) {
+                setStatus('The selected file is empty. Please choose a valid export file to import.', 'error');
+                resetImportInput();
+                return;
+            }
+
+            const fileName = file.name || '';
+            const mimeType = file.type || '';
+            const isJson = /\.json$/i.test(fileName) || mimeType === 'application/json' || mimeType === 'text/json';
+            if (!isJson) {
+                setStatus('Please choose a JSON export file to import.', 'error');
+                resetImportInput();
+                return;
+            }
+
+            triggerImport(file);
         });
     }
 
