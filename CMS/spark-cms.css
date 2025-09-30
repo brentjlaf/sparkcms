@@ -3440,7 +3440,8 @@
             text-transform: uppercase;
         }
 
-        .a11y-sort-group select {
+        .a11y-sort-group select,
+        .a11y-sort-select {
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -3460,12 +3461,15 @@
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .a11y-sort-group select:hover {
+        .a11y-sort-group select:hover,
+        .a11y-sort-select:hover {
             border-color: #94a3b8;
         }
 
         .a11y-sort-group select:focus,
-        .a11y-sort-group select:focus-visible {
+        .a11y-sort-group select:focus-visible,
+        .a11y-sort-select:focus,
+        .a11y-sort-select:focus-visible {
             outline: none;
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
