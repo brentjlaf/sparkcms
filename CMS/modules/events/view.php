@@ -25,8 +25,6 @@ $attendanceCapacity = array_sum(array_map(static function ($event) {
     return events_ticket_capacity($event, true);
 }, $events));
 
-$roles = events_default_roles();
-
 $initialPayload = [
     'events' => $events,
     'orders' => $orders,
@@ -222,33 +220,6 @@ $initialPayload = [
                         <li class="events-empty">Select an event to begin tracking attendance.</li>
                     </ul>
                 </div>
-            </div>
-        </section>
-
-        <section class="events-section" aria-labelledby="eventsRolesTitle">
-            <header class="events-section-header">
-                <div>
-                    <h3 class="events-section-title" id="eventsRolesTitle">User roles &amp; permissions</h3>
-                    <p class="events-section-description">Assign the right access to your team with simple permission tiers.</p>
-                </div>
-            </header>
-            <div class="events-table-wrapper">
-                <table class="data-table events-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Role</th>
-                            <th scope="col">Permissions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($roles as $role): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($role['role'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars($role['description'], ENT_QUOTES, 'UTF-8'); ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
             </div>
         </section>
 
