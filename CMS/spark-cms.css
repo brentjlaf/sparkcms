@@ -6640,6 +6640,15 @@
     max-width: 420px;
 }
 
+.blog-filter-toolbar {
+    display: flex;
+    flex: 1 1 320px;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
 .blog-search {
     display: flex;
     align-items: center;
@@ -6675,6 +6684,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+}
+
+.blog-filter-selects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: stretch;
 }
 
 .blog-filter-btn {
