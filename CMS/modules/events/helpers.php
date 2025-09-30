@@ -9,6 +9,7 @@ if (!function_exists('events_data_paths')) {
         return [
             'events' => $baseDir . '/events.json',
             'orders' => $baseDir . '/event_orders.json',
+            'categories' => $baseDir . '/event_categories.json',
         ];
     }
 }
@@ -22,6 +23,53 @@ if (!function_exists('events_ensure_storage')) {
                 file_put_contents($path, "[]\n");
             }
         }
+    }
+}
+
+if (!function_exists('events_slugify')) {
+    function events_slugify(string $value): string
+    {
+        $value = strtolower(trim($value));
+        $value = preg_replace('/[^a-z0-9]+/i', '-', $value);
+        $value = trim((string) $value, '-');
+        if ($value === '') {
+            return uniqid('category_', false);
+        }
+        return $value;
+    }
+}
+
+if (!function_exists('events_unique_slug')) {
+    function events_unique_slug(string $desired, array $categories, ?string $currentId = null): string
+    {
+        $slug = events_slugify($desired);
+        $base = $slug;
+        if ($base === '') {
+            $base = uniqid('category_', false);
+        }
+        $slug = $base;
+        $existing = [];
+        foreach ($categories as $category) {
+            if (!is_array($category)) {
+                continue;
+            }
+            $id = (string) ($category['id'] ?? '');
+            if ($currentId !== null && $id === $currentId) {
+                continue;
+            }
+            $key = strtolower((string) ($category['slug'] ?? ''));
+            if ($key !== '') {
+                $existing[$key] = true;
+            }
+        }
+        $candidate = strtolower($slug);
+        $suffix = 2;
+        while ($candidate === '' || isset($existing[$candidate])) {
+            $slug = $base . '-' . $suffix;
+            $candidate = strtolower($slug);
+            $suffix++;
+        }
+        return $slug;
     }
 }
 
@@ -55,6 +103,19 @@ if (!function_exists('events_read_orders')) {
     }
 }
 
+if (!function_exists('events_read_categories')) {
+    function events_read_categories(): array
+    {
+        events_ensure_storage();
+        $paths = events_data_paths();
+        $categories = read_json_file($paths['categories']);
+        if (!is_array($categories)) {
+            return [];
+        }
+        return events_sort_categories($categories);
+    }
+}
+
 if (!function_exists('events_write_events')) {
     function events_write_events(array $events): bool
     {
@@ -68,6 +129,45 @@ if (!function_exists('events_write_orders')) {
     {
         $paths = events_data_paths();
         return write_json_file($paths['orders'], array_values($orders));
+    }
+}
+
+if (!function_exists('events_sort_categories')) {
+    function events_sort_categories(array $categories): array
+    {
+        $normalized = [];
+        foreach ($categories as $category) {
+            if (!is_array($category)) {
+                continue;
+            }
+            $id = (string) ($category['id'] ?? '');
+            $name = trim((string) ($category['name'] ?? ''));
+            $slug = (string) ($category['slug'] ?? '');
+            if ($id === '' || $name === '') {
+                continue;
+            }
+            $normalized[] = [
+                'id' => $id,
+                'name' => $name,
+                'slug' => $slug,
+                'created_at' => $category['created_at'] ?? null,
+                'updated_at' => $category['updated_at'] ?? null,
+            ];
+        }
+
+        usort($normalized, static function ($a, $b) {
+            return strcasecmp($a['name'], $b['name']);
+        });
+
+        return array_values($normalized);
+    }
+}
+
+if (!function_exists('events_write_categories')) {
+    function events_write_categories(array $categories): bool
+    {
+        $paths = events_data_paths();
+        return write_json_file($paths['categories'], events_sort_categories($categories));
     }
 }
 
@@ -95,8 +195,38 @@ if (!function_exists('events_normalize_ticket')) {
     }
 }
 
+if (!function_exists('events_filter_category_ids')) {
+    function events_filter_category_ids($categoryIds, array $categories): array
+    {
+        if (!is_array($categoryIds)) {
+            return [];
+        }
+        $validIds = [];
+        $known = [];
+        foreach ($categories as $category) {
+            if (!is_array($category)) {
+                continue;
+            }
+            $id = (string) ($category['id'] ?? '');
+            if ($id !== '') {
+                $known[$id] = true;
+            }
+        }
+        foreach ($categoryIds as $categoryId) {
+            $categoryId = (string) $categoryId;
+            if ($categoryId === '' || !isset($known[$categoryId])) {
+                continue;
+            }
+            if (!in_array($categoryId, $validIds, true)) {
+                $validIds[] = $categoryId;
+            }
+        }
+        return $validIds;
+    }
+}
+
 if (!function_exists('events_normalize_event')) {
-    function events_normalize_event(array $event): array
+    function events_normalize_event(array $event, array $categories = []): array
     {
         $now = gmdate('c');
         if (empty($event['id'])) {
@@ -112,6 +242,7 @@ if (!function_exists('events_normalize_event')) {
             ? $event['status']
             : 'draft';
         $event['tickets'] = array_values(array_map('events_normalize_ticket', $event['tickets'] ?? []));
+        $event['categories'] = events_filter_category_ids($event['categories'] ?? [], $categories);
         if (!isset($event['published_at']) && $event['status'] === 'published') {
             $event['published_at'] = $now;
         }

@@ -37,6 +37,12 @@
         },
         modal: document.querySelector('[data-events-modal="event"]'),
         confirmModal: document.querySelector('[data-events-modal="confirm"]'),
+        categoriesModal: document.querySelector('[data-events-modal="categories"]'),
+        categoriesForm: document.querySelector('[data-events-form="category"]'),
+        categoriesList: document.querySelector('[data-events-categories-list]'),
+        categoriesFormTitle: document.querySelector('[data-events-category-form-title]'),
+        categoriesSubmit: document.querySelector('[data-events-category-submit]'),
+        categoriesReset: document.querySelector('[data-events-category-reset]'),
         toast: document.querySelector('[data-events-toast]'),
     };
 
@@ -45,6 +51,7 @@
         eventRows: [],
         orders: [],
         salesSummary: [],
+        categories: [],
         filters: {
             status: '',
             search: '',
@@ -54,6 +61,7 @@
             status: '',
         },
         confirm: null,
+        categoryEditing: null,
     };
 
     if (Array.isArray(initialPayload.events)) {
@@ -62,6 +70,9 @@
                 state.events.set(String(event.id), event);
             }
         });
+    }
+    if (Array.isArray(initialPayload.categories)) {
+        state.categories = sortCategories(initialPayload.categories);
     }
     if (initialPayload.sales && typeof initialPayload.sales === 'object') {
         state.salesSummary = Object.entries(initialPayload.sales).map(([eventId, metrics]) => ({
@@ -114,6 +125,144 @@
             currency: 'USD',
             minimumFractionDigits: 2,
         }).format(Number(value || 0));
+    }
+
+    function sortCategories(list) {
+        if (!Array.isArray(list)) {
+            return [];
+        }
+        return list
+            .slice()
+            .filter((item) => item && item.id && item.name)
+            .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' }));
+    }
+
+    function getCategoryOptionsContainer() {
+        return selectors.modal?.querySelector('[data-events-category-options]') || null;
+    }
+
+    function getSelectedCategoryIds() {
+        const container = getCategoryOptionsContainer();
+        if (!container) {
+            return [];
+        }
+        return Array.from(container.querySelectorAll('input[name="categories[]"]:checked')).map((input) => input.value);
+    }
+
+    function renderCategoryOptions(selectedIds = []) {
+        const container = getCategoryOptionsContainer();
+        if (!container) {
+            return;
+        }
+        const selectedSet = new Set(Array.isArray(selectedIds) ? selectedIds.map((id) => String(id)) : []);
+        container.innerHTML = '';
+        if (!Array.isArray(state.categories) || state.categories.length === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'events-category-empty';
+            empty.textContent = 'No categories yet. Manage categories to create one.';
+            container.appendChild(empty);
+            return;
+        }
+        state.categories.forEach((category) => {
+            const label = document.createElement('label');
+            label.className = 'events-category-item';
+            label.innerHTML = `
+                <input type="checkbox" name="categories[]" value="${category.id}">
+                <span>${category.name}</span>
+            `;
+            const input = label.querySelector('input');
+            if (input && selectedSet.has(String(category.id))) {
+                input.checked = true;
+            }
+            container.appendChild(label);
+        });
+    }
+
+    function renderCategoryList() {
+        const list = selectors.categoriesList;
+        if (!list) {
+            return;
+        }
+        list.innerHTML = '';
+        if (!Array.isArray(state.categories) || state.categories.length === 0) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 4;
+            cell.className = 'events-empty';
+            cell.textContent = 'No categories yet. Create one above.';
+            row.appendChild(cell);
+            list.appendChild(row);
+            return;
+        }
+        state.categories.forEach((category) => {
+            const row = document.createElement('tr');
+            const updatedLabel = category.updated_at ? formatDate(category.updated_at) : '—';
+            row.innerHTML = `
+                <td>${category.name}</td>
+                <td>${category.slug || ''}</td>
+                <td>${updatedLabel}</td>
+                <td class="events-table-actions">
+                    <button type="button" class="events-action" data-events-category-edit data-id="${category.id}">
+                        <i class="fa-solid fa-pen"></i><span class="sr-only">Edit</span>
+                    </button>
+                    <button type="button" class="events-action danger" data-events-category-delete data-id="${category.id}">
+                        <i class="fa-solid fa-trash"></i><span class="sr-only">Delete</span>
+                    </button>
+                </td>
+            `;
+            list.appendChild(row);
+        });
+    }
+
+    function updateCategoryFormMode() {
+        if (selectors.categoriesFormTitle) {
+            selectors.categoriesFormTitle.textContent = state.categoryEditing ? 'Edit category' : 'Create category';
+        }
+        if (selectors.categoriesSubmit) {
+            selectors.categoriesSubmit.textContent = state.categoryEditing ? 'Update category' : 'Save category';
+        }
+    }
+
+    function resetCategoryForm() {
+        if (selectors.categoriesForm) {
+            selectors.categoriesForm.reset();
+        }
+        state.categoryEditing = null;
+        updateCategoryFormMode();
+    }
+
+    function fillCategoryForm(category) {
+        if (!selectors.categoriesForm) {
+            return;
+        }
+        selectors.categoriesForm.querySelector('[name="id"]').value = category?.id || '';
+        selectors.categoriesForm.querySelector('[name="name"]').value = category?.name || '';
+        selectors.categoriesForm.querySelector('[name="slug"]').value = category?.slug || '';
+        state.categoryEditing = category?.id || null;
+        updateCategoryFormMode();
+    }
+
+    function openCategoriesModal(categoryId = null) {
+        if (!selectors.categoriesModal) {
+            return;
+        }
+        renderCategoryList();
+        resetCategoryForm();
+        if (categoryId) {
+            const category = state.categories.find((item) => String(item.id) === String(categoryId));
+            if (category) {
+                fillCategoryForm(category);
+            }
+        }
+        openModal(selectors.categoriesModal);
+    }
+
+    function closeCategoryModal() {
+        if (!selectors.categoriesModal) {
+            return;
+        }
+        resetCategoryForm();
+        closeModal(selectors.categoriesModal);
     }
 
     function showToast(message, type = 'success') {
@@ -402,13 +551,22 @@
     function bindModalDismissals() {
         document.querySelectorAll('[data-events-close]').forEach((button) => {
             button.addEventListener('click', () => {
-                closeModal(button.closest('.events-modal-backdrop'));
+                const backdrop = button.closest('.events-modal-backdrop');
+                if (!backdrop) {
+                    return;
+                }
+                if (backdrop === selectors.categoriesModal) {
+                    closeCategoryModal();
+                } else {
+                    closeModal(backdrop);
+                }
             });
         });
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
                 closeModal(selectors.modal);
                 closeModal(selectors.confirmModal);
+                closeCategoryModal();
             }
         });
     }
@@ -432,6 +590,7 @@
             editor.innerHTML = eventData?.description || '';
             target.value = eventData?.description || '';
         }
+        renderCategoryOptions(Array.isArray(eventData?.categories) ? eventData.categories : []);
         const ticketContainer = form.querySelector('[data-events-tickets]');
         ticketContainer.innerHTML = '';
         const tickets = Array.isArray(eventData?.tickets) ? eventData.tickets : [];
@@ -488,6 +647,23 @@
         })).filter((ticket) => ticket.name !== '');
     }
 
+    function serializeForm(form) {
+        const formData = new FormData(form);
+        const payload = {};
+        formData.forEach((value, key) => {
+            if (key.endsWith('[]')) {
+                const base = key.slice(0, -2);
+                if (!Array.isArray(payload[base])) {
+                    payload[base] = [];
+                }
+                payload[base].push(value);
+            } else {
+                payload[key] = value;
+            }
+        });
+        return payload;
+    }
+
     function setupEditor(form) {
         const toolbar = form.querySelector('.events-editor-toolbar');
         const editor = form.querySelector('[data-events-editor]');
@@ -518,8 +694,7 @@
         setupEditor(form);
         form.addEventListener('submit', (event) => {
             event.preventDefault();
-            const data = new FormData(form);
-            const payload = Object.fromEntries(data.entries());
+            const payload = serializeForm(form);
             payload.tickets = gatherTickets(form.querySelector('[data-events-tickets]'));
             return fetchJSON('save_event', { method: 'POST', body: payload })
                 .then((response) => {
@@ -616,6 +791,7 @@
                     const existing = state.events.get(row.id);
                     if (existing) {
                         existing.status = row.status;
+                        existing.categories = Array.isArray(row.categories) ? row.categories : [];
                     }
                 });
                 renderEventsTable();
@@ -656,11 +832,26 @@
             });
     }
 
+    function refreshCategories() {
+        return fetchJSON('list_categories')
+            .then((response) => {
+                if (Array.isArray(response.categories)) {
+                    state.categories = sortCategories(response.categories);
+                    renderCategoryList();
+                    renderCategoryOptions(getSelectedCategoryIds());
+                }
+            })
+            .catch(() => {
+                showToast('Unable to load categories.', 'error');
+            });
+    }
+
     function refreshAll() {
         refreshEvents();
         refreshOrders();
         refreshOverview();
         refreshReportsSummary();
+        refreshCategories();
     }
 
     function attachEventListeners() {
@@ -740,11 +931,6 @@
                 window.open(`${endpoint}?action=export_orders`, '_blank');
             });
         }
-        root.addEventListener('click', (event) => {
-            if (event.target.matches('[data-events-open="event"]')) {
-                openEventModal(null);
-            }
-        });
         const reportButtons = root.querySelectorAll('[data-events-report-download]');
         reportButtons.forEach((button) => {
             button.addEventListener('click', () => {
@@ -771,17 +957,116 @@
         });
     }
 
+    function handleCategoryForm() {
+        if (selectors.categoriesForm) {
+            selectors.categoriesForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const formData = new FormData(selectors.categoriesForm);
+                const payload = {
+                    id: formData.get('id') || undefined,
+                    name: String(formData.get('name') || '').trim(),
+                    slug: String(formData.get('slug') || '').trim(),
+                };
+                if (!payload.name) {
+                    showToast('Category name is required.', 'error');
+                    return;
+                }
+                if (!payload.id) {
+                    delete payload.id;
+                }
+                if (!payload.slug) {
+                    delete payload.slug;
+                }
+                const isUpdate = Boolean(state.categoryEditing);
+                fetchJSON('save_category', { method: 'POST', body: payload })
+                    .then((response) => {
+                        if (Array.isArray(response.categories)) {
+                            state.categories = sortCategories(response.categories);
+                        }
+                        renderCategoryList();
+                        renderCategoryOptions(getSelectedCategoryIds());
+                        showToast(isUpdate ? 'Category updated.' : 'Category created.');
+                        resetCategoryForm();
+                    })
+                    .catch(() => {
+                        showToast('Unable to save category.', 'error');
+                    });
+            });
+        }
+        if (selectors.categoriesReset) {
+            selectors.categoriesReset.addEventListener('click', (event) => {
+                event.preventDefault();
+                resetCategoryForm();
+            });
+        }
+        if (selectors.categoriesModal) {
+            selectors.categoriesModal.addEventListener('click', (event) => {
+                const editBtn = event.target.closest('[data-events-category-edit]');
+                if (editBtn) {
+                    const category = state.categories.find((item) => String(item.id) === String(editBtn.dataset.id));
+                    if (category) {
+                        fillCategoryForm(category);
+                        selectors.categoriesForm?.querySelector('[name="name"]').focus();
+                    }
+                    return;
+                }
+                const deleteBtn = event.target.closest('[data-events-category-delete]');
+                if (deleteBtn) {
+                    const id = deleteBtn.dataset.id;
+                    openConfirm('Delete this category? It will be removed from any events.', () => {
+                        fetchJSON('delete_category', { method: 'POST', body: { id } })
+                            .then((response) => {
+                                if (Array.isArray(response.categories)) {
+                                    state.categories = sortCategories(response.categories);
+                                } else {
+                                    state.categories = [];
+                                }
+                                state.events.forEach((event) => {
+                                    if (Array.isArray(event.categories)) {
+                                        event.categories = event.categories.filter((categoryId) => String(categoryId) !== String(id));
+                                    }
+                                });
+                                renderCategoryList();
+                                renderCategoryOptions(getSelectedCategoryIds());
+                                showToast('Category deleted.');
+                                resetCategoryForm();
+                            })
+                            .catch(() => {
+                                showToast('Unable to delete category.', 'error');
+                            });
+                    });
+                }
+            });
+        }
+    }
+
     function init() {
         bindModalDismissals();
         attachConfirmHandler();
         handleEventForm();
+        handleCategoryForm();
         attachEventListeners();
         populateEventSelect(selectors.orders.filterEvent);
         renderEventsTable();
         renderOrdersTable();
         renderReportsTable();
+        renderCategoryOptions();
+        renderCategoryList();
         refreshAll();
     }
+
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-events-open]');
+        if (!trigger) {
+            return;
+        }
+        const type = trigger.dataset.eventsOpen;
+        if (type === 'event') {
+            openEventModal(null);
+        } else if (type === 'categories') {
+            openCategoriesModal();
+        }
+    });
 
     init();
 })();
