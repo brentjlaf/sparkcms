@@ -66,13 +66,11 @@
                     </div>
                     <div class="blog-filter-selects">
                         <div class="blog-select-filter">
-                            <label for="categoryFilter">Category</label>
                             <select id="categoryFilter">
                                 <option value="">All Categories</option>
                             </select>
                         </div>
                         <div class="blog-select-filter">
-                            <label for="authorFilter">Author</label>
                             <select id="authorFilter">
                                 <option value="">All Authors</option>
                             </select>
