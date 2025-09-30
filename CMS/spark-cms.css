@@ -3440,7 +3440,8 @@
             text-transform: uppercase;
         }
 
-        #speedSortSelect {
+        #speedSortSelect,
+        #seoSortSelect {
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -3460,12 +3461,15 @@
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        #speedSortSelect:hover {
+        #speedSortSelect:hover,
+        #seoSortSelect:hover {
             border-color: #94a3b8;
         }
 
         #speedSortSelect:focus,
-        #speedSortSelect:focus-visible {
+        #speedSortSelect:focus-visible,
+        #seoSortSelect:focus,
+        #seoSortSelect:focus-visible {
             outline: none;
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
