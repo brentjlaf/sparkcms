@@ -12529,6 +12529,21 @@ body.calendar-modal-open {
     text-decoration: none;
 }
 
+.commerce-link-button {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.commerce-link-button:focus {
+    outline: 2px solid rgba(99, 102, 241, 0.4);
+    outline-offset: 2px;
+}
+
 .commerce-link:hover,
 .commerce-link:focus {
     text-decoration: underline;

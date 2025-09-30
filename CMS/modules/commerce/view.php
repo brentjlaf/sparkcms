@@ -573,7 +573,15 @@ foreach ($segments as $segment):
                                 <td><?php echo htmlspecialchars($name); ?></td>
                                 <td><a href="mailto:<?php echo htmlspecialchars($email); ?>" class="commerce-link"><?php echo htmlspecialchars($email); ?></a></td>
                                 <td><?php echo htmlspecialchars($segment); ?></td>
-                                <td><?php echo $ordersCount; ?></td>
+                                <td>
+                                    <button type="button"
+                                        class="commerce-link commerce-link-button"
+                                        data-commerce-customer-orders="<?php echo htmlspecialchars(strtolower($name)); ?>"
+                                        data-customer-name="<?php echo htmlspecialchars($name); ?>">
+                                        <?php echo $ordersCount; ?>
+                                        <span class="sr-only"> orders for <?php echo htmlspecialchars($name); ?></span>
+                                    </button>
+                                </td>
                                 <td><?php echo htmlspecialchars($ltv); ?></td>
                                 <td><?php echo htmlspecialchars($lastOrder); ?></td>
                                 <td><span class="<?php echo commerce_badge_class($status); ?>"><?php echo htmlspecialchars($status); ?></span></td>
