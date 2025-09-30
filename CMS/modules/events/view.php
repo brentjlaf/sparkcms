@@ -13,6 +13,11 @@ $orders = events_read_orders();
 $categories = events_read_categories();
 $salesByEvent = events_compute_sales($events, $orders);
 
+$orderSummaries = [];
+foreach ($orders as $order) {
+    $orderSummaries[] = events_order_summary($order, $events);
+}
+
 $totalEvents = count($events);
 $totalTicketsSold = array_sum(array_column($salesByEvent, 'tickets_sold'));
 $totalRevenue = array_sum(array_column($salesByEvent, 'revenue'));
@@ -20,7 +25,7 @@ $upcoming = array_slice(events_filter_upcoming($events), 0, 5);
 
 $initialPayload = [
     'events' => $events,
-    'orders' => $orders,
+    'orders' => $orderSummaries,
     'sales' => $salesByEvent,
     'categories' => $categories,
 ];
@@ -155,6 +160,7 @@ $initialPayload = [
                         <select data-events-orders-filter="status">
                             <option value="">All statuses</option>
                             <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
                             <option value="refunded">Refunded</option>
                         </select>
                     </label>
@@ -169,16 +175,18 @@ $initialPayload = [
                     <thead>
                         <tr>
                             <th scope="col">Order ID</th>
+                            <th scope="col">Event</th>
                             <th scope="col">Buyer</th>
                             <th scope="col">Tickets</th>
                             <th scope="col">Amount</th>
                             <th scope="col">Status</th>
                             <th scope="col">Order Date</th>
+                            <th scope="col" class="is-actions">Manage</th>
                         </tr>
                     </thead>
                     <tbody data-events-orders>
                         <tr>
-                            <td colspan="6" class="events-empty">Loading orders…</td>
+                            <td colspan="8" class="events-empty">Loading orders…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -189,23 +197,57 @@ $initialPayload = [
             <header class="events-section-header">
                 <div>
                     <h3 class="events-section-title" id="eventsReportsTitle">Reports</h3>
-                    <p class="events-section-description">Download ticket sales and revenue summaries whenever you need them.</p>
-                </div>
-                <div class="events-section-actions">
-                    <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report="tickets">Ticket sales report</button>
-                    <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report="revenue">Revenue report</button>
+                    <p class="events-section-description">Track topline revenue, surface insights, and export data for your team.</p>
                 </div>
             </header>
-            <div class="events-reports" data-events-reports>
-                <article class="events-report-card">
-                    <h4>Ticket sales</h4>
-                    <p>Download totals per event and ticket type to share with finance.</p>
-                    <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report-download="tickets">Export CSV</button>
+            <div class="events-report-metrics" data-events-report-metrics>
+                <article class="events-report-metric" data-events-report-metric="revenue">
+                    <span class="events-report-metric-label">Total revenue</span>
+                    <span class="events-report-metric-value" data-value>$0.00</span>
+                    <p class="events-report-metric-meta" data-meta>Revenue across all paid orders.</p>
                 </article>
-                <article class="events-report-card">
-                    <h4>Revenue</h4>
-                    <p>Share top-line revenue with leadership by event and ticket type.</p>
-                    <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report-download="revenue">Export CSV</button>
+                <article class="events-report-metric" data-events-report-metric="average_order">
+                    <span class="events-report-metric-label">Average order value</span>
+                    <span class="events-report-metric-value" data-value>$0.00</span>
+                    <p class="events-report-metric-meta" data-meta>Calculated from paid orders.</p>
+                </article>
+                <article class="events-report-metric" data-events-report-metric="refunds">
+                    <span class="events-report-metric-label">Refunded</span>
+                    <span class="events-report-metric-value" data-value>$0.00</span>
+                    <p class="events-report-metric-meta" data-meta>Value of refunded orders.</p>
+                </article>
+            </div>
+            <div class="events-insights-grid" data-events-insights>
+                <article class="events-insight-card" data-insight="top-event">
+                    <h4 class="events-insight-title">Top event</h4>
+                    <div class="events-insight-value" data-insight-value>—</div>
+                    <p class="events-insight-meta" data-insight-meta>Revenue leader across all events.</p>
+                </article>
+                <article class="events-insight-card" data-insight="top-ticket">
+                    <h4 class="events-insight-title">Best-selling ticket</h4>
+                    <div class="events-insight-value" data-insight-value>—</div>
+                    <p class="events-insight-meta" data-insight-meta>Highest quantity ticket type sold.</p>
+                </article>
+                <article class="events-insight-card" data-insight="top-buyer">
+                    <h4 class="events-insight-title">Top customer</h4>
+                    <div class="events-insight-value" data-insight-value>—</div>
+                    <p class="events-insight-meta" data-insight-meta>Most revenue generated by a single buyer.</p>
+                </article>
+            </div>
+            <div class="events-download-grid" data-events-downloads>
+                <article class="events-download-card" data-events-download="tickets">
+                    <div class="events-download-body">
+                        <h4>Ticket sales export</h4>
+                        <p>Detailed ticket-level breakdown for finance and operations.</p>
+                    </div>
+                    <button type="button" class="a11y-btn a11y-btn--ghost events-download-action" data-events-report-download="tickets">Download CSV</button>
+                </article>
+                <article class="events-download-card" data-events-download="revenue">
+                    <div class="events-download-body">
+                        <h4>Revenue summary export</h4>
+                        <p>Share net revenue by event with stakeholders in seconds.</p>
+                    </div>
+                    <button type="button" class="a11y-btn a11y-btn--ghost events-download-action" data-events-report-download="revenue">Download CSV</button>
                 </article>
             </div>
             <div class="events-table-wrapper">
@@ -215,12 +257,13 @@ $initialPayload = [
                             <th scope="col">Event</th>
                             <th scope="col">Tickets sold</th>
                             <th scope="col">Revenue</th>
+                            <th scope="col">Refunded</th>
                             <th scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody data-events-reports-table>
                         <tr>
-                            <td colspan="4" class="events-empty">Loading report data…</td>
+                            <td colspan="5" class="events-empty">Loading report data…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -327,6 +370,86 @@ $initialPayload = [
                 <footer class="events-form-actions">
                     <button type="button" class="a11y-btn a11y-btn--ghost" data-events-close>Cancel</button>
                     <button type="submit" class="a11y-btn a11y-btn--primary">Save event</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="events-modal-backdrop" data-events-modal="order">
+    <div class="events-modal events-order-modal" role="dialog" aria-modal="true" aria-labelledby="eventsOrderTitle">
+        <header class="events-modal-header">
+            <h2 class="events-modal-title" id="eventsOrderTitle">Manage order</h2>
+            <button type="button" class="events-modal-close" data-events-close>&times;<span class="sr-only">Close</span></button>
+        </header>
+        <div class="events-modal-body">
+            <form data-events-form="order">
+                <input type="hidden" name="id" value="">
+                <input type="hidden" name="event_id" value="">
+                <div class="events-order-layout">
+                    <div class="events-order-details">
+                        <div class="events-order-meta">
+                            <div class="events-order-meta-primary">
+                                <h3 class="events-order-meta-title" data-events-order-title>Order</h3>
+                                <p class="events-order-meta-event" data-events-order-event></p>
+                            </div>
+                            <label class="events-order-status">
+                                <span>Status</span>
+                                <select name="status" data-events-order-status>
+                                    <option value="paid">Paid</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="refunded">Refunded</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="events-form-grid events-order-form-grid">
+                            <label class="events-form-field">
+                                <span>Buyer name</span>
+                                <input type="text" name="buyer_name" required>
+                            </label>
+                            <label class="events-form-field">
+                                <span>Order date</span>
+                                <input type="datetime-local" name="ordered_at">
+                            </label>
+                        </div>
+                        <div class="events-order-add">
+                            <label class="events-order-add-select">
+                                <span class="sr-only">Select ticket type</span>
+                                <select data-events-order-add-select></select>
+                            </label>
+                            <button type="button" class="a11y-btn a11y-btn--secondary" data-events-order-add>
+                                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                <span>Add ticket</span>
+                            </button>
+                        </div>
+                        <div class="events-order-lines" data-events-order-lines>
+                            <p class="events-order-empty">No tickets on this order yet.</p>
+                        </div>
+                    </div>
+                    <aside class="events-order-summary" data-events-order-summary>
+                        <h3 class="events-order-summary-title">Order summary</h3>
+                        <dl class="events-order-summary-stats">
+                            <div class="events-order-summary-item">
+                                <dt>Subtotal</dt>
+                                <dd data-order-total="subtotal">$0.00</dd>
+                            </div>
+                            <div class="events-order-summary-item">
+                                <dt>Refunds</dt>
+                                <dd data-order-total="refunds">$0.00</dd>
+                            </div>
+                            <div class="events-order-summary-item">
+                                <dt>Net total</dt>
+                                <dd data-order-total="net">$0.00</dd>
+                            </div>
+                        </dl>
+                        <div class="events-order-breakdown" data-events-order-breakdown>
+                            <p class="events-order-empty">Ticket breakdown will appear here.</p>
+                        </div>
+                    </aside>
+                </div>
+                <footer class="events-form-actions events-order-actions">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" data-events-close>Cancel</button>
+                    <button type="submit" class="a11y-btn a11y-btn--primary">Save order</button>
                 </footer>
             </form>
         </div>

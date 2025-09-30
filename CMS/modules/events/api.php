@@ -38,6 +38,12 @@ switch ($action) {
     case 'list_orders':
         handle_list_orders($orders, $events);
         break;
+    case 'get_order':
+        handle_get_order($orders, $events);
+        break;
+    case 'save_order':
+        handle_save_order($orders, $events);
+        break;
     case 'export_orders':
         handle_export_orders($orders, $events);
         break;
@@ -259,14 +265,15 @@ function handle_list_orders(array $orders, array $events): void
 
     $rows = [];
     foreach ($orders as $order) {
-        if ($eventFilter !== '' && (string) ($order['event_id'] ?? '') !== $eventFilter) {
+        $summary = events_order_summary($order, $events);
+        if ($eventFilter !== '' && (string) $summary['event_id'] !== $eventFilter) {
             continue;
         }
-        $status = strtolower((string) ($order['status'] ?? 'paid'));
+        $status = strtolower((string) ($summary['status'] ?? 'paid'));
         if ($statusFilter !== '' && $status !== $statusFilter) {
             continue;
         }
-        $orderedAt = isset($order['ordered_at']) ? strtotime((string) $order['ordered_at']) : false;
+        $orderedAt = isset($summary['ordered_at']) ? strtotime((string) $summary['ordered_at']) : false;
         if ($startDate !== '') {
             $start = strtotime($startDate);
             if ($orderedAt !== false && $start !== false && $orderedAt < $start) {
@@ -279,24 +286,8 @@ function handle_list_orders(array $orders, array $events): void
                 continue;
             }
         }
-
-        $quantity = 0;
-        foreach (($order['tickets'] ?? []) as $ticket) {
-            $quantity += max(0, (int) ($ticket['quantity'] ?? 0));
-        }
-
-        $event = events_find_event($events, $order['event_id'] ?? '');
-
-        $rows[] = [
-            'id' => $order['id'] ?? '',
-            'event' => $event['title'] ?? 'Event',
-            'event_id' => $order['event_id'] ?? '',
-            'buyer_name' => $order['buyer_name'] ?? '',
-            'tickets' => $quantity,
-            'amount' => (float) ($order['amount'] ?? 0),
-            'status' => $status,
-            'ordered_at' => $order['ordered_at'] ?? '',
-        ];
+        $summary['status'] = $status;
+        $rows[] = $summary;
     }
 
     usort($rows, static function ($a, $b) {
@@ -313,19 +304,15 @@ function handle_export_orders(array $orders, array $events): void
     $rows = [];
     $rows[] = ['Order ID', 'Event', 'Buyer', 'Tickets', 'Amount', 'Status', 'Ordered At'];
     foreach ($orders as $order) {
-        $event = events_find_event($events, $order['event_id'] ?? '');
-        $quantity = 0;
-        foreach (($order['tickets'] ?? []) as $ticket) {
-            $quantity += max(0, (int) ($ticket['quantity'] ?? 0));
-        }
+        $summary = events_order_summary($order, $events);
         $rows[] = [
-            $order['id'] ?? '',
-            $event['title'] ?? 'Event',
-            $order['buyer_name'] ?? '',
-            $quantity,
-            number_format((float) ($order['amount'] ?? 0), 2, '.', ''),
-            strtoupper((string) ($order['status'] ?? 'paid')),
-            $order['ordered_at'] ?? '',
+            $summary['id'] ?? '',
+            $summary['event'] ?? 'Event',
+            $summary['buyer_name'] ?? '',
+            $summary['tickets'] ?? 0,
+            number_format((float) ($summary['amount'] ?? 0), 2, '.', ''),
+            strtoupper((string) ($summary['status'] ?? 'paid')),
+            $summary['ordered_at'] ?? '',
         ];
     }
 
@@ -354,11 +341,80 @@ function handle_reports_summary(array $events, array $orders, array $salesByEven
             'title' => $event['title'] ?? 'Event',
             'tickets_sold' => $metrics['tickets_sold'] ?? 0,
             'revenue' => $metrics['revenue'] ?? 0,
+            'refunded' => $metrics['refunded'] ?? 0,
             'status' => $event['status'] ?? 'draft',
         ];
     }
 
     respond_json(['reports' => $reports]);
+}
+
+function handle_get_order(array $orders, array $events): void
+{
+    $id = $_GET['id'] ?? '';
+    $id = trim((string) $id);
+    if ($id === '') {
+        respond_json(['error' => 'Missing order id.'], 400);
+    }
+
+    $order = events_find_order($orders, $id);
+    if ($order === null) {
+        respond_json(['error' => 'Order not found.'], 404);
+    }
+
+    respond_json(['order' => events_order_detail($order, $events)]);
+}
+
+function handle_save_order(array $orders, array $events): void
+{
+    $payload = parse_json_body();
+    if (empty($payload)) {
+        $payload = $_POST;
+    }
+
+    $id = isset($payload['id']) ? trim((string) $payload['id']) : '';
+    if ($id === '') {
+        respond_json(['error' => 'Missing order id.'], 400);
+    }
+
+    $index = null;
+    foreach ($orders as $key => $existing) {
+        if ((string) ($existing['id'] ?? '') === $id) {
+            $index = $key;
+            break;
+        }
+    }
+
+    if ($index === null) {
+        respond_json(['error' => 'Order not found.'], 404);
+    }
+
+    $current = $orders[$index];
+    $updated = $current;
+    if (array_key_exists('buyer_name', $payload)) {
+        $updated['buyer_name'] = $payload['buyer_name'];
+    }
+    if (array_key_exists('status', $payload)) {
+        $updated['status'] = $payload['status'];
+    }
+    if (array_key_exists('ordered_at', $payload)) {
+        $updated['ordered_at'] = $payload['ordered_at'];
+    }
+    if (isset($payload['tickets']) && is_array($payload['tickets'])) {
+        $updated['tickets'] = $payload['tickets'];
+    }
+
+    $normalized = events_normalize_order($updated, $events, $current);
+    $orders[$index] = array_merge($current, $normalized);
+
+    if (!events_write_orders($orders)) {
+        respond_json(['error' => 'Unable to save order.'], 500);
+    }
+
+    respond_json([
+        'success' => true,
+        'order' => events_order_detail($orders[$index], $events),
+    ]);
 }
 
 function handle_list_roles(): void
