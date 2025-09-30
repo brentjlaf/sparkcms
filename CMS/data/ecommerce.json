@@ -1,0 +1,258 @@
+{
+  "metrics": {
+    "total_products": 128,
+    "orders_today": 17,
+    "revenue_this_month": 24850.25,
+    "average_order_value": 146.21,
+    "test_mode": true
+  },
+  "products": [
+    {
+      "id": 101,
+      "name": "Signature Cotton T-Shirt",
+      "sku": "TSHIRT-1001",
+      "price": 28.00,
+      "sale_price": 24.00,
+      "stock": 320,
+      "status": "active",
+      "categories": ["Apparel", "Featured"],
+      "tags": ["cotton", "summer", "unisex"],
+      "updated_at": "2025-02-10T14:22:00Z"
+    },
+    {
+      "id": 102,
+      "name": "Heritage Denim Jacket",
+      "sku": "JACKET-2040",
+      "price": 118.00,
+      "sale_price": null,
+      "stock": 42,
+      "status": "active",
+      "categories": ["Outerwear"],
+      "tags": ["denim", "fall"],
+      "updated_at": "2025-02-08T09:10:00Z"
+    },
+    {
+      "id": 103,
+      "name": "Trailblazer Backpack",
+      "sku": "BAG-3502",
+      "price": 84.50,
+      "sale_price": 72.00,
+      "stock": 0,
+      "status": "out_of_stock",
+      "categories": ["Accessories"],
+      "tags": ["travel", "outdoor"],
+      "updated_at": "2025-02-03T16:45:00Z"
+    },
+    {
+      "id": 104,
+      "name": "EcoBlend Water Bottle",
+      "sku": "BOTTLE-8801",
+      "price": 22.00,
+      "sale_price": null,
+      "stock": 150,
+      "status": "draft",
+      "categories": ["Accessories"],
+      "tags": ["eco", "hydration"],
+      "updated_at": "2025-01-28T11:05:00Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "INV-5021",
+      "customer": "Jordan Smith",
+      "status": "paid",
+      "total": 186.50,
+      "payment_method": "Stripe",
+      "submitted_at": "2025-02-10T11:32:00Z",
+      "items": [
+        {"name": "Signature Cotton T-Shirt", "sku": "TSHIRT-1001", "quantity": 2, "price": 28.00},
+        {"name": "Trailblazer Backpack", "sku": "BAG-3502", "quantity": 1, "price": 84.50}
+      ],
+      "shipping_address": {
+        "name": "Jordan Smith",
+        "email": "jordan@example.com",
+        "line1": "55 Market Street",
+        "city": "Portland",
+        "state": "OR",
+        "postal_code": "97204",
+        "country": "US"
+      },
+      "shipping_status": "preparing",
+      "shipping_events": [
+        {"label": "Order Received", "timestamp": "2025-02-10T11:32:00Z"},
+        {"label": "Payment Captured", "timestamp": "2025-02-10T11:33:00Z"}
+      ],
+      "transaction_reference": "ch_3OZbT3EU2LSv",
+      "tax": 9.50,
+      "shipping_total": 12.00
+    },
+    {
+      "id": "INV-5020",
+      "customer": "Amelia Cheng",
+      "status": "shipped",
+      "total": 242.00,
+      "payment_method": "PayPal",
+      "submitted_at": "2025-02-09T15:05:00Z",
+      "items": [
+        {"name": "Heritage Denim Jacket", "sku": "JACKET-2040", "quantity": 2, "price": 118.00}
+      ],
+      "shipping_address": {
+        "name": "Amelia Cheng",
+        "email": "amelia@example.com",
+        "line1": "10 Harbor View",
+        "city": "Seattle",
+        "state": "WA",
+        "postal_code": "98101",
+        "country": "US"
+      },
+      "shipping_status": "in_transit",
+      "shipping_events": [
+        {"label": "Order Received", "timestamp": "2025-02-09T15:05:00Z"},
+        {"label": "Shipped", "timestamp": "2025-02-10T08:15:00Z"}
+      ],
+      "transaction_reference": "PAYID-LU12345",
+      "tax": 18.00,
+      "shipping_total": 0
+    },
+    {
+      "id": "INV-5019",
+      "customer": "Luca Ramirez",
+      "status": "pending",
+      "total": 72.00,
+      "payment_method": "Square",
+      "submitted_at": "2025-02-09T10:12:00Z",
+      "items": [
+        {"name": "Trailblazer Backpack", "sku": "BAG-3502", "quantity": 1, "price": 72.00}
+      ],
+      "shipping_address": {
+        "name": "Luca Ramirez",
+        "email": "luca@example.com",
+        "line1": "400 Grove Street",
+        "city": "Denver",
+        "state": "CO",
+        "postal_code": "80202",
+        "country": "US"
+      },
+      "shipping_status": "pending",
+      "shipping_events": [
+        {"label": "Order Received", "timestamp": "2025-02-09T10:12:00Z"}
+      ],
+      "transaction_reference": null,
+      "tax": 4.00,
+      "shipping_total": 8.00
+    },
+    {
+      "id": "INV-5018",
+      "customer": "Morgan Patel",
+      "status": "refunded",
+      "total": 54.00,
+      "payment_method": "Stripe",
+      "submitted_at": "2025-02-08T18:30:00Z",
+      "items": [
+        {"name": "EcoBlend Water Bottle", "sku": "BOTTLE-8801", "quantity": 2, "price": 22.00}
+      ],
+      "shipping_address": {
+        "name": "Morgan Patel",
+        "email": "morgan@example.com",
+        "line1": "88 Cedar Lane",
+        "city": "Austin",
+        "state": "TX",
+        "postal_code": "73301",
+        "country": "US"
+      },
+      "shipping_status": "returned",
+      "shipping_events": [
+        {"label": "Order Received", "timestamp": "2025-02-08T18:30:00Z"},
+        {"label": "Refunded", "timestamp": "2025-02-09T12:45:00Z"}
+      ],
+      "transaction_reference": "ch_3OZbP6UE2LTv",
+      "tax": 2.00,
+      "shipping_total": 6.00
+    }
+  ],
+  "customers": [
+    {
+      "name": "Jordan Smith",
+      "email": "jordan@example.com",
+      "lifetime_value": 642.00,
+      "orders": 5,
+      "last_order": "2025-02-10T11:32:00Z"
+    },
+    {
+      "name": "Amelia Cheng",
+      "email": "amelia@example.com",
+      "lifetime_value": 1024.90,
+      "orders": 8,
+      "last_order": "2025-02-09T15:05:00Z"
+    },
+    {
+      "name": "Luca Ramirez",
+      "email": "luca@example.com",
+      "lifetime_value": 216.75,
+      "orders": 3,
+      "last_order": "2025-02-09T10:12:00Z"
+    }
+  ],
+  "cart_settings": {
+    "enabled": true,
+    "display": "sidebar",
+    "upsell_message": "Bundle a water bottle and save 10% at checkout!",
+    "continue_shopping_url": "/collections/all"
+  },
+  "checkout_settings": {
+    "required_fields": ["name", "email", "shipping_address", "payment_method"],
+    "allow_guest_checkout": true,
+    "tax_mode": "percentage",
+    "tax_value": 8.25,
+    "shipping_rate": 6.00,
+    "free_shipping_threshold": 150.00,
+    "estimated_delivery_note": "Orders ship in 1-2 business days."
+  },
+  "integrations": {
+    "payments": {
+      "paypal": {"enabled": true, "api_key": "live_paypal_key"},
+      "stripe": {"enabled": true, "api_key": "pk_live_stripe"},
+      "square": {"enabled": false, "api_key": null}
+    },
+    "notifications": {
+      "order_placed": "Thank you for your order, {{ customer_name }}!",
+      "order_shipped": "Your order {{ order_id }} is on the way.",
+      "order_refunded": "We've processed your refund for order {{ order_id }}.",
+      "webhook_endpoint": "https://hooks.example.com/order-events"
+    }
+  },
+  "reports": {
+    "sales": {
+      "daily": [1200, 980, 1340, 1680, 1520, 1740, 1900],
+      "weekly": [8200, 9150, 10300, 11240],
+      "monthly": [34200, 36500, 40120, 44210]
+    },
+    "top_products": [
+      {"name": "Signature Cotton T-Shirt", "units": 860},
+      {"name": "Heritage Denim Jacket", "units": 420},
+      {"name": "Trailblazer Backpack", "units": 388}
+    ]
+  },
+  "roles": [
+    {
+      "name": "Admin",
+      "description": "Full access including settings and integrations.",
+      "permissions": ["products.manage", "orders.manage", "reports.view", "settings.full", "integrations.manage"]
+    },
+    {
+      "name": "Store Manager",
+      "description": "Manage products and orders, view reports, limited settings.",
+      "permissions": ["products.manage", "orders.manage", "reports.view", "settings.limited"]
+    },
+    {
+      "name": "Viewer",
+      "description": "Read-only access to dashboard, products, orders, and reports.",
+      "permissions": ["dashboard.view", "products.view", "orders.view", "reports.view"]
+    }
+  ],
+  "rest_hooks": {
+    "products": "/api/ecommerce/products",
+    "orders": "/api/ecommerce/orders",
+    "integrations": "/api/ecommerce/integrations"
+  }
+}

@@ -89,6 +89,34 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
                 </div>
 
                 <div class="nav-section">
+                    <div class="nav-section-title">E-commerce</div>
+                    <div class="nav-item" data-section="ecommerce" data-view="dashboard" data-page-title="E-commerce · Dashboard">
+                        <div class="nav-icon"><i class="fas fa-store"></i></div>
+                        <div class="nav-text">Dashboard</div>
+                    </div>
+                    <div class="nav-item" data-section="ecommerce" data-view="products" data-page-title="E-commerce · Products">
+                        <div class="nav-icon"><i class="fas fa-box"></i></div>
+                        <div class="nav-text">Products</div>
+                    </div>
+                    <div class="nav-item" data-section="ecommerce" data-view="orders" data-page-title="E-commerce · Orders">
+                        <div class="nav-icon"><i class="fas fa-receipt"></i></div>
+                        <div class="nav-text">Orders</div>
+                    </div>
+                    <div class="nav-item" data-section="ecommerce" data-view="customers" data-page-title="E-commerce · Customers">
+                        <div class="nav-icon"><i class="fas fa-user-friends"></i></div>
+                        <div class="nav-text">Customers</div>
+                    </div>
+                    <div class="nav-item" data-section="ecommerce" data-view="reports" data-page-title="E-commerce · Reports">
+                        <div class="nav-icon"><i class="fas fa-chart-column"></i></div>
+                        <div class="nav-text">Reports</div>
+                    </div>
+                    <div class="nav-item" data-section="ecommerce" data-view="settings" data-page-title="E-commerce · Settings">
+                        <div class="nav-icon"><i class="fas fa-sliders-h"></i></div>
+                        <div class="nav-text">Settings</div>
+                    </div>
+                </div>
+
+                <div class="nav-section">
                     <div class="nav-section-title">Administration</div>
                     <div class="nav-item" data-section="users">
                         <div class="nav-icon"><i class="fas fa-users"></i></div>
@@ -172,13 +200,24 @@ $(function(){
     });
   }
   $(".nav-item").click(function(){
-    var section=$(this).data("section");
+    var $item = $(this);
+    var section=$item.data("section");
     if(typeof section === 'string'){ section = section.trim(); }
     if(section==="logout"){ window.location="logout.php"; return; }
+    var view = $item.data("view");
+    var params = null;
+    if(typeof view === 'string' && view.trim() !== ''){
+        params = $.param({view: view.trim()});
+    }
     $(".nav-item").removeClass("active");
-    $(this).addClass("active");
-    $("#pageTitle").text($(this).find(".nav-text").text());
-    loadModule(section);
+    $item.addClass("active");
+    var customTitle = $item.data("page-title");
+    if(typeof customTitle === 'string' && customTitle.trim() !== ''){
+        $("#pageTitle").text(customTitle.trim());
+    } else {
+        $("#pageTitle").text($item.find(".nav-text").text());
+    }
+    loadModule(section, params);
     if(window.innerWidth <= 1024){
         $("#sidebar").removeClass("mobile-open");
         $("#sidebarOverlay").removeClass("active");
@@ -210,7 +249,8 @@ $(function(){
     search: 'Manage search index',
     sitemap: 'Review sitemap',
     import_export: 'Import & Export',
-    calendar: 'Manage calendar data'
+    calendar: 'Manage calendar data',
+    ecommerce: 'E-commerce'
   };
 
   $(document).on('sparkcms:navigate', function(event, data){
@@ -218,9 +258,39 @@ $(function(){
     var section = data.section.trim();
     if(section === ''){ return; }
 
-    var $targetNav = $(".nav-item[data-section='" + section + "']");
+    var view = '';
+    if(typeof data.view === 'string'){
+      view = data.view.trim();
+    }
+
+    var selector = ".nav-item[data-section='" + section + "']";
+    var $targetNav = view !== '' ? $(selector + "[data-view='" + view + "']") : $(selector).first();
+    if(!$targetNav.length){
+      $targetNav = $(selector).first();
+    }
+
+    var params = null;
+    if(view !== ''){
+      params = $.param({view: view});
+    }
+
     if($targetNav.length){
-      $targetNav.trigger('click');
+      $(".nav-item").removeClass("active");
+      $targetNav.addClass("active");
+
+      var customTitle = $targetNav.data('page-title');
+      if(typeof customTitle === 'string' && customTitle.trim() !== ''){
+        $('#pageTitle').text(customTitle.trim());
+      } else {
+        $('#pageTitle').text($targetNav.find('.nav-text').text());
+      }
+
+      loadModule(section, params);
+
+      if(window.innerWidth <= 1024){
+        $('#sidebar').removeClass('mobile-open');
+        $('#sidebarOverlay').removeClass('active');
+      }
       return;
     }
 
@@ -235,11 +305,30 @@ $(function(){
     }
     $('#pageTitle').text(title);
 
-    loadModule(section);
+    loadModule(section, params);
 
     if(window.innerWidth <= 1024){
       $('#sidebar').removeClass('mobile-open');
       $('#sidebarOverlay').removeClass('active');
+    }
+  });
+  $(document).on('sparkcms:ecommerce:viewChange', function(event, payload){
+    if(!payload || typeof payload.view !== 'string'){ return; }
+    var view = payload.view.trim();
+    if(view === ''){ return; }
+    if($('#contentContainer #ecommerce').length === 0){ return; }
+    var $navItems = $(".nav-item[data-section='ecommerce']");
+    if(!$navItems.length){ return; }
+    $navItems.removeClass('active');
+    var $target = $(".nav-item[data-section='ecommerce'][data-view='" + view + "']");
+    if($target.length){
+      $target.addClass('active');
+      var customTitle = $target.data('page-title');
+      if(typeof customTitle === 'string' && customTitle.trim() !== ''){
+        $('#pageTitle').text(customTitle.trim());
+      } else {
+        $('#pageTitle').text($target.find('.nav-text').text());
+      }
     }
   });
   loadModule("dashboard");
