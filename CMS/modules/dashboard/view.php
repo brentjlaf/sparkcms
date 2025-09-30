@@ -7,7 +7,7 @@
                     <span class="hero-eyebrow dashboard-hero-eyebrow">Operations Overview</span>
                     <h2 class="a11y-hero-title">Operations Dashboard</h2>
                     <p class="a11y-hero-subtitle">
-                        Monitor the health of your content, media, and optimisation efforts from one polished overview.
+                        Monitor the health of your content, media, events, and commerce operations from one polished overview.
                     </p>
                 </div>
                 <div class="a11y-hero-actions dashboard-hero-actions">
@@ -97,7 +97,7 @@
             <header class="dashboard-panel-header">
                 <div>
                     <h3 class="dashboard-panel-title" id="dashboardSectionModules">Module insights</h3>
-                    <p class="dashboard-panel-description">Understand where attention is needed across features.</p>
+                    <p class="dashboard-panel-description">Understand where attention is needed across features like Commerce, Events, Calendar, and more.</p>
                 </div>
             </header>
             <div class="dashboard-module-card-grid" aria-live="polite" aria-busy="true" id="dashboardModuleCards" role="list">
