@@ -301,6 +301,7 @@
         /* Sidebar */
         .sidebar {
             width: 280px;
+            flex: 0 0 280px;
             background: linear-gradient(135deg, var(--color-primary) 0%, #764ba2 100%);
             color: var(--color-text-inverse);
             position: sticky;
