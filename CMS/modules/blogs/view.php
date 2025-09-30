@@ -49,34 +49,38 @@
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     <input type="search" id="blogSearchInput" placeholder="Search posts by title, slug, excerpt, or tag" aria-label="Search posts">
                 </label>
-                <div class="blog-filter-group" role="group" aria-label="Filter posts by status">
-                    <button type="button" class="blog-filter-btn active" data-blog-filter="all" aria-pressed="true">
-                        All Posts <span class="blog-filter-count" data-count="all">0</span>
-                    </button>
-                    <button type="button" class="blog-filter-btn" data-blog-filter="published" aria-pressed="false">
-                        Published <span class="blog-filter-count" data-count="published">0</span>
-                    </button>
-                    <button type="button" class="blog-filter-btn" data-blog-filter="drafts" aria-pressed="false">
-                        Drafts <span class="blog-filter-count" data-count="drafts">0</span>
-                    </button>
-                    <button type="button" class="blog-filter-btn" data-blog-filter="scheduled" aria-pressed="false">
-                        Scheduled <span class="blog-filter-count" data-count="scheduled">0</span>
-                    </button>
+                <div class="blog-filter-toolbar">
+                    <div class="blog-filter-group" role="group" aria-label="Filter posts by status">
+                        <button type="button" class="blog-filter-btn active" data-blog-filter="all" aria-pressed="true">
+                            All Posts <span class="blog-filter-count" data-count="all">0</span>
+                        </button>
+                        <button type="button" class="blog-filter-btn" data-blog-filter="published" aria-pressed="false">
+                            Published <span class="blog-filter-count" data-count="published">0</span>
+                        </button>
+                        <button type="button" class="blog-filter-btn" data-blog-filter="drafts" aria-pressed="false">
+                            Drafts <span class="blog-filter-count" data-count="drafts">0</span>
+                        </button>
+                        <button type="button" class="blog-filter-btn" data-blog-filter="scheduled" aria-pressed="false">
+                            Scheduled <span class="blog-filter-count" data-count="scheduled">0</span>
+                        </button>
+                    </div>
+                    <div class="blog-filter-selects">
+                        <div class="blog-select-filter">
+                            <label for="categoryFilter">Category</label>
+                            <select id="categoryFilter">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="blog-select-filter">
+                            <label for="authorFilter">Author</label>
+                            <select id="authorFilter">
+                                <option value="">All Authors</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="blog-controls-secondary">
-                <div class="blog-select-filter">
-                    <label for="categoryFilter">Category</label>
-                    <select id="categoryFilter">
-                        <option value="">All Categories</option>
-                    </select>
-                </div>
-                <div class="blog-select-filter">
-                    <label for="authorFilter">Author</label>
-                    <select id="authorFilter">
-                        <option value="">All Authors</option>
-                    </select>
-                </div>
                 <div class="blog-select-filter blog-select-filter--actions">
                     <label>&nbsp;</label>
                     <button type="button" class="blog-btn blog-btn--subtle" id="clearFilters">
