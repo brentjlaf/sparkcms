@@ -42,6 +42,9 @@
             apply: root.querySelector('[data-events-attendance="apply"]'),
             list: root.querySelector('[data-events-attendance="orders"]'),
         },
+        reports: {
+            tableBody: root.querySelector('[data-events-reports-table]'),
+        },
         modal: document.querySelector('[data-events-modal="event"]'),
         confirmModal: document.querySelector('[data-events-modal="confirm"]'),
         toast: document.querySelector('[data-events-toast]'),
@@ -367,6 +370,46 @@
                 </td>
             `;
             selectors.orders.body.appendChild(tr);
+        });
+    }
+
+    function renderReportsTable() {
+        const table = selectors.reports.tableBody;
+        if (!table) {
+            return;
+        }
+        table.innerHTML = '';
+        if (!Array.isArray(state.salesSummary) || state.salesSummary.length === 0) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 6;
+            cell.className = 'events-empty';
+            cell.textContent = 'No report data available yet.';
+            row.appendChild(cell);
+            table.appendChild(row);
+            return;
+        }
+        state.salesSummary.forEach((report) => {
+            const row = document.createElement('tr');
+            const attendanceValue = Number.parseFloat(report.attendance_rate);
+            const attendance = Number.isFinite(attendanceValue)
+                ? `${attendanceValue % 1 === 0 ? attendanceValue.toFixed(0) : attendanceValue.toFixed(1)}%`
+                : '0%';
+            row.innerHTML = `
+                <td>
+                    <div class="events-table-title">${report.title || 'Untitled event'}</div>
+                </td>
+                <td>${report.tickets_sold ?? 0}</td>
+                <td>${formatCurrency(report.revenue ?? 0)}</td>
+                <td>${report.checked_in ?? 0}</td>
+                <td>${attendance}</td>
+                <td data-status></td>
+            `;
+            const statusCell = row.querySelector('[data-status]');
+            if (statusCell) {
+                statusCell.appendChild(createStatusBadge(report.status));
+            }
+            table.appendChild(row);
         });
     }
 
@@ -727,6 +770,7 @@
             .then((response) => {
                 state.salesSummary = Array.isArray(response.reports) ? response.reports : [];
                 updateAttendancePanel();
+                renderReportsTable();
             })
             .catch(() => {
                 showToast('Unable to load reports data.', 'error');
@@ -907,6 +951,7 @@
         updateAttendanceOptions();
         renderEventsTable();
         renderOrdersTable();
+        renderReportsTable();
         refreshAll();
     }
 

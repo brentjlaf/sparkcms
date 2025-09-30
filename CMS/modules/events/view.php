@@ -281,6 +281,25 @@ $initialPayload = [
                     <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report-download="revenue">Export CSV</button>
                 </article>
             </div>
+            <div class="events-table-wrapper">
+                <table class="data-table events-table events-reports-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Event</th>
+                            <th scope="col">Tickets sold</th>
+                            <th scope="col">Revenue</th>
+                            <th scope="col">Checked in</th>
+                            <th scope="col">Attendance rate</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody data-events-reports-table>
+                        <tr>
+                            <td colspan="6" class="events-empty">Loading report data…</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </div>
 </div>
