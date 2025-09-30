@@ -17,14 +17,6 @@ $totalTicketsSold = array_sum(array_column($salesByEvent, 'tickets_sold'));
 $totalRevenue = array_sum(array_column($salesByEvent, 'revenue'));
 $upcoming = array_slice(events_filter_upcoming($events), 0, 5);
 
-$attendanceCheckedIn = array_sum(array_map(static function ($metrics) {
-    return $metrics['checked_in'] ?? 0;
-}, $salesByEvent));
-
-$attendanceCapacity = array_sum(array_map(static function ($event) {
-    return events_ticket_capacity($event, true);
-}, $events));
-
 $roles = events_default_roles();
 
 $initialPayload = [
@@ -47,10 +39,6 @@ $initialPayload = [
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <span>Create New Event</span>
                     </button>
-                    <div class="events-hero-meta" data-events-attendance>
-                        <span class="events-hero-count"><?php echo (int) $attendanceCheckedIn; ?></span>
-                        <span class="events-hero-label">Checked-in of <?php echo max(1, (int) $attendanceCapacity); ?> capacity</span>
-                    </div>
                 </div>
             </div>
             <div class="events-overview-grid">
@@ -191,37 +179,6 @@ $initialPayload = [
                         </tr>
                     </tbody>
                 </table>
-            </div>
-        </section>
-
-        <section class="events-section events-attendance" aria-labelledby="eventsAttendanceTitle">
-            <header class="events-section-header">
-                <div>
-                    <h3 class="events-section-title" id="eventsAttendanceTitle">Attendance tracking</h3>
-                    <p class="events-section-description">Mark attendees as checked in with manual entry. Scanning tools can be added later.</p>
-                </div>
-            </header>
-            <div class="events-attendance-grid">
-                <div class="events-attendance-panel">
-                    <label for="eventsAttendanceEvent">Choose event</label>
-                    <select id="eventsAttendanceEvent" data-events-attendance="event"></select>
-                    <div class="events-attendance-stats" data-events-attendance="stats">
-                        <span class="events-attendance-rate">0% attended</span>
-                        <span class="events-attendance-detail">0 of 0 tickets</span>
-                    </div>
-                    <div class="events-attendance-controls">
-                        <label for="eventsAttendanceCheckin">Manual check-ins</label>
-                        <input type="number" id="eventsAttendanceCheckin" min="0" value="0" data-events-attendance="input">
-                        <button type="button" class="a11y-btn a11y-btn--secondary" data-events-attendance="apply">Update attendance</button>
-                    </div>
-                    <p class="events-attendance-note">Attendance tracking is optional. Enable it per event to unlock the check-in workflow.</p>
-                </div>
-                <div class="events-attendance-orders">
-                    <h4>Recent check-ins</h4>
-                    <ul class="events-attendance-list" data-events-attendance="orders">
-                        <li class="events-empty">Select an event to begin tracking attendance.</li>
-                    </ul>
-                </div>
             </div>
         </section>
 

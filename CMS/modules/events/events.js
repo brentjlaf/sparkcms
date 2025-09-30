@@ -32,16 +32,6 @@
             filterStatus: root.querySelector('[data-events-orders-filter="status"]'),
             exportBtn: root.querySelector('[data-events-export]'),
         },
-        attendance: {
-            wrapper: root.querySelector('[data-events-attendance]'),
-            event: root.querySelector('[data-events-attendance="event"]'),
-            stats: root.querySelector('[data-events-attendance="stats"]'),
-            rate: root.querySelector('.events-attendance-rate'),
-            detail: root.querySelector('.events-attendance-detail'),
-            input: root.querySelector('[data-events-attendance="input"]'),
-            apply: root.querySelector('[data-events-attendance="apply"]'),
-            list: root.querySelector('[data-events-attendance="orders"]'),
-        },
         modal: document.querySelector('[data-events-modal="event"]'),
         confirmModal: document.querySelector('[data-events-modal="confirm"]'),
         toast: document.querySelector('[data-events-toast]'),
@@ -183,19 +173,6 @@
         if (selectors.stats.revenue) {
             const revenue = stats.total_revenue ?? 0;
             selectors.stats.revenue.textContent = formatCurrency(revenue);
-        }
-        const heroMeta = selectors.attendance.wrapper;
-        if (heroMeta) {
-            const count = stats.attendance_checked_in ?? stats.checked_in ?? 0;
-            const capacity = stats.attendance_capacity ?? stats.capacity ?? 0;
-            const countNode = heroMeta.querySelector('.events-hero-count');
-            const labelNode = heroMeta.querySelector('.events-hero-label');
-            if (countNode) {
-                countNode.textContent = count;
-            }
-            if (labelNode) {
-                labelNode.textContent = `Checked-in of ${Math.max(capacity, 1)} capacity`;
-            }
         }
     }
 
@@ -368,80 +345,6 @@
             `;
             selectors.orders.body.appendChild(tr);
         });
-    }
-
-    function updateAttendancePanel() {
-        if (!selectors.attendance.event) {
-            return;
-        }
-        const eventId = selectors.attendance.event.value;
-        if (!eventId) {
-            selectors.attendance.rate.textContent = '0% attended';
-            selectors.attendance.detail.textContent = '0 of 0 tickets';
-            selectors.attendance.input.value = '0';
-            selectors.attendance.list.innerHTML = '<li class="events-empty">Select an event to begin tracking attendance.</li>';
-            return;
-        }
-        const event = state.events.get(eventId);
-        const metrics = state.eventRows.find((row) => row.id === eventId);
-        const sales = state.salesSummary.find((row) => row.event_id === eventId);
-        const capacity = metrics ? (metrics.capacity ?? 0) : 0;
-        const checkedIn = sales ? (sales.checked_in ?? 0) : 0;
-        const sold = metrics ? (metrics.tickets_sold ?? 0) : 0;
-        const rate = capacity > 0 ? Math.round((checkedIn / capacity) * 100) : 0;
-        selectors.attendance.rate.textContent = `${rate}% attended`;
-        selectors.attendance.detail.textContent = `${checkedIn} of ${sold || capacity} tickets`;
-        selectors.attendance.input.value = String(checkedIn);
-        if (event && event.track_attendance) {
-            selectors.attendance.input.removeAttribute('disabled');
-            selectors.attendance.apply.removeAttribute('disabled');
-        } else {
-            selectors.attendance.input.setAttribute('disabled', 'true');
-            selectors.attendance.apply.setAttribute('disabled', 'true');
-        }
-
-        const relatedOrders = state.orders.filter((order) => order.event === (event ? event.title : '') || order.event_id === eventId);
-        selectors.attendance.list.innerHTML = '';
-        if (relatedOrders.length === 0) {
-            const li = document.createElement('li');
-            li.className = 'events-empty';
-            li.textContent = 'No orders yet. Attendance will appear as sales come in.';
-            selectors.attendance.list.appendChild(li);
-        } else {
-            relatedOrders.slice(0, 5).forEach((order) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${order.buyer_name || order.id}</strong> checked in ${order.checked_in ?? 0} of ${order.tickets ?? 0}`;
-                selectors.attendance.list.appendChild(li);
-            });
-        }
-    }
-
-    function updateAttendanceOptions() {
-        populateEventSelect(selectors.orders.filterEvent);
-        const attendanceSelect = selectors.attendance.event;
-        if (!attendanceSelect) {
-            return;
-        }
-        const current = attendanceSelect.value;
-        attendanceSelect.innerHTML = '';
-        const placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = 'Select event';
-        attendanceSelect.appendChild(placeholder);
-        Array.from(state.events.values()).forEach((event) => {
-            const option = document.createElement('option');
-            option.value = event.id;
-            option.textContent = event.title || 'Untitled event';
-            if (!event.track_attendance) {
-                option.dataset.disabled = 'true';
-                option.textContent += ' (tracking off)';
-            }
-            attendanceSelect.appendChild(option);
-        });
-        if (current && attendanceSelect.querySelector(`option[value="${current}"]`)) {
-            attendanceSelect.value = current;
-        }
-        updateAttendancePanel();
     }
 
     function openModal(modal) {
@@ -676,7 +579,6 @@
             .then((response) => {
                 state.orders = Array.isArray(response.orders) ? response.orders : [];
                 renderOrdersTable();
-                updateAttendancePanel();
             })
             .catch(() => {
                 showToast('Unable to load orders.', 'error');
@@ -694,7 +596,7 @@
                     }
                 });
                 renderEventsTable();
-                updateAttendanceOptions();
+                populateEventSelect(selectors.orders.filterEvent);
             })
             .catch(() => {
                 showToast('Unable to load events.', 'error');
@@ -726,7 +628,6 @@
         return fetchJSON('reports_summary')
             .then((response) => {
                 state.salesSummary = Array.isArray(response.reports) ? response.reports : [];
-                updateAttendancePanel();
             })
             .catch(() => {
                 showToast('Unable to load reports data.', 'error');
@@ -817,28 +718,6 @@
                 window.open(`${endpoint}?action=export_orders`, '_blank');
             });
         }
-        if (selectors.attendance.event) {
-            selectors.attendance.event.addEventListener('change', updateAttendancePanel);
-        }
-        if (selectors.attendance.apply) {
-            selectors.attendance.apply.addEventListener('click', () => {
-                const eventId = selectors.attendance.event.value;
-                const value = parseInt(selectors.attendance.input.value || '0', 10);
-                if (!eventId) {
-                    showToast('Select an event first.', 'error');
-                    return;
-                }
-                fetchJSON('update_attendance', { method: 'POST', body: { event_id: eventId, attended: value } })
-                    .then(() => {
-                        showToast('Attendance updated.');
-                        refreshReportsSummary();
-                        refreshOverview();
-                    })
-                    .catch(() => {
-                        showToast('Unable to update attendance.', 'error');
-                    });
-            });
-        }
         if (selectors.orders.body) {
             selectors.orders.body.addEventListener('click', (event) => {
                 const button = event.target.closest('[data-order-checkin]');
@@ -904,7 +783,6 @@
         handleEventForm();
         attachEventListeners();
         populateEventSelect(selectors.orders.filterEvent);
-        updateAttendanceOptions();
         renderEventsTable();
         renderOrdersTable();
         refreshAll();
