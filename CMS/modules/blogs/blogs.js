@@ -288,18 +288,6 @@ $(document).ready(function(){
         closeModal('mediaPickerModal');
     };
 
-    function loadTinyMCE(cb){
-        if(window.tinymce){
-            cb();
-            return;
-        }
-        const s = document.createElement('script');
-        s.src = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js';
-        s.referrerPolicy = 'origin';
-        s.onload = cb;
-        document.head.appendChild(s);
-    }
-
     // Load authors from user accounts
     function loadAuthors(){
         $.getJSON('modules/users/list_users.php', function(data){
@@ -325,16 +313,6 @@ $(document).ready(function(){
     setActiveStatusFilter('all');
     loadAuthors();
     loadPostsFromServer();
-
-    loadTinyMCE(function(){
-        tinymce.init({
-            selector: '#postContent',
-            inline: true,
-            menubar: false,
-            plugins: 'lists link',
-            toolbar: 'bold italic underline | bullist numlist | link'
-        });
-    });
 
     $('#newPostBtn').click(function(){
         openPostModal();
@@ -638,11 +616,7 @@ $(document).ready(function(){
             $('#postExcerpt').val(post.excerpt);
             $('#postImage').val(post.image || '');
             $('#postImageAlt').val(post.imageAlt || '');
-            if(window.tinymce){
-                tinymce.get('postContent').setContent(post.content);
-            }else{
-                $('#postContent').html(post.content);
-            }
+            $('#postContent').html(post.content);
             $('#postCategory').val(post.category);
             $('#postAuthor').val(post.author);
             $('#postStatus').val(post.status);
@@ -657,11 +631,7 @@ $(document).ready(function(){
             $('#modalTitle').text('New Post');
             $('#postForm')[0].reset();
             $('#postId').val('');
-            if(window.tinymce){
-                tinymce.get('postContent').setContent('');
-            }else{
-                $('#postContent').html('');
-            }
+            $('#postContent').html('');
             $('#publishDate').val('');
             setImagePreviewFromPost({});
         }
@@ -723,7 +693,7 @@ $(document).ready(function(){
             title: formData.get('title'),
             slug: formData.get('slug'),
             excerpt: formData.get('excerpt'),
-            content: window.tinymce ? tinymce.get('postContent').getContent() : $('#postContent').html(),
+            content: $('#postContent').html(),
             category: formData.get('category'),
             author: formData.get('author'),
             status: formData.get('status'),
