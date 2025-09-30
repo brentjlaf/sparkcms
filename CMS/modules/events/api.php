@@ -10,6 +10,7 @@ events_ensure_storage();
 
 $events = events_read_events();
 $orders = events_read_orders();
+$categories = events_read_categories();
 $salesByEvent = events_compute_sales($events, $orders);
 
 $action = $_GET['action'] ?? $_POST['action'] ?? 'overview';
@@ -26,7 +27,7 @@ switch ($action) {
         handle_get_event($events);
         break;
     case 'save_event':
-        handle_save_event($events);
+        handle_save_event($events, $categories);
         break;
     case 'delete_event':
         handle_delete_event($events);
@@ -45,6 +46,15 @@ switch ($action) {
         break;
     case 'list_roles':
         handle_list_roles();
+        break;
+    case 'list_categories':
+        handle_list_categories($categories);
+        break;
+    case 'save_category':
+        handle_save_category($categories);
+        break;
+    case 'delete_category':
+        handle_delete_category($categories, $events);
         break;
     default:
         respond_json(['error' => 'Unknown action.'], 400);
@@ -115,6 +125,7 @@ function handle_list_events(array $events, array $salesByEvent): void
             'tickets_sold' => $metrics['tickets_sold'] ?? 0,
             'revenue' => $metrics['revenue'] ?? 0,
             'capacity' => events_ticket_capacity($event, true),
+            'categories' => array_values($event['categories'] ?? []),
         ];
     }
 
@@ -146,7 +157,7 @@ function handle_get_event(array $events): void
     respond_json(['event' => $event]);
 }
 
-function handle_save_event(array $events): void
+function handle_save_event(array $events, array $categories): void
 {
     $payload = parse_json_body();
     if (empty($payload)) {
@@ -168,9 +179,10 @@ function handle_save_event(array $events): void
         'end' => $payload['end'] ?? '',
         'status' => $payload['status'] ?? 'draft',
         'tickets' => $payload['tickets'] ?? [],
+        'categories' => $payload['categories'] ?? [],
     ];
 
-    $eventData = events_normalize_event($eventData);
+    $eventData = events_normalize_event($eventData, $categories);
 
     $eventsAssoc = [];
     foreach ($events as $event) {
@@ -349,4 +361,123 @@ function handle_reports_summary(array $events, array $orders, array $salesByEven
 function handle_list_roles(): void
 {
     respond_json(['roles' => events_default_roles()]);
+}
+
+function handle_list_categories(array $categories): void
+{
+    respond_json(['categories' => events_sort_categories($categories)]);
+}
+
+function handle_save_category(array $categories): void
+{
+    $payload = parse_json_body();
+    if (empty($payload)) {
+        $payload = $_POST;
+    }
+
+    $name = trim((string) ($payload['name'] ?? ''));
+    if ($name === '') {
+        respond_json(['error' => 'Category name is required.'], 422);
+    }
+
+    $id = isset($payload['id']) ? trim((string) $payload['id']) : '';
+    $slugInput = trim((string) ($payload['slug'] ?? ''));
+    $slug = events_unique_slug($slugInput !== '' ? $slugInput : $name, $categories, $id !== '' ? $id : null);
+    $now = gmdate('c');
+    $categoryData = null;
+
+    if ($id !== '') {
+        $updated = false;
+        foreach ($categories as &$category) {
+            if ((string) ($category['id'] ?? '') === $id) {
+                $category['name'] = $name;
+                $category['slug'] = $slug;
+                if (empty($category['created_at'])) {
+                    $category['created_at'] = $now;
+                }
+                $category['updated_at'] = $now;
+                $categoryData = $category;
+                $updated = true;
+                break;
+            }
+        }
+        unset($category);
+        if (!$updated) {
+            respond_json(['error' => 'Category not found.'], 404);
+        }
+    } else {
+        $id = uniqid('evtcat_', false);
+        $categoryData = [
+            'id' => $id,
+            'name' => $name,
+            'slug' => $slug,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+        $categories[] = $categoryData;
+    }
+
+    if (!events_write_categories($categories)) {
+        respond_json(['error' => 'Unable to save category.'], 500);
+    }
+
+    respond_json([
+        'success' => true,
+        'category' => $categoryData,
+        'categories' => events_sort_categories($categories),
+    ]);
+}
+
+function handle_delete_category(array $categories, array $events): void
+{
+    $payload = parse_json_body();
+    if (empty($payload)) {
+        $payload = $_POST;
+    }
+
+    $id = isset($payload['id']) ? trim((string) $payload['id']) : '';
+    if ($id === '') {
+        respond_json(['error' => 'Missing category id.'], 400);
+    }
+
+    $removed = false;
+    foreach ($categories as $index => $category) {
+        if ((string) ($category['id'] ?? '') === $id) {
+            array_splice($categories, $index, 1);
+            $removed = true;
+            break;
+        }
+    }
+
+    if (!$removed) {
+        respond_json(['error' => 'Category not found.'], 404);
+    }
+
+    if (!events_write_categories($categories)) {
+        respond_json(['error' => 'Unable to delete category.'], 500);
+    }
+
+    $eventsUpdated = false;
+    $now = gmdate('c');
+    foreach ($events as &$event) {
+        $original = $event['categories'] ?? [];
+        $filtered = array_values(array_filter($original, static function ($categoryId) use ($id) {
+            return (string) $categoryId !== $id;
+        }));
+        if ($filtered !== $original) {
+            $event['categories'] = $filtered;
+            $event['updated_at'] = $now;
+            $eventsUpdated = true;
+        }
+    }
+    unset($event);
+
+    if ($eventsUpdated && !events_write_events($events)) {
+        respond_json(['error' => 'Unable to update events.'], 500);
+    }
+
+    respond_json([
+        'success' => true,
+        'categories' => events_sort_categories($categories),
+    ]);
 }

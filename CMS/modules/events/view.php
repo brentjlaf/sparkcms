@@ -10,6 +10,7 @@ events_ensure_storage();
 
 $events = events_read_events();
 $orders = events_read_orders();
+$categories = events_read_categories();
 $salesByEvent = events_compute_sales($events, $orders);
 
 $totalEvents = count($events);
@@ -21,6 +22,7 @@ $initialPayload = [
     'events' => $events,
     'orders' => $orders,
     'sales' => $salesByEvent,
+    'categories' => $categories,
 ];
 ?>
 <div class="content-section" id="events">
@@ -36,6 +38,10 @@ $initialPayload = [
                     <button type="button" class="a11y-btn a11y-btn--primary" data-events-open="event">
                         <i class="fa-solid fa-plus" aria-hidden="true"></i>
                         <span>Create New Event</span>
+                    </button>
+                    <button type="button" class="a11y-btn a11y-btn--ghost" data-events-open="categories">
+                        <i class="fa-solid fa-tags" aria-hidden="true"></i>
+                        <span>Manage Categories</span>
                     </button>
                 </div>
             </div>
@@ -259,6 +265,17 @@ $initialPayload = [
                         <span>End date &amp; time</span>
                         <input type="datetime-local" name="end">
                     </label>
+                    <fieldset class="events-form-field span-2">
+                        <legend>Categories</legend>
+                        <p class="events-form-help">Tag this event to improve filtering and reporting.</p>
+                        <div class="events-category-options" data-events-category-options>
+                            <p class="events-category-empty">No categories yet. Manage categories to create one.</p>
+                        </div>
+                        <button type="button" class="a11y-btn a11y-btn--ghost events-category-manage-btn" data-events-open="categories">
+                            <i class="fa-solid fa-tags" aria-hidden="true"></i>
+                            <span>Manage categories</span>
+                        </button>
+                    </fieldset>
                     <fieldset class="events-form-field">
                         <legend>Status</legend>
                         <label class="events-radio">
@@ -293,6 +310,55 @@ $initialPayload = [
                     <button type="submit" class="a11y-btn a11y-btn--primary">Save event</button>
                 </footer>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="events-modal-backdrop" data-events-modal="categories">
+    <div class="events-modal" role="dialog" aria-modal="true" aria-labelledby="eventsCategoriesTitle">
+        <header class="events-modal-header">
+            <h2 class="events-modal-title" id="eventsCategoriesTitle">Manage categories</h2>
+            <button type="button" class="events-modal-close" data-events-close>&times;<span class="sr-only">Close</span></button>
+        </header>
+        <div class="events-modal-body">
+            <div class="events-category-manage">
+                <form class="events-category-form" data-events-form="category" aria-labelledby="eventsCategoriesFormTitle">
+                    <h3 class="events-category-form-title" id="eventsCategoriesFormTitle" data-events-category-form-title>Create category</h3>
+                    <input type="hidden" name="id" value="">
+                    <div class="events-form-grid">
+                        <label class="events-form-field">
+                            <span>Name</span>
+                            <input type="text" name="name" required>
+                        </label>
+                        <label class="events-form-field">
+                            <span>Slug</span>
+                            <input type="text" name="slug" placeholder="Auto-generated if left blank">
+                        </label>
+                    </div>
+                    <p class="events-category-hint">Slugs are used in URLs and filters. Leave blank to auto-generate.</p>
+                    <div class="events-form-actions events-category-actions">
+                        <button type="button" class="a11y-btn a11y-btn--ghost" data-events-category-reset>Clear</button>
+                        <button type="submit" class="a11y-btn a11y-btn--primary" data-events-category-submit>Save category</button>
+                    </div>
+                </form>
+                <div class="events-category-table">
+                    <table class="data-table events-table events-categories-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Slug</th>
+                                <th scope="col">Updated</th>
+                                <th scope="col" class="is-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody data-events-categories-list>
+                            <tr>
+                                <td colspan="4" class="events-empty">No categories yet. Create one above.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
