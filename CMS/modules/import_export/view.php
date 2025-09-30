@@ -17,6 +17,7 @@
                                         <i class="fas fa-file-arrow-down" aria-hidden="true"></i>
                                         <span>Generate export</span>
                                     </button>
+                                    <input type="file" id="importFileInput" accept="application/json" style="display:none;" aria-hidden="true" tabindex="-1">
                                 </div>
                             </div>
                             <div class="a11y-overview-grid import-overview-grid">
