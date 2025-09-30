@@ -108,10 +108,10 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                 <button type="button" class="pages-filter-btn" data-pages-filter="restricted" aria-pressed="false">Private <span class="pages-filter-count" data-count="restricted"><?php echo $filterCounts['restricted']; ?></span></button>
             </div>
             <div class="a11y-view-toggle pages-view-toggle" role="group" aria-label="Toggle page layout">
-                <button type="button" class="a11y-view-btn active" data-pages-view="grid" aria-pressed="true" aria-label="Card view">
+                <button type="button" class="a11y-view-btn" data-pages-view="grid" aria-pressed="false" aria-label="Card view">
                     <i class="fa-solid fa-grip" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="a11y-view-btn" data-pages-view="list" aria-pressed="false" aria-label="List view">
+                <button type="button" class="a11y-view-btn active" data-pages-view="list" aria-pressed="true" aria-label="List view">
                     <i class="fa-solid fa-list" aria-hidden="true"></i>
                 </button>
             </div>
@@ -125,7 +125,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                 </div>
                 <span class="table-meta pages-table-meta" id="pagesVisibleCount" aria-live="polite">Showing <?php echo $totalPages . ' ' . $pagesWord; ?></span>
             </header>
-            <div class="pages-card-grid" id="pagesCollection" role="list" aria-describedby="pagesInventoryDescription">
+            <div class="pages-card-grid" id="pagesCollection" role="list" aria-describedby="pagesInventoryDescription" hidden>
 <?php foreach ($pages as $p): ?>
 <?php
     $isPublished = !empty($p['published']);
@@ -206,7 +206,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                 </article>
 <?php endforeach; ?>
             </div>
-            <div class="pages-list-view" id="pagesListView" role="table" aria-describedby="pagesInventoryDescription" hidden>
+            <div class="pages-list-view" id="pagesListView" role="table" aria-describedby="pagesInventoryDescription">
                 <div class="pages-list-header" role="row">
                     <span role="columnheader">Page</span>
                     <span role="columnheader">Status</span>

@@ -506,7 +506,7 @@ $(function(){
                     setActiveView(view);
                 });
 
-                setActiveView('grid');
+                setActiveView('list');
             }
         }
 
