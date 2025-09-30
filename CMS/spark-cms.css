@@ -11880,7 +11880,7 @@ body.calendar-modal-open {
 }
 
 .commerce-hero-subtitle {
-    color: var(--color-text-secondary);
+    color: rgba(255, 255, 255, 0.9);
     max-width: 560px;
 }
 
@@ -11892,7 +11892,7 @@ body.calendar-modal-open {
 }
 
 .commerce-hero-meta {
-    color: var(--color-text-muted);
+    color: rgba(255, 255, 255, 0.92);
     font-size: var(--font-size-sm);
 }
 
