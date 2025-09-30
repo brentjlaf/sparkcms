@@ -106,6 +106,16 @@
       "updated": "2024-03-09"
     }
   ],
+  "categories": [
+    { "id": "accessories", "name": "Accessories", "slug": "accessories" },
+    { "id": "decor", "name": "Decor", "slug": "decor" },
+    { "id": "garden", "name": "Garden", "slug": "garden" },
+    { "id": "home", "name": "Home", "slug": "home" },
+    { "id": "kitchen", "name": "Kitchen", "slug": "kitchen" },
+    { "id": "lighting", "name": "Lighting", "slug": "lighting" },
+    { "id": "outdoor", "name": "Outdoor", "slug": "outdoor" },
+    { "id": "wellness", "name": "Wellness", "slug": "wellness" }
+  ],
   "orders": [
     {
       "id": "INV-1045",
