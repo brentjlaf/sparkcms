@@ -9222,6 +9222,47 @@
     white-space: nowrap;
 }
 
+.calendar-sortable {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.calendar-sortable:hover {
+    color: #4338ca;
+}
+
+.calendar-sortable:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+.calendar-table th.is-sorted .calendar-sortable,
+.calendar-sortable.is-sorted {
+    color: #4338ca;
+}
+
+.calendar-sort-icon {
+    font-size: 12px;
+    line-height: 1;
+    opacity: 0.6;
+}
+
+.calendar-sortable[data-sort-direction="asc"] .calendar-sort-icon,
+.calendar-sortable[data-sort-direction="desc"] .calendar-sort-icon {
+    opacity: 1;
+}
+
 .calendar-table th.is-actions-column {
     width: 160px;
     text-align: right;

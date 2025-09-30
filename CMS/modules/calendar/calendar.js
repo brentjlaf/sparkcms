@@ -10,10 +10,35 @@
     categories: [],
     metrics: null,
   };
+
+  const DEFAULT_SORT = 'startAsc';
+
   const filters = {
     search: '',
-    sort: 'startAsc',
+    sort: DEFAULT_SORT,
   };
+
+  const sortableColumns = {
+    start: { asc: 'startAsc', desc: 'startDesc' },
+    end: { asc: 'endAsc', desc: 'endDesc' },
+    title: { asc: 'titleAsc', desc: 'titleDesc' },
+    category: { asc: 'categoryAsc', desc: 'categoryDesc' },
+    recurrence: { asc: 'recurrenceAsc', desc: 'recurrenceDesc' },
+  };
+
+  const sortLabels = {
+    start: 'Start date',
+    end: 'End date',
+    title: 'Title',
+    category: 'Category',
+    recurrence: 'Recurrence',
+  };
+
+  const validSortValues = new Set();
+  Object.values(sortableColumns).forEach((definition) => {
+    validSortValues.add(definition.asc);
+    validSortValues.add(definition.desc);
+  });
 
   const initial = window.sparkCalendarInitial || {};
   if (Array.isArray(initial.events)) {
@@ -54,6 +79,9 @@
   };
   const searchInput = root.querySelector('[data-calendar-filter="search"]');
   const sortSelect = root.querySelector('[data-calendar-filter="sort"]');
+  const sortHeaderCells = Array.from(
+    root.querySelectorAll('[data-calendar-sortable]')
+  );
 
   const recurrenceLabels = {
     none: 'None',
@@ -61,6 +89,14 @@
     weekly: 'Weekly',
     monthly: 'Monthly',
     yearly: 'Yearly',
+  };
+
+  const recurrenceSortOrder = {
+    none: 0,
+    daily: 1,
+    weekly: 2,
+    monthly: 3,
+    yearly: 4,
   };
 
   let confirmConfig = null;
@@ -761,6 +797,54 @@
     categorySelect.innerHTML = options.join('');
   }
 
+  function normalizeSortValue(value) {
+    if (!value || !validSortValues.has(value)) {
+      return DEFAULT_SORT;
+    }
+    return value;
+  }
+
+  function getSortStateFromValue(value) {
+    const normalized = normalizeSortValue(value);
+    let matchedKey = 'start';
+    let direction = 'asc';
+
+    Object.entries(sortableColumns).some(([key, definition]) => {
+      if (definition.asc === normalized) {
+        matchedKey = key;
+        direction = 'asc';
+        return true;
+      }
+      if (definition.desc === normalized) {
+        matchedKey = key;
+        direction = 'desc';
+        return true;
+      }
+      return false;
+    });
+
+    return { key: matchedKey, direction, value: normalized };
+  }
+
+  function getSortButtonAriaLabel(key, direction) {
+    const label = sortLabels[key] || 'Column';
+    if (direction === 'asc') {
+      return (
+        'Sort by ' +
+        label +
+        '. Currently sorted ascending. Activate to sort descending.'
+      );
+    }
+    if (direction === 'desc') {
+      return (
+        'Sort by ' +
+        label +
+        '. Currently sorted descending. Activate to sort ascending.'
+      );
+    }
+    return 'Sort by ' + label + '. Not sorted. Activate to sort ascending.';
+  }
+
   function getEventTimestamp(value) {
     const parsed = Date.parse(value || '');
     if (!Number.isFinite(parsed)) {
@@ -785,6 +869,22 @@
     return (b.id || 0) - (a.id || 0);
   }
 
+  function compareByEndAsc(a, b) {
+    const diff = getEventTimestamp(a.end_date) - getEventTimestamp(b.end_date);
+    if (diff !== 0) {
+      return diff;
+    }
+    return compareByStartAsc(a, b);
+  }
+
+  function compareByEndDesc(a, b) {
+    const diff = getEventTimestamp(b.end_date) - getEventTimestamp(a.end_date);
+    if (diff !== 0) {
+      return diff;
+    }
+    return compareByStartDesc(a, b);
+  }
+
   function compareByTitleAsc(a, b) {
     const titleA = String(a.title || '').toLowerCase();
     const titleB = String(b.title || '').toLowerCase();
@@ -800,6 +900,57 @@
     if (titleA > titleB) return -1;
     return compareByStartDesc(a, b);
   }
+
+  function compareByCategoryAsc(a, b) {
+    const categoryA = String(a.category || '').toLowerCase();
+    const categoryB = String(b.category || '').toLowerCase();
+    if (categoryA < categoryB) return -1;
+    if (categoryA > categoryB) return 1;
+    return compareByTitleAsc(a, b);
+  }
+
+  function compareByCategoryDesc(a, b) {
+    const categoryA = String(a.category || '').toLowerCase();
+    const categoryB = String(b.category || '').toLowerCase();
+    if (categoryA < categoryB) return 1;
+    if (categoryA > categoryB) return -1;
+    return compareByTitleDesc(a, b);
+  }
+
+  function compareByRecurrenceAsc(a, b) {
+    const orderA =
+      recurrenceSortOrder[a.recurring_interval] ?? Number.MAX_SAFE_INTEGER;
+    const orderB =
+      recurrenceSortOrder[b.recurring_interval] ?? Number.MAX_SAFE_INTEGER;
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    return compareByStartAsc(a, b);
+  }
+
+  function compareByRecurrenceDesc(a, b) {
+    const orderA =
+      recurrenceSortOrder[a.recurring_interval] ?? Number.MAX_SAFE_INTEGER;
+    const orderB =
+      recurrenceSortOrder[b.recurring_interval] ?? Number.MAX_SAFE_INTEGER;
+    if (orderA !== orderB) {
+      return orderB - orderA;
+    }
+    return compareByStartDesc(a, b);
+  }
+
+  const sortComparators = {
+    startAsc: compareByStartAsc,
+    startDesc: compareByStartDesc,
+    endAsc: compareByEndAsc,
+    endDesc: compareByEndDesc,
+    titleAsc: compareByTitleAsc,
+    titleDesc: compareByTitleDesc,
+    categoryAsc: compareByCategoryAsc,
+    categoryDesc: compareByCategoryDesc,
+    recurrenceAsc: compareByRecurrenceAsc,
+    recurrenceDesc: compareByRecurrenceDesc,
+  };
 
   function getFilteredEvents() {
     if (!Array.isArray(state.events)) {
@@ -833,22 +984,53 @@
       });
     }
 
-    let comparator = compareByStartAsc;
-    switch (filters.sort) {
-      case 'startDesc':
-        comparator = compareByStartDesc;
-        break;
-      case 'titleAsc':
-        comparator = compareByTitleAsc;
-        break;
-      case 'titleDesc':
-        comparator = compareByTitleDesc;
-        break;
-      default:
-        comparator = compareByStartAsc;
-    }
+    const comparator = sortComparators[filters.sort] || compareByStartAsc;
 
     return result.sort(comparator);
+  }
+
+  function updateSortIndicators() {
+    if (!sortHeaderCells.length) {
+      return;
+    }
+
+    const sortState = getSortStateFromValue(filters.sort);
+
+    sortHeaderCells.forEach((cell) => {
+      const key = cell.getAttribute('data-calendar-sortable');
+      const isActive = key === sortState.key;
+      const direction = isActive ? sortState.direction : 'none';
+      const button = cell.querySelector('[data-calendar-sort-trigger]');
+      const icon = button ? button.querySelector('.calendar-sort-icon') : null;
+
+      cell.classList.toggle('is-sorted', direction !== 'none');
+      cell.removeAttribute('aria-sort');
+      cell.removeAttribute('data-sort-direction');
+
+      if (direction === 'asc') {
+        cell.setAttribute('aria-sort', 'ascending');
+        cell.setAttribute('data-sort-direction', 'asc');
+      } else if (direction === 'desc') {
+        cell.setAttribute('aria-sort', 'descending');
+        cell.setAttribute('data-sort-direction', 'desc');
+      }
+
+      if (button) {
+        button.classList.toggle('is-sorted', direction !== 'none');
+        button.setAttribute('data-sort-direction', direction);
+        button.setAttribute('aria-label', getSortButtonAriaLabel(key, direction));
+      }
+
+      if (icon) {
+        let symbol = '↕';
+        if (direction === 'asc') {
+          symbol = '▲';
+        } else if (direction === 'desc') {
+          symbol = '▼';
+        }
+        icon.textContent = symbol;
+      }
+    });
   }
 
   function renderEvents() {
@@ -867,6 +1049,7 @@
         '<tr><td colspan="6" class="calendar-empty">' +
         emptyMessage +
         '</td></tr>';
+      updateSortIndicators();
       return;
     }
 
@@ -906,6 +1089,31 @@
       .join('');
 
     eventsTableBody.innerHTML = rows;
+    updateSortIndicators();
+  }
+
+  function applySort(value, options = {}) {
+    const normalized = normalizeSortValue(value);
+
+    if (filters.sort === normalized) {
+      if (options.updateSelect !== false && sortSelect) {
+        if (sortSelect.value !== normalized) {
+          sortSelect.value = normalized;
+        }
+      }
+      updateSortIndicators();
+      return;
+    }
+
+    filters.sort = normalized;
+
+    if (options.updateSelect !== false && sortSelect) {
+      if (sortSelect.value !== normalized) {
+        sortSelect.value = normalized;
+      }
+    }
+
+    renderEvents();
   }
 
   function renderCategories() {
@@ -1378,15 +1586,41 @@
   }
 
   if (sortSelect) {
+    const initialValue =
+      typeof sortSelect.value === 'string' && sortSelect.value !== ''
+        ? sortSelect.value
+        : DEFAULT_SORT;
+    filters.sort = normalizeSortValue(initialValue);
     sortSelect.value = filters.sort;
     sortSelect.addEventListener('change', (event) => {
       const value = event.target && typeof event.target.value === 'string'
         ? event.target.value
-        : 'startAsc';
-      filters.sort = value || 'startAsc';
-      renderEvents();
+        : DEFAULT_SORT;
+      applySort(value);
     });
+  } else {
+    filters.sort = normalizeSortValue(filters.sort);
   }
+
+  sortHeaderCells.forEach((cell) => {
+    const button = cell.querySelector('[data-calendar-sort-trigger]');
+    if (!button) {
+      return;
+    }
+    button.addEventListener('click', () => {
+      const key = cell.getAttribute('data-calendar-sortable');
+      if (!key || !sortableColumns[key]) {
+        return;
+      }
+      const currentState = getSortStateFromValue(filters.sort);
+      const definition = sortableColumns[key];
+      const nextValue =
+        currentState.key === key && currentState.direction === 'asc'
+          ? definition.desc
+          : definition.asc;
+      applySort(nextValue);
+    });
+  });
 
   renderCategories();
   renderEvents();
