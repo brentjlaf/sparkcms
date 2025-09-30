@@ -144,6 +144,13 @@ $lastSubmissionLabel = $latestSubmission > 0
                     </div>
                     <div class="forms-submissions-meta">
                         <span class="forms-submissions-count" id="formSubmissionsCount">—</span>
+                        <form class="forms-submissions-export" id="exportSubmissionsForm" method="get" action="modules/forms/export_submissions.php">
+                            <input type="hidden" name="form_id" id="exportFormId" value="">
+                            <button type="submit" class="a11y-btn a11y-btn--ghost" id="exportSubmissionsBtn" disabled aria-disabled="true">
+                                <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
+                                <span>Export CSV</span>
+                            </button>
+                        </form>
                     </div>
                 </header>
                 <div class="forms-submissions-container">

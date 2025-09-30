@@ -19,6 +19,9 @@ $(function(){
     const $closeFormBuilder = $('#closeFormBuilder');
     const $formsGrid = $('#formsLibrary');
     const $formsEmptyState = $('#formsLibraryEmptyState');
+    const $exportForm = $('#exportSubmissionsForm');
+    const $exportFormId = $('#exportFormId');
+    const $exportButton = $('#exportSubmissionsBtn');
 
     const FIELD_TYPE_LABELS = {
         text: 'Text input',
@@ -165,6 +168,19 @@ $(function(){
         });
     }
 
+    function setExportAvailability(formId){
+        if(!$exportForm.length || !$exportFormId.length || !$exportButton.length){
+            return;
+        }
+        if(formId){
+            $exportFormId.val(formId);
+            $exportButton.prop('disabled', false).removeAttr('aria-disabled');
+        } else {
+            $exportFormId.val('');
+            $exportButton.prop('disabled', true).attr('aria-disabled', 'true');
+        }
+    }
+
     function getFormCardName($card){
         if(!$card || !$card.length){
             return '';
@@ -234,6 +250,7 @@ $(function(){
         currentFormId = null;
         currentFormName = '';
         currentSubmissions = [];
+        setExportAvailability(null);
         closeSubmissionModal();
         const text = message || 'Select a form to view submissions';
         const placeholder = /[.!?]$/.test(text) ? text : text + '.';
@@ -337,6 +354,7 @@ $(function(){
         currentFormId = formId;
         currentFormName = formName;
         currentSubmissions = [];
+        setExportAvailability(formId);
         $formsGrid.find('.forms-library-item').removeClass('is-selected');
         $formsGrid.find('.forms-library-item').filter(function(){
             return $(this).data('id') == formId;
