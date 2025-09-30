@@ -78,6 +78,28 @@ function commerce_badge_class($status) {
     }
 }
 
+$totalProducts = count($catalog);
+$activeProductCount = 0;
+$lowInventoryThreshold = isset($commerceSettings['low_inventory_threshold']) && is_numeric($commerceSettings['low_inventory_threshold'])
+    ? (int) $commerceSettings['low_inventory_threshold']
+    : 0;
+$lowInventoryCount = 0;
+foreach ($catalog as $productItem) {
+    $status = isset($productItem['status']) ? strtolower((string) $productItem['status']) : '';
+    if ($status === 'active') {
+        $activeProductCount++;
+    }
+    if ($lowInventoryThreshold > 0) {
+        $inventoryValue = isset($productItem['inventory']) && is_numeric($productItem['inventory'])
+            ? (int) $productItem['inventory']
+            : null;
+        if ($inventoryValue !== null && $inventoryValue <= $lowInventoryThreshold) {
+            $lowInventoryCount++;
+        }
+    }
+}
+$totalCategories = count($categories);
+
 $workspaces = [
     'dashboard' => 'Commerce Dashboard',
     'catalog' => 'Product Catalog',
@@ -261,131 +283,90 @@ foreach ($trend as $point):
                         <h3 class="commerce-panel-title">Catalogue inventory</h3>
                         <p class="commerce-panel-description">Search, filter, and review product velocity.</p>
                     </div>
-                    <div class="commerce-panel-actions">
-                        <label class="commerce-search" for="commerceCatalogSearch">
-                            <i class="fa-solid fa-search" aria-hidden="true"></i>
-                            <input type="search" id="commerceCatalogSearch" placeholder="Search products" aria-controls="commerceCatalogTable">
-                        </label>
-                        <select id="commerceCatalogCategory" class="commerce-select" aria-label="Filter products by category">
-                            <option value="all">All categories</option>
+                <div class="commerce-panel-actions">
+                    <label class="commerce-search" for="commerceCatalogSearch">
+                        <i class="fa-solid fa-search" aria-hidden="true"></i>
+                        <input type="search" id="commerceCatalogSearch" placeholder="Search products" aria-controls="commerceCatalogTable">
+                    </label>
+                    <select id="commerceCatalogCategory" class="commerce-select" aria-label="Filter products by category">
+                        <option value="all">All categories</option>
 <?php foreach ($categories as $category): ?>
-                            <option value="<?php echo htmlspecialchars($category['slug']); ?>"><?php echo htmlspecialchars($category['name']); ?></option>
+                        <option value="<?php echo htmlspecialchars($category['slug']); ?>"><?php echo htmlspecialchars($category['name']); ?></option>
 <?php endforeach; ?>
-                        </select>
-                        <select id="commerceCatalogStatus" class="commerce-select" aria-label="Filter products by status">
-                            <option value="all">All statuses</option>
-                            <option value="active">Active</option>
-                            <option value="preorder">Preorder</option>
-                            <option value="backorder">Backorder</option>
-                            <option value="restock">Restock</option>
-                        </select>
-                    </div>
-                </header>
-                <div class="commerce-management-grid">
-                    <article class="commerce-card commerce-card--form">
-                        <header class="commerce-card-header">
-                            <div>
-                                <h4 class="commerce-card-title">Category management</h4>
-                                <p class="commerce-card-subtitle">Add new catalogue categories or rename existing ones.</p>
-                            </div>
-                        </header>
-                        <form id="commerceCategoryForm" class="commerce-form" method="post" action="modules/commerce/save_category.php">
-                            <input type="hidden" id="commerceCategoryId" name="id">
-                            <div class="commerce-form-group">
-                                <label class="commerce-form-label" for="commerceCategorySelect">Edit existing category</label>
-                                <select id="commerceCategorySelect" class="commerce-form-input">
-                                    <option value="">Create new category</option>
-<?php foreach ($categories as $category): ?>
-                                    <option value="<?php echo htmlspecialchars($category['id']); ?>"><?php echo htmlspecialchars($category['name']); ?></option>
-<?php endforeach; ?>
-                                </select>
-                                <p class="commerce-form-help">Select a category to edit or choose “Create new category”.</p>
-                            </div>
-                            <div class="commerce-form-group">
-                                <label class="commerce-form-label" for="commerceCategoryName">Category name</label>
-                                <input type="text" id="commerceCategoryName" class="commerce-form-input" name="name" required autocomplete="off" placeholder="e.g. Lighting">
-                            </div>
-                            <div class="commerce-form-actions">
-                                <button type="submit" class="a11y-btn a11y-btn--primary" id="commerceCategorySubmit">Save category</button>
-                                <button type="button" class="a11y-btn a11y-btn--ghost" id="commerceCategoryReset">Clear</button>
-                            </div>
-                        </form>
-                        <div class="commerce-form-meta">
-                            <h5 class="commerce-form-meta-title">Existing categories</h5>
-                            <ul class="commerce-chip-list" id="commerceCategoryList">
-<?php foreach ($categories as $category): ?>
-                                <li class="commerce-chip" data-category-id="<?php echo htmlspecialchars($category['id']); ?>"><?php echo htmlspecialchars($category['name']); ?></li>
-<?php endforeach; ?>
-                            </ul>
-                        </div>
-                    </article>
-                    <article class="commerce-card commerce-card--form">
-                        <header class="commerce-card-header">
-                            <div>
-                                <h4 class="commerce-card-title">Product details</h4>
-                                <p class="commerce-card-subtitle">Add new products or update catalogue entries.</p>
-                            </div>
-                        </header>
-                        <form id="commerceProductForm" class="commerce-form" method="post" action="modules/commerce/save_product.php">
-                            <input type="hidden" id="commerceProductOriginalSku" name="original_sku">
-                            <div class="commerce-form-grid">
-                                <div class="commerce-form-group">
-                                    <label class="commerce-form-label" for="commerceProductSku">SKU</label>
-                                    <input type="text" id="commerceProductSku" class="commerce-form-input" name="sku" required autocomplete="off" placeholder="SP-1001">
-                                </div>
-                                <div class="commerce-form-group">
-                                    <label class="commerce-form-label" for="commerceProductName">Product name</label>
-                                    <input type="text" id="commerceProductName" class="commerce-form-input" name="name" required placeholder="Luminous Desk Lamp">
-                                </div>
-                                <div class="commerce-form-group">
-                                    <label class="commerce-form-label" for="commerceProductCategory">Category</label>
-                                    <input type="text" id="commerceProductCategory" class="commerce-form-input" name="category" list="commerceProductCategoryOptions" required placeholder="Lighting">
-                                    <datalist id="commerceProductCategoryOptions">
-<?php foreach ($categories as $category): ?>
-                                        <option value="<?php echo htmlspecialchars($category['name']); ?>"></option>
-<?php endforeach; ?>
-                                    </datalist>
-                                </div>
-                                <div class="commerce-form-group">
-                                    <label class="commerce-form-label" for="commerceProductPrice">Price</label>
-                                    <input type="number" id="commerceProductPrice" class="commerce-form-input" name="price" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                                <div class="commerce-form-group">
-                                    <label class="commerce-form-label" for="commerceProductInventory">Inventory</label>
-                                    <input type="number" id="commerceProductInventory" class="commerce-form-input" name="inventory" min="0" step="1" placeholder="0">
-                                </div>
-                                <div class="commerce-form-group">
-                                    <label class="commerce-form-label" for="commerceProductStatus">Status</label>
-                                    <select id="commerceProductStatus" class="commerce-form-input" name="status">
-                                        <option value="Active">Active</option>
-                                        <option value="Preorder">Preorder</option>
-                                        <option value="Backorder">Backorder</option>
-                                        <option value="Restock">Restock</option>
-                                        <option value="Hidden">Hidden</option>
-                                    </select>
-                                </div>
-                                <div class="commerce-form-group">
-                                    <label class="commerce-form-label" for="commerceProductVisibility">Visibility</label>
-                                    <select id="commerceProductVisibility" class="commerce-form-input" name="visibility">
-                                        <option value="Published">Published</option>
-                                        <option value="Hidden">Hidden</option>
-                                    </select>
-                                </div>
-                                <div class="commerce-form-group">
-                                    <label class="commerce-form-label" for="commerceProductUpdated">Last updated</label>
-                                    <input type="date" id="commerceProductUpdated" class="commerce-form-input" name="updated">
-                                </div>
-                            </div>
-                            <div class="commerce-form-actions">
-                                <button type="submit" class="a11y-btn a11y-btn--primary" id="commerceProductSubmit">Add product</button>
-                                <button type="button" class="a11y-btn a11y-btn--ghost" id="commerceProductReset">Cancel</button>
-                            </div>
-                        </form>
-                    </article>
+                    </select>
+                    <select id="commerceCatalogStatus" class="commerce-select" aria-label="Filter products by status">
+                        <option value="all">All statuses</option>
+                        <option value="active">Active</option>
+                        <option value="preorder">Preorder</option>
+                        <option value="backorder">Backorder</option>
+                        <option value="restock">Restock</option>
+                    </select>
                 </div>
-                <div class="commerce-table-wrapper" role="region" aria-live="polite">
-                    <table class="commerce-table" id="commerceCatalogTable">
-                        <thead>
+            </header>
+            <div class="commerce-management-grid">
+                <article class="commerce-card">
+                    <header class="commerce-card-header">
+                        <div>
+                            <h4 class="commerce-card-title">Category management</h4>
+                            <p class="commerce-card-subtitle">Add new catalogue categories or rename existing ones.</p>
+                        </div>
+                    </header>
+                    <div class="commerce-card-body">
+                        <p class="commerce-card-copy">Your catalogue spans <?php echo commerce_format_number($totalCategories); ?> <?php echo $totalCategories === 1 ? 'category' : 'categories'; ?>.</p>
+                        <ul class="commerce-chip-list" id="commerceCategorySummary">
+<?php if (!empty($categories)): ?>
+<?php foreach ($categories as $category): ?>
+                            <li class="commerce-chip" data-category-id="<?php echo htmlspecialchars($category['id']); ?>"><?php echo htmlspecialchars($category['name']); ?></li>
+<?php endforeach; ?>
+<?php else: ?>
+                            <li class="commerce-chip commerce-chip--empty">No categories yet</li>
+<?php endif; ?>
+                        </ul>
+                    </div>
+                    <div class="commerce-card-footer">
+                        <button type="button" class="a11y-btn a11y-btn--primary" data-commerce-open-modal="commerceCategoryModal">
+                            <i class="fa-solid fa-tags" aria-hidden="true"></i>
+                            <span>Manage categories</span>
+                        </button>
+                    </div>
+                </article>
+                <article class="commerce-card">
+                    <header class="commerce-card-header">
+                        <div>
+                            <h4 class="commerce-card-title">Product quick actions</h4>
+                            <p class="commerce-card-subtitle">Launch new items or update existing SKUs from a focused modal.</p>
+                        </div>
+                    </header>
+                    <div class="commerce-card-body">
+                        <p class="commerce-card-copy">Keep your catalogue current by adding new products or refreshing existing listings.</p>
+                        <ul class="commerce-stat-list">
+                            <li class="commerce-stat">
+                                <span class="commerce-stat-label">Total products</span>
+                                <span class="commerce-stat-value"><?php echo commerce_format_number($totalProducts); ?></span>
+                            </li>
+                            <li class="commerce-stat">
+                                <span class="commerce-stat-label">Active SKUs</span>
+                                <span class="commerce-stat-value"><?php echo commerce_format_number($activeProductCount); ?></span>
+                            </li>
+<?php if ($lowInventoryThreshold > 0): ?>
+                            <li class="commerce-stat">
+                                <span class="commerce-stat-label">Low inventory (≤ <?php echo commerce_format_number($lowInventoryThreshold); ?>)</span>
+                                <span class="commerce-stat-value"><?php echo commerce_format_number($lowInventoryCount); ?></span>
+                            </li>
+<?php endif; ?>
+                        </ul>
+                    </div>
+                    <div class="commerce-card-footer">
+                        <button type="button" class="a11y-btn a11y-btn--primary" data-commerce-open-modal="commerceProductModal">
+                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                            <span>Add product</span>
+                        </button>
+                    </div>
+                </article>
+            </div>
+            <div class="commerce-table-wrapper" role="region" aria-live="polite">
+                <table class="commerce-table" id="commerceCatalogTable">
+                    <thead>
                             <tr>
                                 <th scope="col">Product</th>
                                 <th scope="col">Category</th>
@@ -728,6 +709,122 @@ foreach ($windows as $window):
                     </section>
                 </div>
             </section>
+        </div>
+    </div>
+    <div class="modal commerce-modal" id="commerceCategoryModal" role="dialog" aria-modal="true" aria-labelledby="commerceCategoryModalTitle" aria-describedby="commerceCategoryModalDescription" aria-hidden="true">
+        <div class="commerce-modal__surface" role="document">
+            <button type="button" class="commerce-modal__close" data-commerce-close-modal="commerceCategoryModal" aria-label="Close category modal">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="commerce-modal__header">
+                <span class="commerce-modal__eyebrow">Catalogue</span>
+                <h2 class="commerce-modal__title" id="commerceCategoryModalTitle">Manage categories</h2>
+                <p class="commerce-modal__description" id="commerceCategoryModalDescription">Create new catalogue groupings or rename existing categories to keep your storefront organised.</p>
+            </header>
+            <div class="commerce-modal__body">
+                <form id="commerceCategoryForm" class="commerce-form" method="post" action="modules/commerce/save_category.php">
+                    <input type="hidden" id="commerceCategoryId" name="id">
+                    <div class="commerce-form-group">
+                        <label class="commerce-form-label" for="commerceCategorySelect">Edit existing category</label>
+                        <select id="commerceCategorySelect" class="commerce-form-input" data-commerce-initial-focus>
+                            <option value="">Create new category</option>
+<?php foreach ($categories as $category): ?>
+                            <option value="<?php echo htmlspecialchars($category['id']); ?>"><?php echo htmlspecialchars($category['name']); ?></option>
+<?php endforeach; ?>
+                        </select>
+                        <p class="commerce-form-help">Select a category to update or choose “Create new category”.</p>
+                    </div>
+                    <div class="commerce-form-group">
+                        <label class="commerce-form-label" for="commerceCategoryName">Category name</label>
+                        <input type="text" id="commerceCategoryName" class="commerce-form-input" name="name" required autocomplete="off" placeholder="e.g. Lighting">
+                    </div>
+                    <div class="commerce-form-actions">
+                        <button type="submit" class="a11y-btn a11y-btn--primary" id="commerceCategorySubmit">Save category</button>
+                        <button type="button" class="a11y-btn a11y-btn--ghost" id="commerceCategoryReset">Clear</button>
+                    </div>
+                </form>
+                <div class="commerce-form-meta">
+                    <h5 class="commerce-form-meta-title">Existing categories</h5>
+                    <ul class="commerce-chip-list" id="commerceCategoryList">
+<?php if (!empty($categories)): ?>
+<?php foreach ($categories as $category): ?>
+                        <li class="commerce-chip" data-category-id="<?php echo htmlspecialchars($category['id']); ?>"><?php echo htmlspecialchars($category['name']); ?></li>
+<?php endforeach; ?>
+<?php else: ?>
+                        <li class="commerce-chip commerce-chip--empty">No categories yet</li>
+<?php endif; ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal commerce-modal" id="commerceProductModal" role="dialog" aria-modal="true" aria-labelledby="commerceProductModalTitle" aria-describedby="commerceProductModalDescription" aria-hidden="true">
+        <div class="commerce-modal__surface" role="document">
+            <button type="button" class="commerce-modal__close" data-commerce-close-modal="commerceProductModal" aria-label="Close product modal">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="commerce-modal__header">
+                <span class="commerce-modal__eyebrow">Product catalogue</span>
+                <h2 class="commerce-modal__title" id="commerceProductModalTitle">Add new product</h2>
+                <p class="commerce-modal__description" id="commerceProductModalDescription">Launch a new product listing or update an existing SKU with pricing and inventory details.</p>
+            </header>
+            <div class="commerce-modal__body">
+                <form id="commerceProductForm" class="commerce-form" method="post" action="modules/commerce/save_product.php">
+                    <input type="hidden" id="commerceProductOriginalSku" name="original_sku">
+                    <div class="commerce-form-grid">
+                        <div class="commerce-form-group">
+                            <label class="commerce-form-label" for="commerceProductSku">SKU</label>
+                            <input type="text" id="commerceProductSku" class="commerce-form-input" name="sku" required autocomplete="off" placeholder="SP-1001" data-commerce-initial-focus>
+                        </div>
+                        <div class="commerce-form-group">
+                            <label class="commerce-form-label" for="commerceProductName">Product name</label>
+                            <input type="text" id="commerceProductName" class="commerce-form-input" name="name" required placeholder="Luminous Desk Lamp">
+                        </div>
+                        <div class="commerce-form-group">
+                            <label class="commerce-form-label" for="commerceProductCategory">Category</label>
+                            <input type="text" id="commerceProductCategory" class="commerce-form-input" name="category" list="commerceProductCategoryOptions" required placeholder="Lighting">
+                            <datalist id="commerceProductCategoryOptions">
+<?php foreach ($categories as $category): ?>
+                                <option value="<?php echo htmlspecialchars($category['name']); ?>"></option>
+<?php endforeach; ?>
+                            </datalist>
+                        </div>
+                        <div class="commerce-form-group">
+                            <label class="commerce-form-label" for="commerceProductPrice">Price</label>
+                            <input type="number" id="commerceProductPrice" class="commerce-form-input" name="price" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="commerce-form-group">
+                            <label class="commerce-form-label" for="commerceProductInventory">Inventory</label>
+                            <input type="number" id="commerceProductInventory" class="commerce-form-input" name="inventory" min="0" step="1" placeholder="0">
+                        </div>
+                        <div class="commerce-form-group">
+                            <label class="commerce-form-label" for="commerceProductStatus">Status</label>
+                            <select id="commerceProductStatus" class="commerce-form-input" name="status">
+                                <option value="Active">Active</option>
+                                <option value="Preorder">Preorder</option>
+                                <option value="Backorder">Backorder</option>
+                                <option value="Restock">Restock</option>
+                                <option value="Hidden">Hidden</option>
+                            </select>
+                        </div>
+                        <div class="commerce-form-group">
+                            <label class="commerce-form-label" for="commerceProductVisibility">Visibility</label>
+                            <select id="commerceProductVisibility" class="commerce-form-input" name="visibility">
+                                <option value="Published">Published</option>
+                                <option value="Hidden">Hidden</option>
+                            </select>
+                        </div>
+                        <div class="commerce-form-group">
+                            <label class="commerce-form-label" for="commerceProductUpdated">Last updated</label>
+                            <input type="date" id="commerceProductUpdated" class="commerce-form-input" name="updated">
+                        </div>
+                    </div>
+                    <div class="commerce-form-actions">
+                        <button type="submit" class="a11y-btn a11y-btn--primary" id="commerceProductSubmit">Add product</button>
+                        <button type="button" class="a11y-btn a11y-btn--ghost" id="commerceProductReset">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     <script type="application/json" id="commerceDataset"><?php echo $encodedDataset; ?></script>

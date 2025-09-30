@@ -123,6 +123,73 @@ $(function(){
         }
     }
 
+    const $body = $('body');
+    const modalState = {
+        active: null,
+        lastFocus: null
+    };
+
+    function findModalFocusTarget($modal) {
+        if (!$modal || !$modal.length) {
+            return null;
+        }
+        const $preferred = $modal.find('[data-commerce-initial-focus]').filter(':visible').first();
+        if ($preferred.length) {
+            return $preferred;
+        }
+        return $modal
+            .find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+            .filter(':visible')
+            .first();
+    }
+
+    function openCommerceModal(id) {
+        const $modal = $(`#${id}`);
+        if (!$modal.length) {
+            return;
+        }
+        modalState.lastFocus = document.activeElement;
+        $modal.addClass('active');
+        $modal.attr('aria-hidden', 'false');
+        $body.addClass('commerce-modal-open');
+        modalState.active = id;
+        const $focusTarget = findModalFocusTarget($modal);
+        if ($focusTarget && $focusTarget.length) {
+            setTimeout(function(){
+                $focusTarget.trigger('focus');
+            }, 50);
+        }
+    }
+
+    function closeCommerceModal(id) {
+        const $modal = $(`#${id}`);
+        if (!$modal.length) {
+            return;
+        }
+        $modal.removeClass('active');
+        $modal.attr('aria-hidden', 'true');
+        if (!$('.commerce-modal.active').length) {
+            $body.removeClass('commerce-modal-open');
+        }
+        if (modalState.active === id) {
+            modalState.active = null;
+        }
+        if (id === 'commerceProductModal') {
+            resetProductForm();
+        }
+        if (id === 'commerceCategoryModal') {
+            resetCategoryForm();
+            renderCategorySelect();
+        }
+        const { lastFocus } = modalState;
+        if (lastFocus && typeof lastFocus.focus === 'function') {
+            setTimeout(function(){
+                lastFocus.focus();
+            }, 50);
+        }
+        modalState.lastFocus = null;
+    }
+
     const $workspaceTabs = $('[data-commerce-workspace]');
     const $workspacePanels = $('[data-commerce-panel]');
 
@@ -371,6 +438,7 @@ $(function(){
     const $categoryReset = $('#commerceCategoryReset');
     const $categorySubmit = $('#commerceCategorySubmit');
     const $categoryList = $('#commerceCategoryList');
+    const $categorySummary = $('#commerceCategorySummary');
 
     function renderCategorySelect() {
         if (!$categorySelect.length) {
@@ -390,13 +458,18 @@ $(function(){
     }
 
     function renderCategoryList() {
-        if (!$categoryList.length) {
-            return;
+        const items = sortCategories(categories);
+        const chips = items.length
+            ? items.map(function(category){
+                return `<li class="commerce-chip" data-category-id="${escapeHtml(category.id)}">${escapeHtml(category.name)}</li>`;
+            }).join('')
+            : '<li class="commerce-chip commerce-chip--empty">No categories yet</li>';
+        if ($categoryList.length) {
+            $categoryList.html(chips);
         }
-        const chips = sortCategories(categories).map(function(category){
-            return `<li class="commerce-chip" data-category-id="${escapeHtml(category.id)}">${escapeHtml(category.name)}</li>`;
-        });
-        $categoryList.html(chips.join(''));
+        if ($categorySummary.length) {
+            $categorySummary.html(chips);
+        }
     }
 
     function renderCategoryFilter() {
@@ -518,6 +591,7 @@ $(function(){
     });
 
     const $productForm = $('#commerceProductForm');
+    const $productModalTitle = $('#commerceProductModalTitle');
     const $productOriginalSku = $('#commerceProductOriginalSku');
     const $productSku = $('#commerceProductSku');
     const $productName = $('#commerceProductName');
@@ -547,6 +621,9 @@ $(function(){
         }
         if ($productUpdated.length) {
             $productUpdated.val(getTodayDate());
+        }
+        if ($productModalTitle.length) {
+            $productModalTitle.text('Add new product');
         }
     }
 
@@ -578,11 +655,14 @@ $(function(){
         if ($productSubmit.length) {
             $productSubmit.text('Update product');
         }
+        if ($productModalTitle.length) {
+            $productModalTitle.text('Edit product');
+        }
         $productName.trigger('focus');
     }
 
     $productReset.on('click', function(){
-        resetProductForm();
+        closeCommerceModal('commerceProductModal');
     });
 
     $productForm.on('submit', function(event){
@@ -640,7 +720,7 @@ $(function(){
             renderCategoryFilter();
             renderProductCategoryOptions();
             renderCatalogRows();
-            resetProductForm();
+            closeCommerceModal('commerceProductModal');
             notifySuccess(response.message || 'Product saved.');
         }).fail(function(xhr){
             let message = 'Unable to save product.';
@@ -664,7 +744,46 @@ $(function(){
             return;
         }
         setActiveWorkspace('catalog');
+        openCommerceModal('commerceProductModal');
         loadProductForEdit(product);
+    });
+
+    $('[data-commerce-open-modal]').on('click', function(){
+        const target = ($(this).data('commerceOpenModal') || '').toString();
+        if (!target) {
+            return;
+        }
+        if (target === 'commerceProductModal') {
+            resetProductForm();
+        }
+        if (target === 'commerceCategoryModal') {
+            resetCategoryForm();
+            renderCategorySelect();
+        }
+        openCommerceModal(target);
+    });
+
+    $('[data-commerce-close-modal]').on('click', function(){
+        const target = ($(this).data('commerceCloseModal') || '').toString();
+        if (!target) {
+            return;
+        }
+        closeCommerceModal(target);
+    });
+
+    $('.commerce-modal').on('click', function(event){
+        if (event.target === this) {
+            const id = $(this).attr('id');
+            if (id) {
+                closeCommerceModal(id);
+            }
+        }
+    });
+
+    $(document).on('keydown', function(event){
+        if (event.key === 'Escape' && modalState.active) {
+            closeCommerceModal(modalState.active);
+        }
     });
 
     const $alerts = $('#commerceAlerts .commerce-alert-item');
