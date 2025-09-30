@@ -162,39 +162,51 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                 <tbody>
 <?php foreach ($pages as $p): ?>
 <?php
+    $id = isset($p['id']) ? (int) $p['id'] : 0;
+    $title = isset($p['title']) && $p['title'] !== '' ? (string) $p['title'] : 'Untitled Page';
+    $slug = isset($p['slug']) ? (string) $p['slug'] : '';
+    $content = isset($p['content']) ? (string) $p['content'] : '';
+    $templateName = isset($p['template']) && $p['template'] !== '' ? $p['template'] : 'page.php';
+    $metaTitle = $p['meta_title'] ?? '';
+    $metaDescription = $p['meta_description'] ?? '';
+    $canonicalUrl = $p['canonical_url'] ?? '';
+    $ogTitle = $p['og_title'] ?? '';
+    $ogDescription = $p['og_description'] ?? '';
+    $ogImage = $p['og_image'] ?? '';
+    $accessRaw = $p['access'] ?? 'public';
+
     $isPublished = !empty($p['published']);
-    $accessValue = strtolower((string) ($p['access'] ?? 'public'));
+    $accessValue = strtolower((string) $accessRaw);
     $isRestricted = $accessValue !== 'public';
     $views = (int) ($p['views'] ?? 0);
     $viewsDisplay = number_format($views);
     $lastModified = isset($p['last_modified']) ? (int) $p['last_modified'] : 0;
     $modifiedDisplay = $lastModified > 0 ? date('M j, Y g:i A', $lastModified) : 'No edits yet';
-    $viewUrl = '../?page=' . urlencode($p['slug']);
+    $viewUrl = '../?page=' . urlencode($slug);
     $accessLabel = $isRestricted ? 'Private' : 'Public';
-    $templateName = $p['template'] ?? 'page.php';
 ?>
                     <tr class="pages-list-row"
-                        data-id="<?php echo $p['id']; ?>"
-                        data-title="<?php echo htmlspecialchars($p['title'], ENT_QUOTES); ?>"
-                        data-slug="<?php echo htmlspecialchars($p['slug'], ENT_QUOTES); ?>"
-                        data-content="<?php echo htmlspecialchars($p['content'], ENT_QUOTES); ?>"
+                        data-id="<?php echo $id; ?>"
+                        data-title="<?php echo htmlspecialchars($title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-slug="<?php echo htmlspecialchars($slug, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-content="<?php echo htmlspecialchars($content, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         data-published="<?php echo $isPublished ? 1 : 0; ?>"
-                        data-template="<?php echo htmlspecialchars($templateName, ENT_QUOTES); ?>"
-                        data-meta_title="<?php echo htmlspecialchars($p['meta_title'] ?? '', ENT_QUOTES); ?>"
-                        data-meta_description="<?php echo htmlspecialchars($p['meta_description'] ?? '', ENT_QUOTES); ?>"
-                        data-canonical_url="<?php echo htmlspecialchars($p['canonical_url'] ?? '', ENT_QUOTES); ?>"
-                        data-og_title="<?php echo htmlspecialchars($p['og_title'] ?? '', ENT_QUOTES); ?>"
-                        data-og_description="<?php echo htmlspecialchars($p['og_description'] ?? '', ENT_QUOTES); ?>"
-                        data-og_image="<?php echo htmlspecialchars($p['og_image'] ?? '', ENT_QUOTES); ?>"
-                        data-access="<?php echo htmlspecialchars($p['access'] ?? 'public', ENT_QUOTES); ?>"
+                        data-template="<?php echo htmlspecialchars($templateName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-meta_title="<?php echo htmlspecialchars($metaTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-meta_description="<?php echo htmlspecialchars($metaDescription, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-canonical_url="<?php echo htmlspecialchars($canonicalUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-og_title="<?php echo htmlspecialchars($ogTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-og_description="<?php echo htmlspecialchars($ogDescription, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-og_image="<?php echo htmlspecialchars($ogImage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        data-access="<?php echo htmlspecialchars($accessRaw, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         data-views="<?php echo $views; ?>"
                         data-last_modified="<?php echo $lastModified; ?>"
                         data-page-item="1"
                         data-view="list">
                         <td class="pages-list-cell pages-list-cell--title" data-label="Page">
                             <div class="pages-list-title">
-                                <span class="pages-list-title-text"><?php echo htmlspecialchars($p['title']); ?></span>
-                                <span class="pages-list-slug"><?php echo '/' . htmlspecialchars($p['slug']); ?></span>
+                                <span class="pages-list-title-text"><?php echo htmlspecialchars($title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                <span class="pages-list-slug"><?php echo '/' . htmlspecialchars($slug, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                             </div>
                             <div class="pages-list-badges">
                                 <?php if ($homepage === $p['slug']): ?>
@@ -221,7 +233,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                             </span>
                         </td>
                         <td class="pages-list-cell pages-list-cell--template" data-label="Template">
-                            <span class="pages-list-template"><?php echo htmlspecialchars($templateName); ?></span>
+                            <span class="pages-list-template"><?php echo htmlspecialchars($templateName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                         </td>
                         <td class="pages-list-cell pages-list-cell--views" data-label="Views">
                             <span class="pages-list-views"><?php echo $viewsDisplay; ?></span>
@@ -236,7 +248,7 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
                             </span>
                         </td>
                         <td class="pages-list-cell pages-list-cell--access" data-label="Access">
-                            <span class="pages-list-access"><?php echo htmlspecialchars($accessLabel); ?></span>
+                            <span class="pages-list-access"><?php echo htmlspecialchars($accessLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                         </td>
                         <td class="pages-list-cell pages-list-cell--actions" data-label="Actions">
                             <div class="pages-list-actions">
