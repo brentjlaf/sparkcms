@@ -92,12 +92,20 @@ $(function(){
             return;
         }
 
-        if (!timestamp) {
+        let value = timestamp;
+        if (typeof value === 'string' && value !== '') {
+            const parsed = Date.parse(value);
+            if (!Number.isNaN(parsed)) {
+                value = parsed;
+            }
+        }
+
+        if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
             $lastUpdated.text('Unable to refresh insights. Please try again.');
             return;
         }
 
-        const date = new Date(timestamp);
+        const date = new Date(value);
         const formatted = dateFormatter ? dateFormatter.format(date) : date.toLocaleString();
         $lastUpdated.text(`Last updated ${formatted}`);
     }
@@ -351,7 +359,7 @@ $(function(){
         setMetricsLoading(true);
         $('#dashboardModuleCards').attr('aria-busy', 'true');
 
-        return $.getJSON('modules/dashboard/dashboard_data.php', function(data){
+        const request = $.getJSON('modules/dashboard/dashboard_data.php', function(data){
             updateText('#statPages, [data-stat="pages"]', data.pages);
             updateText('#statPagesBreakdown, [data-stat="pages-breakdown"]', [data.pagesPublished, data.pagesDraft], function(values){
                 const published = formatNumber(values[0] || 0);
@@ -389,13 +397,16 @@ $(function(){
             });
 
             renderModuleSummaries(data.moduleSummaries || data.modules || []);
-        })
-            .done(function(){
-                updateLastUpdated(Date.now());
+        });
+
+        return request
+            .done(function(response){
+                const generatedAt = response && response.generatedAt ? response.generatedAt : Date.now();
+                updateLastUpdated(generatedAt);
                 setMetricsLoading(false, metricsMessages.updated);
             })
             .fail(function(){
-                updateLastUpdated(0);
+                updateLastUpdated(null);
                 renderModuleSummaries([], { message: 'Unable to load module data' });
                 setMetricsLoading(false, metricsMessages.error);
             })
