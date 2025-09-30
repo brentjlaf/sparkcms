@@ -11855,6 +11855,18 @@ body.calendar-modal-open {
     gap: 1rem;
 }
 
+.events-reports-table th:nth-child(2),
+.events-reports-table th:nth-child(3),
+.events-reports-table th:nth-child(4),
+.events-reports-table th:nth-child(5),
+.events-reports-table td:nth-child(2),
+.events-reports-table td:nth-child(3),
+.events-reports-table td:nth-child(4),
+.events-reports-table td:nth-child(5) {
+    text-align: right;
+    white-space: nowrap;
+}
+
 .events-toast {
     position: fixed;
     bottom: 2rem;
