@@ -144,8 +144,14 @@ $initialPayload = [
                         <select id="calendarEventSort" data-calendar-filter="sort">
                             <option value="startAsc">Start date (ascending)</option>
                             <option value="startDesc">Start date (descending)</option>
+                            <option value="endAsc">End date (ascending)</option>
+                            <option value="endDesc">End date (descending)</option>
                             <option value="titleAsc">Title (A–Z)</option>
                             <option value="titleDesc">Title (Z–A)</option>
+                            <option value="categoryAsc">Category (A–Z)</option>
+                            <option value="categoryDesc">Category (Z–A)</option>
+                            <option value="recurrenceAsc">Recurrence (A–Z)</option>
+                            <option value="recurrenceDesc">Recurrence (Z–A)</option>
                         </select>
                     </label>
                 </div>
@@ -154,11 +160,36 @@ $initialPayload = [
                 <table class="data-table calendar-table">
                     <thead>
                         <tr>
-                            <th>Title</th>
-                            <th>Start</th>
-                            <th>End</th>
-                            <th>Category</th>
-                            <th>Recurrence</th>
+                            <th data-calendar-sortable="title">
+                                <button type="button" class="calendar-sortable" data-calendar-sort-trigger>
+                                    <span>Title</span>
+                                    <span class="calendar-sort-icon" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th data-calendar-sortable="start">
+                                <button type="button" class="calendar-sortable" data-calendar-sort-trigger>
+                                    <span>Start</span>
+                                    <span class="calendar-sort-icon" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th data-calendar-sortable="end">
+                                <button type="button" class="calendar-sortable" data-calendar-sort-trigger>
+                                    <span>End</span>
+                                    <span class="calendar-sort-icon" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th data-calendar-sortable="category">
+                                <button type="button" class="calendar-sortable" data-calendar-sort-trigger>
+                                    <span>Category</span>
+                                    <span class="calendar-sort-icon" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th data-calendar-sortable="recurrence">
+                                <button type="button" class="calendar-sortable" data-calendar-sort-trigger>
+                                    <span>Recurrence</span>
+                                    <span class="calendar-sort-icon" aria-hidden="true"></span>
+                                </button>
+                            </th>
                             <th class="is-actions-column">Actions</th>
                         </tr>
                     </thead>
