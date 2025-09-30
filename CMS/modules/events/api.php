@@ -89,6 +89,7 @@ function handle_overview(array $events, array $orders, array $salesByEvent): voi
         $upcomingPreview[] = [
             'id' => $id,
             'title' => $event['title'] ?? 'Untitled',
+            'image' => $event['image'] ?? '',
             'start' => $event['start'] ?? '',
             'tickets_sold' => $metrics['tickets_sold'] ?? 0,
             'revenue' => $metrics['revenue'] ?? 0,
@@ -121,6 +122,7 @@ function handle_list_events(array $events, array $salesByEvent): void
             'location' => $event['location'] ?? '',
             'start' => $start,
             'end' => $end,
+            'image' => $event['image'] ?? '',
             'status' => $event['status'] ?? 'draft',
             'tickets_sold' => $metrics['tickets_sold'] ?? 0,
             'revenue' => $metrics['revenue'] ?? 0,
@@ -175,6 +177,7 @@ function handle_save_event(array $events, array $categories): void
         'title' => $payload['title'] ?? '',
         'description' => $payload['description'] ?? '',
         'location' => $payload['location'] ?? '',
+        'image' => $payload['image'] ?? '',
         'start' => $payload['start'] ?? '',
         'end' => $payload['end'] ?? '',
         'status' => $payload['status'] ?? 'draft',

@@ -38,6 +38,9 @@
         modal: document.querySelector('[data-events-modal="event"]'),
         confirmModal: document.querySelector('[data-events-modal="confirm"]'),
         categoriesModal: document.querySelector('[data-events-modal="categories"]'),
+        mediaModal: document.querySelector('[data-events-modal="media"]'),
+        mediaGrid: document.querySelector('[data-events-media-grid]'),
+        mediaSearch: document.querySelector('[data-events-media-search]'),
         categoriesForm: document.querySelector('[data-events-form="category"]'),
         categoriesList: document.querySelector('[data-events-categories-list]'),
         categoriesFormTitle: document.querySelector('[data-events-category-form-title]'),
@@ -62,6 +65,12 @@
         },
         confirm: null,
         categoryEditing: null,
+        media: {
+            items: [],
+            loaded: false,
+            loading: false,
+            currentSetter: null,
+        },
     };
 
     if (Array.isArray(initialPayload.events)) {
@@ -125,6 +134,29 @@
             currency: 'USD',
             minimumFractionDigits: 2,
         }).format(Number(value || 0));
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (character) => {
+            switch (character) {
+                case '&':
+                    return '&amp;';
+                case '<':
+                    return '&lt;';
+                case '>':
+                    return '&gt;';
+                case '"':
+                    return '&quot;';
+                case '\'':
+                    return '&#39;';
+                default:
+                    return character;
+            }
+        });
+    }
+
+    function escapeAttribute(value) {
+        return escapeHtml(value);
     }
 
     function sortCategories(list) {
@@ -263,6 +295,197 @@
         }
         resetCategoryForm();
         closeModal(selectors.categoriesModal);
+    }
+
+    function filterMediaItems(term = '') {
+        const normalized = term.trim().toLowerCase();
+        return state.media.items.filter((item) => {
+            if (!item || (item.type ?? '') !== 'images') {
+                return false;
+            }
+            if (!normalized) {
+                return true;
+            }
+            const name = String(item.name || '').toLowerCase();
+            const file = String(item.file || '').toLowerCase();
+            let tags = '';
+            if (Array.isArray(item.tags)) {
+                tags = item.tags.join(' ').toLowerCase();
+            } else if (typeof item.tags === 'string') {
+                tags = item.tags.toLowerCase();
+            }
+            return name.includes(normalized) || file.includes(normalized) || tags.includes(normalized);
+        });
+    }
+
+    function renderMediaLibrary({ status = 'idle', items = [], search = '' } = {}) {
+        const grid = selectors.mediaGrid;
+        if (!grid) {
+            return;
+        }
+        grid.setAttribute('aria-busy', status === 'loading' ? 'true' : 'false');
+        if (status === 'loading') {
+            grid.innerHTML = '<p class="events-media-status">Loading media…</p>';
+            return;
+        }
+        if (status === 'error') {
+            grid.innerHTML = '<p class="events-media-status events-media-status--error">Unable to load the media library. Please try again.</p>';
+            return;
+        }
+        const list = Array.isArray(items) ? items.slice() : [];
+        if (list.length === 0) {
+            if (search) {
+                grid.innerHTML = `<p class="events-media-status">No images match &ldquo;${escapeHtml(search)}&rdquo;. Try a different keyword.</p>`;
+            } else {
+                grid.innerHTML = '<p class="events-media-status">No images found in the media library. Upload images in the Media module.</p>';
+            }
+            return;
+        }
+        list.sort((a, b) => {
+            const aName = String(a.name || a.file || '').toLowerCase();
+            const bName = String(b.name || b.file || '').toLowerCase();
+            return aName.localeCompare(bName, undefined, { sensitivity: 'base' });
+        });
+        grid.innerHTML = list
+            .map((item) => {
+                const file = escapeAttribute(item.file || '');
+                const name = escapeHtml(item.name || item.file || 'Media item');
+                const thumbSource = escapeAttribute(item.thumbnail || item.file || '');
+                return `
+                    <button type="button" class="events-media-item" data-events-media-item data-file="${file}" role="option">
+                        <span class="events-media-thumb"><img src="${thumbSource}" alt="${name}"></span>
+                        <span class="events-media-name">${name}</span>
+                    </button>
+                `;
+            })
+            .join('');
+    }
+
+    function loadMediaLibrary() {
+        if (state.media.loading) {
+            return;
+        }
+        state.media.loading = true;
+        renderMediaLibrary({ status: 'loading' });
+        fetch('modules/media/list_media.php?sort=name&order=asc')
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Unable to load media');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                state.media.items = Array.isArray(data?.media) ? data.media : [];
+                state.media.loaded = true;
+                state.media.loading = false;
+                const term = selectors.mediaSearch?.value || '';
+                renderMediaLibrary({ items: filterMediaItems(term), search: term });
+            })
+            .catch(() => {
+                state.media.loading = false;
+                renderMediaLibrary({ status: 'error' });
+            });
+    }
+
+    function openMediaPicker() {
+        if (!selectors.mediaModal) {
+            return;
+        }
+        openModal(selectors.mediaModal);
+        if (selectors.mediaSearch) {
+            selectors.mediaSearch.value = '';
+        }
+        if (state.media.loaded) {
+            renderMediaLibrary({ items: filterMediaItems(''), search: '' });
+        } else {
+            renderMediaLibrary({ status: 'loading' });
+            loadMediaLibrary();
+        }
+        setTimeout(() => {
+            selectors.mediaSearch?.focus();
+        }, 120);
+    }
+
+    function initMediaPicker() {
+        if (!selectors.mediaModal) {
+            return;
+        }
+        if (selectors.mediaSearch) {
+            selectors.mediaSearch.addEventListener('input', () => {
+                if (!state.media.loaded) {
+                    return;
+                }
+                const term = selectors.mediaSearch.value || '';
+                renderMediaLibrary({ items: filterMediaItems(term), search: term });
+            });
+        }
+        selectors.mediaModal.addEventListener('click', (event) => {
+            const item = event.target.closest('[data-events-media-item]');
+            if (!item) {
+                return;
+            }
+            event.preventDefault();
+            const file = item.dataset.file || '';
+            if (file && typeof state.media.currentSetter === 'function') {
+                state.media.currentSetter(file);
+            }
+            state.media.currentSetter = null;
+            closeModal(selectors.mediaModal);
+        });
+    }
+
+    function initImagePicker(form) {
+        if (!form) {
+            return null;
+        }
+        const picker = form.querySelector('[data-events-image-picker]');
+        if (!picker) {
+            return null;
+        }
+        const input = picker.querySelector('input[name="image"]');
+        const preview = picker.querySelector('[data-events-image-preview]');
+        const chooseBtn = picker.querySelector('[data-events-image-open]');
+        const clearBtn = picker.querySelector('[data-events-image-clear]');
+        if (!input || !preview || !chooseBtn || !clearBtn) {
+            return null;
+        }
+
+        function setValue(value) {
+            const normalized = typeof value === 'string' ? value.trim() : '';
+            input.value = normalized;
+            if (normalized) {
+                preview.innerHTML = `<img src="${escapeAttribute(normalized)}" alt="Event featured image preview">`;
+                preview.classList.add('has-image');
+                clearBtn.hidden = false;
+            } else {
+                preview.innerHTML = '<span class="events-image-placeholder">No image selected yet.</span>';
+                preview.classList.remove('has-image');
+                clearBtn.hidden = true;
+            }
+        }
+
+        chooseBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            state.media.currentSetter = setValue;
+            openMediaPicker();
+        });
+
+        clearBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            setValue('');
+        });
+
+        input.addEventListener('change', () => {
+            setValue(input.value);
+        });
+
+        form.addEventListener('reset', () => {
+            setTimeout(() => setValue(''), 0);
+        });
+
+        setValue(input.value);
+
+        return { setValue };
     }
 
     function showToast(message, type = 'success') {
@@ -534,6 +757,9 @@
             return;
         }
         modal.classList.remove('is-open');
+        if (modal === selectors.mediaModal) {
+            state.media.currentSetter = null;
+        }
         const form = modal.querySelector('form');
         if (form) {
             form.reset();
@@ -566,6 +792,7 @@
             if (event.key === 'Escape') {
                 closeModal(selectors.modal);
                 closeModal(selectors.confirmModal);
+                closeModal(selectors.mediaModal);
                 closeCategoryModal();
             }
         });
@@ -581,6 +808,17 @@
         form.querySelector('[name="id"]').value = eventData?.id || '';
         form.querySelector('[name="title"]').value = eventData?.title || '';
         form.querySelector('[name="location"]').value = eventData?.location || '';
+        if (!form.__imagePicker) {
+            form.__imagePicker = initImagePicker(form);
+        }
+        if (form.__imagePicker && typeof form.__imagePicker.setValue === 'function') {
+            form.__imagePicker.setValue(eventData?.image || '');
+        } else {
+            const imageInput = form.querySelector('[name="image"]');
+            if (imageInput) {
+                imageInput.value = eventData?.image || '';
+            }
+        }
         form.querySelector('[name="start"]').value = eventData?.start ? eventData.start.substring(0, 16) : '';
         form.querySelector('[name="end"]').value = eventData?.end ? eventData.end.substring(0, 16) : '';
         form.querySelector(`[name="status"][value="${eventData?.status || 'draft'}"]`).checked = true;
@@ -661,6 +899,9 @@
                 payload[key] = value;
             }
         });
+        if (typeof payload.image === 'string') {
+            payload.image = payload.image.trim();
+        }
         return payload;
     }
 
@@ -692,6 +933,9 @@
         }
         const form = modal.querySelector('[data-events-form="event"]');
         setupEditor(form);
+        if (!form.__imagePicker) {
+            form.__imagePicker = initImagePicker(form);
+        }
         form.addEventListener('submit', (event) => {
             event.preventDefault();
             const payload = serializeForm(form);
@@ -792,6 +1036,7 @@
                     if (existing) {
                         existing.status = row.status;
                         existing.categories = Array.isArray(row.categories) ? row.categories : [];
+                        existing.image = row.image || '';
                     }
                 });
                 renderEventsTable();
@@ -1045,6 +1290,7 @@
         attachConfirmHandler();
         handleEventForm();
         handleCategoryForm();
+        initMediaPicker();
         attachEventListeners();
         populateEventSelect(selectors.orders.filterEvent);
         renderEventsTable();
