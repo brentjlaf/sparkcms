@@ -759,7 +759,7 @@ $dashboardStats = [
             </div>
             <div class="a11y-sort-group" role="group" aria-label="Sort pages">
                 <label for="seoSortSelect">Sort by</label>
-                <select id="seoSortSelect">
+                <select id="seoSortSelect" class="a11y-sort-select">
                     <option value="score" selected>SEO score</option>
                     <option value="title">Title</option>
                     <option value="issues">Total issues</option>
