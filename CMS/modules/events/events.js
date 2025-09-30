@@ -34,6 +34,20 @@
         },
         reports: {
             tableBody: root.querySelector('[data-events-reports-table]'),
+            metrics: {
+                revenue: root.querySelector('[data-events-report-metric="revenue"]'),
+                tickets: root.querySelector('[data-events-report-metric="tickets"]'),
+                average: root.querySelector('[data-events-report-metric="average"]'),
+                active: root.querySelector('[data-events-report-metric="active"]'),
+            },
+            highlight: {
+                card: root.querySelector('[data-events-report-highlight]'),
+                name: root.querySelector('[data-events-report-highlight="name"]'),
+                revenue: root.querySelector('[data-events-report-highlight="revenue"]'),
+                tickets: root.querySelector('[data-events-report-highlight="tickets"]'),
+                status: root.querySelector('[data-events-report-highlight="status"]'),
+            },
+            topList: root.querySelector('[data-events-reports-top]'),
         },
         modal: document.querySelector('[data-events-modal="event"]'),
         confirmModal: document.querySelector('[data-events-modal="confirm"]'),
@@ -125,6 +139,10 @@
             currency: 'USD',
             minimumFractionDigits: 2,
         }).format(Number(value || 0));
+    }
+
+    function formatInteger(value) {
+        return new Intl.NumberFormat('en-US').format(Number(value || 0));
     }
 
     function sortCategories(list) {
@@ -488,38 +506,141 @@
         });
     }
 
-    function renderReportsTable() {
+    function renderReportsSection() {
+        const reports = Array.isArray(state.salesSummary) ? state.salesSummary : [];
         const table = selectors.reports.tableBody;
-        if (!table) {
-            return;
+
+        const totals = reports.reduce(
+            (accumulator, entry) => {
+                const revenue = Number(entry.revenue || 0);
+                const tickets = Number(entry.tickets_sold || 0);
+                const status = String(entry.status || '').toLowerCase();
+                accumulator.revenue += revenue;
+                accumulator.tickets += tickets;
+                if (status === 'published' || status === 'live') {
+                    accumulator.active += 1;
+                }
+                return accumulator;
+            },
+            { revenue: 0, tickets: 0, active: 0 },
+        );
+
+        if (selectors.reports.metrics.revenue) {
+            selectors.reports.metrics.revenue.textContent = formatCurrency(totals.revenue);
         }
-        table.innerHTML = '';
-        if (!Array.isArray(state.salesSummary) || state.salesSummary.length === 0) {
-            const row = document.createElement('tr');
-            const cell = document.createElement('td');
-            cell.colSpan = 4;
-            cell.className = 'events-empty';
-            cell.textContent = 'No report data available yet.';
-            row.appendChild(cell);
-            table.appendChild(row);
-            return;
+        if (selectors.reports.metrics.tickets) {
+            selectors.reports.metrics.tickets.textContent = formatInteger(totals.tickets);
         }
-        state.salesSummary.forEach((report) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>
-                    <div class="events-table-title">${report.title || 'Untitled event'}</div>
-                </td>
-                <td>${report.tickets_sold ?? 0}</td>
-                <td>${formatCurrency(report.revenue ?? 0)}</td>
-                <td data-status></td>
-            `;
-            const statusCell = row.querySelector('[data-status]');
-            if (statusCell) {
-                statusCell.appendChild(createStatusBadge(report.status));
+        if (selectors.reports.metrics.average) {
+            const average = totals.tickets > 0 ? totals.revenue / totals.tickets : 0;
+            selectors.reports.metrics.average.textContent = formatCurrency(average);
+        }
+        if (selectors.reports.metrics.active) {
+            selectors.reports.metrics.active.textContent = formatInteger(totals.active);
+        }
+
+        const highlight = selectors.reports.highlight;
+        if (highlight.card) {
+            const topByRevenue = reports
+                .slice()
+                .sort((a, b) => Number(b.revenue || 0) - Number(a.revenue || 0))[0];
+            highlight.card.classList.toggle('is-empty', !topByRevenue);
+            if (topByRevenue) {
+                if (highlight.name) {
+                    highlight.name.textContent = topByRevenue.title || 'Untitled event';
+                }
+                if (highlight.revenue) {
+                    highlight.revenue.textContent = formatCurrency(topByRevenue.revenue || 0);
+                }
+                if (highlight.tickets) {
+                    highlight.tickets.textContent = formatInteger(topByRevenue.tickets_sold || 0);
+                }
+                if (highlight.status) {
+                    highlight.status.innerHTML = '';
+                    highlight.status.appendChild(createStatusBadge(topByRevenue.status));
+                }
+            } else {
+                if (highlight.name) {
+                    highlight.name.textContent = 'No sales data yet';
+                }
+                if (highlight.revenue) {
+                    highlight.revenue.textContent = formatCurrency(0);
+                }
+                if (highlight.tickets) {
+                    highlight.tickets.textContent = formatInteger(0);
+                }
+                if (highlight.status) {
+                    highlight.status.textContent = '—';
+                }
             }
-            table.appendChild(row);
-        });
+        }
+
+        const topList = selectors.reports.topList;
+        if (topList) {
+            topList.innerHTML = '';
+            if (!reports.length) {
+                const empty = document.createElement('li');
+                empty.className = 'events-report-top-empty';
+                empty.textContent = 'No performance data yet.';
+                topList.appendChild(empty);
+            } else {
+                const totalTickets = reports.reduce((sum, item) => sum + Number(item.tickets_sold || 0), 0);
+                reports
+                    .slice()
+                    .sort((a, b) => Number(b.tickets_sold || 0) - Number(a.tickets_sold || 0))
+                    .slice(0, 3)
+                    .forEach((entry, index) => {
+                        const percent = totalTickets > 0 ? Math.round((Number(entry.tickets_sold || 0) / totalTickets) * 100) : 0;
+                        const item = document.createElement('li');
+                        item.className = 'events-report-top-item';
+                        item.innerHTML = `
+                            <div class="events-report-top-header">
+                                <span class="events-report-top-rank">${index + 1}</span>
+                                <span class="events-report-top-name">${entry.title || 'Untitled event'}</span>
+                                <span class="events-report-top-value">${formatCurrency(entry.revenue || 0)}</span>
+                            </div>
+                            <div class="events-report-top-meta">
+                                <span>${formatInteger(entry.tickets_sold || 0)} tickets</span>
+                                <span>${percent}% of total</span>
+                            </div>
+                            <div class="events-report-top-progress" role="presentation" aria-hidden="true">
+                                <span style="width: ${Math.min(Math.max(percent, 0), 100)}%"></span>
+                            </div>
+                        `;
+                        topList.appendChild(item);
+                    });
+            }
+        }
+
+        if (table) {
+            table.innerHTML = '';
+            if (!reports.length) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.className = 'events-empty';
+                cell.textContent = 'No report data available yet.';
+                row.appendChild(cell);
+                table.appendChild(row);
+            } else {
+                reports.forEach((report) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <div class="events-table-title">${report.title || 'Untitled event'}</div>
+                        </td>
+                        <td>${formatInteger(report.tickets_sold ?? 0)}</td>
+                        <td>${formatCurrency(report.revenue ?? 0)}</td>
+                        <td data-status></td>
+                    `;
+                    const statusCell = row.querySelector('[data-status]');
+                    if (statusCell) {
+                        statusCell.appendChild(createStatusBadge(report.status));
+                    }
+                    table.appendChild(row);
+                });
+            }
+        }
     }
 
     function openModal(modal) {
@@ -825,7 +946,7 @@
         return fetchJSON('reports_summary')
             .then((response) => {
                 state.salesSummary = Array.isArray(response.reports) ? response.reports : [];
-                renderReportsTable();
+                renderReportsSection();
             })
             .catch(() => {
                 showToast('Unable to load reports data.', 'error');
@@ -1049,7 +1170,7 @@
         populateEventSelect(selectors.orders.filterEvent);
         renderEventsTable();
         renderOrdersTable();
-        renderReportsTable();
+        renderReportsSection();
         renderCategoryOptions();
         renderCategoryList();
         refreshAll();

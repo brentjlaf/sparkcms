@@ -188,25 +188,86 @@ $initialPayload = [
         <section class="events-section" aria-labelledby="eventsReportsTitle">
             <header class="events-section-header">
                 <div>
-                    <h3 class="events-section-title" id="eventsReportsTitle">Reports</h3>
-                    <p class="events-section-description">Download ticket sales and revenue summaries whenever you need them.</p>
-                </div>
-                <div class="events-section-actions">
-                    <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report="tickets">Ticket sales report</button>
-                    <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report="revenue">Revenue report</button>
+                    <h3 class="events-section-title" id="eventsReportsTitle">Reports &amp; insights</h3>
+                    <p class="events-section-description">Monitor performance, spotlight momentum, and share polished exports in seconds.</p>
                 </div>
             </header>
-            <div class="events-reports" data-events-reports>
-                <article class="events-report-card">
-                    <h4>Ticket sales</h4>
-                    <p>Download totals per event and ticket type to share with finance.</p>
-                    <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report-download="tickets">Export CSV</button>
-                </article>
-                <article class="events-report-card">
-                    <h4>Revenue</h4>
-                    <p>Share top-line revenue with leadership by event and ticket type.</p>
-                    <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report-download="revenue">Export CSV</button>
-                </article>
+            <div class="events-reports-shell">
+                <div class="events-reports-summary">
+                    <div class="events-report-metric-grid">
+                        <article class="events-report-metric">
+                            <p class="events-report-metric-label">Lifetime revenue</p>
+                            <p class="events-report-metric-value" data-events-report-metric="revenue">$0.00</p>
+                            <p class="events-report-metric-caption">Combined across every published event.</p>
+                        </article>
+                        <article class="events-report-metric">
+                            <p class="events-report-metric-label">Tickets sold</p>
+                            <p class="events-report-metric-value" data-events-report-metric="tickets">0</p>
+                            <p class="events-report-metric-caption">Total tickets issued for tracked events.</p>
+                        </article>
+                        <article class="events-report-metric">
+                            <p class="events-report-metric-label">Avg. ticket value</p>
+                            <p class="events-report-metric-value" data-events-report-metric="average">$0.00</p>
+                            <p class="events-report-metric-caption">Revenue divided by tickets sold.</p>
+                        </article>
+                        <article class="events-report-metric">
+                            <p class="events-report-metric-label">Active events</p>
+                            <p class="events-report-metric-value" data-events-report-metric="active">0</p>
+                            <p class="events-report-metric-caption">Currently published or on sale.</p>
+                        </article>
+                    </div>
+                    <div class="events-report-insights">
+                        <article class="events-report-highlight" data-events-report-highlight>
+                            <h4 class="events-report-highlight-title">Top earning event</h4>
+                            <p class="events-report-highlight-name" data-events-report-highlight="name">No sales data yet</p>
+                            <dl class="events-report-highlight-metrics">
+                                <div>
+                                    <dt>Revenue</dt>
+                                    <dd data-events-report-highlight="revenue">$0.00</dd>
+                                </div>
+                                <div>
+                                    <dt>Tickets sold</dt>
+                                    <dd data-events-report-highlight="tickets">0</dd>
+                                </div>
+                                <div>
+                                    <dt>Status</dt>
+                                    <dd data-events-report-highlight="status">—</dd>
+                                </div>
+                            </dl>
+                        </article>
+                        <div class="events-report-trends">
+                            <h4 class="events-report-subtitle">Momentum watch</h4>
+                            <p class="events-report-subtitle-meta">Spot the experiences driving the majority of ticket sales.</p>
+                            <ol class="events-report-top-list" data-events-reports-top>
+                                <li class="events-report-top-empty">No performance data yet.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                <aside class="events-reports-downloads">
+                    <div class="events-report-download-intro">
+                        <h4 class="events-report-subtitle">On-demand exports</h4>
+                        <p>Hand finance and leadership the exact breakdowns they ask for.</p>
+                    </div>
+                    <div class="events-report-download-grid">
+                        <article class="events-report-download-card">
+                            <h5>Ticket sales</h5>
+                            <p>Totals per event and ticket type ready for reconciliation.</p>
+                            <div class="events-report-download-actions">
+                                <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report="tickets">View summary</button>
+                                <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report-download="tickets">Export CSV</button>
+                            </div>
+                        </article>
+                        <article class="events-report-download-card">
+                            <h5>Revenue</h5>
+                            <p>Share top-line revenue by event and ticket configuration.</p>
+                            <div class="events-report-download-actions">
+                                <button type="button" class="a11y-btn a11y-btn--ghost" data-events-report="revenue">View summary</button>
+                                <button type="button" class="a11y-btn a11y-btn--secondary" data-events-report-download="revenue">Export CSV</button>
+                            </div>
+                        </article>
+                    </div>
+                </aside>
             </div>
             <div class="events-table-wrapper">
                 <table class="data-table events-table events-reports-table">
