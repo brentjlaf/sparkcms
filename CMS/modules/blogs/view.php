@@ -101,12 +101,37 @@
                 <table class="data-table blog-table">
                     <thead>
                         <tr>
-                            <th>Title</th>
-                            <th>Author</th>
-                            <th>Category</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
+                            <th scope="col" aria-sort="none">
+                                <button type="button" class="blog-sort-btn" data-blog-sort="title" data-default-direction="asc">
+                                    <span>Title</span>
+                                    <span class="blog-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" aria-sort="none">
+                                <button type="button" class="blog-sort-btn" data-blog-sort="author" data-default-direction="asc">
+                                    <span>Author</span>
+                                    <span class="blog-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" aria-sort="none">
+                                <button type="button" class="blog-sort-btn" data-blog-sort="category" data-default-direction="asc">
+                                    <span>Category</span>
+                                    <span class="blog-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" aria-sort="none">
+                                <button type="button" class="blog-sort-btn" data-blog-sort="status" data-default-direction="desc">
+                                    <span>Status</span>
+                                    <span class="blog-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" aria-sort="none">
+                                <button type="button" class="blog-sort-btn" data-blog-sort="date" data-default-direction="desc">
+                                    <span>Date</span>
+                                    <span class="blog-sort-indicator" aria-hidden="true"></span>
+                                </button>
+                            </th>
+                            <th scope="col" class="blog-table-actions-header">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="postsTableBody"></tbody>

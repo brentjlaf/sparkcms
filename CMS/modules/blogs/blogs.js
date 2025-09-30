@@ -9,6 +9,8 @@ $(document).ready(function(){
 
     const $postsTableBody = $('#postsTableBody');
     const $postsCountLabel = $('#postsCount');
+    const $sortButtons = $('[data-blog-sort]');
+    const sortState = { key: null, direction: 'asc' };
     let mediaItems = [];
     let mediaLoaded = false;
 
@@ -311,6 +313,7 @@ $(document).ready(function(){
     }
 
     setActiveStatusFilter('all');
+    setSort('date', 'desc', { silent: true });
     loadAuthors();
     loadPostsFromServer();
 
@@ -354,6 +357,18 @@ $(document).ready(function(){
     });
     $searchInput.on('input', function(){
         renderPosts();
+    });
+    $sortButtons.on('click', function(){
+        const $btn = $(this);
+        const key = $btn.data('blogSort');
+        if(!key){
+            return;
+        }
+        let direction = getDefaultSortDirection($btn);
+        if(sortState.key === key){
+            direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+        }
+        setSort(key, direction);
     });
     $statusFilterButtons.on('click', function(){
         const filter = $(this).data('blog-filter');
@@ -493,7 +508,120 @@ $(document).ready(function(){
         });
     }
 
+    function compareStrings(a, b){
+        return (a || '').toString().localeCompare((b || '').toString(), undefined, { sensitivity: 'base', numeric: true });
+    }
+
+    function parseDateValue(value){
+        if(!value){
+            return 0;
+        }
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+    }
+
+    const statusRank = {
+        draft: 1,
+        scheduled: 2,
+        published: 3
+    };
+
+    const sortComparators = {
+        title(a, b){
+            const primary = compareStrings(a.title, b.title);
+            if(primary !== 0){
+                return primary;
+            }
+            return compareStrings(a.slug, b.slug);
+        },
+        author(a, b){
+            const primary = compareStrings(a.author, b.author);
+            if(primary !== 0){
+                return primary;
+            }
+            return compareStrings(a.title, b.title);
+        },
+        category(a, b){
+            const primary = compareStrings(a.category, b.category);
+            if(primary !== 0){
+                return primary;
+            }
+            return compareStrings(a.title, b.title);
+        },
+        status(a, b){
+            const rankA = statusRank[(a.status || '').toLowerCase()] || 0;
+            const rankB = statusRank[(b.status || '').toLowerCase()] || 0;
+            if(rankA !== rankB){
+                return rankA - rankB;
+            }
+            return compareStrings(a.title, b.title);
+        },
+        date(a, b){
+            const diff = parseDateValue(a.publishDate || a.createdAt) - parseDateValue(b.publishDate || b.createdAt);
+            if(diff !== 0){
+                return diff;
+            }
+            return compareStrings(a.title, b.title);
+        }
+    };
+
+    function getSortComparator(key){
+        if(key && typeof sortComparators[key] === 'function'){
+            return sortComparators[key];
+        }
+        return sortComparators.date;
+    }
+
+    function updateSortIndicators(){
+        if(!$sortButtons.length){
+            return;
+        }
+        $sortButtons.each(function(){
+            const $btn = $(this);
+            const key = $btn.data('blogSort');
+            const isActive = sortState.key === key;
+            let ariaValue = 'none';
+
+            $btn.removeClass('is-active sort-asc sort-desc');
+            if(isActive){
+                ariaValue = sortState.direction === 'asc' ? 'ascending' : 'descending';
+                $btn.addClass('is-active');
+                $btn.addClass(sortState.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+
+            const $th = $btn.closest('th');
+            if($th.length){
+                $th.attr('aria-sort', ariaValue);
+            }
+        });
+    }
+
+    function getDefaultSortDirection($btn){
+        const attr = ($btn.data('defaultDirection') || '').toString().toLowerCase();
+        return attr === 'desc' ? 'desc' : 'asc';
+    }
+
+    function setSort(key, direction, options={}){
+        if(!key){
+            return;
+        }
+        const normalizedDirection = direction === 'desc' ? 'desc' : 'asc';
+        const hasChanged = sortState.key !== key || sortState.direction !== normalizedDirection;
+
+        sortState.key = key;
+        sortState.direction = normalizedDirection;
+        updateSortIndicators();
+
+        if(options.silent){
+            return;
+        }
+        if(hasChanged || options.forceRender){
+            renderPosts();
+        }
+    }
+
     function renderPosts(){
+        updateSortIndicators();
         if(postsLoadError){
             renderTableMessage('Unable to load blog posts. Please try again later.', { isError: true, countLabel: 'Showing 0 posts' });
             return;
@@ -533,7 +661,16 @@ $(document).ready(function(){
                 return title.includes(search) || slug.includes(search) || excerpt.includes(search) || tags.includes(search);
             });
         }
-        filtered.sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+        const sortKey = sortState.key || 'date';
+        const comparator = getSortComparator(sortKey);
+        const directionMultiplier = sortState.direction === 'desc' ? -1 : 1;
+        filtered.sort((a, b) => {
+            const result = comparator(a, b);
+            if(result !== 0){
+                return result * directionMultiplier;
+            }
+            return compareStrings(a.title, b.title) * directionMultiplier;
+        });
 
         const countLabel = filtered.length === 1 ? 'post' : 'posts';
         $postsCountLabel.text(`Showing ${filtered.length} ${countLabel}`);
@@ -550,12 +687,27 @@ $(document).ready(function(){
         const tbody = $postsTableBody;
         tbody.empty();
         filtered.forEach(post=>{
+            const safeTitleAttr = escapeAttribute(post.title);
+            const safeSlugAttr = escapeAttribute(post.slug);
+            const safeAuthorAttr = escapeAttribute(post.author);
+            const safeCategoryAttr = escapeAttribute(post.category);
+            const safeStatusAttr = escapeAttribute(post.status);
+            const safeDateAttr = escapeAttribute(post.publishDate || post.createdAt || '');
             const safeAlt = escapeAttribute(post.imageAlt || `Featured image for ${post.title || 'blog post'}`);
             const thumbnail = post.image
                 ? `<div class="blog-table-thumb"><img src="${post.image}" alt="${safeAlt}"></div>`
                 : `<div class="blog-table-thumb blog-table-thumb--empty" aria-hidden="true"><span>${getPostInitial(post)}</span></div>`;
             const row = $(`
-                <tr>
+                <tr
+                    data-blog-post
+                    data-id="${post.id}"
+                    data-title="${safeTitleAttr}"
+                    data-slug="${safeSlugAttr}"
+                    data-author="${safeAuthorAttr}"
+                    data-category="${safeCategoryAttr}"
+                    data-status="${safeStatusAttr}"
+                    data-date="${safeDateAttr}"
+                >
                     <td>
                         <div class="blog-post-cell">
                             ${thumbnail}

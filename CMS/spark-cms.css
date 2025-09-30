@@ -2740,7 +2740,8 @@
             white-space: nowrap;
         }
 
-        .pages-sort-btn {
+        .pages-sort-btn,
+        .blog-sort-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -2754,27 +2755,32 @@
             letter-spacing: inherit;
         }
 
-        .pages-sort-btn .pages-sort-indicator::before {
+        .pages-sort-btn .pages-sort-indicator::before,
+        .blog-sort-btn .blog-sort-indicator::before {
             content: '\21F5';
             font-size: 11px;
             color: #94a3b8;
         }
 
-        .pages-sort-btn.is-active {
+        .pages-sort-btn.is-active,
+        .blog-sort-btn.is-active {
             color: #1f2937;
         }
 
-        .pages-sort-btn.sort-asc .pages-sort-indicator::before {
+        .pages-sort-btn.sort-asc .pages-sort-indicator::before,
+        .blog-sort-btn.sort-asc .blog-sort-indicator::before {
             content: '\25B2';
             color: #4338ca;
         }
 
-        .pages-sort-btn.sort-desc .pages-sort-indicator::before {
+        .pages-sort-btn.sort-desc .pages-sort-indicator::before,
+        .blog-sort-btn.sort-desc .blog-sort-indicator::before {
             content: '\25BC';
             color: #4338ca;
         }
 
-        .pages-sort-btn:focus-visible {
+        .pages-sort-btn:focus-visible,
+        .blog-sort-btn:focus-visible {
             outline: 2px solid #4338ca;
             outline-offset: 2px;
             border-radius: 6px;
