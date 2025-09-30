@@ -236,6 +236,7 @@ if (!function_exists('events_normalize_event')) {
         $event['title'] = trim((string) ($event['title'] ?? 'Untitled Event'));
         $event['description'] = (string) ($event['description'] ?? '');
         $event['location'] = trim((string) ($event['location'] ?? ''));
+        $event['image'] = trim((string) ($event['image'] ?? ''));
         $event['start'] = (string) ($event['start'] ?? '');
         $event['end'] = (string) ($event['end'] ?? '');
         $event['status'] = in_array($event['status'] ?? '', ['draft', 'published', 'ended'], true)

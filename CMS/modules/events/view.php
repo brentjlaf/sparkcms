@@ -247,6 +247,25 @@ $initialPayload = [
                         <span>Location / Venue</span>
                         <input type="text" name="location" placeholder="Venue or meeting link">
                     </label>
+                    <div class="events-form-field">
+                        <span>Featured image</span>
+                        <div class="events-image-picker" data-events-image-picker>
+                            <input type="hidden" name="image" value="">
+                            <div class="events-image-preview" data-events-image-preview aria-live="polite">
+                                <span class="events-image-placeholder">No image selected yet.</span>
+                            </div>
+                            <div class="events-image-actions">
+                                <button type="button" class="a11y-btn a11y-btn--secondary" data-events-image-open>
+                                    <i class="fa-solid fa-image" aria-hidden="true"></i>
+                                    <span>Choose image</span>
+                                </button>
+                                <button type="button" class="a11y-btn a11y-btn--ghost" data-events-image-clear hidden>
+                                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                    <span>Remove image</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="events-form-field span-2">
                         <span>Description</span>
                         <div class="events-editor-toolbar" role="toolbar" aria-label="Formatting">
@@ -376,6 +395,24 @@ $initialPayload = [
             <button type="button" class="a11y-btn a11y-btn--ghost" data-events-close>Cancel</button>
             <button type="button" class="a11y-btn a11y-btn--danger" data-events-confirm>Confirm</button>
         </footer>
+    </div>
+</div>
+
+<div class="events-modal-backdrop" data-events-modal="media">
+    <div class="events-modal events-media-modal" role="dialog" aria-modal="true" aria-labelledby="eventsMediaModalTitle">
+        <header class="events-modal-header">
+            <h2 class="events-modal-title" id="eventsMediaModalTitle">Select featured image</h2>
+            <button type="button" class="events-modal-close" data-events-close>&times;<span class="sr-only">Close</span></button>
+        </header>
+        <div class="events-modal-body">
+            <div class="events-media-picker">
+                <label class="events-media-search">
+                    <span class="sr-only">Search media library</span>
+                    <input type="search" placeholder="Search media" data-events-media-search>
+                </label>
+                <div class="events-media-grid" data-events-media-grid role="listbox" aria-live="polite"></div>
+            </div>
+        </div>
     </div>
 </div>
 
