@@ -425,6 +425,37 @@ $(function(){
     $customerSegment.on('change', applyCustomerFilters);
     $customerStatus.on('change', applyCustomerFilters);
 
+    const $customerOrderButtons = $('[data-commerce-customer-orders]');
+
+    function focusOrdersForCustomer(customerName) {
+        setActiveWorkspace('orders');
+
+        if ($orderStatus.length) {
+            $orderStatus.val('all');
+        }
+
+        if ($orderSearch.length) {
+            $orderSearch.val(customerName || '');
+        }
+
+        applyOrderFilters();
+
+        if ($orderSearch.length) {
+            $orderSearch.trigger('focus');
+        }
+    }
+
+    $customerOrderButtons.on('click keydown', function(event){
+        if (event.type === 'keydown' && !['Enter', ' ', 'Spacebar'].includes(event.key)) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const customerName = ($(this).data('customerName') || '').toString();
+        focusOrdersForCustomer(customerName);
+    });
+
     function sortCategories(list) {
         return list.slice().sort(function(a, b){
             return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
