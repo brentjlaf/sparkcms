@@ -1,5 +1,6 @@
 <!-- File: commerce.product-grid.php -->
 <!-- Template: commerce.product-grid -->
+<?php $blockId = uniqid('commerce-grid-'); ?>
 <templateSetting caption="Section Settings" order="1">
     <dl class="sparkDialog _tpl-box">
         <dt>Tagline</dt>
@@ -41,106 +42,43 @@
         <dd><input type="text" name="custom_button_url" value="#"></dd>
     </dl>
 </templateSetting>
-<templateSetting caption="Product 1" order="2">
+<templateSetting caption="Product Feed" order="2">
     <dl class="sparkDialog _tpl-box">
-        <dt>Product name</dt>
-        <dd><input type="text" name="custom_product1_title" value="Luminous desk lamp"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Price</dt>
-        <dd><input type="text" name="custom_product1_price" value="$129.00"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Description</dt>
-        <dd><textarea class="form-control" name="custom_product1_description">A sculptural lamp that delivers warm, diffused light for creative workspaces.</textarea></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Image URL</dt>
+        <dt>Number of products</dt>
         <dd>
-            <input type="text" name="custom_product1_image" id="custom_product1_image" value="">
-            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_product1_image')"><i class="fa-solid fa-image btn-icon" aria-hidden="true"></i><span class="btn-label">Browse</span></button>
+            <select name="custom_limit">
+                <option value="3">3 products</option>
+                <option value="4">4 products</option>
+                <option value="6" selected>6 products</option>
+                <option value="9">9 products</option>
+                <option value="12">12 products</option>
+            </select>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
-        <dt>Image alt text</dt>
-        <dd><input type="text" name="custom_product1_alt" value="Sleek desk lamp"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Link label</dt>
-        <dd><input type="text" name="custom_product1_link_text" value="View product"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Link URL</dt>
-        <dd><input type="text" name="custom_product1_link_url" value="#"></dd>
-    </dl>
-</templateSetting>
-<templateSetting caption="Product 2" order="3">
-    <dl class="sparkDialog _tpl-box">
-        <dt>Product name</dt>
-        <dd><input type="text" name="custom_product2_title" value="Modular shelving system"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Price</dt>
-        <dd><input type="text" name="custom_product2_price" value="$349.00"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Description</dt>
-        <dd><textarea class="form-control" name="custom_product2_description">Configurable storage with magnetic accents and soft-close drawers.</textarea></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Image URL</dt>
+        <dt>Filter categories</dt>
         <dd>
-            <input type="text" name="custom_product2_image" id="custom_product2_image" value="">
-            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_product2_image')"><i class="fa-solid fa-image btn-icon" aria-hidden="true"></i><span class="btn-label">Browse</span></button>
+            <input type="text" name="custom_categories" placeholder="All categories">
+            <small class="form-text text-muted">Comma separated. Leave blank to include every published category.</small>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
-        <dt>Image alt text</dt>
-        <dd><input type="text" name="custom_product2_alt" value="Modern shelving unit"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Link label</dt>
-        <dd><input type="text" name="custom_product2_link_text" value="View product"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Link URL</dt>
-        <dd><input type="text" name="custom_product2_link_url" value="#"></dd>
-    </dl>
-</templateSetting>
-<templateSetting caption="Product 3" order="4">
-    <dl class="sparkDialog _tpl-box">
-        <dt>Product name</dt>
-        <dd><input type="text" name="custom_product3_title" value="Handwoven throw blanket"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Price</dt>
-        <dd><input type="text" name="custom_product3_price" value="$89.00"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Description</dt>
-        <dd><textarea class="form-control" name="custom_product3_description">Ethically sourced fibres woven for year-round comfort and style.</textarea></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Image URL</dt>
+        <dt>Product detail URL prefix</dt>
         <dd>
-            <input type="text" name="custom_product3_image" id="custom_product3_image" value="">
-            <button type="button" class="btn btn-secondary" onclick="openMediaPicker('custom_product3_image')"><i class="fa-solid fa-image btn-icon" aria-hidden="true"></i><span class="btn-label">Browse</span></button>
+            <input type="text" name="custom_detail_base" value="/store">
+            <small class="form-text text-muted">Example: <code>/store</code> or <code>https://example.com/shop</code>. The product slug is appended automatically.</small>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
-        <dt>Image alt text</dt>
-        <dd><input type="text" name="custom_product3_alt" value="Textured throw blanket"></dd>
+        <dt>Product link label</dt>
+        <dd><input type="text" name="custom_product_link_label" value="View product"></dd>
     </dl>
     <dl class="sparkDialog _tpl-box">
-        <dt>Link label</dt>
-        <dd><input type="text" name="custom_product3_link_text" value="View product"></dd>
-    </dl>
-    <dl class="sparkDialog _tpl-box">
-        <dt>Link URL</dt>
-        <dd><input type="text" name="custom_product3_link_url" value="#"></dd>
+        <dt>Empty state message</dt>
+        <dd><input type="text" name="custom_empty" value="No products available right now. Check back soon!"></dd>
     </dl>
 </templateSetting>
-<section class="commerce-showcase{custom_theme}{custom_alignment}" data-tpl-tooltip="Commerce products">
+<section id="<?= $blockId ?>" class="commerce-showcase{custom_theme}{custom_alignment}" data-tpl-tooltip="Commerce products" data-commerce-grid data-limit="{custom_limit}" data-categories="{custom_categories}" data-base="{custom_detail_base}" data-link-text="{custom_product_link_label}" data-empty="{custom_empty}">
     <div class="container">
         <div class="commerce-showcase-inner">
             <header class="commerce-showcase-header">
@@ -151,41 +89,15 @@
                     <a href="{custom_button_url}" class="commerce-showcase-button" data-editable>{custom_button_text}</a>
                 </div>
             </header>
-            <div class="commerce-showcase-grid">
-                <article class="commerce-product-card" data-tpl-tooltip="Product listing">
-                    <figure class="commerce-product-media">
-                        <img src="{custom_product1_image}" alt="{custom_product1_alt}">
-                    </figure>
+            <div class="commerce-showcase-grid" data-commerce-items>
+                <article class="commerce-product-card commerce-product-card--placeholder">
                     <div class="commerce-product-body">
-                        <h3 class="commerce-product-title" data-editable>{custom_product1_title}</h3>
-                        <p class="commerce-product-price" data-editable>{custom_product1_price}</p>
-                        <p class="commerce-product-description" data-editable>{custom_product1_description}</p>
-                        <a href="{custom_product1_link_url}" class="commerce-product-link" data-editable>{custom_product1_link_text}</a>
-                    </div>
-                </article>
-                <article class="commerce-product-card" data-tpl-tooltip="Product listing">
-                    <figure class="commerce-product-media">
-                        <img src="{custom_product2_image}" alt="{custom_product2_alt}">
-                    </figure>
-                    <div class="commerce-product-body">
-                        <h3 class="commerce-product-title" data-editable>{custom_product2_title}</h3>
-                        <p class="commerce-product-price" data-editable>{custom_product2_price}</p>
-                        <p class="commerce-product-description" data-editable>{custom_product2_description}</p>
-                        <a href="{custom_product2_link_url}" class="commerce-product-link" data-editable>{custom_product2_link_text}</a>
-                    </div>
-                </article>
-                <article class="commerce-product-card" data-tpl-tooltip="Product listing">
-                    <figure class="commerce-product-media">
-                        <img src="{custom_product3_image}" alt="{custom_product3_alt}">
-                    </figure>
-                    <div class="commerce-product-body">
-                        <h3 class="commerce-product-title" data-editable>{custom_product3_title}</h3>
-                        <p class="commerce-product-price" data-editable>{custom_product3_price}</p>
-                        <p class="commerce-product-description" data-editable>{custom_product3_description}</p>
-                        <a href="{custom_product3_link_url}" class="commerce-product-link" data-editable>{custom_product3_link_text}</a>
+                        <h3 class="commerce-product-title">Loading products…</h3>
+                        <p class="commerce-product-description">Latest catalogue items will appear here automatically.</p>
                     </div>
                 </article>
             </div>
+            <div class="commerce-showcase-empty d-none" data-commerce-empty>{custom_empty}</div>
         </div>
     </div>
 </section>
