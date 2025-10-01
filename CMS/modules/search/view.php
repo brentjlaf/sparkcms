@@ -2,41 +2,26 @@
 // File: view.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/../../includes/search_helpers.php';
 require_login();
 
-$pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = read_json_file($pagesFile);
-$postsFile = __DIR__ . '/../../data/blog_posts.json';
-$posts = read_json_file($postsFile);
-$mediaFile = __DIR__ . '/../../data/media.json';
-$media = read_json_file($mediaFile);
-
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
-$lower = strtolower($q);
-$results = [];
-if ($lower !== '') {
-    foreach ($pages as $p) {
-        if (stripos($p['title'], $lower) !== false || stripos($p['slug'], $lower) !== false || stripos($p['content'], $lower) !== false) {
-            $p['type'] = 'Page';
-            $results[] = $p;
-        }
-    }
-    foreach ($posts as $b) {
-        if (stripos($b['title'], $lower) !== false || stripos($b['slug'], $lower) !== false || stripos($b['excerpt'], $lower) !== false || stripos($b['content'], $lower) !== false || stripos($b['tags'], $lower) !== false) {
-            $b['type'] = 'Post';
-            $results[] = $b;
-        }
-    }
-    foreach ($media as $m) {
-        $tags = isset($m['tags']) && is_array($m['tags']) ? implode(',', $m['tags']) : '';
-        if (stripos($m['name'], $lower) !== false || stripos($m['file'], $lower) !== false || stripos($tags, $lower) !== false) {
-            $m['type'] = 'Media';
-            $m['title'] = $m['name'];
-            $m['slug'] = $m['file'];
-            $results[] = $m;
+$typesParam = $_GET['types'] ?? [];
+$selectedTypes = [];
+if (is_string($typesParam) && $typesParam !== '') {
+    $selectedTypes = array_filter(array_map('trim', explode(',', $typesParam)));
+} elseif (is_array($typesParam)) {
+    foreach ($typesParam as $typeValue) {
+        if (is_string($typeValue) && trim($typeValue) !== '') {
+            $selectedTypes[] = trim($typeValue);
         }
     }
 }
+
+$normalizedTypes = array_map('strtolower', $selectedTypes);
+$searchResult = perform_search($q, ['types' => $normalizedTypes]);
+$results = $searchResult['results'];
+$typeCounts = $searchResult['counts'];
 $resultCount = count($results);
 $resultSummary = $resultCount === 1
     ? 'Showing 1 result'
@@ -44,19 +29,20 @@ $resultSummary = $resultCount === 1
 $querySuffix = $q !== ''
     ? ' for &ldquo;' . htmlspecialchars($q) . '&rdquo;'
     : '';
-$typeCounts = [
-    'Page' => 0,
-    'Post' => 0,
-    'Media' => 0,
-];
-foreach ($results as $entry) {
-    $type = $entry['type'] ?? '';
-    if (isset($typeCounts[$type])) {
-        $typeCounts[$type]++;
-    }
+
+if ($q !== '') {
+    $historyRecords = push_search_history($q);
+} else {
+    $historyRecords = get_search_history();
 }
+
+$searchSuggestions = get_search_suggestions();
+
+$historyDataAttr = htmlspecialchars(json_encode($historyRecords, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+$suggestionsAttr = htmlspecialchars(json_encode($searchSuggestions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+$selectedTypesAttr = htmlspecialchars(json_encode($normalizedTypes, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
 ?>
-<div class="content-section" id="search" data-query="<?php echo htmlspecialchars($q); ?>">
+<div class="content-section" id="search" data-query="<?php echo htmlspecialchars($q); ?>" data-history="<?php echo $historyDataAttr; ?>" data-suggestions="<?php echo $suggestionsAttr; ?>" data-selected-types="<?php echo $selectedTypesAttr; ?>">
     <div class="search-dashboard a11y-dashboard">
         <header class="a11y-hero search-hero">
             <div class="a11y-hero-content search-hero-content">
@@ -88,6 +74,25 @@ foreach ($results as $entry) {
             </div>
         </header>
 
+        <?php if (!empty($historyRecords)): ?>
+        <section class="search-history-card" aria-labelledby="searchHistoryTitle">
+            <header class="search-history-card__header">
+                <div>
+                    <h3 class="search-history-card__title" id="searchHistoryTitle">Recent searches</h3>
+                    <p class="search-history-card__description">Jump back to your frequent queries.</p>
+                </div>
+            </header>
+            <div class="search-history-chips">
+                <?php foreach ($historyRecords as $history): ?>
+                    <button class="search-history-chip" type="button" data-search-term="<?php echo htmlspecialchars($history['term']); ?>">
+                        <span class="search-history-chip__term"><?php echo htmlspecialchars($history['term']); ?></span>
+                        <span class="search-history-chip__meta"><?php echo number_format($history['count']); ?>×</span>
+                    </button>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
         <section class="a11y-detail-card search-results-card">
             <header class="search-results-card__header">
                 <div class="search-results-card__intro">
@@ -96,6 +101,17 @@ foreach ($results as $entry) {
                 </div>
                 <span class="search-results-card__meta"><?php echo $resultSummary . $querySuffix; ?></span>
             </header>
+            <div class="search-filters" role="group" aria-label="Filter by content type">
+                <?php foreach ($typeCounts as $typeLabel => $count):
+                    $lowerType = strtolower($typeLabel);
+                    $isChecked = empty($normalizedTypes) || in_array($lowerType, $normalizedTypes, true);
+                ?>
+                <label class="search-filters__option">
+                    <input type="checkbox" value="<?php echo htmlspecialchars($typeLabel); ?>" <?php echo $isChecked ? 'checked' : ''; ?>>
+                    <span><?php echo htmlspecialchars($typeLabel); ?> <small>(<?php echo number_format($count); ?>)</small></span>
+                </label>
+                <?php endforeach; ?>
+            </div>
             <div class="search-results-table">
                 <table class="data-table search-table">
                     <thead>
@@ -105,30 +121,38 @@ foreach ($results as $entry) {
                         <?php if ($results): ?>
                             <?php foreach ($results as $r): ?>
                                 <?php
+                                    $record = $r['record'];
                                     if(($r['type'] ?? '') === 'Post') {
-                                        $viewUrl = '../' . urlencode($r['slug']);
-                                        $status = ucfirst($r['status'] ?? 'draft');
+                                        $viewUrl = '../' . urlencode($record['slug'] ?? $r['slug']);
+                                        $status = ucfirst($record['status'] ?? 'draft');
                                     } elseif(($r['type'] ?? '') === 'Media') {
-                                        $viewUrl = '../' . ltrim($r['file'], '/');
-                                        $status = !empty($r['size']) ? round($r['size']/1024).' KB' : '';
+                                        $viewUrl = '../' . ltrim($record['file'] ?? $r['slug'], '/');
+                                        $size = $record['size'] ?? 0;
+                                        $status = $size ? round($size/1024) . ' KB' : '';
                                     } else {
-                                        $viewUrl = '../?page=' . urlencode($r['slug']);
+                                        $viewUrl = '../?page=' . urlencode($record['slug'] ?? $r['slug']);
                                         if(isset($_SESSION['user'])) {
-                                            $viewUrl = '../liveed/builder.php?id=' . urlencode($r['id']);
+                                            $viewUrl = '../liveed/builder.php?id=' . urlencode($record['id'] ?? $r['id']);
                                         }
-                                        $status = !empty($r['published']) ? 'Published' : 'Draft';
+                                        $status = !empty($record['published']) ? 'Published' : 'Draft';
                                     }
                                 ?>
-                                <tr data-id="<?php echo $r['id']; ?>">
+                                <tr data-id="<?php echo htmlspecialchars((string) $r['id']); ?>" data-type="<?php echo htmlspecialchars($r['type']); ?>" data-score="<?php echo htmlspecialchars(number_format($r['score'], 4, '.', '')); ?>">
                                     <td><?php echo htmlspecialchars($r['type'] ?? ''); ?></td>
-                                    <td><?php echo htmlspecialchars($r['title']); ?></td>
+                                    <td>
+                                        <div class="search-result-title"><?php echo htmlspecialchars($r['title']); ?></div>
+                                        <?php if (!empty($r['snippet'])): ?>
+                                            <div class="search-result-snippet"><?php echo $r['snippet']; ?></div>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?php echo htmlspecialchars($r['slug']); ?></td>
                                     <td><?php echo htmlspecialchars($status); ?></td>
                                     <td><a class="btn btn-secondary" href="<?php echo $viewUrl; ?>" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square btn-icon" aria-hidden="true"></i><span class="btn-label">View</span></a></td>
                                 </tr>
                             <?php endforeach; ?>
+                            <tr class="search-empty-row" data-filter-empty="true" style="display:none;"><td colspan="5">No results match the selected filters.</td></tr>
                         <?php else: ?>
-                            <tr><td colspan="5">No results found</td></tr>
+                            <tr class="search-empty-row"><td colspan="5">No results found</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
