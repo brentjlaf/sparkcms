@@ -3,12 +3,17 @@
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/data.php';
 require_once __DIR__ . '/includes/settings.php';
+require_once __DIR__ . '/includes/search_helpers.php';
 require_login();
 
 $pagesFile = __DIR__ . '/data/pages.json';
 $pages = get_cached_json($pagesFile);
 
 $settings = get_site_settings();
+$globalSearchHistory = get_search_history();
+$globalSearchSuggestions = get_search_suggestions();
+$historyAttr = htmlspecialchars(json_encode($globalSearchHistory, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
+$suggestionsAttr = htmlspecialchars(json_encode($globalSearchSuggestions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
 $adminFavicon = 'images/favicon.png';
 $faviconSetting = $settings['favicon'] ?? '';
 if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?://#i', $faviconSetting)) {
@@ -29,6 +34,7 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script src="modal-utils.js"></script>
     <script src="notifications.js"></script>
+    <script src="modules/search/search.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="spark-cms.css">
     <link rel="shortcut icon" href="<?php echo htmlspecialchars($adminFavicon); ?>" />
@@ -157,7 +163,7 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
                 <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="page-title" id="pageTitle">Dashboard</div>
                 <div class="top-bar-actions">
-                    <div class="search-box">
+                    <div class="search-box" data-search-history="<?php echo $historyAttr; ?>" data-search-suggestions="<?php echo $suggestionsAttr; ?>">
                         <input type="text" class="search-input" placeholder="Search...">
                         <div class="search-icon"><i class="fas fa-search"></i></div>
                     </div>
@@ -175,14 +181,25 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
         </div>
     <script>
 $(function(){
+  function parseDataAttr(value){
+    if(!value){ return []; }
+    try { return JSON.parse(value); }
+    catch(error){ return []; }
+  }
+
   function loadModule(section, params){
     var url = "modules/"+section+"/view.php";
     if(params){ url += "?" + params; }
     $("#contentContainer").load(url, function(){
       $("#contentContainer .content-section").addClass("active");
-      $.getScript("modules/"+section+"/"+section+".js").fail(function(){});
+      if(section === 'search' && window.SparkSearch){
+        window.SparkSearch.bootstrapFromModule($("#contentContainer #search"));
+      } else {
+        $.getScript("modules/"+section+"/"+section+".js").fail(function(){});
+      }
     });
   }
+  window.loadModule = loadModule;
   $(".nav-item").click(function(){
     var section=$(this).data("section");
     if(typeof section === 'string'){ section = section.trim(); }
@@ -197,16 +214,31 @@ $(function(){
     }
   });
 
-  $('.search-input').on('keypress', function(e){
-    if(e.which===13){
-      e.preventDefault();
-      var q = $(this).val();
-      if(q.trim()!==""){
+  var $searchBox = $('.search-box');
+  var $searchInput = $searchBox.find('.search-input');
+  if(window.SparkSearch){
+    window.SparkSearch.mount({
+      input: $searchInput,
+      container: $searchBox,
+      history: parseDataAttr($searchBox.attr('data-search-history')),
+      suggestions: parseDataAttr($searchBox.attr('data-search-suggestions')),
+      onSubmit: function(query){
         $(".nav-item").removeClass("active");
-        loadModule('search','q='+encodeURIComponent(q));
+        loadModule('search','q='+encodeURIComponent(query));
       }
-    }
-  });
+    });
+  } else {
+    $searchInput.on('keypress', function(e){
+      if(e.which===13){
+        e.preventDefault();
+        var q = $(this).val();
+        if(q.trim()!==""){
+          $(".nav-item").removeClass("active");
+          loadModule('search','q='+encodeURIComponent(q));
+        }
+      }
+    });
+  }
 
   $('#menuToggle').on('click', function(){
     $('#sidebar').toggleClass('mobile-open');
