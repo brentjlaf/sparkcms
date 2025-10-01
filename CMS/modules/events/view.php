@@ -66,7 +66,14 @@ $initialPayload = [
             </div>
         </header>
 
-        <section class="events-section" aria-labelledby="eventsUpcomingTitle">
+        <nav class="events-tabs" aria-label="Events sections" data-events-tabs>
+            <button type="button" class="events-tab is-active" id="eventsTabUpcoming" data-events-tab="upcoming" role="tab" aria-selected="true" aria-controls="eventsPanelUpcoming">Upcoming events</button>
+            <button type="button" class="events-tab" id="eventsTabManagement" data-events-tab="management" role="tab" aria-selected="false" aria-controls="eventsPanelManagement">Event management</button>
+            <button type="button" class="events-tab" id="eventsTabOrders" data-events-tab="orders" role="tab" aria-selected="false" aria-controls="eventsPanelOrders">Orders &amp; sales</button>
+            <button type="button" class="events-tab" id="eventsTabReports" data-events-tab="reports" role="tab" aria-selected="false" aria-controls="eventsPanelReports">Reports</button>
+        </nav>
+
+        <section class="events-section events-tabpanel is-active" id="eventsPanelUpcoming" role="tabpanel" aria-labelledby="eventsTabUpcoming" data-events-panel="upcoming">
             <header class="events-section-header">
                 <div>
                     <h3 class="events-section-title" id="eventsUpcomingTitle">Upcoming events</h3>
@@ -100,7 +107,7 @@ $initialPayload = [
             </div>
         </section>
 
-        <section class="events-section" aria-labelledby="eventsManagementTitle">
+        <section class="events-section events-tabpanel" id="eventsPanelManagement" role="tabpanel" aria-labelledby="eventsTabManagement" data-events-panel="management">
             <header class="events-section-header">
                 <div>
                     <h3 class="events-section-title" id="eventsManagementTitle">Event management</h3>
@@ -144,7 +151,7 @@ $initialPayload = [
             </div>
         </section>
 
-        <section class="events-section" aria-labelledby="eventsOrdersTitle">
+        <section class="events-section events-tabpanel" id="eventsPanelOrders" role="tabpanel" aria-labelledby="eventsTabOrders" data-events-panel="orders">
             <header class="events-section-header">
                 <div>
                     <h3 class="events-section-title" id="eventsOrdersTitle">Orders &amp; sales</h3>
@@ -193,7 +200,7 @@ $initialPayload = [
             </div>
         </section>
 
-        <section class="events-section" aria-labelledby="eventsReportsTitle">
+        <section class="events-section events-tabpanel" id="eventsPanelReports" role="tabpanel" aria-labelledby="eventsTabReports" data-events-panel="reports">
             <header class="events-section-header">
                 <div>
                     <h3 class="events-section-title" id="eventsReportsTitle">Reports</h3>

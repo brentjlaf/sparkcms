@@ -11394,6 +11394,55 @@ body.calendar-modal-open {
     gap: 2.5rem;
 }
 
+.events-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 999px;
+    box-shadow: 0 15px 30px rgba(79, 70, 229, 0.12);
+    align-self: center;
+    max-width: 100%;
+    justify-content: center;
+}
+
+.events-tab {
+    border: none;
+    background: transparent;
+    padding: 0.6rem 1.4rem;
+    border-radius: 999px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+}
+
+.events-tab:hover,
+.events-tab:focus-visible {
+    background: #eef2ff;
+    color: #1e3a8a;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.events-tab.is-active {
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+    color: #fff;
+    box-shadow: 0 12px 24px rgba(79, 70, 229, 0.35);
+}
+
+.events-tab.is-active:hover,
+.events-tab.is-active:focus-visible {
+    color: #fff;
+    background: linear-gradient(135deg, #4338ca, #7c3aed);
+}
+
+.events-dashboard--tabs-ready [data-events-panel]:not(.is-active) {
+    display: none;
+}
+
 .events-hero {
     background: linear-gradient(135deg, #1d4ed8, #9333ea);
     color: #fff;
