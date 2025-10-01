@@ -873,15 +873,41 @@ $returnShipping = isset($returnPolicy['return_shipping']) ? (string) $returnPoli
                                 <option value="Hidden">Hidden</option>
                             </select>
                         </div>
-                        <div class="commerce-form-group commerce-form-group--full">
+                        <div class="commerce-form-group commerce-form-group--full" data-commerce-media-field="featured">
                             <label class="commerce-form-label" for="commerceProductFeaturedImage">Featured image URL</label>
-                            <input type="url" id="commerceProductFeaturedImage" class="commerce-form-input" name="featured_image" placeholder="https://example.com/images/product.jpg">
+                            <div class="commerce-media-control">
+                                <input type="url" id="commerceProductFeaturedImage" class="commerce-form-input" name="featured_image" placeholder="https://example.com/images/product.jpg">
+                                <div class="commerce-media-actions">
+                                    <button type="button" class="a11y-btn a11y-btn--secondary" data-commerce-media-browse="featured">
+                                        <i class="fa-solid fa-image" aria-hidden="true"></i>
+                                        <span>Select from library</span>
+                                    </button>
+                                    <button type="button" class="a11y-btn a11y-btn--ghost" data-commerce-media-clear="featured">
+                                        <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                        <span>Clear</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="commerce-media-preview" data-commerce-media-preview="featured" hidden></div>
                             <p class="commerce-form-help">Used on collection pages and highlights. Leave blank to fall back to the first gallery image.</p>
                         </div>
-                        <div class="commerce-form-group commerce-form-group--full">
+                        <div class="commerce-form-group commerce-form-group--full" data-commerce-media-field="gallery">
                             <label class="commerce-form-label" for="commerceProductImages">Product gallery images</label>
-                            <textarea id="commerceProductImages" class="commerce-form-input" name="images" rows="4" placeholder="Add one image URL per line"></textarea>
-                            <p class="commerce-form-help">These images power the product gallery and merchandising blocks.</p>
+                            <div class="commerce-media-control commerce-media-control--stacked">
+                                <textarea id="commerceProductImages" class="commerce-form-input" name="images" rows="4" placeholder="Add one image URL per line"></textarea>
+                                <div class="commerce-media-actions">
+                                    <button type="button" class="a11y-btn a11y-btn--secondary" data-commerce-media-browse="gallery">
+                                        <i class="fa-solid fa-images" aria-hidden="true"></i>
+                                        <span>Add from library</span>
+                                    </button>
+                                    <button type="button" class="a11y-btn a11y-btn--ghost" data-commerce-media-clear="gallery">
+                                        <i class="fa-solid fa-ban" aria-hidden="true"></i>
+                                        <span>Clear</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="commerce-media-preview commerce-media-preview--grid" data-commerce-media-preview="gallery" hidden></div>
+                            <p class="commerce-form-help">These images power the product gallery and merchandising blocks. Use the media library to quickly insert hosted assets.</p>
                         </div>
                         <div class="commerce-form-group">
                             <label class="commerce-form-label" for="commerceProductUpdated">Last updated</label>
@@ -893,6 +919,31 @@ $returnShipping = isset($returnPolicy['return_shipping']) ? (string) $returnPoli
                         <button type="button" class="a11y-btn a11y-btn--ghost" id="commerceProductReset">Cancel</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal commerce-modal commerce-media-modal" id="commerceMediaModal" role="dialog" aria-modal="true" aria-labelledby="commerceMediaModalTitle" aria-describedby="commerceMediaModalDescription" aria-hidden="true">
+        <div class="commerce-modal__surface commerce-modal__surface--wide" role="document">
+            <button type="button" class="commerce-modal__close" data-commerce-close-modal="commerceMediaModal" aria-label="Close media library">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <header class="commerce-modal__header">
+                <span class="commerce-modal__eyebrow">Media library</span>
+                <h2 class="commerce-modal__title" id="commerceMediaModalTitle">Choose product imagery</h2>
+                <p class="commerce-modal__description" id="commerceMediaModalDescription">Browse uploaded assets and select images to feature on your products.</p>
+            </header>
+            <div class="commerce-modal__body">
+                <div class="commerce-media-picker">
+                    <div class="commerce-media-toolbar">
+                        <label class="commerce-media-search" for="commerceMediaSearch">
+                            <i class="fa-solid fa-search" aria-hidden="true"></i>
+                            <span class="sr-only">Search media library</span>
+                            <input type="search" id="commerceMediaSearch" placeholder="Search media library" data-commerce-initial-focus>
+                        </label>
+                        <p class="commerce-media-hint" id="commerceMediaSelectionHint">Select an image to insert it.</p>
+                    </div>
+                    <div class="commerce-media-grid" id="commerceMediaGrid" role="listbox" aria-live="polite" aria-busy="false"></div>
+                </div>
             </div>
         </div>
     </div>
