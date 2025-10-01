@@ -269,11 +269,28 @@ img[data-tpl-tooltip="Image"] {
 /* Columns Block */
 .row {
     display: flex;
-    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--row-gap, 1.5rem);
+    width: 100%;
 }
 
-.row .col {
-    flex: 1;
+.row > .col,
+.row > [class*=col-] {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+@media (max-width: 767.98px) {
+    .row {
+        gap: var(--row-gap-mobile, 1.25rem);
+    }
+
+    .row > .col,
+    .row > [class*=col-] {
+        flex-basis: 100%;
+        max-width: 100%;
+    }
 }
 
 /* Column Width Utilities */
@@ -1533,6 +1550,33 @@ section.container-fluid {
 }
 
 /* Utility & Form Styles */
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+.text-start { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-end { text-align: right !important; }
+
+.mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.ms-auto { margin-left: auto !important; }
+.me-auto { margin-right: auto !important; }
+
+.d-flex { display: flex !important; }
+.align-items-start { align-items: flex-start !important; }
+.align-items-center { align-items: center !important; }
+.align-items-end { align-items: flex-end !important; }
+
+.g-0 { --row-gap: 0; --row-gap-mobile: 0; }
+.g-1 { --row-gap: 0.75rem; --row-gap-mobile: 0.75rem; }
+.g-3 { --row-gap: 1.5rem; --row-gap-mobile: 1.25rem; }
+.g-5 { --row-gap: 2.5rem; --row-gap-mobile: 2rem; }
+
 ._tpl-box,
 .mwDialog,
 .sparkDialog {
