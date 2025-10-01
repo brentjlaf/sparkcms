@@ -165,18 +165,65 @@ section.container-fluid {
 }
 
 /* Video Block */
-.video-block {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
+.video-wrapper {
+    display: block;
+    width: 100%;
+}
+
+.video-wrapper .ratio {
+    background-color: #000;
+    border-radius: 0.5rem;
     overflow: hidden;
 }
-.video-block iframe {
+
+.ratio {
+    position: relative;
+    width: 100%;
+}
+
+.ratio::before {
+    display: block;
+    content: "";
+    padding-top: 56.25%;
+}
+
+.ratio-4x3::before {
+    padding-top: calc(3 / 4 * 100%);
+}
+
+.ratio-1x1::before {
+    padding-top: 100%;
+}
+
+.ratio-21x9::before {
+    padding-top: calc(9 / 21 * 100%);
+}
+
+.ratio > * {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+}
+
+.video-wrapper video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #000;
+}
+
+.video-wrapper figcaption {
+    margin-top: 0.75rem;
+}
+
+.video-wrapper--invalid [data-video-container] {
+    display: none;
+}
+
+.video-wrapper--invalid [data-video-status] {
+    display: block !important;
 }
 
 /* Card Block */
