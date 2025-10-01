@@ -284,8 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
     : null;
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
-  const toggleBtn = palette ? palette.querySelector('.palette-toggle-btn') : null;
-  const dockBtn = palette ? palette.querySelector('.palette-dock-btn') : null;
   const paletteHeader = palette ? palette.querySelector('.builder-header') : null;
 
   builderDraftKey = 'builderDraft-' + window.builderPageId;
@@ -319,8 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(() => {});
 
   // Restore palette position
-  const storedPos = localStorage.getItem('palettePosition');
-  if (storedPos) {
+  const storedPos = palette ? localStorage.getItem('palettePosition') : null;
+  if (palette && storedPos) {
     try {
       const pos = JSON.parse(storedPos);
       if (pos.left) palette.style.left = pos.left;
@@ -328,35 +326,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
   }
 
-  // Collapse state
-  const storedCollapsed = localStorage.getItem('paletteCollapsed') === '1';
-  if (storedCollapsed) {
-    palette.classList.add('collapsed');
-    if (builderEl) builderEl.classList.add('palette-collapsed');
-    if (toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
-  }
-
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      const collapsed = palette.classList.toggle('collapsed');
-      if (builderEl) builderEl.classList.toggle('palette-collapsed', collapsed);
-      toggleBtn.innerHTML = collapsed
-        ? '<i class="fa-solid fa-chevron-right"></i>'
-        : '<i class="fa-solid fa-chevron-left"></i>';
-      localStorage.setItem('paletteCollapsed', collapsed ? '1' : '0');
-    });
-  }
-
-  if (dockBtn) {
-    dockBtn.addEventListener('click', () => {
-      palette.style.left = '0px';
-      palette.style.top = '0px';
-      localStorage.setItem('palettePosition', JSON.stringify({ left: '0px', top: '0px' }));
-    });
-  }
-
   // Dragging
-  if (paletteHeader) {
+  if (palette && paletteHeader) {
     let dragging = false;
     let offsetX = 0;
     let offsetY = 0;
@@ -382,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     };
     paletteHeader.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.palette-toggle-btn') || e.target.closest('.palette-dock-btn')) return;
       dragging = true;
       const rect = palette.getBoundingClientRect();
       offsetX = e.clientX - rect.left;

@@ -63,10 +63,6 @@ $previewToolbar = '<div class="preview-toolbar">'
     . '</div>';
 
 $builderHeader = '<header class="builder-header" title="Drag to reposition">'
-    . '<div class="header-actions">'
-    . '<button type="button" class="header-btn palette-toggle-btn" title="Collapse Palette"><i class="fa-solid fa-chevron-left"></i></button>'
-    . '<button type="button" class="header-btn palette-dock-btn" title="Dock palette"><i class="fa-solid fa-up-down-left-right"></i></button>'
-    . '</div>'
     . '<div  class="title-top"><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div> '
     . '<button type="button" class="manual-save-btn btn btn-primary"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button></div>'
     . '<div id="saveStatus" class="save-status"></div>'
