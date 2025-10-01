@@ -1992,3 +1992,225 @@ section.container-fluid {
         justify-content: flex-end;
     }
 }
+
+/* Pricing table block */
+.pricing-table {
+    padding: clamp(3rem, 8vw, 5rem) 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+}
+
+.pricing-table__inner {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 5vw, 3.5rem);
+}
+
+.pricing-table__header {
+    text-align: center;
+    max-width: 52rem;
+    margin: 0 auto;
+}
+
+.pricing-table__title {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.pricing-table__subtitle {
+    margin-top: 0.75rem;
+    font-size: 1.05rem;
+    color: #4b5563;
+}
+
+.pricing-table__grid {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    grid-template-columns: repeat(auto-fit, minmax(16.5rem, 1fr));
+    align-items: stretch;
+}
+
+.pricing-table__tier {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: clamp(1.75rem, 3vw, 2.5rem);
+    border-radius: 1.25rem;
+    background: #ffffff;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.12);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.pricing-table__tier:hover,
+.pricing-table__tier:focus-within {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 48px rgba(79, 70, 229, 0.18);
+    border-color: rgba(79, 70, 229, 0.45);
+}
+
+.pricing-table__tier-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pricing-table__tier-name {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.pricing-table__tier-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: #6366f1;
+    font-weight: 600;
+}
+
+.pricing-table__price {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: inherit;
+}
+
+.pricing-table__price-cycle {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.pricing-table__features {
+    list-style: none;
+    display: grid;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.pricing-table__features li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pricing-table__features li::before {
+    content: '\2713';
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.12);
+    color: #4f46e5;
+    line-height: 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.pricing-table__cta {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 3rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #ffffff;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    text-decoration: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-position 0.3s ease;
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+}
+
+.pricing-table__cta:hover,
+.pricing-table__cta:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgba(99, 102, 241, 0.35);
+    background-position: 100% 50%;
+}
+
+.pricing-table__tier--featured {
+    border: 2px solid #f97316;
+    box-shadow: 0 28px 56px rgba(249, 115, 22, 0.25);
+}
+
+.pricing-table__tier--featured .pricing-table__tier-name {
+    color: #f97316;
+}
+
+.pricing-table__tier--featured .pricing-table__cta {
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    box-shadow: 0 18px 40px rgba(249, 115, 22, 0.35);
+}
+
+.pricing-table__tier--featured .pricing-table__cta:hover,
+.pricing-table__tier--featured .pricing-table__cta:focus-visible {
+    box-shadow: 0 22px 48px rgba(249, 115, 22, 0.45);
+}
+
+.pricing-table--tiers-3 .pricing-table__tier--optional {
+    display: none;
+}
+
+.pricing-table--tiers-4 .pricing-table__tier--optional {
+    display: flex;
+}
+
+@media (max-width: 1024px) {
+    .pricing-table__grid {
+        grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .pricing-table__grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pricing-table__tier {
+        text-align: center;
+    }
+
+    .pricing-table__features {
+        justify-items: center;
+    }
+
+    .pricing-table__features li {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .pricing-table__features li::before {
+        margin-right: 0;
+        margin-bottom: 0.35rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pricing-table__tier,
+    .pricing-table__cta {
+        transition: none;
+    }
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
