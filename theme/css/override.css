@@ -776,19 +776,147 @@ section.container-fluid {
 
 /* CTA Banner */
 .cta-banner {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: #fff;
-    text-align: center;
-    padding: 3rem 1rem;
+    position: relative;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    padding: 6rem 0;
+    color: var(--gray-9);
+    overflow: hidden;
 }
 
-.cta-banner-content {
-    max-width: 800px;
+.cta-banner.hero-small {
+    padding: 3rem 0;
+}
+
+.cta-banner.hero-medium {
+    padding: 6rem 0;
+}
+
+.cta-banner.hero-large {
+    padding: 9rem 0;
+}
+
+.cta-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.12));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-200, 0.2s ease);
+}
+
+.cta-banner[style*="background-image:url("]::before {
+    opacity: 1;
+}
+
+.cta-banner[style*="background-image:url('')"]::before {
+    opacity: 0;
+}
+
+.cta-banner__inner {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+    align-items: center;
 }
 
-.cta-banner .btn {
-    margin-top: 1rem;
+.cta-banner__inner.text-start {
+    text-align: left;
+    align-items: flex-start;
+}
+
+.cta-banner__inner.text-end {
+    text-align: right;
+    align-items: flex-end;
+}
+
+.cta-banner__headline {
+    font-size: clamp(2.25rem, 2.5vw + 1.25rem, 3rem);
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: inherit;
+}
+
+.cta-banner__subcopy {
+    font-size: clamp(1rem, 0.6vw + 0.95rem, 1.25rem);
+    line-height: 1.6;
+    color: inherit;
+    margin: 0;
+}
+
+.cta-banner__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.cta-banner__inner.text-start .cta-banner__actions {
+    justify-content: flex-start;
+}
+
+.cta-banner__inner.text-end .cta-banner__actions {
+    justify-content: flex-end;
+}
+
+.cta-banner__actions .btn {
+    min-width: 11rem;
+}
+
+.cta-banner--text-dark {
+    color: var(--gray-9);
+}
+
+.cta-banner--text-light {
+    color: var(--white);
+}
+
+.cta-banner--text-light .btn-secondary {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--white);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.cta-banner--text-light .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.24);
+    color: var(--white);
+}
+
+@media (max-width: 991.98px) {
+    .cta-banner {
+        padding: 4.5rem 0;
+    }
+
+    .cta-banner.hero-large {
+        padding: 6rem 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .cta-banner {
+        padding: 3rem 0;
+    }
+
+    .cta-banner__inner {
+        gap: 1.25rem;
+    }
+
+    .cta-banner__actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cta-banner__actions .btn {
+        width: 100%;
+    }
 }
 
 /* Enhanced Image Gallery */
