@@ -43,6 +43,10 @@
             insights: root.querySelector('[data-events-insights]'),
             downloads: root.querySelector('[data-events-downloads]'),
         },
+        tabs: {
+            root: root.querySelector('[data-events-tabs]'),
+            buttons: Array.from(root.querySelectorAll('[data-events-tab]')),
+        },
         orderEditor: {
             modal: document.querySelector('[data-events-modal="order"]'),
             form: document.querySelector('[data-events-form="order"]'),
@@ -125,6 +129,118 @@
         state.orders = initialPayload.orders
             .map((order) => normalizeOrderRow(order))
             .filter((order) => order !== null);
+    }
+
+    initializeTabs();
+
+    function initializeTabs() {
+        const tabButtons = selectors.tabs.buttons;
+        const tabPanels = Array.from(root.querySelectorAll('[data-events-panel]'));
+
+        if (!selectors.tabs.root || tabButtons.length === 0 || tabPanels.length === 0) {
+            return;
+        }
+
+        selectors.tabs.root.setAttribute('role', 'tablist');
+        selectors.tabs.root.setAttribute('aria-orientation', 'horizontal');
+
+        let activeId =
+            tabButtons.find((button) => button.classList.contains('is-active'))?.dataset.eventsTab ||
+            tabButtons[0].dataset.eventsTab;
+
+        function activate(tabId, options = {}) {
+            const tab = tabButtons.find((button) => button.dataset.eventsTab === tabId);
+            const panel = tabPanels.find((section) => section.dataset.eventsPanel === tabId);
+
+            if (!tab || !panel) {
+                return;
+            }
+
+            activeId = tabId;
+
+            tabButtons.forEach((button) => {
+                const isActive = button === tab;
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                button.setAttribute('tabindex', isActive ? '0' : '-1');
+            });
+
+            tabPanels.forEach((section) => {
+                const isActive = section === panel;
+                section.classList.toggle('is-active', isActive);
+                section.hidden = !isActive;
+            });
+
+            if (options.focus) {
+                tab.focus();
+            }
+        }
+
+        function focusByIndex(index) {
+            const normalizedIndex = (index + tabButtons.length) % tabButtons.length;
+            const target = tabButtons[normalizedIndex];
+            if (target) {
+                activate(target.dataset.eventsTab, { focus: true });
+            }
+        }
+
+        selectors.tabs.root.addEventListener('keydown', (event) => {
+            const target = event.target instanceof HTMLElement ? event.target.closest('[data-events-tab]') : null;
+            if (!target) {
+                return;
+            }
+
+            const currentIndex = tabButtons.findIndex((button) => button === target);
+            if (currentIndex === -1) {
+                return;
+            }
+
+            switch (event.key) {
+                case 'ArrowRight':
+                case 'ArrowDown':
+                    event.preventDefault();
+                    focusByIndex(currentIndex + 1);
+                    break;
+                case 'ArrowLeft':
+                case 'ArrowUp':
+                    event.preventDefault();
+                    focusByIndex(currentIndex - 1);
+                    break;
+                case 'Home':
+                    event.preventDefault();
+                    focusByIndex(0);
+                    break;
+                case 'End':
+                    event.preventDefault();
+                    focusByIndex(tabButtons.length - 1);
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        tabButtons.forEach((button) => {
+            if (!button.dataset.eventsTab) {
+                return;
+            }
+
+            button.addEventListener('click', () => {
+                activate(button.dataset.eventsTab, { focus: true });
+            });
+
+            button.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                    event.preventDefault();
+                    activate(button.dataset.eventsTab, { focus: true });
+                }
+            });
+        });
+
+        root.classList.add('events-dashboard--tabs-ready');
+        tabPanels.forEach((section) => {
+            section.hidden = !section.classList.contains('is-active');
+        });
+        activate(activeId);
     }
 
     function formatDate(value) {
