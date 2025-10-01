@@ -21,6 +21,8 @@ $priceInput = $_POST['price'] ?? '';
 $inventoryInput = $_POST['inventory'] ?? '';
 $statusInput = sanitize_text($_POST['status'] ?? 'Active');
 $visibilityInput = sanitize_text($_POST['visibility'] ?? 'Published');
+$featuredImageInput = $_POST['featured_image'] ?? '';
+$imagesInput = $_POST['images'] ?? '';
 $updatedInput = sanitize_text($_POST['updated'] ?? '');
 
 if ($sku === '' || $name === '' || $categoryName === '') {
@@ -43,6 +45,25 @@ if ($inventory < 0) {
 
 $status = $statusInput !== '' ? ucwords(strtolower($statusInput)) : 'Active';
 $visibility = strtolower($visibilityInput) === 'hidden' ? 'Hidden' : 'Published';
+$featuredImage = is_string($featuredImageInput) ? sanitize_url($featuredImageInput) : '';
+$images = [];
+if (is_array($imagesInput)) {
+    $candidateImages = $imagesInput;
+} else {
+    $candidateImages = is_string($imagesInput) ? preg_split('/\r\n|\r|\n|,/', $imagesInput) : [];
+}
+if (is_array($candidateImages)) {
+    foreach ($candidateImages as $imageUrl) {
+        if (!is_string($imageUrl)) {
+            continue;
+        }
+        $sanitized = sanitize_url($imageUrl);
+        if ($sanitized !== '') {
+            $images[] = $sanitized;
+        }
+    }
+}
+$images = array_values(array_unique($images));
 
 if ($updatedInput !== '') {
     $date = DateTime::createFromFormat('Y-m-d', $updatedInput);
@@ -82,6 +103,8 @@ $newProduct = [
     'inventory' => $inventory,
     'status' => $status,
     'visibility' => $visibility,
+    'featured_image' => $featuredImage,
+    'images' => $images,
     'updated' => $updated,
 ];
 

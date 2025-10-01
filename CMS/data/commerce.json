@@ -33,7 +33,13 @@
       "inventory": 48,
       "status": "Active",
       "visibility": "Published",
-      "updated": "2024-03-12"
+      "updated": "2024-03-12",
+      "featured_image": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=400&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1522148547595-0d3c31cd2445?auto=format&fit=crop&w=800&q=80"
+      ]
     },
     {
       "sku": "SP-2034",
@@ -43,7 +49,13 @@
       "inventory": 22,
       "status": "Active",
       "visibility": "Published",
-      "updated": "2024-03-17"
+      "updated": "2024-03-17",
+      "featured_image": "https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=400&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1467043153537-a4fba2cd39ef?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80"
+      ]
     },
     {
       "sku": "SP-4110",
@@ -53,7 +65,13 @@
       "inventory": 215,
       "status": "Active",
       "visibility": "Published",
-      "updated": "2024-03-15"
+      "updated": "2024-03-15",
+      "featured_image": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=400&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=800&q=80"
+      ]
     },
     {
       "sku": "SP-5099",
@@ -63,7 +81,13 @@
       "inventory": 12,
       "status": "Backorder",
       "visibility": "Hidden",
-      "updated": "2024-03-10"
+      "updated": "2024-03-10",
+      "featured_image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1523419409543-0c1df022bdd1?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80"
+      ]
     },
     {
       "sku": "SP-7102",
@@ -73,7 +97,13 @@
       "inventory": 6,
       "status": "Preorder",
       "visibility": "Published",
-      "updated": "2024-03-18"
+      "updated": "2024-03-18",
+      "featured_image": "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=400&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1481277542470-605612bd2d61?auto=format&fit=crop&w=800&q=80"
+      ]
     },
     {
       "sku": "SP-8420",
@@ -83,7 +113,13 @@
       "inventory": 142,
       "status": "Active",
       "visibility": "Published",
-      "updated": "2024-03-12"
+      "updated": "2024-03-12",
+      "featured_image": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=400&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1483794344563-d27a8d18014e?auto=format&fit=crop&w=800&q=80"
+      ]
     },
     {
       "sku": "SP-9650",
@@ -93,7 +129,13 @@
       "inventory": 64,
       "status": "Active",
       "visibility": "Published",
-      "updated": "2024-03-11"
+      "updated": "2024-03-11",
+      "featured_image": "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=400&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1526401485004-46910ecc8e51?auto=format&fit=crop&w=800&q=80"
+      ]
     },
     {
       "sku": "SP-9788",
@@ -103,7 +145,13 @@
       "inventory": 18,
       "status": "Restock",
       "visibility": "Hidden",
-      "updated": "2024-03-09"
+      "updated": "2024-03-09",
+      "featured_image": "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=400&q=80",
+      "images": [
+        "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1446071103084-c257b5f70672?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1470246973918-29a93221c455?auto=format&fit=crop&w=800&q=80"
+      ]
     }
   ],
   "categories": [
