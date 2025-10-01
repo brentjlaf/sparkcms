@@ -48,9 +48,6 @@ $cssFiles = [
     'builder-modal.css',
     'builder-media.css',
     'builder-view.css',
-    'builder-links.css',
-    'builder-a11y.css',
-    'builder-seo.css',
 ];
 $headInject = '';
 foreach ($cssFiles as $css) {
@@ -80,10 +77,6 @@ $paletteFooter = '<div class="footer"><div class="action-row">'
     . '<button class="action-btn undo-btn"><i class="fas fa-undo"></i><span>Undo</span></button>'
     . '<button class="action-btn page-history-btn"><i class="fas fa-clock-rotate-left"></i><span>History</span></button>'
     . '<button class="action-btn redo-btn"><i class="fas fa-redo"></i><span>Redo</span></button>'
-    . '</div><div class="action-row checker-row">'
-    . '<button class="action-btn link-check-btn"><i class="fas fa-link"></i><span>Links</span></button>'
-    . '<button class="action-btn seo-check-btn"><i class="fas fa-chart-line"></i><span>SEO</span></button>'
-    . '<button class="action-btn a11y-check-btn"><i class="fas fa-universal-access"></i><span>A11y</span></button>'
     . '</div><div class="footer-links">'
     . '<span id="lastSavedTime" class="last-saved-time">Last saved: ' . date('Y-m-d H:i', $page['last_modified']) . '</span>'
     . '</div></div>';
@@ -115,21 +108,12 @@ $previewModalHtml = '<div id="previewModal" class="modal">'
     . '<div class="modal-footer"><button type="button" class="btn btn-secondary" id="closePreview"><i class="fa-solid fa-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Close</span></button></div>'
     . '</div></div>';
 
-$seoModalHtml = '<div id="seoModal" class="seo-modal">'
-    . '<div class="seo-modal-content">'
-    . '<span class="close">&times;</span>'
-    . '<h2>SEO Report</h2>'
-    . '<ul id="seoIssues"></ul>'
-    . '</div></div>';
-
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
     . '<div id="historyPanel" class="history-panel"><div class="history-header"><span class="title">Page History</span><button type="button" class="close-btn">&times;</button></div><div class="history-content"></div></div>'
-    . '<div id="link-check-legend" aria-live="polite"></div>'
-    . $mediaPickerHtml . $previewModalHtml . $seoModalHtml . '</div>'
+    . $mediaPickerHtml . $previewModalHtml . '</div>'
     . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';window.builderSlug = ' . json_encode($page['slug']) . ';window.builderLastModified = ' . json_encode($page['last_modified']) . ';</script>'
     . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>'
-    . '<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>'
-    . '<script src="' . $scriptBase . '/liveed/modules/a11y-checker.js"></script>';
+    . '<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>';
 
 $themeHtml = preg_replace('/<body([^>]*)>/', '<body$1>' . $builderStart, $themeHtml, 1);
 $themeHtml = preg_replace('/<\/body>/', $builderEnd . '</body>', $themeHtml, 1);

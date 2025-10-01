@@ -12,9 +12,6 @@ $cssFiles = [
     "$base/css/builder-modal.css",
     "$base/css/builder-media.css",
     "$base/css/builder-view.css",
-    "$base/css/builder-links.css",
-    "$base/css/builder-a11y.css",
-    "$base/css/builder-seo.css",
 ];
 
 $output = "$base/builder.css";
