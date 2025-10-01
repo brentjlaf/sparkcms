@@ -593,6 +593,14 @@ foreach ($segments as $segment):
                                 <span class="commerce-settings-value"><?php echo htmlspecialchars($currency); ?></span>
                             </li>
                             <li>
+                                <span class="commerce-settings-label">Theme</span>
+                                <span class="commerce-settings-value"><?php echo htmlspecialchars($commerceSettings['storefront_theme'] ?? 'Default'); ?></span>
+                            </li>
+                            <li>
+                                <span class="commerce-settings-label">Primary language</span>
+                                <span class="commerce-settings-value"><?php echo htmlspecialchars($commerceSettings['default_language'] ?? 'Not set'); ?></span>
+                            </li>
+                            <li>
                                 <span class="commerce-settings-label">Low inventory threshold</span>
                                 <span class="commerce-settings-value"><?php echo htmlspecialchars((string) ($commerceSettings['low_inventory_threshold'] ?? 0)); ?> units</span>
                             </li>
@@ -609,7 +617,9 @@ foreach ($segments as $segment):
 $toggleMap = [
     'express_checkout' => 'Express checkout',
     'allow_guest_checkout' => 'Allow guest checkout',
-    'fraud_protection' => 'Fraud protection'
+    'fraud_protection' => 'Fraud protection',
+    'auto_apply_discounts' => 'Auto-apply discounts',
+    'address_verification' => 'Address verification'
 ];
 foreach ($toggleMap as $key => $label):
     $enabled = !empty($commerceSettings[$key]);
@@ -654,6 +664,64 @@ foreach ($windows as $window):
                                 <span class="commerce-settings-value"><?php echo htmlspecialchars($sla); ?></span>
                             </li>
 <?php endforeach; ?>
+                        </ul>
+                    </section>
+                    <section class="commerce-settings-group">
+                        <h4 class="commerce-settings-heading">Shipping partners</h4>
+                        <ul class="commerce-settings-list">
+<?php
+$partners = isset($commerceSettings['shipping_partners']) && is_array($commerceSettings['shipping_partners']) ? $commerceSettings['shipping_partners'] : [];
+if (empty($partners)):
+?>
+                            <li>
+                                <span class="commerce-settings-label">Partners</span>
+                                <span class="commerce-settings-value">No shipping partners configured</span>
+                            </li>
+<?php
+endif;
+foreach ($partners as $partner):
+    $partnerName = isset($partner['name']) ? (string) $partner['name'] : '';
+    $status = isset($partner['status']) ? (string) $partner['status'] : '';
+    $normalizedStatus = strtolower($status);
+    $statusClass = 'status-badge';
+    if ($normalizedStatus === 'primary' || $normalizedStatus === 'active') {
+        $statusClass = 'status-badge status-good';
+    } elseif ($normalizedStatus === 'backup' || $normalizedStatus === 'limited') {
+        $statusClass = 'status-badge status-warning';
+    } elseif ($normalizedStatus === 'paused' || $normalizedStatus === 'suspended') {
+        $statusClass = 'status-badge status-critical';
+    } elseif ($normalizedStatus === 'international') {
+        $statusClass = 'status-badge status-info';
+    }
+?>
+                            <li>
+                                <span class="commerce-settings-label"><?php echo htmlspecialchars($partnerName); ?></span>
+                                <span class="commerce-settings-value <?php echo $statusClass; ?>"><?php echo htmlspecialchars($status !== '' ? $status : 'Unavailable'); ?></span>
+                            </li>
+<?php endforeach; ?>
+                        </ul>
+                    </section>
+                    <section class="commerce-settings-group">
+                        <h4 class="commerce-settings-heading">Return policy</h4>
+                        <ul class="commerce-settings-list">
+<?php
+$returnPolicy = isset($commerceSettings['return_policy']) && is_array($commerceSettings['return_policy']) ? $commerceSettings['return_policy'] : [];
+$returnWindow = isset($returnPolicy['window_days']) && is_numeric($returnPolicy['window_days']) ? (int) $returnPolicy['window_days'] : null;
+$restockingFee = isset($returnPolicy['restocking_fee']) ? (string) $returnPolicy['restocking_fee'] : '';
+$returnShipping = isset($returnPolicy['return_shipping']) ? (string) $returnPolicy['return_shipping'] : '';
+?>
+                            <li>
+                                <span class="commerce-settings-label">Return window</span>
+                                <span class="commerce-settings-value"><?php echo htmlspecialchars($returnWindow !== null ? $returnWindow . ' days' : 'Not specified'); ?></span>
+                            </li>
+                            <li>
+                                <span class="commerce-settings-label">Restocking fee</span>
+                                <span class="commerce-settings-value"><?php echo htmlspecialchars($restockingFee !== '' ? $restockingFee : 'None'); ?></span>
+                            </li>
+                            <li>
+                                <span class="commerce-settings-label">Return shipping</span>
+                                <span class="commerce-settings-value"><?php echo htmlspecialchars($returnShipping !== '' ? $returnShipping : 'Not specified'); ?></span>
+                            </li>
                         </ul>
                     </section>
                 </div>

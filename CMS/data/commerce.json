@@ -250,11 +250,15 @@
   "settings": {
     "storefront_status": "Live",
     "currency": "USD",
+    "storefront_theme": "Aurora Dark",
+    "default_language": "English (US)",
     "low_inventory_threshold": 10,
     "default_tax_rate": 8.2,
     "fraud_protection": true,
     "express_checkout": true,
     "allow_guest_checkout": false,
+    "auto_apply_discounts": true,
+    "address_verification": true,
     "payment_methods": [
       { "label": "Credit Card", "enabled": true },
       { "label": "PayPal", "enabled": true },
@@ -265,6 +269,16 @@
       { "name": "Standard", "sla": "3-5 business days" },
       { "name": "Express", "sla": "1-2 business days" },
       { "name": "Pickup", "sla": "Ready in 2 hours" }
-    ]
+    ],
+    "shipping_partners": [
+      { "name": "SwiftShip Logistics", "status": "Primary" },
+      { "name": "Coastal Freight", "status": "Backup" },
+      { "name": "GlobalPost", "status": "International" }
+    ],
+    "return_policy": {
+      "window_days": 30,
+      "restocking_fee": "5%",
+      "return_shipping": "Prepaid label for domestic orders"
+    }
   }
 }
