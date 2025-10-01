@@ -105,7 +105,6 @@ $workspaces = [
     'catalog' => 'Product Catalog',
     'orders' => 'Orders',
     'customers' => 'Customers',
-    'reports' => 'Reports',
     'settings' => 'Commerce Settings',
 ];
 
@@ -571,64 +570,6 @@ foreach ($segments as $segment):
                         </tbody>
                     </table>
                     <div class="commerce-empty" id="commerceCustomerEmpty" hidden>No customers match the selected filters.</div>
-                </div>
-            </section>
-
-            <section class="commerce-panel" role="tabpanel" id="commerce-panel-reports" data-commerce-panel="reports" hidden>
-                <div class="commerce-panel-grid">
-                    <article class="commerce-card">
-                        <header class="commerce-card-header">
-                            <div>
-                                <h3 class="commerce-card-title">Key ratios</h3>
-                                <p class="commerce-card-subtitle">Highlight conversion, abandonment, and retention signals.</p>
-                            </div>
-                        </header>
-                        <dl class="commerce-stat-list">
-                            <div class="commerce-stat">
-                                <dt>Storefront conversion</dt>
-                                <dd><?php echo commerce_format_percent($reports['conversion_rate'] ?? 0); ?></dd>
-                            </div>
-                            <div class="commerce-stat">
-                                <dt>Cart abandonment</dt>
-                                <dd><?php echo commerce_format_percent($reports['cart_abandonment'] ?? 0); ?></dd>
-                            </div>
-                            <div class="commerce-stat">
-                                <dt>Net promoter score</dt>
-                                <dd><?php echo commerce_format_number($reports['net_promoter_score'] ?? 0); ?></dd>
-                            </div>
-                            <div class="commerce-stat">
-                                <dt>Return rate</dt>
-                                <dd><?php echo commerce_format_percent($reports['return_rate'] ?? 0); ?></dd>
-                            </div>
-                        </dl>
-                    </article>
-                    <article class="commerce-card">
-                        <header class="commerce-card-header">
-                            <div>
-                                <h3 class="commerce-card-title">Team priorities</h3>
-                                <p class="commerce-card-subtitle">Auto-generated tasks based on this week's trading data.</p>
-                            </div>
-                            <span class="commerce-card-meta">Generated using trading insights</span>
-                        </header>
-                        <ul class="commerce-priority-list" id="commercePriorities">
-                            <li>Contact wholesale partners regarding replenishment for Traveller Backpack.</li>
-                            <li>Launch a cart recovery email for dormant VIP customers.</li>
-                            <li>Review refund queue for Sofia Oliveira to prevent churn.</li>
-                        </ul>
-                    </article>
-                    <article class="commerce-card">
-                        <header class="commerce-card-header">
-                            <div>
-                                <h3 class="commerce-card-title">Performance benchmarks</h3>
-                                <p class="commerce-card-subtitle">Compare against target KPIs to anticipate risks.</p>
-                            </div>
-                        </header>
-                        <ul class="commerce-benchmark-list">
-                            <li data-benchmark="conversion" data-target="3.2">Conversion goal: 3.2% (currently <?php echo commerce_format_percent($reports['conversion_rate'] ?? 0); ?>)</li>
-                            <li data-benchmark="refunds" data-target="1.0">Refund tolerance: &lt;1.0% (currently <?php echo commerce_format_percent($summary['refund_rate'] ?? 0); ?>)</li>
-                            <li data-benchmark="repeat" data-target="40">Repeat purchase: 40% target (currently <?php echo commerce_format_percent($summary['repeat_purchase_rate'] ?? 0); ?>)</li>
-                        </ul>
-                    </article>
                 </div>
             </section>
 
