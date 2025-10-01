@@ -61,6 +61,84 @@ $(function(){
             .replace(/'/g, '&#039;');
     }
 
+    function getCmsBasePath() {
+        if (window.__cmsBasePath !== undefined) {
+            return window.__cmsBasePath;
+        }
+        const path = window.location.pathname || '';
+        const cmsMarker = '/CMS/';
+        let base = '';
+        const markerIndex = path.indexOf(cmsMarker);
+        if (markerIndex !== -1) {
+            base = path.substring(0, markerIndex);
+        } else {
+            const fallbackIndex = path.indexOf('/CMS');
+            base = fallbackIndex !== -1 ? path.substring(0, fallbackIndex) : '';
+        }
+        window.__cmsBasePath = base;
+        return base;
+    }
+
+    function isAbsoluteResource(path) {
+        return /^https?:\/\//i.test(path || '') || (typeof path === 'string' && (path.startsWith('//') || path.startsWith('/')));
+    }
+
+    function resolveCmsPath(relativePath) {
+        const value = String(relativePath || '');
+        if (!value) {
+            return '';
+        }
+        if (isAbsoluteResource(value)) {
+            return value;
+        }
+        const base = getCmsBasePath().replace(/\/$/, '');
+        const cleaned = value.replace(/^\.\/+/, '').replace(/^\/+/, '');
+        if (!cleaned) {
+            return '';
+        }
+        if (!base) {
+            return `/${cleaned}`;
+        }
+        return `${base}/${cleaned}`;
+    }
+
+    function normalizeImageValue(value) {
+        const raw = (value || '').trim();
+        if (!raw) {
+            return '';
+        }
+        if (/^https?:\/\//i.test(raw)) {
+            try {
+                const parsed = new URL(raw, window.location.origin);
+                if (parsed.origin === window.location.origin) {
+                    return normalizeImageValue(parsed.pathname);
+                }
+            } catch (error) {
+                return raw;
+            }
+            return raw;
+        }
+        if (raw.startsWith('//') || raw.startsWith('data:')) {
+            return raw;
+        }
+        if (raw.startsWith('/')) {
+            return raw.replace(/\/+/g, '/');
+        }
+        const base = getCmsBasePath().replace(/\/$/, '');
+        const cleaned = raw.replace(/^\.\/+/, '').replace(/^\/+/, '');
+        if (!cleaned) {
+            return '';
+        }
+        const baseName = base.replace(/^\//, '');
+        if (baseName && cleaned.startsWith(`${baseName}/`)) {
+            return `/${cleaned}`;
+        }
+        if (base) {
+            return `${base}/${cleaned}`;
+        }
+        return `/${cleaned}`;
+    }
+
     function getBadgeClass(status) {
         const normalized = (status || '').toString().toLowerCase();
         switch (normalized) {
@@ -129,6 +207,13 @@ $(function(){
         lastFocus: null
     };
 
+    const mediaState = {
+        loaded: false,
+        loading: false,
+        items: [],
+        currentTarget: null
+    };
+
     function findModalFocusTarget($modal) {
         if (!$modal || !$modal.length) {
             return null;
@@ -180,6 +265,9 @@ $(function(){
         if (id === 'commerceCategoryModal') {
             resetCategoryForm();
             renderCategorySelect();
+        }
+        if (id === 'commerceMediaModal') {
+            mediaState.currentTarget = null;
         }
         const { lastFocus } = modalState;
         if (lastFocus && typeof lastFocus.focus === 'function') {
@@ -672,12 +760,215 @@ $(function(){
     const $productUpdated = $('#commerceProductUpdated');
     const $productSubmit = $('#commerceProductSubmit');
     const $productReset = $('#commerceProductReset');
+    const $featuredPreview = $('[data-commerce-media-preview="featured"]');
+    const $galleryPreview = $('[data-commerce-media-preview="gallery"]');
+    const $mediaModal = $('#commerceMediaModal');
+    const $mediaGrid = $('#commerceMediaGrid');
+    const $mediaSearch = $('#commerceMediaSearch');
+    const $mediaHint = $('#commerceMediaSelectionHint');
 
     function getTodayDate() {
         const now = new Date();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         return `${now.getFullYear()}-${month}-${day}`;
+    }
+
+    function parseGalleryInput(value) {
+        if (!value) {
+            return [];
+        }
+        const items = value
+            .toString()
+            .split(/\r?\n|,/)
+            .map(function(url){
+                return normalizeImageValue(url);
+            })
+            .filter(function(url){
+                return url !== '';
+            });
+        return Array.from(new Set(items));
+    }
+
+    function renderFeaturedPreview(value) {
+        if (!$featuredPreview.length) {
+            return;
+        }
+        const normalized = normalizeImageValue(value);
+        if (!normalized) {
+            $featuredPreview.attr('hidden', 'hidden').empty();
+            return;
+        }
+        const src = resolveCmsPath(normalized);
+        const safeSrc = escapeHtml(src);
+        $featuredPreview.html(`<img src="${safeSrc}" alt="Featured product image preview">`);
+        $featuredPreview.removeAttr('hidden');
+    }
+
+    function renderGalleryPreview(urls) {
+        if (!$galleryPreview.length) {
+            return;
+        }
+        const list = Array.isArray(urls) ? urls : [];
+        const items = list
+            .map(function(url){
+                const normalized = normalizeImageValue(url);
+                if (!normalized) {
+                    return null;
+                }
+                const src = resolveCmsPath(normalized);
+                const safeSrc = escapeHtml(src);
+                return `<span class="commerce-media-preview__item"><img src="${safeSrc}" alt="Product gallery image preview"></span>`;
+            })
+            .filter(Boolean);
+        if (!items.length) {
+            $galleryPreview.attr('hidden', 'hidden').empty();
+            return;
+        }
+        $galleryPreview.html(items.join(''));
+        $galleryPreview.removeAttr('hidden');
+    }
+
+    function renderMediaLibrary(options) {
+        if (!$mediaGrid.length) {
+            return;
+        }
+        const opts = options || {};
+        if (opts.status === 'loading') {
+            $mediaGrid.attr('aria-busy', 'true');
+            $mediaGrid.html('<p class="commerce-media-status">Loading images…</p>');
+            return;
+        }
+        if (opts.status === 'error') {
+            $mediaGrid.attr('aria-busy', 'false');
+            $mediaGrid.html('<p class="commerce-media-status commerce-media-status--error">Unable to load the media library. Please try again.</p>');
+            return;
+        }
+        const items = Array.isArray(opts.items) ? opts.items : [];
+        const searchTerm = (opts.searchTerm || '').toString().trim();
+        if (!items.length) {
+            const message = searchTerm
+                ? `No images match “${escapeHtml(searchTerm)}”.`
+                : 'No images found in the media library.';
+            $mediaGrid.attr('aria-busy', 'false');
+            $mediaGrid.html(`<p class="commerce-media-status">${message}</p>`);
+            return;
+        }
+        const html = items.map(function(item){
+            if (!item || !item.file) {
+                return '';
+            }
+            const filePath = resolveCmsPath(item.file || '');
+            const thumbPath = resolveCmsPath(item.thumbnail || item.file || '');
+            const safeFile = escapeHtml(filePath);
+            const safeThumb = escapeHtml(thumbPath);
+            const safeName = escapeHtml(item.name || item.file || 'Media item');
+            return `
+                <button type="button" class="commerce-media-item" data-commerce-media-item data-file="${safeFile}" role="option">
+                    <span class="commerce-media-item__thumb"><img src="${safeThumb}" alt="${safeName}"></span>
+                    <span class="commerce-media-item__name">${safeName}</span>
+                </button>
+            `;
+        }).filter(Boolean).join('');
+        if (!html) {
+            const fallbackMessage = searchTerm
+                ? `No images match “${escapeHtml(searchTerm)}”.`
+                : 'No images found in the media library.';
+            $mediaGrid.attr('aria-busy', 'false');
+            $mediaGrid.html(`<p class="commerce-media-status">${fallbackMessage}</p>`);
+            return;
+        }
+        $mediaGrid.attr('aria-busy', 'false');
+        $mediaGrid.html(html);
+    }
+
+    function filterMediaItems(term) {
+        const query = (term || '').toString().trim().toLowerCase();
+        if (!query) {
+            return mediaState.items.slice();
+        }
+        return mediaState.items.filter(function(item){
+            const name = (item.name || '').toLowerCase();
+            const file = (item.file || '').toLowerCase();
+            const tags = Array.isArray(item.tags) ? item.tags.join(' ').toLowerCase() : '';
+            return name.indexOf(query) !== -1 || file.indexOf(query) !== -1 || tags.indexOf(query) !== -1;
+        });
+    }
+
+    function loadMediaLibrary() {
+        if (mediaState.loading) {
+            return;
+        }
+        mediaState.loading = true;
+        $.getJSON('modules/media/list_media.php', { sort: 'name', order: 'asc' })
+            .done(function(response){
+                const rawItems = Array.isArray(response && response.media) ? response.media : [];
+                mediaState.items = rawItems.filter(function(item){
+                    return (item.type || '') === 'images' && item.file;
+                });
+                mediaState.loaded = true;
+                const term = ($mediaSearch.val() || '').toString();
+                renderMediaLibrary({ items: filterMediaItems(term), searchTerm: term });
+            })
+            .fail(function(){
+                renderMediaLibrary({ status: 'error' });
+            })
+            .always(function(){
+                mediaState.loading = false;
+            });
+    }
+
+    function openMediaPicker(target) {
+        if (!$mediaModal.length) {
+            return;
+        }
+        mediaState.currentTarget = target || null;
+        if ($mediaHint.length) {
+            if (target === 'gallery') {
+                $mediaHint.text('Select an image to add it to the product gallery. You can keep this window open to add multiple images.');
+            } else {
+                $mediaHint.text('Select an image to use as the featured product image.');
+            }
+        }
+        if ($mediaSearch.length) {
+            $mediaSearch.val('');
+        }
+        openCommerceModal('commerceMediaModal');
+        if (mediaState.loaded) {
+            renderMediaLibrary({ items: filterMediaItems(''), searchTerm: '' });
+        } else {
+            renderMediaLibrary({ status: 'loading' });
+            loadMediaLibrary();
+        }
+    }
+
+    function handleMediaSelection(value) {
+        const normalized = normalizeImageValue(value);
+        if (!normalized) {
+            return;
+        }
+        if (mediaState.currentTarget === 'gallery') {
+            const existing = parseGalleryInput($productImages.val());
+            if (existing.indexOf(normalized) === -1) {
+                existing.push(normalized);
+                $productImages.val(existing.join('\n')).trigger('change');
+                renderGalleryPreview(existing);
+                if (!normalizeImageValue($productFeaturedImage.val())) {
+                    renderFeaturedPreview(existing[0] || '');
+                }
+                notifyInfo('Image added to the gallery.');
+            } else {
+                notifyInfo('Image is already included in the gallery.');
+            }
+            if (!$mediaHint.length) {
+                return;
+            }
+            $mediaHint.text('Select another image to add it to the product gallery, or close this window when you are done.');
+        } else {
+            $productFeaturedImage.val(normalized).trigger('change');
+            renderFeaturedPreview(normalized);
+            closeCommerceModal('commerceMediaModal');
+        }
     }
 
     function resetProductForm() {
@@ -691,6 +982,8 @@ $(function(){
         if ($productImages.length) {
             $productImages.val('');
         }
+        renderFeaturedPreview('');
+        renderGalleryPreview([]);
         if ($productSubmit.length) {
             $productSubmit.text('Add product');
         }
@@ -726,18 +1019,19 @@ $(function(){
         if (product.visibility) {
             $productVisibility.val(product.visibility);
         }
+        let featuredImageValue = '';
         if ($productFeaturedImage.length) {
-            const featured = (product.featured_image || '').toString();
-            $productFeaturedImage.val(featured);
+            featuredImageValue = (product.featured_image || '').toString();
+            $productFeaturedImage.val(featuredImageValue);
         }
+        let galleryValues = [];
         if ($productImages.length) {
-            let gallery = [];
             if (Array.isArray(product.images)) {
-                gallery = product.images.filter(function(url){
+                galleryValues = product.images.filter(function(url){
                     return typeof url === 'string' && url.trim() !== '';
                 });
             } else if (product.images) {
-                gallery = product.images
+                galleryValues = product.images
                     .toString()
                     .split(/\r?\n|,/)
                     .map(function(url){
@@ -747,8 +1041,10 @@ $(function(){
                         return url !== '';
                     });
             }
-            $productImages.val(gallery.length ? gallery.join('\n') : '');
+            $productImages.val(galleryValues.length ? galleryValues.join('\n') : '');
         }
+        renderFeaturedPreview(featuredImageValue || (galleryValues[0] || ''));
+        renderGalleryPreview(galleryValues);
         $productUpdated.val(product.updated || getTodayDate());
         if ($productSubmit.length) {
             $productSubmit.text('Update product');
@@ -757,6 +1053,57 @@ $(function(){
             $productModalTitle.text('Edit product');
         }
         $productName.trigger('focus');
+    }
+
+    $productFeaturedImage.on('input change', function(){
+        renderFeaturedPreview($(this).val());
+    });
+
+    $productImages.on('input change', function(){
+        const values = parseGalleryInput($(this).val());
+        renderGalleryPreview(values);
+    });
+
+    $('[data-commerce-media-browse]').on('click', function(event){
+        event.preventDefault();
+        const target = ($(this).data('commerceMediaBrowse') || '').toString();
+        openMediaPicker(target);
+    });
+
+    $('[data-commerce-media-clear]').on('click', function(event){
+        event.preventDefault();
+        const target = ($(this).data('commerceMediaClear') || '').toString();
+        if (target === 'gallery') {
+            $productImages.val('').trigger('change');
+            renderGalleryPreview([]);
+            if (!normalizeImageValue($productFeaturedImage.val())) {
+                renderFeaturedPreview('');
+            }
+        } else {
+            $productFeaturedImage.val('').trigger('change');
+            renderFeaturedPreview('');
+        }
+    });
+
+    if ($mediaSearch.length) {
+        $mediaSearch.on('input', function(){
+            if (!mediaState.loaded) {
+                return;
+            }
+            const term = ($(this).val() || '').toString();
+            renderMediaLibrary({ items: filterMediaItems(term), searchTerm: term });
+        });
+    }
+
+    if ($mediaGrid.length) {
+        $mediaGrid.on('click', '[data-commerce-media-item]', function(event){
+            event.preventDefault();
+            const file = ($(this).data('file') || '').toString();
+            if (!file) {
+                return;
+            }
+            handleMediaSelection(file);
+        });
     }
 
     $productReset.on('click', function(){
