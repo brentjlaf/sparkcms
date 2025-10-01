@@ -82,6 +82,12 @@ Theme files are stored under the `theme` directory. To modify the site appearanc
 
 After editing templates or CSS, refresh your browser to see the changes.
 
+### Block Catalog
+
+The block templates in `theme/templates/blocks` can be dropped into any page layout from the editor. Notable blocks include:
+
+- **interactive.testimonial-carousel** – A responsive slider for up to three testimonials. Each slide supports quote text, author name, role, avatar image, and an optional 1–5 star rating. Autoplay timing and pagination visibility can be configured in the block settings, while the front‑end script automatically supplies graceful fallbacks when fields are left blank. The layout switches to a two-column presentation for quote and author details at screen widths of 768px and above.
+
 ## Developing Modules
 
 Modules are self contained directories inside `CMS/modules`. A module typically contains PHP endpoints and optional JavaScript. To create a custom module:

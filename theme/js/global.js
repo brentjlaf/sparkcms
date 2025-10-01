@@ -674,6 +674,268 @@
     });
   }
 
+  function parseBoolean(value) {
+    return String(value || '').trim().toLowerCase() === 'true';
+  }
+
+  function parseAutoplayDelay(value) {
+    var seconds = parseInt(value, 10);
+    if (!Number.isFinite(seconds) || seconds <= 0) {
+      return 0;
+    }
+    return seconds * 1000;
+  }
+
+  function normalizeTestimonialSlide(slide) {
+    if (!(slide instanceof HTMLElement)) {
+      return false;
+    }
+    var quote = slide.querySelector('[data-quote]');
+    var author = slide.querySelector('[data-author]');
+    var role = slide.querySelector('[data-role]');
+    var rating = slide.querySelector('[data-rating]');
+    var avatarWrap = slide.querySelector('[data-avatar]');
+    var defaultQuote = slide.getAttribute('data-default-quote') || 'SparkCMS customer success story.';
+    var defaultAuthor = slide.getAttribute('data-default-author') || 'Happy Customer';
+    var defaultRole = slide.getAttribute('data-default-role') || '';
+    var defaultRating = parseInt(slide.getAttribute('data-default-rating') || '', 10);
+    if (quote) {
+      var quoteText = quote.textContent || '';
+      if (!quoteText.trim()) {
+        quote.textContent = defaultQuote;
+      }
+    }
+    if (author) {
+      var authorText = author.textContent || '';
+      if (!authorText.trim()) {
+        author.textContent = defaultAuthor;
+      }
+    }
+    if (role) {
+      var roleText = role.textContent || '';
+      if (!roleText.trim()) {
+        role.textContent = defaultRole;
+      }
+    }
+    var resolvedAuthor = author ? author.textContent.trim() : '';
+    if (avatarWrap) {
+      var avatarImage = avatarWrap.querySelector('img');
+      var avatarSrc = avatarImage && avatarImage.getAttribute('src') ? avatarImage.getAttribute('src').trim() : '';
+      var fallback = avatarWrap.querySelector('.testimonial-card__avatar-fallback');
+      if (!fallback) {
+        fallback = document.createElement('span');
+        fallback.className = 'testimonial-card__avatar-fallback';
+        avatarWrap.appendChild(fallback);
+      }
+      if (!avatarSrc) {
+        if (avatarImage) {
+          avatarImage.style.display = 'none';
+        }
+        var initials = resolvedAuthor ? resolvedAuthor.charAt(0).toUpperCase() : 'S';
+        fallback.textContent = initials;
+        fallback.style.display = 'inline-flex';
+      } else {
+        if (avatarImage) {
+          avatarImage.style.display = '';
+          if (resolvedAuthor && (!avatarImage.getAttribute('alt') || !avatarImage.getAttribute('alt').trim())) {
+            avatarImage.setAttribute('alt', resolvedAuthor);
+          }
+        }
+        fallback.textContent = '';
+        fallback.style.display = 'none';
+      }
+    }
+    if (rating) {
+      var ratingValue = rating.getAttribute('data-rating') || rating.dataset.rating || '';
+      var parsedRating = parseInt(ratingValue, 10);
+      if (!Number.isFinite(parsedRating) || parsedRating < 1) {
+        parsedRating = Number.isFinite(defaultRating) && defaultRating > 0 ? defaultRating : 0;
+      }
+      rating.innerHTML = '';
+      if (parsedRating > 0) {
+        var cappedRating = Math.min(parsedRating, 5);
+        rating.style.display = 'flex';
+        rating.setAttribute('aria-label', cappedRating + ' out of 5 stars');
+        for (var i = 0; i < cappedRating; i += 1) {
+          var star = document.createElement('span');
+          star.className = 'testimonial-card__star';
+          star.setAttribute('aria-hidden', 'true');
+          star.textContent = '★';
+          rating.appendChild(star);
+        }
+      } else {
+        rating.style.display = 'none';
+        rating.removeAttribute('aria-label');
+      }
+    }
+    var finalQuote = quote ? quote.textContent.trim() : '';
+    var finalAuthor = author ? author.textContent.trim() : '';
+    var finalRole = role ? role.textContent.trim() : '';
+    var hasContent = Boolean(finalQuote || finalAuthor || finalRole);
+    slide.classList.toggle('testimonial-slide--empty', !hasContent);
+    return hasContent;
+  }
+
+  function initCarouselInstance(carousel) {
+    if (!(carousel instanceof HTMLElement) || carousel.dataset.carouselInitialized === 'true') {
+      return;
+    }
+    var wrapper = carousel.querySelector('.swiper-wrapper');
+    if (!wrapper) {
+      carousel.classList.add('is-empty');
+      return;
+    }
+    var slides = Array.prototype.slice.call(wrapper.querySelectorAll('.swiper-slide'));
+    if (!slides.length) {
+      carousel.classList.add('is-empty');
+      return;
+    }
+    var filteredSlides = [];
+    slides.forEach(function (slide) {
+      if (normalizeTestimonialSlide(slide)) {
+        filteredSlides.push(slide);
+      } else if (slide.parentNode) {
+        slide.parentNode.removeChild(slide);
+      }
+    });
+    if (!filteredSlides.length) {
+      carousel.classList.add('is-empty');
+      return;
+    }
+    carousel.classList.remove('is-empty');
+    var prevBtn = carousel.querySelector('[data-carousel-prev]');
+    var nextBtn = carousel.querySelector('[data-carousel-next]');
+    var paginationHost = carousel.querySelector('[data-carousel-pagination]');
+    var autoplayDelay = parseAutoplayDelay(carousel.getAttribute('data-autoplay'));
+    var showPagination = parseBoolean(carousel.getAttribute('data-show-pagination'));
+    var state = {
+      current: 0,
+      autoplayTimer: null
+    };
+
+    function slidesPerView() {
+      if (window.innerWidth >= 768) {
+        return Math.min(2, filteredSlides.length);
+      }
+      return 1;
+    }
+
+    function maxIndex() {
+      var perView = slidesPerView();
+      return Math.max(0, filteredSlides.length - perView);
+    }
+
+    function clearAutoplay() {
+      if (state.autoplayTimer) {
+        window.clearTimeout(state.autoplayTimer);
+        state.autoplayTimer = null;
+      }
+    }
+
+    function scheduleAutoplay() {
+      clearAutoplay();
+      if (!autoplayDelay) {
+        return;
+      }
+      state.autoplayTimer = window.setTimeout(function () {
+        var perView = slidesPerView();
+        var max = Math.max(0, filteredSlides.length - perView);
+        if (state.current >= max) {
+          goTo(0);
+        } else {
+          goTo(state.current + 1);
+        }
+      }, autoplayDelay);
+    }
+
+    function updateNavControls(max) {
+      if (prevBtn) {
+        prevBtn.disabled = state.current <= 0;
+      }
+      if (nextBtn) {
+        nextBtn.disabled = state.current >= max;
+      }
+    }
+
+    function renderPagination(max, currentIndex) {
+      if (!paginationHost) {
+        return;
+      }
+      var pageCount = max + 1;
+      if (!showPagination || pageCount <= 1) {
+        paginationHost.innerHTML = '';
+        paginationHost.style.display = 'none';
+        return;
+      }
+      paginationHost.style.display = '';
+      paginationHost.innerHTML = '';
+      for (var i = 0; i < pageCount; i += 1) {
+        (function (index) {
+          var dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'testimonial-carousel__dot' + (index === currentIndex ? ' is-active' : '');
+          dot.setAttribute('aria-label', 'Go to testimonial ' + (index + 1));
+          dot.addEventListener('click', function () {
+            goTo(index);
+          });
+          paginationHost.appendChild(dot);
+        })(i);
+      }
+    }
+
+    function updateTransform(options) {
+      var perView = slidesPerView();
+      wrapper.style.setProperty('--slides-per-view', perView);
+      var max = Math.max(0, filteredSlides.length - perView);
+      if (state.current > max) {
+        state.current = max;
+      }
+      var translate = perView > 0 ? (state.current * 100) / perView : 0;
+      wrapper.style.transform = 'translateX(-' + translate + '%)';
+      updateNavControls(max);
+      renderPagination(max, state.current);
+      if (!options || options.autoplay !== false) {
+        scheduleAutoplay();
+      }
+    }
+
+    function goTo(index, options) {
+      var perView = slidesPerView();
+      var max = Math.max(0, filteredSlides.length - perView);
+      var nextIndex = Math.min(Math.max(index, 0), max);
+      state.current = nextIndex;
+      updateTransform(options);
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function () {
+        goTo(state.current - 1);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function () {
+        goTo(state.current + 1);
+      });
+    }
+
+    carousel.addEventListener('mouseenter', clearAutoplay);
+    carousel.addEventListener('mouseleave', scheduleAutoplay);
+
+    window.addEventListener('resize', function () {
+      updateTransform({ autoplay: false });
+    });
+
+    carousel.dataset.carouselInitialized = 'true';
+    updateTransform({ autoplay: true });
+  }
+
+  function initTestimonialCarousels() {
+    var carousels = document.querySelectorAll('[data-testimonial-carousel]');
+    carousels.forEach(function (carousel) {
+      initCarouselInstance(carousel);
+    });
+  }
+
   function initBlogLists() {
     var lists = document.querySelectorAll('[data-blog-list]');
     lists.forEach(function (container) {
@@ -688,6 +950,7 @@
     var observer = new MutationObserver(function (mutations) {
       var shouldRefreshBlogs = false;
       var shouldRefreshCalendars = false;
+      var shouldRefreshCarousels = false;
       mutations.forEach(function (mutation) {
         if (mutation.type !== 'childList') {
           return;
@@ -702,6 +965,9 @@
           if (node.matches('[data-calendar-block]') || node.querySelector('[data-calendar-block]')) {
             shouldRefreshCalendars = true;
           }
+          if (node.matches('[data-testimonial-carousel]') || node.querySelector('[data-testimonial-carousel]')) {
+            shouldRefreshCarousels = true;
+          }
         });
       });
       if (shouldRefreshBlogs) {
@@ -709,6 +975,9 @@
       }
       if (shouldRefreshCalendars) {
         initCalendarBlocks();
+      }
+      if (shouldRefreshCarousels) {
+        initTestimonialCarousels();
       }
     });
     observer.observe(document.body || document.documentElement, {
@@ -720,6 +989,7 @@
   ready(function () {
     initBlogLists();
     initCalendarBlocks();
+    initTestimonialCarousels();
     observe();
   });
 
@@ -729,5 +999,9 @@
 
   window.SparkCMSCalendars = {
     refresh: initCalendarBlocks
+  };
+
+  window.SparkCMSTestimonialCarousels = {
+    refresh: initTestimonialCarousels
   };
 })();
