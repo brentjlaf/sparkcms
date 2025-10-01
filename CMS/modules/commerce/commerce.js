@@ -280,13 +280,49 @@ $(function(){
         const visibility = (product.visibility || 'Unknown').toString();
         const visibilitySlug = visibility.toLowerCase();
         const updated = (product.updated || '').toString();
+        let featuredImage = (product.featured_image || '').toString();
+        let gallery = [];
+        if (Array.isArray(product.images)) {
+            gallery = product.images.filter(function(url){
+                return typeof url === 'string' && url.trim() !== '';
+            });
+        } else if (product.images) {
+            gallery = product.images
+                .toString()
+                .split(/\r?\n|,/)
+                .map(function(url){
+                    return url.trim();
+                })
+                .filter(function(url){
+                    return url !== '';
+                });
+        }
+        if (!featuredImage && gallery.length) {
+            featuredImage = gallery[0];
+        }
+        const galleryCount = gallery.length;
+        let galleryLabel = 'No gallery images';
+        if (galleryCount === 1) {
+            galleryLabel = '1 gallery image';
+        } else if (galleryCount > 1) {
+            galleryLabel = `${galleryCount} gallery images`;
+        }
+        const featuredMarkup = featuredImage
+            ? `<img src="${escapeHtml(featuredImage)}" alt="Featured image for ${escapeHtml(name)}" class="commerce-product-thumb">`
+            : '<div class="commerce-product-thumb-placeholder" role="img" aria-label="No featured image"><i class="fa-solid fa-image" aria-hidden="true"></i></div>';
 
         return `
             <tr data-commerce-item data-sku="${escapeHtml(sku)}" data-category="${escapeHtml(categorySlug)}" data-status="${escapeHtml(statusSlug)}" data-visibility="${escapeHtml(visibilitySlug)}" data-updated="${escapeHtml(updated)}">
                 <td>
-                    <div class="commerce-table-primary">
-                        <strong>${escapeHtml(name)}</strong>
-                        <span class="commerce-table-meta">SKU: ${escapeHtml(sku)}</span>
+                    <div class="commerce-product-cell">
+                        ${featuredMarkup}
+                        <div class="commerce-product-details">
+                            <div class="commerce-table-primary">
+                                <strong>${escapeHtml(name)}</strong>
+                                <span class="commerce-table-meta">SKU: ${escapeHtml(sku)}</span>
+                            </div>
+                            <span class="commerce-product-gallery-meta">${escapeHtml(galleryLabel)}</span>
+                        </div>
                     </div>
                 </td>
                 <td>${escapeHtml(category)}</td>
@@ -631,6 +667,8 @@ $(function(){
     const $productInventory = $('#commerceProductInventory');
     const $productStatus = $('#commerceProductStatus');
     const $productVisibility = $('#commerceProductVisibility');
+    const $productFeaturedImage = $('#commerceProductFeaturedImage');
+    const $productImages = $('#commerceProductImages');
     const $productUpdated = $('#commerceProductUpdated');
     const $productSubmit = $('#commerceProductSubmit');
     const $productReset = $('#commerceProductReset');
@@ -647,6 +685,12 @@ $(function(){
             $productForm[0].reset();
         }
         $productOriginalSku.val('');
+        if ($productFeaturedImage.length) {
+            $productFeaturedImage.val('');
+        }
+        if ($productImages.length) {
+            $productImages.val('');
+        }
         if ($productSubmit.length) {
             $productSubmit.text('Add product');
         }
@@ -682,6 +726,29 @@ $(function(){
         if (product.visibility) {
             $productVisibility.val(product.visibility);
         }
+        if ($productFeaturedImage.length) {
+            const featured = (product.featured_image || '').toString();
+            $productFeaturedImage.val(featured);
+        }
+        if ($productImages.length) {
+            let gallery = [];
+            if (Array.isArray(product.images)) {
+                gallery = product.images.filter(function(url){
+                    return typeof url === 'string' && url.trim() !== '';
+                });
+            } else if (product.images) {
+                gallery = product.images
+                    .toString()
+                    .split(/\r?\n|,/)
+                    .map(function(url){
+                        return url.trim();
+                    })
+                    .filter(function(url){
+                        return url !== '';
+                    });
+            }
+            $productImages.val(gallery.length ? gallery.join('\n') : '');
+        }
         $productUpdated.val(product.updated || getTodayDate());
         if ($productSubmit.length) {
             $productSubmit.text('Update product');
@@ -710,6 +777,8 @@ $(function(){
             inventory: ($productInventory.val() || '').toString(),
             status: ($productStatus.val() || '').toString(),
             visibility: ($productVisibility.val() || '').toString(),
+            featured_image: ($productFeaturedImage.val() || '').toString().trim(),
+            images: ($productImages.val() || '').toString().trim(),
             updated: ($productUpdated.val() || '').toString()
         };
 

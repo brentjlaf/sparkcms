@@ -388,6 +388,36 @@ foreach ($trend as $point):
     $status = isset($product['status']) ? (string) $product['status'] : 'Unknown';
     $visibility = isset($product['visibility']) ? (string) $product['visibility'] : 'Unknown';
     $updated = isset($product['updated']) ? (string) $product['updated'] : '';
+    $featuredImage = isset($product['featured_image']) ? (string) $product['featured_image'] : '';
+    $galleryList = [];
+    if (isset($product['images'])) {
+        if (is_array($product['images'])) {
+            foreach ($product['images'] as $imageUrl) {
+                if (is_string($imageUrl) && $imageUrl !== '') {
+                    $galleryList[] = $imageUrl;
+                }
+            }
+        } elseif (is_string($product['images']) && trim($product['images']) !== '') {
+            $lines = preg_split('/\r\n|\r|\n/', $product['images']);
+            foreach ($lines as $imageUrl) {
+                $imageUrl = trim((string) $imageUrl);
+                if ($imageUrl !== '') {
+                    $galleryList[] = $imageUrl;
+                }
+            }
+        }
+    }
+    if ($featuredImage === '' && !empty($galleryList)) {
+        $featuredImage = (string) $galleryList[0];
+    }
+    $galleryCount = count($galleryList);
+    if ($galleryCount === 1) {
+        $galleryLabel = '1 gallery image';
+    } elseif ($galleryCount > 1) {
+        $galleryLabel = $galleryCount . ' gallery images';
+    } else {
+        $galleryLabel = 'No gallery images';
+    }
 ?>
                             <tr data-commerce-item
                                 data-sku="<?php echo htmlspecialchars($sku); ?>"
@@ -396,9 +426,21 @@ foreach ($trend as $point):
                                 data-visibility="<?php echo htmlspecialchars(strtolower($visibility)); ?>"
                                 data-updated="<?php echo htmlspecialchars($updated); ?>">
                                 <td>
-                                    <div class="commerce-table-primary">
-                                        <strong><?php echo htmlspecialchars($name); ?></strong>
-                                        <span class="commerce-table-meta">SKU: <?php echo htmlspecialchars($sku); ?></span>
+                                    <div class="commerce-product-cell">
+<?php if ($featuredImage !== ''): ?>
+                                        <img src="<?php echo htmlspecialchars($featuredImage); ?>" alt="Featured image for <?php echo htmlspecialchars($name); ?>" class="commerce-product-thumb">
+<?php else: ?>
+                                        <div class="commerce-product-thumb-placeholder" role="img" aria-label="No featured image">
+                                            <i class="fa-solid fa-image" aria-hidden="true"></i>
+                                        </div>
+<?php endif; ?>
+                                        <div class="commerce-product-details">
+                                            <div class="commerce-table-primary">
+                                                <strong><?php echo htmlspecialchars($name); ?></strong>
+                                                <span class="commerce-table-meta">SKU: <?php echo htmlspecialchars($sku); ?></span>
+                                            </div>
+                                            <span class="commerce-product-gallery-meta"><?php echo htmlspecialchars($galleryLabel); ?></span>
+                                        </div>
                                     </div>
                                 </td>
                                 <td><?php echo htmlspecialchars($category); ?></td>
@@ -830,6 +872,16 @@ $returnShipping = isset($returnPolicy['return_shipping']) ? (string) $returnPoli
                                 <option value="Published">Published</option>
                                 <option value="Hidden">Hidden</option>
                             </select>
+                        </div>
+                        <div class="commerce-form-group commerce-form-group--full">
+                            <label class="commerce-form-label" for="commerceProductFeaturedImage">Featured image URL</label>
+                            <input type="url" id="commerceProductFeaturedImage" class="commerce-form-input" name="featured_image" placeholder="https://example.com/images/product.jpg">
+                            <p class="commerce-form-help">Used on collection pages and highlights. Leave blank to fall back to the first gallery image.</p>
+                        </div>
+                        <div class="commerce-form-group commerce-form-group--full">
+                            <label class="commerce-form-label" for="commerceProductImages">Product gallery images</label>
+                            <textarea id="commerceProductImages" class="commerce-form-input" name="images" rows="4" placeholder="Add one image URL per line"></textarea>
+                            <p class="commerce-form-help">These images power the product gallery and merchandising blocks.</p>
                         </div>
                         <div class="commerce-form-group">
                             <label class="commerce-form-label" for="commerceProductUpdated">Last updated</label>

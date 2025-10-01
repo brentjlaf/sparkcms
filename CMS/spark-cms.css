@@ -12963,6 +12963,10 @@ body.calendar-modal-open {
     gap: 16px;
 }
 
+.commerce-form-group--full {
+    grid-column: 1 / -1;
+}
+
 @media (min-width: 720px) {
     .commerce-form-grid {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -13129,6 +13133,45 @@ body.calendar-modal-open {
     display: flex;
     flex-direction: column;
     gap: 4px;
+}
+
+.commerce-product-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.commerce-product-thumb,
+.commerce-product-thumb-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--color-surface-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.commerce-product-thumb {
+    object-fit: cover;
+}
+
+.commerce-product-thumb-placeholder {
+    color: var(--color-text-muted);
+    font-size: 18px;
+}
+
+.commerce-product-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.commerce-product-gallery-meta {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
 }
 
 .commerce-table-meta {
