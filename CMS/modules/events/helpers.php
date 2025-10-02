@@ -73,6 +73,38 @@ if (!function_exists('events_unique_slug')) {
     }
 }
 
+if (!function_exists('events_generate_copy_title')) {
+    function events_generate_copy_title(array $events, string $originalTitle, ?string $excludeId = null): string
+    {
+        $baseTitle = trim($originalTitle) === '' ? 'Untitled Event' : trim($originalTitle);
+        $existing = [];
+        foreach ($events as $event) {
+            if (!is_array($event)) {
+                continue;
+            }
+            $id = (string) ($event['id'] ?? '');
+            if ($excludeId !== null && $id === $excludeId) {
+                continue;
+            }
+            $title = trim((string) ($event['title'] ?? ''));
+            if ($title === '') {
+                continue;
+            }
+            $existing[strtolower($title)] = true;
+        }
+
+        $base = $baseTitle . ' Copy';
+        $candidate = $base;
+        $suffix = 2;
+        while (isset($existing[strtolower($candidate)])) {
+            $candidate = $base . ' ' . $suffix;
+            $suffix++;
+        }
+
+        return $candidate;
+    }
+}
+
 if (!function_exists('events_read_events')) {
     function events_read_events(): array
     {
