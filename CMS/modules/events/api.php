@@ -342,14 +342,24 @@ function handle_list_orders(array $orders, array $events): void
 function handle_export_orders(array $orders, array $events): void
 {
     $rows = [];
-    $rows[] = ['Order ID', 'Event', 'Buyer', 'Tickets', 'Amount', 'Status', 'Ordered At'];
+    $rows[] = ['Order ID', 'Event', 'Buyer', 'Tickets', 'Ticket Details', 'Amount', 'Status', 'Ordered At'];
     foreach ($orders as $order) {
         $summary = events_order_summary($order, $events);
+        $ticketDetails = [];
+        foreach ($summary['line_items'] ?? [] as $line) {
+            $quantity = (int) ($line['quantity'] ?? 0);
+            if ($quantity <= 0) {
+                continue;
+            }
+            $name = (string) ($line['name'] ?? 'Ticket');
+            $ticketDetails[] = sprintf('%d x %s', $quantity, $name);
+        }
         $rows[] = [
             $summary['id'] ?? '',
             $summary['event'] ?? 'Event',
             $summary['buyer_name'] ?? '',
             $summary['tickets'] ?? 0,
+            implode('; ', $ticketDetails),
             number_format((float) ($summary['amount'] ?? 0), 2, '.', ''),
             strtoupper((string) ($summary['status'] ?? 'paid')),
             $summary['ordered_at'] ?? '',
