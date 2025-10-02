@@ -737,6 +737,9 @@
 /* File: script.js */
 // File: script.js
 (function () {
+  if (document.documentElement) {
+    document.documentElement.classList.add('js-enabled');
+  }
   var formCache = {};
   var formRequests = {};
 
@@ -1157,30 +1160,49 @@
       });
     }
 
+    var accordionBlocks = document.querySelectorAll('.faq-accordion-block');
+    var usedPrefixes = new Set();
+    var generatedIndex = 1;
+    accordionBlocks.forEach(function (block) {
+      var prefix = block.getAttribute('data-accordion-prefix');
+      if (!prefix || usedPrefixes.has(prefix)) {
+        do {
+          prefix = 'faq-accordion-' + generatedIndex++;
+        } while (usedPrefixes.has(prefix));
+        block.setAttribute('data-accordion-prefix', prefix);
+      }
+      usedPrefixes.add(prefix);
+      var items = block.querySelectorAll('.accordion');
+      items.forEach(function (acc, itemIndex) {
+        var btn = acc.querySelector('.accordion-button');
+        var panel = acc.querySelector('.accordion-panel');
+        if (!btn || !panel) return;
+        var baseId = prefix + '-item-' + (itemIndex + 1);
+        var buttonId = baseId + '-button';
+        var panelId = baseId + '-panel';
+        btn.id = buttonId;
+        btn.setAttribute('aria-controls', panelId);
+        panel.id = panelId;
+        panel.setAttribute('aria-labelledby', buttonId);
+      });
+    });
+
     var accordions = document.querySelectorAll('.accordion');
     accordions.forEach(function (acc) {
       var btn = acc.querySelector('.accordion-button');
       var panel = acc.querySelector('.accordion-panel');
       if (!btn || !panel) return;
 
-      if (acc.classList.contains('open')) {
-        btn.setAttribute('aria-expanded', 'true');
-        panel.style.display = 'block';
-      } else {
-        btn.setAttribute('aria-expanded', 'false');
-        panel.style.display = 'none';
-      }
+      var isOpen = acc.classList.contains('open');
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      panel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+      panel.style.display = isOpen ? 'block' : 'none';
 
       btn.addEventListener('click', function () {
-        if (acc.classList.contains('open')) {
-          acc.classList.remove('open');
-          btn.setAttribute('aria-expanded', 'false');
-          panel.style.display = 'none';
-        } else {
-          acc.classList.add('open');
-          btn.setAttribute('aria-expanded', 'true');
-          panel.style.display = 'block';
-        }
+        var expanded = acc.classList.toggle('open');
+        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        panel.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+        panel.style.display = expanded ? 'block' : 'none';
       });
     });
 
