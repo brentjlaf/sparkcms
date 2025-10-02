@@ -842,6 +842,9 @@
                 <button type="button" class="events-action" data-events-action="edit" data-id="${row.id}">
                     <i class="fa-solid fa-pen"></i><span class="sr-only">Edit</span>
                 </button>
+                <button type="button" class="events-action" data-events-action="copy" data-id="${row.id}">
+                    <i class="fa-solid fa-copy"></i><span class="sr-only">Copy event</span>
+                </button>
                 <button type="button" class="events-action" data-events-action="sales" data-id="${row.id}">
                     <i class="fa-solid fa-chart-column"></i><span class="sr-only">View sales</span>
                 </button>
@@ -2007,6 +2010,19 @@
             switch (action.dataset.eventsAction) {
                 case 'edit':
                     openEventModal(id);
+                    break;
+                case 'copy':
+                    fetchJSON('copy_event', { method: 'POST', body: { id } })
+                        .then((response) => {
+                            if (response?.event?.id) {
+                                state.events.set(response.event.id, response.event);
+                            }
+                            showToast('Event copied.');
+                            refreshAll();
+                        })
+                        .catch(() => {
+                            showToast('Unable to copy event.', 'error');
+                        });
                     break;
                 case 'sales':
                     document.getElementById('eventsOrdersTitle')?.scrollIntoView({ behavior: 'smooth' });

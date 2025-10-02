@@ -29,6 +29,9 @@ switch ($action) {
     case 'save_event':
         handle_save_event($events, $categories);
         break;
+    case 'copy_event':
+        handle_copy_event($events, $categories);
+        break;
     case 'delete_event':
         handle_delete_event($events);
         break;
@@ -205,6 +208,43 @@ function handle_save_event(array $events, array $categories): void
     }
 
     respond_json(['success' => true, 'event' => $eventData]);
+}
+
+function handle_copy_event(array $events, array $categories): void
+{
+    $id = $_POST['id'] ?? ($_GET['id'] ?? '');
+    $id = trim((string) $id);
+    if ($id === '') {
+        respond_json(['error' => 'Missing event id.'], 400);
+    }
+
+    $original = events_find_event($events, $id);
+    if ($original === null) {
+        respond_json(['error' => 'Event not found.'], 404);
+    }
+
+    $copy = $original;
+    unset($copy['id'], $copy['created_at'], $copy['updated_at'], $copy['published_at']);
+    if (isset($copy['tickets']) && is_array($copy['tickets'])) {
+        foreach ($copy['tickets'] as &$ticket) {
+            if (is_array($ticket)) {
+                unset($ticket['id']);
+            }
+        }
+        unset($ticket);
+    }
+
+    $copy['title'] = events_generate_copy_title($events, $original['title'] ?? 'Untitled Event', $id);
+    $copy['status'] = 'draft';
+
+    $copy = events_normalize_event($copy, $categories);
+    $events[] = $copy;
+
+    if (!events_write_events($events)) {
+        respond_json(['error' => 'Unable to copy event.'], 500);
+    }
+
+    respond_json(['success' => true, 'event' => $copy]);
 }
 
 function handle_delete_event(array $events): void
