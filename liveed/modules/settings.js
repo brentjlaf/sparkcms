@@ -188,6 +188,15 @@ function applySelectValue(select, value) {
     });
   } else {
     const target = value ?? '';
+    if (target === '' || target == null) {
+      const placeholderOption = select.querySelector('option[value=""]');
+      if (placeholderOption) {
+        placeholderOption.selected = true;
+      } else {
+        select.value = '';
+      }
+      return;
+    }
     select.value = target;
     if (target && select.value !== target) {
       const manualOption = document.createElement('option');
@@ -247,6 +256,9 @@ function populateFormsSelects(container, block) {
       const placeholderOption = document.createElement('option');
       placeholderOption.value = '';
       placeholderOption.textContent = placeholder;
+      placeholderOption.disabled = true;
+      placeholderOption.hidden = true;
+      placeholderOption.selected = true;
       fragment.appendChild(placeholderOption);
 
       forms.forEach((form) => {
