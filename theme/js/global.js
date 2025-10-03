@@ -1005,6 +1005,19 @@ import basePath from './utils/base-path.js';
       return parsed;
     } catch (error) {
       console.warn('[SparkCMS] Unable to parse events cart from storage:', error);
+      try {
+        window.localStorage.removeItem(EVENTS_CART_STORAGE_KEY);
+        console.info('[SparkCMS] Events cart storage has been reset.');
+        if (typeof window.dispatchEvent === 'function' && typeof window.CustomEvent === 'function') {
+          window.dispatchEvent(
+            new CustomEvent('sparkcms:events-cart-reset', {
+              detail: { reason: 'parse-error' }
+            })
+          );
+        }
+      } catch (cleanupError) {
+        console.warn('[SparkCMS] Unable to clear events cart storage during recovery:', cleanupError);
+      }
       return fallback;
     }
   }
