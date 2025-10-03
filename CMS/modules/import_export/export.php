@@ -1,14 +1,12 @@
 <?php
 // File: export.php
 require_once __DIR__ . '/../../includes/auth.php';
-require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/settings.php';
-require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/ImportExportManager.php';
 
 require_login();
 
-$dataDir = import_export_get_data_dir();
-$datasetMap = import_export_get_dataset_map();
+$manager = new ImportExportManager();
 
 $export = [
     'meta' => [
@@ -23,22 +21,7 @@ if (!empty($settings['site_name'])) {
     $export['meta']['site_name'] = (string) $settings['site_name'];
 }
 
-foreach ($datasetMap as $key => $filename) {
-    $path = $dataDir . '/' . $filename;
-    $export['data'][$key] = read_json_file($path);
-}
-
-$draftsDir = $dataDir . '/drafts';
-if (is_dir($draftsDir)) {
-    $draftFiles = glob($draftsDir . '/*.json');
-    if ($draftFiles !== false && count($draftFiles) > 0) {
-        $drafts = [];
-        foreach ($draftFiles as $draftFile) {
-            $drafts[basename($draftFile, '.json')] = read_json_file($draftFile);
-        }
-        $export['data']['drafts'] = $drafts;
-    }
-}
+$export['data'] = $manager->collectExportDatasets();
 
 $export['meta']['dataset_count'] = count($export['data']);
 $export['meta']['datasets'] = array_keys($export['data']);
@@ -53,24 +36,8 @@ if ($json === false) {
 
 $filename = 'sparkcms-export-' . date('Ymd-His') . '.json';
 
-$statsFile = import_export_get_stats_file();
-$stats = read_json_file($statsFile);
-if (!is_array($stats)) {
-    $stats = [];
-}
-$stats['last_export_at'] = gmdate('c');
-$stats['last_export_file'] = $filename;
-$stats['export_count'] = isset($stats['export_count']) ? (int) $stats['export_count'] + 1 : 1;
 $datasetCount = isset($export['meta']['dataset_count']) ? (int) $export['meta']['dataset_count'] : 0;
-$stats = import_export_append_history_entry($stats, [
-    'type' => 'export',
-    'timestamp' => $stats['last_export_at'],
-    'label' => 'Export generated',
-    'summary' => $filename . ' • ' . import_export_format_dataset_count_label($datasetCount),
-    'file' => $filename,
-    'dataset_count' => $datasetCount,
-]);
-write_json_file($statsFile, $stats);
+$manager->recordExport($filename, $datasetCount);
 
 header('Content-Type: application/json; charset=UTF-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
