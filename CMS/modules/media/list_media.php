@@ -30,9 +30,13 @@ $results = array_filter($media, function($item) use ($query, $folder) {
 });
 
 $root = dirname(__DIR__,2);
-$default = $root.'/uploads/general';
-if(!is_dir($default)) mkdir($default, 0777, true);
-$folderDirs = array_filter(glob($root.'/uploads/*'), 'is_dir');
+$uploadsDir = $root . '/uploads';
+if (!is_dir($uploadsDir)) {
+    mkdir($uploadsDir, 0777, true);
+    $defaultDir = $uploadsDir . '/general';
+    if (!is_dir($defaultDir)) mkdir($defaultDir, 0777, true);
+}
+$folderDirs = array_filter(glob($uploadsDir . '/*'), 'is_dir');
 $folders = [];
 foreach ($folderDirs as $dir) {
     $name = basename($dir);
