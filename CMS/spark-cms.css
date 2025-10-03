@@ -10165,9 +10165,19 @@ body.calendar-modal-open {
 }
 
 .forms-main-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.5fr);
+    display: flex;
     gap: 24px;
+    align-items: flex-start;
+}
+
+.forms-table-card {
+    flex: 0 0 360px;
+    max-width: 360px;
+}
+
+.forms-submissions-card {
+    flex: 1 1 0%;
+    min-width: 0;
 }
 
 .forms-card-header {
@@ -10765,7 +10775,14 @@ body.calendar-modal-open {
 
 @media (max-width: 1024px) {
     .forms-main-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+    }
+
+    .forms-table-card,
+    .forms-submissions-card {
+        flex: 1 1 auto;
+        max-width: 100%;
+        width: 100%;
     }
 
     #fieldPalette {
