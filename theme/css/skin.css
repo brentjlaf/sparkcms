@@ -182,10 +182,22 @@ img[data-tpl-tooltip="Image"] {
     object-fit: cover;
 }
 
+.gallery-item:focus-visible,
+.gallery-item a:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.4);
+    outline-offset: 3px;
+}
+
 .shadow .gallery-item { box-shadow: 0 4px 6px rgba(15, 23, 42, 0.1); }
-.zoom .gallery-item:hover img { transform: scale(1.05); }
-.fade .gallery-item:hover img { opacity: 0.85; }
-.slide .gallery-item:hover img { transform: translateY(-4px); }
+.zoom .gallery-item:hover img,
+.zoom .gallery-item:focus-visible img,
+.zoom .gallery-item a:focus-visible img { transform: scale(1.05); }
+.fade .gallery-item:hover img,
+.fade .gallery-item:focus-visible img,
+.fade .gallery-item a:focus-visible img { opacity: 0.85; }
+.slide .gallery-item:hover img,
+.slide .gallery-item:focus-visible img,
+.slide .gallery-item a:focus-visible img { transform: translateY(-4px); }
 
 .aspect-square img { aspect-ratio: 1 / 1; }
 .aspect-landscape img { aspect-ratio: 16 / 9; }
