@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
+require_once __DIR__ . '/../sitemap/SitemapGenerator.php';
 $pagesFile = __DIR__ . '/../../data/pages.json';
 $pages = [];
 if (file_exists($pagesFile)) {
@@ -182,24 +183,22 @@ $historyData['__system__'] = array_slice($historyData['__system__'], -50);
 file_put_contents($historyFile, json_encode($historyData, JSON_PRETTY_PRINT));
 
 file_put_contents($pagesFile, json_encode($pages, JSON_PRETTY_PRINT));
-// Regenerate sitemap whenever pages are modified
-// Capture the output from the sitemap generator so we don't surface raw
-// JSON responses in the page editor.
-ob_start();
-require_once __DIR__ . '/../sitemap/generate.php';
-$sitemapOutput = ob_get_clean();
 
-// Reset the response headers to a plain text response for this endpoint
-// (generate.php sets JSON headers when run directly).
-header('Content-Type: text/plain; charset=UTF-8');
+$generator = new SitemapGenerator(__DIR__ . '/../../../sitemap.xml');
 
-if ($sitemapOutput !== '') {
-    $decoded = json_decode($sitemapOutput, true);
-    if (is_array($decoded) && isset($decoded['success']) && !$decoded['success']) {
-        http_response_code(500);
-        echo $decoded['message'] ?? 'Failed to regenerate sitemap.';
-        exit;
+try {
+    $result = $generator->generate($pages);
+    if (isset($result['success']) && !$result['success']) {
+        throw new RuntimeException($result['message'] ?? 'Failed to regenerate sitemap.');
     }
+} catch (Throwable $exception) {
+    header('Content-Type: text/plain; charset=UTF-8');
+    http_response_code(500);
+    $message = $exception->getMessage() !== '' ? $exception->getMessage() : 'Failed to regenerate sitemap.';
+    echo $message;
+    exit;
 }
+
+header('Content-Type: text/plain; charset=UTF-8');
 
 echo 'OK';
