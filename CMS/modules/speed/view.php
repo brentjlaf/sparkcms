@@ -375,14 +375,6 @@ function speed_render_delta(?array $delta, string $statLabel, string $unitSingul
                 </button>
             </div>
         </div>
-        <div class="a11y-action-bar">
-            <div class="a11y-bulk-actions">
-                <button type="button" class="a11y-btn a11y-btn--secondary" id="speedDownloadReport">
-                    <i class="fas fa-download" aria-hidden="true"></i>
-                    <span>Download Speed Report</span>
-                </button>
-            </div>
-        </div>
         <div class="a11y-pages-grid" id="speedPagesGrid" role="list"></div>
         <div class="a11y-table-view" id="speedTableView" hidden>
             <div class="a11y-table-header">
