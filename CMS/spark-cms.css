@@ -10343,10 +10343,10 @@ body.calendar-modal-open {
 }
 
 .forms-submissions-container {
-    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), #ffffff);
-    border-radius: 16px;
-    border: 1px solid #e2e8f0;
-    padding: 20px;
+    /* background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), #ffffff); */
+    /* border-radius: 16px; */
+    /* border: 1px solid #e2e8f0; */
+    /* padding: 20px; */
 }
 
 .forms-submissions-list {
