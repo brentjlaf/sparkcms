@@ -312,15 +312,6 @@ if ($detailSlug !== null && $detailSlug !== '') {
             </div>
         </div>
 
-        <div class="a11y-action-bar">
-            <div class="a11y-bulk-actions">
-                <button type="button" class="a11y-btn a11y-btn--secondary" id="downloadWcagReport">
-                    <i class="fas fa-download" aria-hidden="true"></i>
-                    <span>Download WCAG Report</span>
-                </button>
-            </div>
-        </div>
-
         <div class="a11y-pages-grid" id="a11yPagesGrid" role="list"></div>
 
         <div class="a11y-table-view" id="a11yTableView" hidden>
