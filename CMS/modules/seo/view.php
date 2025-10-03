@@ -5,14 +5,23 @@ require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/settings.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
 require_once __DIR__ . '/../../includes/score_history.php';
-require_once __DIR__ . '/../../includes/template_renderer.php';
+require_once __DIR__ . '/SeoReport.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = read_json_file($pagesFile);
-$settings = get_site_settings();
 $menusFile = __DIR__ . '/../../data/menus.json';
+
+$settings = get_site_settings();
+if (!is_array($settings)) {
+    $settings = [];
+}
+
 $menus = read_json_file($menusFile);
+if (!is_array($menus)) {
+    $menus = [];
+}
+
+$pages = SeoReport::loadPages($pagesFile);
 
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {
@@ -21,452 +30,23 @@ if (substr($scriptBase, -4) === '/CMS') {
 $scriptBase = rtrim($scriptBase, '/');
 
 $templateDir = realpath(__DIR__ . '/../../../theme/templates/pages');
-
-function seo_strlen(string $value): int
-{
-    return function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
-}
-
-function describe_seo_health(int $score, int $criticalIssues): string
-{
-    if ($score >= 90 && $criticalIssues === 0) {
-        return 'This page is fully optimised for search with only minor enhancement opportunities.';
-    }
-    if ($score >= 75) {
-        return 'This page performs well for SEO, but targeted improvements could boost visibility further.';
-    }
-    if ($score >= 55) {
-        return 'This page has noticeable SEO gaps that should be addressed to stay competitive.';
-    }
-    return 'This page has critical SEO blockers that may prevent it from ranking effectively.';
-}
-
-function summarize_seo_violations(array $violations): string
-{
-    $parts = [];
-    if (!empty($violations['critical'])) {
-        $parts[] = $violations['critical'] . ' critical';
-    }
-    if (!empty($violations['serious'])) {
-        $parts[] = $violations['serious'] . ' serious';
-    }
-    if (!empty($violations['moderate'])) {
-        $parts[] = $violations['moderate'] . ' moderate';
-    }
-    if (!empty($violations['minor'])) {
-        $parts[] = $violations['minor'] . ' minor';
-    }
-
-    if (empty($parts)) {
-        return 'No outstanding SEO issues detected';
-    }
-
-    return implode(', ', $parts) . ' issue' . ($violations['total'] === 1 ? '' : 's');
-}
-
-function classify_seo_issue(string $issue): array
-{
-    $lower = strtolower($issue);
-
-    if (strpos($lower, 'title') !== false) {
-        return [
-            'impact' => strpos($lower, 'missing') !== false ? 'critical' : 'serious',
-            'recommendation' => 'Craft a descriptive title tag between 30-65 characters that reflects the page intent and primary keyword.'
-        ];
-    }
-
-    if (strpos($lower, 'meta description') !== false) {
-        return [
-            'impact' => strpos($lower, 'missing') !== false ? 'serious' : 'moderate',
-            'recommendation' => 'Add a unique meta description of 70-160 characters highlighting the core value proposition.'
-        ];
-    }
-
-    if (strpos($lower, 'h1') !== false) {
-        return [
-            'impact' => 'serious',
-            'recommendation' => 'Use a single H1 heading that summarises the page topic and includes the target keyword.'
-        ];
-    }
-
-    if (strpos($lower, 'word count') !== false) {
-        return [
-            'impact' => 'moderate',
-            'recommendation' => 'Expand the on-page content to at least 300 words to provide sufficient context for search engines.'
-        ];
-    }
-
-    if (strpos($lower, 'canonical') !== false) {
-        return [
-            'impact' => 'moderate',
-            'recommendation' => 'Add a canonical URL to signal the preferred version of this content and avoid duplicate issues.'
-        ];
-    }
-
-    if (strpos($lower, 'open graph') !== false || strpos($lower, 'social preview') !== false) {
-        return [
-            'impact' => 'minor',
-            'recommendation' => 'Include Open Graph tags (og:title, og:description, og:image) to improve social sharing and click-through rates.'
-        ];
-    }
-
-    if (strpos($lower, 'structured data') !== false || strpos($lower, 'schema') !== false) {
-        return [
-            'impact' => 'minor',
-            'recommendation' => 'Add structured data markup (e.g., JSON-LD) to qualify for rich results and enhanced listings.'
-        ];
-    }
-
-    if (strpos($lower, 'alt text') !== false) {
-        return [
-            'impact' => 'moderate',
-            'recommendation' => 'Provide descriptive alternative text for images to support accessibility and image search visibility.'
-        ];
-    }
-
-    if (strpos($lower, 'internal link') !== false) {
-        return [
-            'impact' => 'moderate',
-            'recommendation' => 'Add internal links to relevant pages to improve crawlability and distribute authority.'
-        ];
-    }
-
-    if (strpos($lower, 'noindex') !== false) {
-        return [
-            'impact' => 'critical',
-            'recommendation' => 'Remove the noindex directive unless this page should be hidden from search engines.'
-        ];
-    }
-
-    return [
-        'impact' => 'minor',
-        'recommendation' => 'Review this recommendation to ensure the page follows on-page SEO best practices.'
-    ];
-}
-
-function extract_word_count(string $html): int
-{
-    $clean = preg_replace('#<(script|style|noscript|template)[^>]*>.*?<\\/\\1>#si', ' ', $html);
-    $text = strip_tags($clean);
-    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
-    $text = preg_replace('/\s+/u', ' ', $text);
-    $text = trim($text);
-    if ($text === '') {
-        return 0;
-    }
-    return str_word_count($text);
-}
-
-function count_links(DOMDocument $doc): array
-{
-    $internal = 0;
-    $external = 0;
-
-    $anchors = $doc->getElementsByTagName('a');
-    foreach ($anchors as $anchor) {
-        $href = trim($anchor->getAttribute('href'));
-        if ($href === '' || strpos($href, '#') === 0 || stripos($href, 'javascript:') === 0) {
-            continue;
-        }
-        if (preg_match('#^https?://#i', $href)) {
-            $external++;
-        } else {
-            $internal++;
-        }
-    }
-
-    return ['internal' => $internal, 'external' => $external];
-}
-
-libxml_use_internal_errors(true);
-
-$report = [];
 $lastScan = date('M j, Y g:i A');
 
-foreach ($pages as $page) {
-    $title = $page['title'] ?? 'Untitled';
-    $slug = $page['slug'] ?? '';
-    $pageHtml = cms_build_page_html($page, $settings, $menus, $scriptBase, $templateDir);
+$reportService = new SeoReport(
+    $pages,
+    $settings,
+    $menus,
+    $scriptBase,
+    $templateDir,
+    null,
+    $lastScan
+);
 
-    $doc = new DOMDocument();
-    $loaded = trim($pageHtml) !== '' && $doc->loadHTML('<?xml encoding="utf-8" ?>' . $pageHtml);
-
-    $metrics = [
-        'title' => '',
-        'titleLength' => 0,
-        'metaDescription' => '',
-        'metaDescriptionLength' => 0,
-        'h1Count' => 0,
-        'wordCount' => 0,
-        'images' => 0,
-        'missingAlt' => 0,
-        'links' => ['internal' => 0, 'external' => 0],
-        'hasCanonical' => false,
-        'hasStructuredData' => false,
-        'hasOpenGraph' => false,
-        'isNoindex' => false,
-    ];
-
-    if ($loaded) {
-        $titles = $doc->getElementsByTagName('title');
-        if ($titles->length > 0) {
-            $metrics['title'] = trim($titles->item(0)->textContent);
-            $metrics['titleLength'] = seo_strlen($metrics['title']);
-        }
-
-        $metaTags = $doc->getElementsByTagName('meta');
-        foreach ($metaTags as $meta) {
-            $name = strtolower(trim($meta->getAttribute('name')));
-            $property = strtolower(trim($meta->getAttribute('property')));
-            if ($name === 'description') {
-                $metrics['metaDescription'] = trim($meta->getAttribute('content'));
-                $metrics['metaDescriptionLength'] = seo_strlen($metrics['metaDescription']);
-            }
-            if ($name === 'robots' && stripos($meta->getAttribute('content'), 'noindex') !== false) {
-                $metrics['isNoindex'] = true;
-            }
-            if (strpos($property, 'og:') === 0) {
-                $metrics['hasOpenGraph'] = true;
-            }
-        }
-
-        $linkTags = $doc->getElementsByTagName('link');
-        foreach ($linkTags as $link) {
-            $rel = strtolower(trim($link->getAttribute('rel')));
-            if ($rel === 'canonical' && trim($link->getAttribute('href')) !== '') {
-                $metrics['hasCanonical'] = true;
-            }
-        }
-
-        $scripts = $doc->getElementsByTagName('script');
-        foreach ($scripts as $script) {
-            $type = strtolower(trim($script->getAttribute('type')));
-            if ($type === 'application/ld+json' && trim($script->textContent) !== '') {
-                $metrics['hasStructuredData'] = true;
-                break;
-            }
-        }
-
-        $h1s = $doc->getElementsByTagName('h1');
-        $metrics['h1Count'] = $h1s->length;
-
-        $images = $doc->getElementsByTagName('img');
-        $metrics['images'] = $images->length;
-        foreach ($images as $img) {
-            $alt = trim($img->getAttribute('alt'));
-            if ($alt === '') {
-                $metrics['missingAlt']++;
-            }
-        }
-
-        $metrics['links'] = count_links($doc);
-        $metrics['wordCount'] = extract_word_count($pageHtml);
-
-        if (!$metrics['hasOpenGraph']) {
-            foreach ($metaTags as $meta) {
-                if (strtolower(trim($meta->getAttribute('property'))) === 'og:title') {
-                    $metrics['hasOpenGraph'] = true;
-                    break;
-                }
-            }
-        }
-    } else {
-        $metrics['wordCount'] = extract_word_count($pageHtml);
-    }
-
-    if ($metrics['metaDescriptionLength'] === 0) {
-        $fallbackDescription = trim((string)($page['meta_description'] ?? ''));
-        if ($fallbackDescription !== '') {
-            $metrics['metaDescription'] = $fallbackDescription;
-            $metrics['metaDescriptionLength'] = seo_strlen($fallbackDescription);
-        }
-    }
-
-    $issues = [];
-    $violations = [
-        'critical' => 0,
-        'serious' => 0,
-        'moderate' => 0,
-        'minor' => 0,
-        'total' => 0,
-    ];
-
-    $addIssue = static function (string $description, string $impact) use (&$issues, &$violations) {
-        $violations[$impact]++;
-        $violations['total']++;
-        $issues[] = $description;
-    };
-
-    if ($metrics['titleLength'] === 0) {
-        $fallbackTitle = trim((string)($page['meta_title'] ?? ''));
-        if ($fallbackTitle === '') {
-            $fallbackTitle = trim((string)($page['title'] ?? ''));
-        }
-        if ($fallbackTitle !== '') {
-            $metrics['title'] = $fallbackTitle;
-            $metrics['titleLength'] = seo_strlen($fallbackTitle);
-        }
-    }
-
-    if ($metrics['titleLength'] === 0) {
-        $addIssue('Page title is missing', 'critical');
-    } else {
-        if ($metrics['titleLength'] < 30 || $metrics['titleLength'] > 65) {
-            $addIssue('Page title length is outside the recommended 30-65 characters', 'serious');
-        }
-    }
-
-    if ($metrics['metaDescriptionLength'] === 0) {
-        $addIssue('Meta description is missing', 'serious');
-    } elseif ($metrics['metaDescriptionLength'] < 70 || $metrics['metaDescriptionLength'] > 160) {
-        $addIssue('Meta description length should be between 70-160 characters', 'moderate');
-    }
-
-    if ($metrics['h1Count'] === 0) {
-        $addIssue('No H1 heading found on the page', 'serious');
-    } elseif ($metrics['h1Count'] > 1) {
-        $addIssue('Multiple H1 headings detected', 'moderate');
-    }
-
-    if ($metrics['wordCount'] < 150) {
-        $addIssue('Word count is below 150 words', 'serious');
-    } elseif ($metrics['wordCount'] < 300) {
-        $addIssue('Word count is below 300 words', 'moderate');
-    }
-
-    if ($metrics['links']['internal'] < 3) {
-        $addIssue('Add more internal links to related content', 'moderate');
-    }
-
-    if ($metrics['missingAlt'] > 0) {
-        $addIssue(sprintf('%d image%s missing alt text', $metrics['missingAlt'], $metrics['missingAlt'] === 1 ? ' is' : 's are'), 'moderate');
-    }
-
-    if (!$metrics['hasCanonical']) {
-        $addIssue('Canonical URL tag is missing', 'moderate');
-    }
-
-    if (!$metrics['hasOpenGraph']) {
-        $addIssue('Open Graph tags missing for social sharing', 'minor');
-    }
-
-    if (!$metrics['hasStructuredData']) {
-        $addIssue('Structured data markup not detected', 'minor');
-    }
-
-    if ($metrics['isNoindex']) {
-        $addIssue('Robots meta tag blocks indexing (noindex)', 'critical');
-    }
-
-    $score = 100;
-    $score -= $violations['critical'] * 18;
-    $score -= $violations['serious'] * 12;
-    $score -= $violations['moderate'] * 7;
-    $score -= $violations['minor'] * 4;
-    if ($violations['total'] === 0) {
-        $score = 98;
-    }
-    $score = max(0, min(100, (int)round($score)));
-
-    $report[] = [
-        'title' => $title,
-        'slug' => $slug,
-        'template' => $page['template'] ?? '',
-        'metrics' => $metrics,
-        'issues' => $issues,
-        'violations' => $violations,
-        'score' => $score,
-    ];
-}
-
-$totalPages = count($report);
-$scoreSum = 0;
-$criticalIssues = 0;
-$optimizedPages = 0;
-$needsWork = 0;
-
-$pageEntries = [];
-$pageEntryMap = [];
-
-foreach ($report as $entry) {
-    $slug = $entry['slug'];
-    $path = '/' . ltrim($slug, '/');
-
-    $violations = $entry['violations'];
-    $score = $entry['score'];
-    $scoreSum += $score;
-    $criticalIssues += (int)$violations['critical'];
-
-    if ($score >= 90 && $violations['critical'] === 0) {
-        $optimizationLevel = 'Optimised';
-        $optimizedPages++;
-    } elseif ($score >= 60) {
-        $optimizationLevel = 'Needs Improvement';
-        $needsWork++;
-    } else {
-        $optimizationLevel = 'Critical';
-    }
-
-    $issueDetails = [];
-    foreach ($entry['issues'] as $issueText) {
-        $detail = classify_seo_issue($issueText);
-        $issueDetails[] = [
-            'description' => $issueText,
-            'impact' => $detail['impact'],
-            'recommendation' => $detail['recommendation'],
-        ];
-    }
-
-    $issuePreview = array_slice(array_map(static function ($detail) {
-        return $detail['description'];
-    }, $issueDetails), 0, 4);
-
-    if (empty($issuePreview)) {
-        $issuePreview = ['No outstanding SEO issues'];
-    }
-
-    $previousScore = derive_previous_score('seo', $slug !== '' ? $slug : ($entry['title'] !== '' ? $entry['title'] : (string)count($pageEntries)), $score);
-
-    $pageData = [
-        'title' => $entry['title'],
-        'slug' => $slug,
-        'url' => $path,
-        'path' => $path,
-        'template' => $entry['template'],
-        'seoScore' => $score,
-        'previousScore' => $previousScore,
-        'optimizationLevel' => $optimizationLevel,
-        'violations' => $violations,
-        'warnings' => $violations['moderate'] + $violations['minor'],
-        'lastScanned' => $lastScan,
-        'pageType' => !empty($entry['template']) ? 'Template: ' . basename($entry['template']) : 'Standard Page',
-        'statusMessage' => describe_seo_health($score, (int)$violations['critical']),
-        'summaryLine' => sprintf('SEO health score: %d%%. %s.', $score, summarize_seo_violations($violations)),
-        'issues' => [
-            'preview' => $issuePreview,
-            'details' => $issueDetails,
-        ],
-        'metrics' => $entry['metrics'],
-    ];
-
-    $pageEntries[] = $pageData;
-    $pageEntryMap[$slug] = $pageData;
-}
-
-$avgScore = $totalPages > 0 ? (int)round($scoreSum / $totalPages) : 0;
-
-$filterCounts = [
-    'all' => $totalPages,
-    'critical' => 0,
-    'needs-work' => $needsWork,
-    'optimized' => $optimizedPages,
-];
-
-foreach ($pageEntries as $page) {
-    if ($page['optimizationLevel'] === 'Critical') {
-        $filterCounts['critical']++;
-    }
-}
+$report = $reportService->generateReport();
+$pageEntries = $report['pages'];
+$pageEntryMap = $report['pageMap'];
+$dashboardStats = $report['stats'];
+$lastScan = (string)($dashboardStats['lastScan'] ?? $lastScan);
 
 $scriptPath = isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : '';
 $queryParams = is_array($_GET) ? $_GET : [];
@@ -475,6 +55,9 @@ $queryParams = array_merge(['module' => 'seo'], $queryParams);
 $moduleQuery = http_build_query($queryParams);
 $moduleUrl = $scriptPath . ($moduleQuery !== '' ? '?' . $moduleQuery : '');
 $moduleAnchorUrl = $moduleUrl . '#seo';
+$dashboardStats['moduleUrl'] = $moduleUrl;
+$dashboardStats['detailBaseUrl'] = $moduleUrl . (strpos($moduleUrl, '?') === false ? '?' : '&') . 'page=';
+
 $detailSlug = isset($_GET['page']) ? sanitize_text($_GET['page']) : null;
 $detailSlug = $detailSlug !== null ? trim($detailSlug) : null;
 
@@ -482,20 +65,6 @@ $selectedPage = null;
 if ($detailSlug !== null && $detailSlug !== '') {
     $selectedPage = $pageEntryMap[$detailSlug] ?? null;
 }
-
-libxml_clear_errors();
-
-$dashboardStats = [
-    'totalPages' => $totalPages,
-    'avgScore' => $avgScore,
-    'criticalIssues' => $criticalIssues,
-    'optimizedPages' => $optimizedPages,
-    'needsWork' => $needsWork,
-    'filterCounts' => $filterCounts,
-    'moduleUrl' => $moduleUrl,
-    'detailBaseUrl' => $moduleUrl . (strpos($moduleUrl, '?') === false ? '?' : '&') . 'page=',
-    'lastScan' => $lastScan,
-];
 ?>
 <div class="content-section" id="seo">
 <?php if ($selectedPage): ?>
@@ -506,18 +75,18 @@ $dashboardStats = [
             $deltaMeta = describe_score_delta($currentScore, $previousScore);
 
             $impactCounts = [
-                'critical' => 0,
-                'serious' => 0,
-                'moderate' => 0,
-                'minor' => 0,
-                'review' => 0,
+                SeoReport::IMPACT_CRITICAL => 0,
+                SeoReport::IMPACT_SERIOUS => 0,
+                SeoReport::IMPACT_MODERATE => 0,
+                SeoReport::IMPACT_MINOR => 0,
+                SeoReport::IMPACT_REVIEW => 0,
             ];
             foreach ($selectedPage['issues']['details'] as $issueDetail) {
                 $impact = strtolower($issueDetail['impact']);
                 if (isset($impactCounts[$impact])) {
                     $impactCounts[$impact]++;
                 } else {
-                    $impactCounts['review']++;
+                    $impactCounts[SeoReport::IMPACT_REVIEW]++;
                 }
             }
             $issueDetailCount = array_sum($impactCounts);
@@ -631,20 +200,20 @@ $dashboardStats = [
                     <button type="button" class="a11y-severity-btn active" data-seo-severity="all" aria-pressed="true" aria-label="Show all issues (<?php echo $issueDetailCount; ?>)">
                         All <span aria-hidden="true">(<?php echo $issueDetailCount; ?>)</span>
                     </button>
-                    <button type="button" class="a11y-severity-btn" data-seo-severity="critical" aria-pressed="false" aria-label="Show critical issues (<?php echo $impactCounts['critical']; ?>)">
-                        Critical <span aria-hidden="true">(<?php echo $impactCounts['critical']; ?>)</span>
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="<?php echo SeoReport::IMPACT_CRITICAL; ?>" aria-pressed="false" aria-label="Show critical issues (<?php echo $impactCounts[SeoReport::IMPACT_CRITICAL]; ?>)">
+                        Critical <span aria-hidden="true">(<?php echo $impactCounts[SeoReport::IMPACT_CRITICAL]; ?>)</span>
                     </button>
-                    <button type="button" class="a11y-severity-btn" data-seo-severity="serious" aria-pressed="false" aria-label="Show serious issues (<?php echo $impactCounts['serious']; ?>)">
-                        Serious <span aria-hidden="true">(<?php echo $impactCounts['serious']; ?>)</span>
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="<?php echo SeoReport::IMPACT_SERIOUS; ?>" aria-pressed="false" aria-label="Show serious issues (<?php echo $impactCounts[SeoReport::IMPACT_SERIOUS]; ?>)">
+                        Serious <span aria-hidden="true">(<?php echo $impactCounts[SeoReport::IMPACT_SERIOUS]; ?>)</span>
                     </button>
-                    <button type="button" class="a11y-severity-btn" data-seo-severity="moderate" aria-pressed="false" aria-label="Show moderate issues (<?php echo $impactCounts['moderate']; ?>)">
-                        Moderate <span aria-hidden="true">(<?php echo $impactCounts['moderate']; ?>)</span>
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="<?php echo SeoReport::IMPACT_MODERATE; ?>" aria-pressed="false" aria-label="Show moderate issues (<?php echo $impactCounts[SeoReport::IMPACT_MODERATE]; ?>)">
+                        Moderate <span aria-hidden="true">(<?php echo $impactCounts[SeoReport::IMPACT_MODERATE]; ?>)</span>
                     </button>
-                    <button type="button" class="a11y-severity-btn" data-seo-severity="minor" aria-pressed="false" aria-label="Show minor issues (<?php echo $impactCounts['minor']; ?>)">
-                        Minor <span aria-hidden="true">(<?php echo $impactCounts['minor']; ?>)</span>
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="<?php echo SeoReport::IMPACT_MINOR; ?>" aria-pressed="false" aria-label="Show minor issues (<?php echo $impactCounts[SeoReport::IMPACT_MINOR]; ?>)">
+                        Minor <span aria-hidden="true">(<?php echo $impactCounts[SeoReport::IMPACT_MINOR]; ?>)</span>
                     </button>
-                    <button type="button" class="a11y-severity-btn" data-seo-severity="review" aria-pressed="false" aria-label="Show review issues (<?php echo $impactCounts['review']; ?>)">
-                        Review <span aria-hidden="true">(<?php echo $impactCounts['review']; ?>)</span>
+                    <button type="button" class="a11y-severity-btn" data-seo-severity="<?php echo SeoReport::IMPACT_REVIEW; ?>" aria-pressed="false" aria-label="Show review issues (<?php echo $impactCounts[SeoReport::IMPACT_REVIEW]; ?>)">
+                        Review <span aria-hidden="true">(<?php echo $impactCounts[SeoReport::IMPACT_REVIEW]; ?>)</span>
                     </button>
                 </div>
                 <div class="sr-only" id="seoIssueFilterStatus" role="status" aria-live="polite"></div>
