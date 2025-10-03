@@ -6995,6 +6995,13 @@
     gap: 8px;
 }
 
+.blog-select-filter__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
 .blog-select-filter label {
     font-size: 12px;
     font-weight: 600;
@@ -7022,6 +7029,17 @@
 
 .blog-select-filter--actions {
     align-items: flex-end;
+}
+
+
+.blog-select-filter--has-actions {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.blog-select-filter--has-actions .blog-btn span {
+    white-space: nowrap;
 }
 
 .blog-btn {

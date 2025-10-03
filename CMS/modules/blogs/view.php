@@ -70,21 +70,18 @@
                                 <option value="">All Categories</option>
                             </select>
                         </div>
-                        <div class="blog-select-filter">
-                            <select id="authorFilter">
-                                <option value="">All Authors</option>
-                            </select>
+                        <div class="blog-select-filter blog-select-filter--has-actions">
+                            <div class="blog-select-filter__field">
+                                <select id="authorFilter">
+                                    <option value="">All Authors</option>
+                                </select>
+                            </div>
+                            <button type="button" class="blog-btn blog-btn--subtle" id="clearFilters">
+                                <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
+                                <span>Reset</span>
+                            </button>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="blog-controls-secondary">
-                <div class="blog-select-filter blog-select-filter--actions">
-                    <label>&nbsp;</label>
-                    <button type="button" class="blog-btn blog-btn--subtle" id="clearFilters">
-                        <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
-                        <span>Reset</span>
-                    </button>
                 </div>
             </div>
         </div>
