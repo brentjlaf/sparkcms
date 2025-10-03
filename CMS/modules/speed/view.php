@@ -5,14 +5,24 @@ require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/settings.php';
 require_once __DIR__ . '/../../includes/sanitize.php';
 require_once __DIR__ . '/../../includes/score_history.php';
-require_once __DIR__ . '/../../includes/template_renderer.php';
+require_once __DIR__ . '/../../includes/reporting_helpers.php';
+require_once __DIR__ . '/SpeedReport.php';
 require_login();
 
 $pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = read_json_file($pagesFile);
-$settings = get_site_settings();
 $menusFile = __DIR__ . '/../../data/menus.json';
+
+$settings = get_site_settings();
+if (!is_array($settings)) {
+    $settings = [];
+}
+
 $menus = read_json_file($menusFile);
+if (!is_array($menus)) {
+    $menus = [];
+}
+
+$pages = SpeedReport::loadPages($pagesFile);
 
 $scriptBase = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
 if (substr($scriptBase, -4) === '/CMS') {
@@ -22,110 +32,49 @@ $scriptBase = rtrim($scriptBase, '/');
 
 $templateDir = realpath(__DIR__ . '/../../../theme/templates/pages');
 
-function describe_performance_grade(string $grade): string {
-    switch ($grade) {
-        case 'A':
-            return 'This page is highly optimized and should feel fast for most visitors.';
-        case 'B':
-            return 'Overall performance is strong with a few opportunities for speed gains.';
-        case 'C':
-            return 'This page needs optimization to avoid noticeable slowdowns during peak traffic.';
-        default:
-            return 'Heavy assets or blocking scripts are likely to cause a slow experience. Prioritize fixes soon.';
-    }
+$snapshotFile = __DIR__ . '/../../data/speed_snapshot.json';
+$previousSnapshotRaw = read_json_file($snapshotFile);
+$previousSnapshot = is_array($previousSnapshotRaw) ? $previousSnapshotRaw : [];
+
+$reportService = new SpeedReport(
+    $pages,
+    $settings,
+    $menus,
+    $scriptBase,
+    $templateDir ?: null,
+    static function (string $identifier, int $score): int {
+        return derive_previous_score('speed', $identifier, $score);
+    },
+    $previousSnapshot,
+    date('M j, Y g:i A')
+);
+
+$reportPayload = $reportService->generateReport();
+$report = $reportPayload['pages'];
+$pageEntryMap = $reportPayload['pageMap'];
+$dashboardStats = $reportPayload['stats'];
+
+$moduleUrl = $_SERVER['PHP_SELF'] . '?module=speed';
+$dashboardStats['moduleUrl'] = $moduleUrl;
+$dashboardStats['detailBaseUrl'] = $moduleUrl . '&page=';
+
+$detailSlug = isset($_GET['page']) ? sanitize_text($_GET['page']) : null;
+$detailSlug = $detailSlug !== null ? trim($detailSlug) : null;
+
+$selectedPage = null;
+if ($detailSlug !== null && $detailSlug !== '') {
+    $selectedPage = $pageEntryMap[$detailSlug] ?? null;
 }
 
-function summarize_alerts(array $alerts): string {
-    $parts = [];
-    if (!empty($alerts['critical'])) {
-        $parts[] = $alerts['critical'] . ' critical';
-    }
-    if (!empty($alerts['serious'])) {
-        $parts[] = $alerts['serious'] . ' major';
-    }
-    if (!empty($alerts['moderate'])) {
-        $parts[] = $alerts['moderate'] . ' moderate';
-    }
-    if (!empty($alerts['minor'])) {
-        $parts[] = $alerts['minor'] . ' minor';
-    }
+write_json_file($snapshotFile, $reportPayload['snapshot']);
 
-    if (empty($parts)) {
-        return 'No outstanding alerts detected';
-    }
-
-    $total = $alerts['total'] ?? array_sum($alerts);
-    return $total . ' total (' . implode(', ', $parts) . ')';
-}
-
-function grade_to_score_class(string $grade): string {
-    switch ($grade) {
-        case 'A':
-            return 'speed-score--a';
-        case 'B':
-            return 'speed-score--b';
-        case 'C':
-            return 'speed-score--c';
-        default:
-            return 'speed-score--d';
-    }
-}
-
-function grade_to_badge_class(string $grade): string {
-    switch ($grade) {
-        case 'A':
-            return 'grade-a';
-        case 'B':
-            return 'grade-b';
-        case 'C':
-            return 'grade-c';
-        default:
-            return 'grade-d';
-    }
-}
-
-function speed_format_change(float $value, int $decimals = 0): string
-{
-    $absValue = number_format(abs($value), $decimals, '.', '');
-    if ($value > 0) {
-        return '+' . $absValue;
-    }
-    if ($value < 0) {
-        return '-' . $absValue;
-    }
-
-    return number_format(0, $decimals, '.', '');
-}
-
-function speed_calculate_change(float $current, ?float $previous): array
-{
-    $hasBaseline = $previous !== null;
-    $absoluteChange = $hasBaseline ? $current - (float)$previous : 0.0;
-    $direction = 'neutral';
-    if ($absoluteChange > 0) {
-        $direction = 'positive';
-    } elseif ($absoluteChange < 0) {
-        $direction = 'negative';
-    }
-
-    $percentChange = null;
-    if ($hasBaseline) {
-        if ($previous == 0.0) {
-            $percentChange = $absoluteChange == 0.0 ? 0.0 : null;
-        } else {
-            $percentChange = ($absoluteChange / $previous) * 100;
-        }
-    }
-
-    return [
-        'current' => $current,
-        'previous' => $previous,
-        'absolute' => $absoluteChange,
-        'percent' => $percentChange,
-        'direction' => $direction,
-        'hasBaseline' => $hasBaseline,
-    ];
-}
+$filterCounts = $dashboardStats['filterCounts'] ?? [
+    'all' => 0,
+    'slow' => 0,
+    'monitor' => 0,
+    'fast' => 0,
+];
+$heaviestPage = $dashboardStats['heaviestPage'] ?? null;
 
 function speed_render_delta(?array $delta, string $statLabel, string $unitSingular, ?string $unitPlural = null, int $absoluteDecimals = 0, int $percentDecimals = 1): string
 {
@@ -164,10 +113,10 @@ function speed_render_delta(?array $delta, string $statLabel, string $unitSingul
     }
 
     $percentText = $percentAvailable
-        ? speed_format_change((float)$percentRaw, $percentDecimals) . '%'
+        ? report_format_change((float)$percentRaw, $percentDecimals) . '%'
         : 'No trend';
     $absoluteUnit = abs($absolute) === 1.0 ? $unitSingular : $unitPlural;
-    $absoluteText = speed_format_change($absolute, $absoluteDecimals) . ' ' . $absoluteUnit;
+    $absoluteText = report_format_change($absolute, $absoluteDecimals) . ' ' . $absoluteUnit;
 
     $absNumber = number_format(abs($absolute), $absoluteDecimals, '.', '');
     $percentNumber = $percentAvailable ? number_format(abs((float)$percentRaw), $percentDecimals, '.', '') : null;
@@ -201,326 +150,6 @@ function speed_render_delta(?array $delta, string $statLabel, string $unitSingul
 
     return $html;
 }
-
-libxml_use_internal_errors(true);
-
-$snapshotFile = __DIR__ . '/../../data/speed_snapshot.json';
-$previousSnapshotRaw = read_json_file($snapshotFile);
-$previousSnapshot = is_array($previousSnapshotRaw) ? $previousSnapshotRaw : [];
-
-$report = [];
-$totalPages = 0;
-$scoreSum = 0;
-$criticalAlertsTotal = 0;
-$fastPages = 0;
-$slowPages = 0;
-$pageEntryMap = [];
-$filterCounts = [
-    'all' => 0,
-    'slow' => 0,
-    'monitor' => 0,
-    'fast' => 0,
-];
-$heaviestPage = null;
-$scanTimestamp = date('M j, Y g:i A');
-
-foreach ($pages as $page) {
-    $title = $page['title'] ?? 'Untitled';
-    $slug = $page['slug'] ?? '';
-    $path = '/' . ltrim($slug, '/');
-    $pageHtml = cms_build_page_html($page, $settings, $menus, $scriptBase, $templateDir);
-
-    $doc = new DOMDocument();
-    $loaded = trim($pageHtml) !== '' && $doc->loadHTML('<?xml encoding="utf-8" ?>' . $pageHtml);
-
-    $htmlBytes = strlen($pageHtml);
-    $htmlSizeKb = round($htmlBytes / 1024, 1);
-    $wordCount = str_word_count(strip_tags($pageHtml));
-
-    $imageCount = 0;
-    $scriptCount = 0;
-    $inlineScriptCount = 0;
-    $stylesheetCount = 0;
-    $inlineStyleBlocks = 0;
-    $iframeCount = 0;
-    $domNodes = 0;
-
-    if ($loaded) {
-        $domNodes = $doc->getElementsByTagName('*')->length;
-        $images = $doc->getElementsByTagName('img');
-        $imageCount = $images->length;
-
-        $scripts = $doc->getElementsByTagName('script');
-        foreach ($scripts as $script) {
-            $scriptCount++;
-            if (!$script->hasAttribute('src')) {
-                $inlineScriptCount++;
-            }
-        }
-
-        $links = $doc->getElementsByTagName('link');
-        foreach ($links as $link) {
-            if (strtolower($link->getAttribute('rel')) === 'stylesheet') {
-                $stylesheetCount++;
-            }
-        }
-
-        $styles = $doc->getElementsByTagName('style');
-        $inlineStyleBlocks = $styles->length;
-
-        $iframes = $doc->getElementsByTagName('iframe');
-        $iframeCount = $iframes->length;
-    } else {
-        $domNodes = max(0, substr_count($pageHtml, '<'));
-        $imageCount = substr_count(strtolower($pageHtml), '<img');
-        $scriptCount = substr_count(strtolower($pageHtml), '<script');
-        $stylesheetCount = substr_count(strtolower($pageHtml), 'rel="stylesheet"');
-        $inlineScriptCount = max(0, $scriptCount - substr_count(strtolower($pageHtml), 'src='));
-        $inlineStyleBlocks = substr_count(strtolower($pageHtml), '<style');
-        $iframeCount = substr_count(strtolower($pageHtml), '<iframe');
-    }
-
-    $estimatedWeightKb = round($htmlSizeKb + ($imageCount * 45) + ($scriptCount * 12) + ($stylesheetCount * 8), 1);
-    $avgImageWeight = $imageCount > 0 ? round($estimatedWeightKb / $imageCount, 1) : 0;
-
-    $issues = [];
-    $addIssue = static function (array &$issues, string $impact, string $description, string $recommendation): void {
-        $issues[] = [
-            'impact' => $impact,
-            'description' => $description,
-            'recommendation' => $recommendation,
-        ];
-    };
-
-    if ($estimatedWeightKb > 900) {
-        $addIssue($issues, 'critical', 'Estimated page weight exceeds 900 KB', 'Compress large assets, enable caching, and consider splitting content across lighter templates.');
-    } elseif ($estimatedWeightKb > 600) {
-        $addIssue($issues, 'serious', 'Estimated page weight above 600 KB', 'Minify HTML, compress imagery, and lazy-load non-critical resources.');
-    } elseif ($estimatedWeightKb > 400) {
-        $addIssue($issues, 'moderate', 'Estimated page weight above 400 KB', 'Audit media assets and remove unused scripts or styles to reduce payload.');
-    }
-
-    if ($imageCount > 15) {
-        $addIssue($issues, 'serious', $imageCount . ' images detected', 'Use responsive image sizes, next-gen formats, and defer offscreen assets.');
-    } elseif ($imageCount > 9) {
-        $addIssue($issues, 'moderate', $imageCount . ' images detected', 'Review gallery content and apply lazy loading for below-the-fold imagery.');
-    }
-
-    if ($scriptCount > 7) {
-        $addIssue($issues, 'serious', $scriptCount . ' scripts included', 'Bundle and defer non-critical JavaScript to shorten the main thread.');
-    } elseif ($scriptCount > 4) {
-        $addIssue($issues, 'moderate', $scriptCount . ' scripts included', 'Audit third-party embeds and remove unused libraries to improve speed.');
-    }
-
-    if ($stylesheetCount + $inlineStyleBlocks > 6) {
-        $addIssue($issues, 'minor', 'Multiple blocking stylesheets detected', 'Combine styles where possible and inline only the critical CSS.');
-    }
-
-    if ($inlineScriptCount > 0) {
-        $addIssue($issues, 'minor', $inlineScriptCount . ' inline script block(s)', 'Move inline logic into external files to improve caching and diagnostics.');
-    }
-
-    if ($domNodes > 1500) {
-        $addIssue($issues, 'moderate', 'Large DOM tree with ' . $domNodes . ' nodes', 'Simplify nested layouts and remove unnecessary wrappers to speed up rendering.');
-    } elseif ($domNodes > 1000) {
-        $addIssue($issues, 'minor', 'DOM tree approaching heavy threshold (' . $domNodes . ' nodes)', 'Consider breaking long pages into sections and trimming unused markup.');
-    }
-
-    if ($iframeCount > 0) {
-        $addIssue($issues, 'minor', $iframeCount . ' embedded frame(s)', 'Lazy-load embedded media or replace with preview placeholders to reduce startup cost.');
-    }
-
-    $critical = 0;
-    $serious = 0;
-    $moderate = 0;
-    $minor = 0;
-    foreach ($issues as $issue) {
-        switch ($issue['impact']) {
-            case 'critical':
-                $critical++;
-                break;
-            case 'serious':
-                $serious++;
-                break;
-            case 'moderate':
-                $moderate++;
-                break;
-            default:
-                $minor++;
-                break;
-        }
-    }
-
-    $alerts = [
-        'critical' => $critical,
-        'serious' => $serious,
-        'moderate' => $moderate,
-        'minor' => $minor,
-    ];
-    $alerts['total'] = array_sum($alerts);
-
-    $score = 100;
-    $score -= max(0, $estimatedWeightKb - 300) * 0.08;
-    $score -= max(0, $imageCount - 8) * 1.5;
-    $score -= max(0, $scriptCount - 5) * 2.5;
-    $score -= max(0, ($stylesheetCount + $inlineStyleBlocks) - 4) * 1.2;
-    $score -= max(0, $domNodes - 900) * 0.02;
-    $score -= $inlineScriptCount * 0.5;
-    $score = max(0, min(100, (int)round($score)));
-
-    if ($alerts['total'] === 0 && $score > 96) {
-        $score = 98;
-    }
-
-    if ($score >= 90) {
-        $grade = 'A';
-    } elseif ($score >= 80) {
-        $grade = 'B';
-    } elseif ($score >= 70) {
-        $grade = 'C';
-    } else {
-        $grade = 'D';
-    }
-
-    $performanceCategory = 'fast';
-    if ($alerts['critical'] > 0 || $score < 70) {
-        $performanceCategory = 'slow';
-    } elseif ($score < 90 || $alerts['serious'] > 0 || $grade === 'C') {
-        $performanceCategory = 'monitor';
-    }
-
-    switch ($performanceCategory) {
-        case 'fast':
-            $filterCounts['fast']++;
-            $fastPages++;
-            break;
-        case 'monitor':
-            $filterCounts['monitor']++;
-            break;
-        case 'slow':
-            $filterCounts['slow']++;
-            $slowPages++;
-            break;
-    }
-
-    $filterCounts['all']++;
-    $totalPages++;
-    $scoreSum += $score;
-    $criticalAlertsTotal += $alerts['critical'];
-
-    if ($heaviestPage === null || $estimatedWeightKb > $heaviestPage['weight']) {
-        $heaviestPage = [
-            'title' => $title,
-            'slug' => $slug,
-            'weight' => $estimatedWeightKb,
-            'url' => $path,
-        ];
-    }
-
-    $issuePreview = array_slice(array_map(static function ($detail) {
-        return $detail['description'];
-    }, $issues), 0, 4);
-    if (empty($issuePreview)) {
-        $issuePreview = ['No outstanding alerts'];
-    }
-
-    $previousScore = derive_previous_score('speed', $slug !== '' ? $slug : ($title !== '' ? $title : (string) $pageIndex), $score);
-
-    $pageData = [
-        'title' => $title,
-        'slug' => $slug,
-        'url' => $path,
-        'path' => $path,
-        'template' => $page['template'] ?? '',
-        'performanceScore' => $score,
-        'previousScore' => $previousScore,
-        'grade' => $grade,
-        'gradeClass' => grade_to_badge_class($grade),
-        'scoreClass' => grade_to_score_class($grade),
-        'alerts' => $alerts,
-        'warnings' => $alerts['serious'] + $alerts['moderate'] + $alerts['minor'],
-        'lastScanned' => $scanTimestamp,
-        'pageType' => !empty($page['template']) ? 'Template: ' . basename($page['template']) : 'Standard Page',
-        'performanceCategory' => $performanceCategory,
-        'issues' => [
-            'preview' => $issuePreview,
-            'details' => $issues,
-        ],
-        'metrics' => [
-            'weightKb' => $estimatedWeightKb,
-            'htmlSizeKb' => $htmlSizeKb,
-            'imageCount' => $imageCount,
-            'scriptCount' => $scriptCount,
-            'stylesheetCount' => $stylesheetCount,
-            'inlineScripts' => $inlineScriptCount,
-            'inlineStyles' => $inlineStyleBlocks,
-            'domNodes' => $domNodes,
-            'wordCount' => $wordCount,
-            'avgImageWeight' => $avgImageWeight,
-            'iframeCount' => $iframeCount,
-        ],
-    ];
-
-    $pageData['statusMessage'] = describe_performance_grade($grade);
-    $pageData['summaryLine'] = sprintf(
-        'Performance score %d%%. %s.',
-        $score,
-        summarize_alerts($alerts)
-    );
-
-    $report[] = $pageData;
-    $pageEntryMap[$slug] = $pageData;
-}
-
-$avgScore = $totalPages > 0 ? (int)round($scoreSum / $totalPages) : 0;
-$lastScan = $scanTimestamp;
-
-$moduleUrl = $_SERVER['PHP_SELF'] . '?module=speed';
-$detailSlug = isset($_GET['page']) ? sanitize_text($_GET['page']) : null;
-$detailSlug = $detailSlug !== null ? trim($detailSlug) : null;
-
-$selectedPage = null;
-if ($detailSlug !== null && $detailSlug !== '') {
-    $selectedPage = $pageEntryMap[$detailSlug] ?? null;
-}
-
-libxml_clear_errors();
-
-$dashboardStats = [
-    'totalPages' => $totalPages,
-    'avgScore' => $avgScore,
-    'criticalAlerts' => $criticalAlertsTotal,
-    'fastPages' => $fastPages,
-    'slowPages' => $slowPages,
-    'filterCounts' => $filterCounts,
-    'moduleUrl' => $moduleUrl,
-    'detailBaseUrl' => $moduleUrl . '&page=',
-    'lastScan' => $lastScan,
-    'heaviestPage' => $heaviestPage,
-];
-
-$previousTotals = [
-    'totalPages' => isset($previousSnapshot['totalPages']) ? (float)$previousSnapshot['totalPages'] : null,
-    'avgScore' => isset($previousSnapshot['avgScore']) ? (float)$previousSnapshot['avgScore'] : null,
-    'criticalAlerts' => isset($previousSnapshot['criticalAlerts']) ? (float)$previousSnapshot['criticalAlerts'] : null,
-    'slowPages' => isset($previousSnapshot['slowPages']) ? (float)$previousSnapshot['slowPages'] : null,
-];
-
-$dashboardStats['deltas'] = [
-    'totalPages' => speed_calculate_change((float)$totalPages, $previousTotals['totalPages']),
-    'avgScore' => speed_calculate_change((float)$avgScore, $previousTotals['avgScore']),
-    'criticalAlerts' => speed_calculate_change((float)$criticalAlertsTotal, $previousTotals['criticalAlerts']),
-    'slowPages' => speed_calculate_change((float)$slowPages, $previousTotals['slowPages']),
-];
-
-$currentSnapshot = [
-    'timestamp' => time(),
-    'totalPages' => $totalPages,
-    'avgScore' => $avgScore,
-    'criticalAlerts' => $criticalAlertsTotal,
-    'slowPages' => $slowPages,
-];
-write_json_file($snapshotFile, $currentSnapshot);
 ?>
 <div class="content-section" id="performance">
 <?php if ($selectedPage): ?>
