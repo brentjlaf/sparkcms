@@ -13,7 +13,7 @@
     border: var(--btn-border-width) var(--btn-border-style) transparent;
     border-radius: var(--btn-border-radius-rounded);
     background: transparent;
-    color: inherit;
+    color: var(--text-color);
     font-family: var(--btn-font-family);
     font-weight: var(--btn-font-weight);
     font-size: var(--btn-md-font-size);
@@ -427,6 +427,7 @@ section.container-fluid {
     align-items: center;
     justify-content: center;
     color: var(--white);
+    --text-color: var(--white);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -588,7 +589,10 @@ section.container-fluid {
 .cta-banner__actions .btn { min-width: 11rem; }
 
 .cta-banner--text-dark { color: var(--gray-9); }
-.cta-banner--text-light { color: var(--white); }
+.cta-banner--text-light {
+    color: var(--white);
+    --text-color: var(--white);
+}
 
 .cta-banner--text-light .btn-secondary {
     background: rgba(255, 255, 255, 0.14);
