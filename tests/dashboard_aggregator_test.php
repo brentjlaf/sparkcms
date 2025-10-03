@@ -64,13 +64,6 @@ $write('events.json', [
 $write('event_orders.json', []);
 $write('calendar_events.json', []);
 $write('calendar_categories.json', []);
-$write('commerce.json', [
-    'orders' => [],
-    'metrics' => [],
-    'inventory' => [],
-    'settings' => ['currency' => 'USD'],
-]);
-
 $aggregator = new DashboardAggregator(
     $fixtureDir,
     '/cms',
