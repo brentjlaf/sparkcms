@@ -123,15 +123,17 @@ function renderFooterMenu($items){
                 <div class="container">
                     <div class="hero-content">
                         <p class="eyebrow"><?php echo htmlspecialchars($tagline); ?></p>
-                        <h1 class="page-title"><?php echo htmlspecialchars($page['title'] ?? $siteName); ?></h1>
-                        <?php if (!empty($page['summary'])): ?>
-                            <p class="page-subtitle"><?php echo htmlspecialchars($page['summary']); ?></p>
-                        <?php endif; ?>
                     </div>
                 </div>
             </section>
             <div class="content-wrapper">
                 <div class="container">
+                    <header class="page-header">
+                        <h1 class="page-title"><?php echo htmlspecialchars($page['title'] ?? $siteName); ?></h1>
+                        <?php if (!empty($page['summary'])): ?>
+                            <p class="page-subtitle"><?php echo htmlspecialchars($page['summary']); ?></p>
+                        <?php endif; ?>
+                    </header>
                     <div class="drop-area"></div>
                 </div>
             </div>
