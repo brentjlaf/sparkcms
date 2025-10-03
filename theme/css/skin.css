@@ -79,6 +79,16 @@
     background: var(--danger-5);
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .btn {
+        transition: none;
+    }
+
+    .btn:hover {
+        transform: none;
+    }
+}
+
 /* Divider Block */
 hr[class^="divider"] {
     border: none;
