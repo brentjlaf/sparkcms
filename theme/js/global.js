@@ -62,7 +62,7 @@ import basePath from './utils/base-path.js';
     return String(value)
       .split(',')
       .map(function (entry) {
-        return entry.toLowerCase().trim();
+        return normalizeCategory(entry);
       })
       .filter(function (entry) {
         if (entry.length === 0 || seen[entry]) {
@@ -235,11 +235,28 @@ import basePath from './utils/base-path.js';
         var filtered = posts.slice();
         if (categories.length) {
           filtered = filtered.filter(function (post) {
-            var postCategory = normalizeCategory(post.category);
-            if (!postCategory) {
+            var seen = Object.create(null);
+            var normalized = [];
+            var primary = normalizeCategory(post.category);
+            if (primary && !seen[primary]) {
+              normalized.push(primary);
+              seen[primary] = true;
+            }
+            if (Array.isArray(post.categories)) {
+              post.categories.forEach(function (value) {
+                var entry = normalizeCategory(value);
+                if (entry && !seen[entry]) {
+                  normalized.push(entry);
+                  seen[entry] = true;
+                }
+              });
+            }
+            if (!normalized.length) {
               return false;
             }
-            return categories.indexOf(postCategory) !== -1;
+            return normalized.some(function (value) {
+              return categories.indexOf(value) !== -1;
+            });
           });
         }
         filtered.sort(function (a, b) {
