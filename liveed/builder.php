@@ -56,17 +56,10 @@ foreach ($cssFiles as $css) {
 $headInject .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
 $themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
 
-$previewToolbar = '<div class="preview-toolbar">'
-    . '<button type="button" class="preview-btn builder-btn active" data-size="desktop" title="Desktop"><i class="fa-solid fa-desktop"></i></button>'
-    . '<button type="button" class="preview-btn builder-btn" data-size="tablet" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>'
-    . '<button type="button" class="preview-btn builder-btn" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
-    . '</div>';
-
 $builderHeader = '<header class="builder-header" title="Drag to reposition">'
     . '<div  class="title-top"><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div> '
     . '<button type="button" class="manual-save-btn btn btn-primary"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button></div>'
     . '<div id="saveStatus" class="save-status"></div>'
-    . $previewToolbar
     . '</header>';
 
 $paletteFooter = '<div class="footer"><div class="action-row">'
@@ -98,15 +91,9 @@ $mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
     . '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">'
     . '<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>';
 
-$previewModalHtml = '<div id="previewModal" class="modal">'
-    . '<div class="modal-content preview-frame">'
-    . '<div class="frame-wrapper"><iframe id="previewFrame" src=""></iframe></div>'
-    . '<div class="modal-footer"><button type="button" class="btn btn-secondary" id="closePreview"><i class="fa-solid fa-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Close</span></button></div>'
-    . '</div></div>';
-
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><div class="title-group"><span class="title">Settings</span><span class="template-name"></span></div><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
     . '<div id="historyPanel" class="history-panel"><div class="history-header"><span class="title">Page History</span><button type="button" class="close-btn">&times;</button></div><div class="history-content"></div></div>'
-    . $mediaPickerHtml . $previewModalHtml . '</div>'
+    . $mediaPickerHtml . '</div>'
     . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';window.builderSlug = ' . json_encode($page['slug']) . ';window.builderLastModified = ' . json_encode($page['last_modified']) . ';</script>'
     . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>'
     . '<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>';

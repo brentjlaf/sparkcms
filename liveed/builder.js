@@ -275,20 +275,12 @@ document.addEventListener('DOMContentLoaded', () => {
   canvas = document.getElementById('canvas');
   const palette = (paletteEl = document.querySelector('.block-palette'));
   const settingsPanel = document.getElementById('settingsPanel');
-  const previewContainer = document.querySelector('.canvas-container');
-  const previewButtons = document.querySelectorAll('.preview-toolbar button');
-  const previewModal = document.getElementById('previewModal');
-  const previewFrame = document.getElementById('previewFrame');
-  const closePreview = document.getElementById('closePreview');
-  const previewWrapper = previewModal
-    ? previewModal.querySelector('.frame-wrapper')
-    : null;
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
   const paletteHeader = palette ? palette.querySelector('.builder-header') : null;
 
   document
-    .querySelectorAll('.history-toolbar button, .preview-toolbar button')
+    .querySelectorAll('.history-toolbar button')
     .forEach((btn) => btn.classList.add('builder-btn'));
 
   builderDraftKey = 'builderDraft-' + window.builderPageId;
@@ -378,63 +370,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-  function updatePreview(size) {
-    if (!previewContainer) return;
-    previewContainer.classList.remove(
-      'preview-desktop',
-      'preview-tablet',
-      'preview-phone'
-    );
-    if (size === 'desktop') {
-      previewContainer.classList.add('preview-desktop');
-    }
-    previewButtons.forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.size === size);
-    });
-  }
-
-  let previewLoaded = false;
-
-  function openPreview(size) {
-    if (!previewModal || !previewFrame) return;
-    if (previewWrapper) {
-      if (size === 'tablet') previewWrapper.style.width = '768px';
-      else if (size === 'phone') previewWrapper.style.width = '375px';
-      else previewWrapper.style.width = '100%';
-      previewWrapper.style.height = '90vh';
-    }
-    previewModal.classList.add('active');
-    if (!previewLoaded) {
-      const base = window.location.origin + window.builderBase + '/';
-      const url = new URL('?page=' + window.builderSlug + '&preview=1', base);
-      previewFrame.src = url.toString();
-      previewLoaded = true;
-    }
-    updatePreview(size);
-  }
-
-  if (closePreview) {
-    closePreview.addEventListener('click', () => {
-      previewModal.classList.remove('active');
-      previewFrame.src = '';
-      previewLoaded = false;
-      updatePreview('desktop');
-    });
-  }
-
-  previewButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const size = btn.dataset.size;
-      if (size === 'desktop') {
-        updatePreview('desktop');
-      } else {
-        openPreview(size);
-      }
-    });
-  });
-
-  updatePreview('desktop');
 
   favorites = JSON.parse(localStorage.getItem('favoriteBlocks') || '[]');
 

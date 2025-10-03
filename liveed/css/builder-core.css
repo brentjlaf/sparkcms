@@ -101,22 +101,6 @@
   background: var(--builder-toolbar-btn-hover-bg, rgba(59, 130, 246, 0.15));
   color: var(--builder-toolbar-btn-hover-color, #e2e8f0);
 }
-.preview-toolbar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.preview-toolbar {
-  --builder-toolbar-btn-color: #64748b;
-  --builder-toolbar-btn-hover-color: #3b82f6;
-}
-
-.preview-toolbar button.active {
-  background: var(--builder-accent-gradient, linear-gradient(135deg, #3b82f6, #1d4ed8));
-  color: #fff;
-  box-shadow: var(--builder-accent-shadow, 0 4px 8px rgba(59, 130, 246, 0.3));
-}
 .block-palette h2 {
   margin: 0 0 12px;
   font-size: 11px;

@@ -14,7 +14,6 @@
 
 .builder.view-mode .block-palette,
 .builder.view-mode .history-toolbar,
-.builder.view-mode .preview-toolbar,
 .builder.view-mode #settingsPanel,
 .builder.view-mode .block-wrapper > .block-controls {
   display: none !important;
@@ -49,19 +48,6 @@
   color: #64748b;
   font-size: 11px;
   margin-left: 8px;
-}
-.preview-btn {
-  padding: 8px 10px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  font-size: 12px;
-}
-.preview-btn.active {
-  background: var(--builder-accent-gradient, linear-gradient(135deg, #3b82f6, #1d4ed8));
-  color: #fff;
-}
-.preview-btn.active {
-  box-shadow: var(--builder-accent-shadow, 0 4px 8px rgba(59, 130, 246, 0.3));
 }
 .blocks-title {
   padding: 16px 16px 8px;
