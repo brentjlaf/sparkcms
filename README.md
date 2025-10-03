@@ -82,6 +82,13 @@ Theme files are stored under the `theme` directory. To modify the site appearanc
 
 After editing templates or CSS, refresh your browser to see the changes.
 
+## Manual QA
+
+- **Verify session cookie rotation after login:**
+  1. Start the development server with `php -S localhost:8000 router.php` and open the site in a private browser window.
+  2. Before logging in, note the value of the `PHPSESSID` cookie in your browser's developer tools.
+  3. Log in with a valid account and confirm the `PHPSESSID` cookie value changes, indicating the session ID was regenerated for the authenticated session.
+
 ## Developing Modules
 
 Modules are self contained directories inside `CMS/modules`. A module typically contains PHP endpoints and optional JavaScript. To create a custom module:

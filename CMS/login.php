@@ -17,6 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ($user['status'] ?? null) === 'active' &&
         password_verify($password, $user['password'])
     ) {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+        $_SESSION = [];
         $_SESSION['user'] = $user;
         header('Location: admin.php');
         exit;
