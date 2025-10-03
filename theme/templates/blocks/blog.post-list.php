@@ -27,10 +27,12 @@
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box mb-3">
-        <dt>Filter by Category</dt>
+        <dt>Filter by Categories</dt>
         <dd>
-            <input type="text" class="form-control" name="custom_category" placeholder="All categories">
-            <small class="form-text text-muted">Leave blank to include every published category.</small>
+            <select name="custom_category" class="form-select" multiple data-blog-category-select data-placeholder="All categories">
+                <option value="">All categories</option>
+            </select>
+            <small class="form-text text-muted">Select one or more categories to limit the list. Choose “All categories” or leave everything unselected to show all published posts.</small>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box mb-3">

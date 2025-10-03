@@ -10,8 +10,11 @@ let renderDebounce;
 let addBlockControlsFn;
 
 const FORMS_SELECT_ATTR = 'data-forms-select';
+const BLOG_CATEGORY_SELECT_ATTR = 'data-blog-category-select';
 let cachedForms = null;
 let formsRequest = null;
+let cachedBlogCategories = null;
+let blogCategoriesRequest = null;
 
 function getFormsEndpoint() {
   const base = (window.builderBase || window.cmsBase || '').replace(/\/$/, '');
@@ -36,6 +39,117 @@ function fetchFormsList() {
       return cachedForms;
     });
   return formsRequest;
+}
+
+function getBlogCategoriesEndpoint() {
+  const base = (window.builderBase || window.cmsBase || '').replace(/\/$/, '');
+  return (base || '') + '/CMS/modules/blogs/list_categories.php';
+}
+
+function fetchBlogCategories() {
+  if (cachedBlogCategories) return Promise.resolve(cachedBlogCategories);
+  if (blogCategoriesRequest) return blogCategoriesRequest;
+  const endpoint = getBlogCategoriesEndpoint();
+  blogCategoriesRequest = fetch(endpoint, { credentials: 'same-origin' })
+    .then((response) => {
+      if (!response.ok) throw new Error('Failed to load blog categories');
+      return response.json();
+    })
+    .then((data) => {
+      const result = [];
+      const seen = new Set();
+      if (Array.isArray(data)) {
+        data.forEach((entry) => {
+          if (typeof entry !== 'string') return;
+          const trimmed = entry.trim();
+          if (!trimmed) return;
+          const key = trimmed.toLowerCase();
+          if (seen.has(key)) return;
+          seen.add(key);
+          result.push(trimmed);
+        });
+      }
+      cachedBlogCategories = result;
+      return cachedBlogCategories;
+    })
+    .catch(() => {
+      cachedBlogCategories = [];
+      return cachedBlogCategories;
+    });
+  return blogCategoriesRequest;
+}
+
+function splitCommaValues(value) {
+  if (value == null || value === '') return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+      .filter((entry) => entry.length > 0);
+  }
+  return String(value)
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+}
+
+function applySelectValue(select, value) {
+  if (!select) return;
+  if (select.multiple) {
+    const useAll = value == null || value === '';
+    const selectedValues = new Set(splitCommaValues(value));
+    Array.from(select.options).forEach((option) => {
+      if (option.value === '') {
+        option.selected = useAll;
+      } else {
+        option.selected = !useAll && selectedValues.has(option.value);
+      }
+    });
+  } else {
+    const target = value ?? '';
+    select.value = target;
+    if (target && select.value !== target) {
+      const manualOption = document.createElement('option');
+      manualOption.value = target;
+      manualOption.textContent = target;
+      select.appendChild(manualOption);
+      select.value = target;
+    }
+  }
+}
+
+function readSelectValue(select) {
+  if (!select) return '';
+  if (!select.multiple) {
+    return select.value;
+  }
+  const values = [];
+  let hasAll = false;
+  Array.from(select.options).forEach((option) => {
+    if (!option.selected) return;
+    if (option.value === '') {
+      hasAll = true;
+    } else if (!values.includes(option.value)) {
+      values.push(option.value);
+    }
+  });
+  if (hasAll && values.length > 0) {
+    return '';
+  }
+  if (hasAll) {
+    return '';
+  }
+  return values.join(',');
+}
+
+function enforceMultiSelectAllOption(select) {
+  if (!select || !select.multiple) return;
+  const selected = Array.from(select.selectedOptions);
+  const hasAll = selected.some((option) => option.value === '');
+  if (hasAll && selected.length > 1) {
+    Array.from(select.options).forEach((option) => {
+      option.selected = option.value === '';
+    });
+  }
 }
 
 function populateFormsSelects(container, block) {
@@ -76,6 +190,36 @@ function populateFormsSelects(container, block) {
           select.value = targetValue;
         }
       }
+    });
+  });
+}
+
+function populateBlogCategorySelects(container, block) {
+  if (!container) return;
+  const selects = container.querySelectorAll(`select[${BLOG_CATEGORY_SELECT_ATTR}]`);
+  if (!selects.length) return;
+
+  fetchBlogCategories().then((categories) => {
+    selects.forEach((select) => {
+      const storedValue = block ? getSetting(block, select.name) : select.value;
+      const fragment = document.createDocumentFragment();
+      const placeholder = select.dataset.placeholder || 'All categories';
+
+      const allOption = document.createElement('option');
+      allOption.value = '';
+      allOption.textContent = placeholder;
+      fragment.appendChild(allOption);
+
+      categories.forEach((category) => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        fragment.appendChild(option);
+      });
+
+      select.innerHTML = '';
+      select.appendChild(fragment);
+      applySelectValue(select, storedValue);
     });
   });
 }
@@ -168,6 +312,11 @@ export function initSettings(options = {}) {
       let val;
       if (input.type === 'checkbox') {
         val = input.checked ? (input.value || 'on') : '';
+      } else if (input.tagName === 'SELECT') {
+        if (input.multiple) {
+          enforceMultiSelectAllOption(input);
+        }
+        val = readSelectValue(input);
       } else {
         val = input.value;
       }
@@ -276,6 +425,7 @@ function initTemplateSettingValues(block) {
   const templateSetting = getTemplateSettingElement(block);
   if (!templateSetting || !settingsPanel) return;
   populateFormsSelects(settingsPanel, block);
+  populateBlogCategorySelects(settingsPanel, block);
   // Prefill alt text suggestions for any alt inputs
   const altInputs = templateSetting.querySelectorAll('input[name^="custom_alt"]');
   altInputs.forEach((inp) => {
@@ -294,6 +444,8 @@ function initTemplateSettingValues(block) {
       if (val !== undefined) {
         input.checked = input.value === val;
       }
+    } else if (input.tagName === 'SELECT') {
+      applySelectValue(input, val);
     } else if (val !== undefined) {
       input.value = val;
     }
@@ -335,6 +487,8 @@ function renderBlock(block) {
     } else if (input.type === 'radio') {
       const sel = templateSetting.querySelector('input[name="' + name + '"]:checked');
       value = sel ? sel.value : '';
+    } else if (input.tagName === 'SELECT') {
+      value = readSelectValue(input);
     } else {
       value = input.value || '';
     }
@@ -388,6 +542,11 @@ function applySettings(template, block) {
     } else if (input.type === 'radio') {
       const sel = settingsPanel.querySelector('input[name="' + name + '"]:checked');
       value = sel ? sel.value : '';
+    } else if (input.tagName === 'SELECT') {
+      if (input.multiple) {
+        enforceMultiSelectAllOption(input);
+      }
+      value = readSelectValue(input);
     } else {
       value = input.value;
     }
