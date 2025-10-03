@@ -34,6 +34,27 @@ function sparkcms_normalize_blog_category($value) {
     return strtolower(trim((string) $value));
 }
 
+function sparkcms_parse_blog_categories($value) {
+    if (is_array($value)) {
+        $list = $value;
+    } else {
+        $list = explode(',', (string) $value);
+    }
+
+    $normalized = [];
+    foreach ($list as $item) {
+        $category = sparkcms_normalize_blog_category($item);
+        if ($category === '') {
+            continue;
+        }
+        if (!in_array($category, $normalized, true)) {
+            $normalized[] = $category;
+        }
+    }
+
+    return $normalized;
+}
+
 function sparkcms_format_blog_date($value) {
     if (empty($value)) {
         return '';
@@ -172,7 +193,7 @@ function sparkcms_hydrate_blog_lists($html, $scriptBase) {
         }
 
         $limit = sparkcms_parse_blog_limit($container->getAttribute('data-limit'));
-        $category = sparkcms_normalize_blog_category($container->getAttribute('data-category'));
+        $categories = sparkcms_parse_blog_categories($container->getAttribute('data-category'));
         $showExcerpt = strtolower((string) $container->getAttribute('data-show-excerpt'));
         $showMeta = strtolower((string) $container->getAttribute('data-show-meta'));
         $emptyMessage = trim($container->getAttribute('data-empty')) ?: 'No posts available.';
@@ -188,11 +209,15 @@ function sparkcms_hydrate_blog_lists($html, $scriptBase) {
             $itemsHost->removeChild($itemsHost->firstChild);
         }
 
-        $filtered = array_filter($published, function ($post) use ($category) {
-            if ($category === '') {
+        $filtered = array_filter($published, function ($post) use ($categories) {
+            if (!$categories) {
                 return true;
             }
-            return sparkcms_normalize_blog_category($post['category'] ?? '') === $category;
+            $postCategory = sparkcms_normalize_blog_category($post['category'] ?? '');
+            if ($postCategory === '') {
+                return false;
+            }
+            return in_array($postCategory, $categories, true);
         });
 
         usort($filtered, function ($a, $b) {
