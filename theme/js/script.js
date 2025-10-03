@@ -297,9 +297,12 @@ import basePath from './utils/base-path.js';
 
   function attachSubmitHandler(formEl, statusEl, successMessage) {
     if (!formEl) return;
+    var submitController = null;
     formEl.addEventListener('submit', function (event) {
       event.preventDefault();
-      if (formEl.dataset.submitting === 'true') return;
+      if (submitController) {
+        submitController.abort();
+      }
       clearFieldErrors(formEl);
       if (statusEl) {
         statusEl.textContent = 'Submitting…';
@@ -313,10 +316,13 @@ import basePath from './utils/base-path.js';
       var prefix = basePath();
       var url = (prefix || '') + '/forms/submit.php';
       var formData = new FormData(formEl);
+      submitController = new AbortController();
+      var activeController = submitController;
       fetch(url, {
         method: 'POST',
         body: formData,
         credentials: 'same-origin',
+        signal: activeController.signal,
       })
         .then(function (response) {
           return response.json().then(function (data) {
@@ -339,13 +345,18 @@ import basePath from './utils/base-path.js';
             statusEl.classList.add('text-success');
           }
         })
-        .catch(function () {
+        .catch(function (error) {
+          if (error && error.name === 'AbortError') {
+            return;
+          }
           if (statusEl) {
             statusEl.textContent = 'We were unable to submit the form.';
             statusEl.classList.add('text-danger');
           }
         })
         .finally(function () {
+          if (submitController !== activeController) return;
+          submitController = null;
           formEl.dataset.submitting = 'false';
           submitButtons.forEach(function (btn) {
             btn.disabled = false;
