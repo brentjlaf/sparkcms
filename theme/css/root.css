@@ -489,11 +489,16 @@
   */
   --sns-color: var(--link-color);
   --sns-color-hover: var(--link-color-hover);
-  --sns-font-size-sm: 16px;
-  --sns-font-size-md: 18px;
-  --sns-font-size-lg: 20px;
-  --sns-font-size-xl: 25px;
-  --sns-font-size-xxl: 30px;
+  --sns-font-size-sm: 13px;
+  --sns-font-size-md: 15px;
+  --sns-font-size-lg: 17px;
+  --sns-font-size-xl: 21px;
+  --sns-font-size-xxl: 25px;
+  --sns-size-sm: 25px;
+  --sns-size-md: 30px;
+  --sns-size-lg: 35px;
+  --sns-size-xl: 40px;
+  --sns-size-xxl: 45px;
   --sns-gap-sm: 10px;
   --sns-gap-md: 15px;
   --sns-gap-lg: 20px;
@@ -508,21 +513,21 @@
   --sns-circle-color-hover: var(--white);
   --sns-circle-bg: var(--link-color);
   --sns-circle-bg-hover: var(--link-color-hover);
-  --sns-circle-font-size-sm: 13px;
-  --sns-circle-font-size-md: 15px;
-  --sns-circle-font-size-lg: 17px;
-  --sns-circle-font-size-xl: 21px;
-  --sns-circle-font-size-xxl: 25px;
-  --sns-circle-size-sm: 25px;
-  --sns-circle-size-md: 30px;
-  --sns-circle-size-lg: 35px;
-  --sns-circle-size-xl: 40px;
-  --sns-circle-size-xxl: 45px;
-  --sns-circle-gap-sm: 10px;
-  --sns-circle-gap-md: 15px;
-  --sns-circle-gap-lg: 20px;
-  --sns-circle-gap-xl: 25px;
-  --sns-circle-gap-xxl: 30px;
+  --sns-circle-font-size-sm: var(--sns-font-size-sm);
+  --sns-circle-font-size-md: var(--sns-font-size-md);
+  --sns-circle-font-size-lg: var(--sns-font-size-lg);
+  --sns-circle-font-size-xl: var(--sns-font-size-xl);
+  --sns-circle-font-size-xxl: var(--sns-font-size-xxl);
+  --sns-circle-size-sm: var(--sns-size-sm);
+  --sns-circle-size-md: var(--sns-size-md);
+  --sns-circle-size-lg: var(--sns-size-lg);
+  --sns-circle-size-xl: var(--sns-size-xl);
+  --sns-circle-size-xxl: var(--sns-size-xxl);
+  --sns-circle-gap-sm: var(--sns-gap-sm);
+  --sns-circle-gap-md: var(--sns-gap-md);
+  --sns-circle-gap-lg: var(--sns-gap-lg);
+  --sns-circle-gap-xl: var(--sns-gap-xl);
+  --sns-circle-gap-xxl: var(--sns-gap-xxl);
   /*
    |--------------------------------
    | Square
@@ -532,21 +537,21 @@
   --sns-square-color-hover: var(--white);
   --sns-square-bg: var(--link-color);
   --sns-square-bg-hover: var(--link-color-hover);
-  --sns-square-font-size-sm: 13px;
-  --sns-square-font-size-md: 15px;
-  --sns-square-font-size-lg: 17px;
-  --sns-square-font-size-xl: 21px;
-  --sns-square-font-size-xxl: 25px;
-  --sns-square-size-sm: 25px;
-  --sns-square-size-md: 30px;
-  --sns-square-size-lg: 35px;
-  --sns-square-size-xl: 40px;
-  --sns-square-size-xxl: 45px;
-  --sns-square-gap-sm: 10px;
-  --sns-square-gap-md: 15px;
-  --sns-square-gap-lg: 20px;
-  --sns-square-gap-xl: 25px;
-  --sns-square-gap-xxl: 30px;
+  --sns-square-font-size-sm: var(--sns-font-size-sm);
+  --sns-square-font-size-md: var(--sns-font-size-md);
+  --sns-square-font-size-lg: var(--sns-font-size-lg);
+  --sns-square-font-size-xl: var(--sns-font-size-xl);
+  --sns-square-font-size-xxl: var(--sns-font-size-xxl);
+  --sns-square-size-sm: var(--sns-size-sm);
+  --sns-square-size-md: var(--sns-size-md);
+  --sns-square-size-lg: var(--sns-size-lg);
+  --sns-square-size-xl: var(--sns-size-xl);
+  --sns-square-size-xxl: var(--sns-size-xxl);
+  --sns-square-gap-sm: var(--sns-gap-sm);
+  --sns-square-gap-md: var(--sns-gap-md);
+  --sns-square-gap-lg: var(--sns-gap-lg);
+  --sns-square-gap-xl: var(--sns-gap-xl);
+  --sns-square-gap-xxl: var(--sns-gap-xxl);
   /*
    |--------------------------------
    | Rounded Square
