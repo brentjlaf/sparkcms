@@ -48,10 +48,25 @@ if ($alice['status'] !== 'active') {
     throw new RuntimeException('Statuses should be clamped to allowed values.');
 }
 
-// Creating a new user should hash the provided password (or default) and apply defaults.
-$created = $service->saveUser(null, 'bob', '', 'manager', 'pending');
-if (!password_verify('password', $created['password'])) {
-    throw new RuntimeException('New users should receive the default password when none is provided.');
+// Creating a new user without a password should raise an error.
+$threw = false;
+try {
+    $service->saveUser(null, 'bob', '   ', 'manager', 'pending');
+} catch (InvalidArgumentException $e) {
+    $threw = true;
+    if ($e->getMessage() !== 'Missing password') {
+        throw new RuntimeException('Expected a missing password message when the password is blank.');
+    }
+}
+
+if (!$threw) {
+    throw new RuntimeException('Creating a new user without a password should fail.');
+}
+
+// Creating a new user should hash the provided password and apply defaults.
+$created = $service->saveUser(null, 'bob', 'super-secret', 'manager', 'pending');
+if (!password_verify('super-secret', $created['password'])) {
+    throw new RuntimeException('New users should store the provided password hash.');
 }
 
 if ($created['role'] !== 'editor' || $created['status'] !== 'active') {
@@ -71,8 +86,8 @@ if ($bob === null) {
     throw new RuntimeException('Newly created user was not persisted.');
 }
 
-if (!password_verify('password', $bob['password'])) {
-    throw new RuntimeException('Persisted default password should remain hashed.');
+if (!password_verify('super-secret', $bob['password'])) {
+    throw new RuntimeException('Persisted password should remain hashed.');
 }
 
 unlink($tempFile);

@@ -37,6 +37,24 @@ $(function () {
     const $statAdmins = $('#usersStatAdmins');
     const $statRecent = $('#usersStatRecent');
 
+    function toastError(message) {
+        if (window.AdminNotifications && typeof window.AdminNotifications.showErrorToast === 'function') {
+            window.AdminNotifications.showErrorToast(message);
+        } else {
+            window.alert(message);
+        }
+    }
+
+    function extractErrorMessage(xhr, fallback) {
+        if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+            return xhr.responseJSON.message;
+        }
+        if (xhr && typeof xhr.responseText === 'string' && xhr.responseText.trim().length) {
+            return xhr.responseText.trim();
+        }
+        return fallback;
+    }
+
     function escapeHtml(value) {
         return String(value || '')
             .replace(/&/g, '&amp;')
@@ -373,10 +391,21 @@ $(function () {
     $form.on('submit', function (event) {
         event.preventDefault();
         const payload = $form.serialize();
-        $.post('modules/users/save_user.php', payload, function () {
-            closeDrawer();
-            fetchUsers();
-        });
+        const $submitButton = $form.find('#userFormSubmit');
+        $submitButton.prop('disabled', true);
+
+        $.post('modules/users/save_user.php', payload)
+            .done(function () {
+                closeDrawer();
+                fetchUsers();
+            })
+            .fail(function (xhr) {
+                const message = extractErrorMessage(xhr, 'Unable to save the user.');
+                toastError(message);
+            })
+            .always(function () {
+                $submitButton.prop('disabled', false);
+            });
     });
 
     $deleteBtn.on('click', function () {
