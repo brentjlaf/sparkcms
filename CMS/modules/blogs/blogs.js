@@ -144,10 +144,17 @@ $(document).ready(function(){
         if(!cleaned){
             return '';
         }
+        if(cleaned.startsWith('CMS/')){
+            return `${base}/${cleaned}`.replace(/\/+/g, '/');
+        }
+        if(cleaned.startsWith('uploads/')){
+            const cmsPrefix = `${base}/CMS`.replace(/\/+$/, '');
+            return `${cmsPrefix}/${cleaned}`.replace(/\/+/g, '/');
+        }
         if(!base){
             return `/${cleaned}`;
         }
-        return `${base}/${cleaned}`;
+        return `${base}/${cleaned}`.replace(/\/+/g, '/');
     }
 
     function normalizeImageValue(value){
