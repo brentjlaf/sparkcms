@@ -3456,6 +3456,10 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
         }
 
+        .a11y-btn .btn-label {
+            line-height: 1;
+        }
+
         .a11y-btn--primary {
             background: linear-gradient(135deg, var(--color-primary), var(--color-primary-strong));
             color: var(--color-text-inverse);
@@ -10718,6 +10722,17 @@ body.calendar-modal-open {
 #fieldSettings p {
     margin: 0;
     color: #64748b;
+}
+
+.field-bar .a11y-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    gap: 8px;
+    box-shadow: none;
+}
+
+.field-bar .a11y-btn i {
+    font-size: 0.9rem;
 }
 
 #formsTable tbody tr.selected {
