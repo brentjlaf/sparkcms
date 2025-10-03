@@ -1,5 +1,5 @@
 // File: builder.js
-import { initDragDrop, addBlockControls } from './modules/dragDrop.js';
+import { createDragDropController } from './modules/dragDrop.js';
 import { initSettings, openSettings, applyStoredSettings, confirmDelete } from './modules/settings.js';
 import { ensureBlockState, getSettings, setSetting } from './modules/state.js';
 import { initUndoRedo } from './modules/undoRedo.js';
@@ -434,7 +434,18 @@ document.addEventListener('DOMContentLoaded', () => {
   favorites = JSON.parse(localStorage.getItem('favoriteBlocks') || '[]');
 
 
-  initSettings({ canvas, settingsPanel, savePage: scheduleSave });
+  const dragDropController = createDragDropController({
+    palette,
+    canvas,
+    basePath: window.builderBase,
+    loggedIn: true,
+    openSettings,
+    applyStoredSettings,
+  });
+  dragDropController.init();
+  const { addBlockControls } = dragDropController;
+
+  initSettings({ canvas, settingsPanel, savePage: scheduleSave, addBlockControls });
 
   const searchInput = palette.querySelector('.palette-search');
 
@@ -452,15 +463,6 @@ document.addEventListener('DOMContentLoaded', () => {
       renderPalette(palette, filtered);
     });
   }
-
-  initDragDrop({
-    palette,
-    canvas,
-    basePath: window.builderBase,
-    loggedIn: true,
-    openSettings,
-    applyStoredSettings,
-  });
 
   const history = initUndoRedo({ canvas, onChange: scheduleSave, maxHistory: 15 });
   const undoBtn = palette.querySelector('.undo-btn');

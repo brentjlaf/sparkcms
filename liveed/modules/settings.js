@@ -1,6 +1,5 @@
 // File: settings.js
 import { ensureBlockState, getSetting, setSetting, getSettings } from './state.js';
-import { addBlockControls } from './dragDrop.js';
 import { executeScripts } from "./executeScripts.js";
 
 let canvas;
@@ -8,6 +7,7 @@ let settingsPanel;
 let settingsContent;
 let savePageFn;
 let renderDebounce;
+let addBlockControlsFn;
 
 const FORMS_SELECT_ATTR = 'data-forms-select';
 let cachedForms = null;
@@ -138,6 +138,7 @@ export function initSettings(options = {}) {
   canvas = options.canvas;
   settingsPanel = options.settingsPanel;
   savePageFn = options.savePage || function () {};
+  addBlockControlsFn = options.addBlockControls;
   if (settingsPanel) {
     settingsContent = settingsPanel.querySelector('.settings-content');
     settingsPanel.addEventListener('click', (e) => {
@@ -394,5 +395,7 @@ function applySettings(template, block) {
     setSetting(block, name, value);
   });
   renderBlock(block);
-  addBlockControls(block);
+  if (typeof addBlockControlsFn === 'function') {
+    addBlockControlsFn(block);
+  }
 }
