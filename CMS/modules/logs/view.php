@@ -219,16 +219,6 @@ if ($uniqueUsersCount === 1) {
         </header>
 
         <section class="logs-activity" aria-label="Activity feed">
-            <div class="logs-activity-header">
-                <div class="logs-activity-intro">
-                    <div class="logs-activity-heading">
-                        <h3>Recent activity</h3>
-                        <span class="logs-activity-match-count" id="logsMatchCount"><?php echo htmlspecialchars($matchCountLabel, ENT_QUOTES, 'UTF-8'); ?></span>
-                    </div>
-                    <p class="logs-activity-description">Monitor edits, publishing events, and system jobs without leaving the dashboard.</p>
-                </div>
-            </div>
-
             <div class="logs-filters" id="logsFilters">
                 <button type="button" class="logs-filter-btn active" data-filter="all">
                     <span>All activity</span>
