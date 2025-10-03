@@ -200,6 +200,9 @@ import basePath from './utils/base-path.js';
       var placeholderOption = document.createElement('option');
       placeholderOption.value = '';
       placeholderOption.textContent = 'Please select';
+      placeholderOption.disabled = true;
+      placeholderOption.hidden = true;
+      placeholderOption.selected = true;
       select.appendChild(placeholderOption);
       options.forEach(function (option) {
         var opt = document.createElement('option');
@@ -207,6 +210,14 @@ import basePath from './utils/base-path.js';
         opt.textContent = option;
         select.appendChild(opt);
       });
+      if (required) {
+        select.addEventListener('change', function () {
+          if (select.value === '') {
+            select.selectedIndex = 0;
+          }
+        });
+      }
+
       wrapper.appendChild(select);
       appendFeedback(wrapper);
       return wrapper;
@@ -267,6 +278,14 @@ import basePath from './utils/base-path.js';
       var inputs = wrapper.querySelectorAll('input, textarea, select');
       inputs.forEach(function (input) {
         input.classList.add('is-invalid');
+        if (
+          input.tagName === 'SELECT' &&
+          input.required &&
+          !input.multiple &&
+          (input.value === '' || input.selectedIndex === -1)
+        ) {
+          input.selectedIndex = 0;
+        }
       });
       var feedback = wrapper.querySelector('.invalid-feedback');
       if (feedback) {
