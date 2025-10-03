@@ -68,13 +68,18 @@
     if (value == null) {
       return [];
     }
+    var seen = Object.create(null);
     return String(value)
       .split(',')
       .map(function (entry) {
         return entry.toLowerCase().trim();
       })
       .filter(function (entry) {
-        return entry.length > 0;
+        if (entry.length === 0 || seen[entry]) {
+          return false;
+        }
+        seen[entry] = true;
+        return true;
       });
   }
 
@@ -163,16 +168,20 @@
     }
     var settings = container.dataset || {};
     var limit = parseLimit(settings.limit);
-    var category = normalizeCategory(settings.category);
+    var categories = parseCategoriesList(settings.category);
     var showExcerpt = String(settings.showExcerpt || '').toLowerCase();
     var showMeta = String(settings.showMeta || '').toLowerCase();
     var emptyMessage = settings.empty || 'No posts available.';
     fetchBlogPosts()
       .then(function (posts) {
         var filtered = posts.slice();
-        if (category) {
+        if (categories.length) {
           filtered = filtered.filter(function (post) {
-            return normalizeCategory(post.category) === category;
+            var postCategory = normalizeCategory(post.category);
+            if (!postCategory) {
+              return false;
+            }
+            return categories.indexOf(postCategory) !== -1;
           });
         }
         filtered.sort(function (a, b) {
