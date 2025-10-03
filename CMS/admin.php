@@ -108,10 +108,6 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
                         <div class="nav-icon"><i class="fas fa-cog"></i></div>
                         <div class="nav-text">Settings</div>
                     </div>
-                    <div class="nav-item" data-section="import_export">
-                        <div class="nav-icon"><i class="fas fa-file-import"></i></div>
-                        <div class="nav-text">Import &amp; Export</div>
-                    </div>
                 </div>
 
                 <div class="nav-section">
@@ -245,7 +241,6 @@ $(function(){
   var moduleTitles = {
     search: 'Manage search index',
     sitemap: 'Review sitemap',
-    import_export: 'Import & Export',
     calendar: 'Manage calendar data',
     events: 'Event management overview'
   };

@@ -154,8 +154,6 @@ final class DashboardAggregator
         $searchBreakdown = $this->buildSearchBreakdown($this->pages, $this->posts, $this->media);
         $settingsSummary = $this->summariseSettings($this->settings);
         $sitemapEntries = $this->countPublishedPages($this->pages);
-        $dataFileCount = $this->countDataFiles($this->dataDirectory);
-
         $eventsOverview = $this->eventsService->getOverview();
         $eventsSummary = $this->summariseEvents($this->events, $this->eventOrders, $eventsOverview);
         $calendarMetrics = CalendarRepository::computeMetrics($this->calendarEvents, $this->calendarCategories);
@@ -182,7 +180,6 @@ final class DashboardAggregator
             $sitemapEntries,
             $speedSummary,
             $largestPage,
-            $dataFileCount,
             $eventsSummary,
             $eventsOverview,
             $calendarSummary,
@@ -248,7 +245,6 @@ final class DashboardAggregator
             'speedSlow' => $speedSummary['slow'],
             'speedHeaviestPage' => $largestPage['title'],
             'speedHeaviestPageLength' => $largestPage['length'],
-            'dataFileCount' => $dataFileCount,
             'eventsCurrency' => $eventsSummary['currency'],
             'seoOptimised' => $seoSummary['optimised'],
             'seoMissingTitle' => $seoSummary['missing_title'],
@@ -769,12 +765,6 @@ final class DashboardAggregator
         return $top;
     }
 
-    private function countDataFiles(string $directory): int
-    {
-        $files = glob($directory . '/*.json');
-        return is_array($files) ? count($files) : 0;
-    }
-
     /**
      * @param array<string, mixed> $analyticsData
      * @param array<int, array<string, mixed>> $pages
@@ -1024,7 +1014,6 @@ final class DashboardAggregator
         int $sitemapEntries,
         array $speedSummary,
         array $largestPage,
-        int $dataFileCount,
         array $eventsSummary,
         array $eventsOverview,
         array $calendarSummary,
@@ -1173,12 +1162,6 @@ final class DashboardAggregator
         $speedTrend = 'Slow pages: ' . $this->formatNumber((int) $speedSummary['slow']);
         $speedCta = $speedSummary['slow'] > 0 ? 'Optimise slow pages' : 'Review performance';
 
-        $importExportStatus = 'ok';
-        $importExportTrend = $dataFileCount > 0
-            ? $this->formatNumber((int) $dataFileCount) . ' data files available'
-            : 'No data files detected';
-        $importExportCta = 'Open import/export';
-
         $seoStatus = 'ok';
         if ($seoSummary['missing_title'] > 0 || $seoSummary['missing_description'] > 0 || $seoSummary['duplicate_slugs'] > 0) {
             $seoStatus = 'urgent';
@@ -1322,16 +1305,6 @@ final class DashboardAggregator
                 'statusLabel' => $this->statusLabel($speedStatus),
                 'trend' => $speedTrend,
                 'cta' => $speedCta,
-            ],
-            [
-                'id' => 'import_export',
-                'module' => 'Import/Export',
-                'primary' => $this->formatNumber($dataFileCount) . ' data files detected',
-                'secondary' => 'Use tools to migrate or backup your site',
-                'status' => $importExportStatus,
-                'statusLabel' => $this->statusLabel($importExportStatus),
-                'trend' => $importExportTrend,
-                'cta' => $importExportCta,
             ],
             [
                 'id' => 'events',
