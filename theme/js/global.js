@@ -2518,6 +2518,7 @@ import basePath from './utils/base-path.js';
       var shouldRefreshBlogDetails = false;
       var shouldRefreshCalendars = false;
       var shouldRefreshEvents = false;
+      var shouldRefreshNavigation = false;
       mutations.forEach(function (mutation) {
         if (mutation.type !== 'childList') {
           return;
@@ -2525,6 +2526,12 @@ import basePath from './utils/base-path.js';
         mutation.addedNodes.forEach(function (node) {
           if (!(node instanceof HTMLElement)) {
             return;
+          }
+          if (
+            node.matches('.nav-toggle, #main-nav, #back-to-top-btn, ._js-scroll-top') ||
+            node.querySelector('.nav-toggle, #main-nav, #back-to-top-btn, ._js-scroll-top')
+          ) {
+            shouldRefreshNavigation = true;
           }
           if (node.matches('[data-blog-list]') || node.querySelector('[data-blog-list]')) {
             shouldRefreshBlogs = true;
@@ -2552,6 +2559,9 @@ import basePath from './utils/base-path.js';
       if (shouldRefreshEvents) {
         initEventsBlocks();
       }
+      if (shouldRefreshNavigation) {
+        initNavigationFeatures();
+      }
     });
     observer.observe(document.body || document.documentElement, {
       childList: true,
@@ -2559,7 +2569,60 @@ import basePath from './utils/base-path.js';
     });
   }
 
+  function initNavigationFeatures() {
+    var navToggle = document.querySelector('.nav-toggle');
+    var mainNav = document.getElementById('main-nav') || document.querySelector('#main-nav');
+    if (navToggle && mainNav) {
+      if (!navToggle._sparkNavInitialized) {
+        navToggle.addEventListener('click', function () {
+          var isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+          navToggle.setAttribute('aria-expanded', String(!isExpanded));
+          if (isExpanded) {
+            mainNav.classList.remove('active');
+          } else {
+            mainNav.classList.add('active');
+          }
+        });
+        navToggle._sparkNavInitialized = true;
+      }
+      var navLinks = mainNav.querySelectorAll('a');
+      navLinks.forEach(function (link) {
+        if (link._sparkNavLinkInitialized) {
+          return;
+        }
+        link.addEventListener('click', function () {
+          navToggle.setAttribute('aria-expanded', 'false');
+          mainNav.classList.remove('active');
+        });
+        link._sparkNavLinkInitialized = true;
+      });
+    }
+
+    var backToTopBtn =
+      document.getElementById('back-to-top-btn') || document.querySelector('._js-scroll-top');
+    if (backToTopBtn) {
+      if (!backToTopBtn._sparkBackToTopInitialized) {
+        var updateVisibility = function () {
+          var shouldShow = window.scrollY > 100;
+          backToTopBtn.toggleAttribute('hidden', !shouldShow);
+          backToTopBtn.setAttribute('aria-hidden', String(!shouldShow));
+        };
+        window.addEventListener('scroll', updateVisibility, { passive: true });
+        backToTopBtn.addEventListener('click', function (event) {
+          event.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        backToTopBtn._sparkBackToTopInitialized = true;
+        backToTopBtn._sparkBackToTopUpdate = updateVisibility;
+        updateVisibility();
+      } else if (typeof backToTopBtn._sparkBackToTopUpdate === 'function') {
+        backToTopBtn._sparkBackToTopUpdate();
+      }
+    }
+  }
+
   ready(function () {
+    initNavigationFeatures();
     initBlogDetails();
     initBlogLists();
     initEventsBlocks();
@@ -2568,6 +2631,9 @@ import basePath from './utils/base-path.js';
     observe();
   });
 
+  window.SparkCMSNavigation = {
+    refresh: initNavigationFeatures
+  };
   window.SparkCMSBlogLists = {
     refresh: initBlogLists
   };

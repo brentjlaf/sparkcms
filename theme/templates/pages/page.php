@@ -221,47 +221,5 @@ function renderFooterMenu($items){
     <script src="<?php echo $themeBase; ?>/js/global.js?v=mw3.2"></script>
     <script src="<?php echo $themeBase; ?>/js/script.js?v=mw3.2"></script>
 
-    <!-- Navigation & Back to Top Scripts -->
-    <script>
-        const navToggle = document.querySelector('.nav-toggle');
-        const mainNav = document.getElementById('main-nav');
-        const backToTopBtn = document.getElementById('back-to-top-btn');
-
-        if (navToggle && mainNav) {
-            navToggle.addEventListener('click', () => {
-                const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
-                navToggle.setAttribute('aria-expanded', String(!isExpanded));
-                mainNav.classList.toggle('active');
-            });
-
-            mainNav.querySelectorAll('a').forEach((link) => {
-                link.addEventListener('click', () => {
-                    navToggle.setAttribute('aria-expanded', 'false');
-                    mainNav.classList.remove('active');
-                });
-            });
-        }
-
-        if (backToTopBtn) {
-            const updateBackToTopVisibility = () => {
-                const shouldShow = window.scrollY > 100;
-                backToTopBtn.toggleAttribute('hidden', !shouldShow);
-                backToTopBtn.setAttribute('aria-hidden', String(!shouldShow));
-            };
-
-            updateBackToTopVisibility();
-            window.addEventListener('scroll', updateBackToTopVisibility);
-
-            // Smooth scroll to top
-            backToTopBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
-        }
-    </script>
-
 </body>
 </html>
