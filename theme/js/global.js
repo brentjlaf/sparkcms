@@ -2528,6 +2528,203 @@ import basePath from './utils/base-path.js';
     });
   }
 
+  function parseCarouselNavMode(value) {
+    if (value == null || value === '') {
+      return 'auto';
+    }
+    var normalized = String(value).toLowerCase().trim();
+    if (!normalized) {
+      return 'auto';
+    }
+    if (['false', 'off', 'no', 'none', 'hidden', 'disable', 'disabled'].indexOf(normalized) !== -1) {
+      return 'off';
+    }
+    if (['true', 'on', 'yes', 'show', 'always', 'buttons'].indexOf(normalized) !== -1) {
+      return 'on';
+    }
+    if (normalized === 'auto') {
+      return 'auto';
+    }
+    return 'auto';
+  }
+
+  function initCarouselGallery(container) {
+    if (!(container instanceof HTMLElement)) {
+      return;
+    }
+    if (!container.classList.contains('layout-carousel')) {
+      return;
+    }
+    if (container._sparkCarouselInitialized) {
+      if (typeof container._sparkCarouselUpdate === 'function') {
+        container._sparkCarouselUpdate();
+      }
+      return;
+    }
+    container._sparkCarouselInitialized = true;
+
+    if (!container.hasAttribute('tabindex')) {
+      container.tabIndex = 0;
+    }
+
+    var navMode = parseCarouselNavMode(container.dataset.carouselNav);
+    var reduceMotion = false;
+    try {
+      reduceMotion =
+        typeof window !== 'undefined' &&
+        window.matchMedia &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (error) {}
+
+    if (navMode === 'off') {
+      container._sparkCarouselUpdate = function () {};
+      return;
+    }
+
+    var prevBtn = document.createElement('button');
+    prevBtn.type = 'button';
+    prevBtn.className = 'carousel-nav carousel-nav--prev';
+    prevBtn.setAttribute('aria-label', 'Scroll to previous items');
+    var prevIcon = document.createElement('span');
+    prevIcon.className = 'carousel-nav__icon';
+    prevIcon.setAttribute('aria-hidden', 'true');
+    prevIcon.textContent = '‹';
+    prevBtn.appendChild(prevIcon);
+    var prevLabel = document.createElement('span');
+    prevLabel.className = 'carousel-nav__label';
+    prevLabel.setAttribute('aria-hidden', 'true');
+    prevLabel.textContent = 'Previous';
+    prevBtn.appendChild(prevLabel);
+
+    var nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'carousel-nav carousel-nav--next';
+    nextBtn.setAttribute('aria-label', 'Scroll to next items');
+    var nextIcon = document.createElement('span');
+    nextIcon.className = 'carousel-nav__icon';
+    nextIcon.setAttribute('aria-hidden', 'true');
+    nextIcon.textContent = '›';
+    nextBtn.appendChild(nextIcon);
+    var nextLabel = document.createElement('span');
+    nextLabel.className = 'carousel-nav__label';
+    nextLabel.setAttribute('aria-hidden', 'true');
+    nextLabel.textContent = 'Next';
+    nextBtn.appendChild(nextLabel);
+
+    container.insertBefore(prevBtn, container.firstChild);
+    container.appendChild(nextBtn);
+
+    var tolerance = 1;
+
+    function computeStep() {
+      var width = container.clientWidth || container.offsetWidth || 0;
+      if (!width) {
+        return 320;
+      }
+      return Math.max(width * 0.8, 240);
+    }
+
+    function shouldShowNav() {
+      if (navMode === 'on') {
+        return true;
+      }
+      if (navMode === 'auto') {
+        return container.scrollWidth - container.clientWidth > tolerance;
+      }
+      return false;
+    }
+
+    function updateNavState() {
+      var showNav = shouldShowNav();
+      container.classList.toggle('has-carousel-nav', showNav);
+      prevBtn.hidden = !showNav;
+      nextBtn.hidden = !showNav;
+      if (!showNav) {
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        prevBtn.setAttribute('aria-hidden', 'true');
+        nextBtn.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      prevBtn.setAttribute('aria-hidden', 'false');
+      nextBtn.setAttribute('aria-hidden', 'false');
+      var maxScrollLeft = container.scrollWidth - container.clientWidth - tolerance;
+      var canScrollPrev = container.scrollLeft > tolerance;
+      var canScrollNext = container.scrollLeft < maxScrollLeft;
+      prevBtn.disabled = !canScrollPrev;
+      nextBtn.disabled = !canScrollNext;
+    }
+
+    function scrollByStep(direction) {
+      var amount = computeStep() * direction;
+      var behavior = reduceMotion ? 'auto' : 'smooth';
+      try {
+        container.scrollBy({ left: amount, behavior: behavior });
+      } catch (error) {
+        container.scrollLeft += amount;
+      }
+    }
+
+    prevBtn.addEventListener('click', function () {
+      scrollByStep(-1);
+    });
+    nextBtn.addEventListener('click', function () {
+      scrollByStep(1);
+    });
+
+    container.addEventListener('scroll', updateNavState, { passive: true });
+    container.addEventListener('keydown', function (event) {
+      if (event.defaultPrevented) {
+        return;
+      }
+      if (event.key === 'Home') {
+        event.preventDefault();
+        var behavior = reduceMotion ? 'auto' : 'smooth';
+        try {
+          container.scrollTo({ left: 0, behavior: behavior });
+        } catch (error) {
+          container.scrollLeft = 0;
+        }
+      } else if (event.key === 'End') {
+        event.preventDefault();
+        var maxLeft = container.scrollWidth - container.clientWidth;
+        var behaviorEnd = reduceMotion ? 'auto' : 'smooth';
+        try {
+          container.scrollTo({ left: maxLeft, behavior: behaviorEnd });
+        } catch (error) {
+          container.scrollLeft = maxLeft;
+        }
+      }
+    });
+
+    if (typeof ResizeObserver === 'function') {
+      var resizeObserver = new ResizeObserver(function () {
+        updateNavState();
+      });
+      resizeObserver.observe(container);
+      container._sparkCarouselResizeObserver = resizeObserver;
+    } else {
+      var resizeHandler = function () {
+        updateNavState();
+      };
+      window.addEventListener('resize', resizeHandler);
+      container._sparkCarouselResizeHandler = resizeHandler;
+    }
+
+    container._sparkCarouselUpdate = updateNavState;
+    requestAnimationFrame(function () {
+      updateNavState();
+    });
+  }
+
+  function initImageGalleries() {
+    var carousels = document.querySelectorAll('.image-gallery.layout-carousel');
+    carousels.forEach(function (carousel) {
+      initCarouselGallery(carousel);
+    });
+  }
+
   function observe() {
     if (typeof MutationObserver === 'undefined') {
       return;
@@ -2538,6 +2735,7 @@ import basePath from './utils/base-path.js';
       var shouldRefreshCalendars = false;
       var shouldRefreshEvents = false;
       var shouldRefreshNavigation = false;
+      var shouldRefreshCarousels = false;
       mutations.forEach(function (mutation) {
         if (mutation.type !== 'childList') {
           return;
@@ -2564,6 +2762,9 @@ import basePath from './utils/base-path.js';
           if (node.matches('[data-events-block]') || node.querySelector('[data-events-block]')) {
             shouldRefreshEvents = true;
           }
+          if (node.matches('.layout-carousel') || node.querySelector('.layout-carousel')) {
+            shouldRefreshCarousels = true;
+          }
         });
       });
       if (shouldRefreshBlogDetails) {
@@ -2580,6 +2781,9 @@ import basePath from './utils/base-path.js';
       }
       if (shouldRefreshNavigation) {
         initNavigationFeatures();
+      }
+      if (shouldRefreshCarousels) {
+        initImageGalleries();
       }
     });
     observer.observe(document.body || document.documentElement, {
@@ -2647,6 +2851,7 @@ import basePath from './utils/base-path.js';
     initEventsBlocks();
     updateEventsCartIndicators();
     initCalendarBlocks();
+    initImageGalleries();
     observe();
   });
 
@@ -2667,5 +2872,9 @@ import basePath from './utils/base-path.js';
 
   window.SparkCMSCalendars = {
     refresh: initCalendarBlocks
+  };
+
+  window.SparkCMSImageGalleries = {
+    refresh: initImageGalleries
   };
 })();

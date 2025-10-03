@@ -35,7 +35,7 @@
         <dd><input type="text" name="custom_alt3" value=""></dd>
     </dl>
 </templateSetting>
-<div class="image-gallery row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" data-tpl-tooltip="Image Gallery">
+<div class="image-gallery row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3" data-tpl-tooltip="Image Gallery" data-carousel-nav="auto" tabindex="0">
     <div class="col gallery-item">
         <img src="{custom_img1}" alt="{custom_alt1}" class="img-fluid">
     </div>
