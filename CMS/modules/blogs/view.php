@@ -1,6 +1,6 @@
 <!-- File: view.php -->
 <div class="content-section" id="blogs">
-    <div class="blog-dashboard">
+    <div class="a11y-dashboard blog-dashboard">
         <header class="a11y-hero blog-hero">
             <div class="a11y-hero-content blog-hero-content">
                 <div>
@@ -9,11 +9,11 @@
                     <p class="a11y-hero-subtitle blog-hero-subtitle">Plan, publish, and measure the health of your content pipeline.</p>
                 </div>
                 <div class="a11y-hero-actions blog-hero-actions">
-                    <button type="button" class="blog-btn blog-btn--ghost" id="categoriesBtn">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" id="categoriesBtn">
                         <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
                         <span>Manage Categories</span>
                     </button>
-                    <button type="button" class="blog-btn blog-btn--primary" id="newPostBtn">
+                    <button type="button" class="a11y-btn a11y-btn--primary" id="newPostBtn">
                         <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                         <span>New Post</span>
                     </button>
@@ -76,7 +76,7 @@
                                     <option value="">All Authors</option>
                                 </select>
                             </div>
-                            <button type="button" class="blog-btn blog-btn--subtle" id="clearFilters">
+                            <button type="button" class="a11y-btn a11y-btn--subtle" id="clearFilters">
                                 <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
                                 <span>Reset</span>
                             </button>
@@ -160,7 +160,7 @@
                         <label for="postImage">Featured Image</label>
                         <div class="blog-image-input">
                             <input type="text" id="postImage" name="image" placeholder="Select an image from the Media Library" aria-describedby="postImageHint">
-                            <button type="button" class="blog-btn blog-btn--subtle" id="chooseFeaturedImage">
+                            <button type="button" class="a11y-btn a11y-btn--subtle" id="chooseFeaturedImage">
                                 <i class="fa-solid fa-images" aria-hidden="true"></i>
                                 <span>Select from Media Library</span>
                             </button>
