@@ -266,6 +266,10 @@
   var eventsPromise = null;
   var eventCategoriesPromise = null;
   var htmlParser = null;
+  var eventsDetailCache = Object.create(null);
+  var EVENTS_CART_STORAGE_KEY = 'sparkcms.events.cart';
+  var eventsCartState = loadEventsCartState();
+  var activeEventsModalState = null;
 
   function fetchEvents() {
     if (eventsPromise) {
@@ -553,9 +557,780 @@
     }
   }
 
+  function rememberEventDetail(event) {
+    if (!event || !event.raw) {
+      return;
+    }
+    var id = event.raw.id || event.raw.slug || '';
+    if (!id) {
+      return;
+    }
+    var detail = {
+      id: String(id),
+      title: event.raw.title || 'Untitled Event',
+      description: event.raw.description || '',
+      location: event.raw.location || '',
+      startDate: event.startDate instanceof Date && !Number.isNaN(event.startDate.getTime()) ? new Date(event.startDate.getTime()) : null,
+      endDate: event.endDate instanceof Date && !Number.isNaN(event.endDate.getTime()) ? new Date(event.endDate.getTime()) : null,
+      categoryNames: Array.isArray(event.categoryNames) ? event.categoryNames.slice() : [],
+      tickets: Array.isArray(event.raw.tickets)
+        ? event.raw.tickets.filter(function (ticket) {
+            return ticket && ticket.enabled !== false;
+          })
+        : [],
+      raw: event.raw
+    };
+    eventsDetailCache[detail.id] = detail;
+  }
+
+  function getEventDetailById(id) {
+    if (!id) {
+      return null;
+    }
+    return eventsDetailCache[id] || null;
+  }
+
+  function sanitizeEventHtml(html) {
+    if (!html) {
+      return '';
+    }
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    var forbidden = wrapper.querySelectorAll('script, style, iframe, object, embed, link, meta');
+    forbidden.forEach(function (node) {
+      if (node && node.parentNode) {
+        node.parentNode.removeChild(node);
+      }
+    });
+    var allowed = {
+      P: true,
+      BR: true,
+      STRONG: true,
+      EM: true,
+      B: true,
+      I: true,
+      UL: true,
+      OL: true,
+      LI: true,
+      A: true,
+      H1: true,
+      H2: true,
+      H3: true,
+      H4: true,
+      H5: true,
+      H6: true,
+      BLOCKQUOTE: true,
+      SPAN: true,
+      DIV: true
+    };
+    var nodes = wrapper.querySelectorAll('*');
+    nodes.forEach(function (node) {
+      if (!allowed[node.tagName]) {
+        var parent = node.parentNode;
+        if (!parent) {
+          return;
+        }
+        while (node.firstChild) {
+          parent.insertBefore(node.firstChild, node);
+        }
+        parent.removeChild(node);
+        return;
+      }
+      Array.prototype.slice
+        .call(node.attributes || [])
+        .forEach(function (attr) {
+          var name = attr.name.toLowerCase();
+          if (node.tagName === 'A' && (name === 'href' || name === 'title')) {
+            if (name === 'href') {
+              var href = node.getAttribute('href') || '';
+              if (/^javascript:/i.test(href) || /^data:/i.test(href)) {
+                node.removeAttribute('href');
+              }
+            }
+            return;
+          }
+          if (name.indexOf('aria-') === 0) {
+            return;
+          }
+          node.removeAttribute(attr.name);
+        });
+    });
+    return wrapper.innerHTML;
+  }
+
+  function loadEventsCartState() {
+    var fallback = { items: [] };
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return fallback;
+    }
+    try {
+      var stored = window.localStorage.getItem(EVENTS_CART_STORAGE_KEY);
+      if (!stored) {
+        return fallback;
+      }
+      var parsed = JSON.parse(stored);
+      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.items)) {
+        return fallback;
+      }
+      parsed.items = parsed.items.filter(function (item) {
+        if (!item || typeof item !== 'object') {
+          return false;
+        }
+        if (!item.eventId || !item.ticketId) {
+          return false;
+        }
+        var quantity = parseInt(item.quantity, 10);
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          return false;
+        }
+        var price = Number(item.price);
+        if (!Number.isFinite(price)) {
+          price = 0;
+        }
+        item.quantity = quantity;
+        item.price = price;
+        if (item.eventStart) {
+          var startDate = new Date(item.eventStart);
+          if (Number.isNaN(startDate.getTime())) {
+            item.eventStart = null;
+          }
+        }
+        if (item.eventEnd) {
+          var endDate = new Date(item.eventEnd);
+          if (Number.isNaN(endDate.getTime())) {
+            item.eventEnd = null;
+          }
+        }
+        return true;
+      });
+      return parsed;
+    } catch (error) {
+      console.warn('[SparkCMS] Unable to parse events cart from storage:', error);
+      return fallback;
+    }
+  }
+
+  function saveEventsCartState() {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+    try {
+      window.localStorage.setItem(EVENTS_CART_STORAGE_KEY, JSON.stringify(eventsCartState));
+    } catch (error) {
+      console.warn('[SparkCMS] Unable to persist events cart:', error);
+    }
+  }
+
+  function getCartItems() {
+    if (!eventsCartState || !Array.isArray(eventsCartState.items)) {
+      eventsCartState = { items: [] };
+    }
+    return eventsCartState.items;
+  }
+
+  function setCartItems(items) {
+    eventsCartState.items = items;
+    saveEventsCartState();
+    updateEventsCartIndicators();
+  }
+
+  function getCartItemCount() {
+    return getCartItems().reduce(function (total, item) {
+      var quantity = parseInt(item.quantity, 10);
+      if (!Number.isFinite(quantity) || quantity < 0) {
+        return total;
+      }
+      return total + quantity;
+    }, 0);
+  }
+
+  function getCartTotal() {
+    return getCartItems().reduce(function (total, item) {
+      var price = Number(item.price);
+      var quantity = parseInt(item.quantity, 10);
+      if (!Number.isFinite(price) || !Number.isFinite(quantity)) {
+        return total;
+      }
+      return total + price * quantity;
+    }, 0);
+  }
+
+  function updateEventsCartIndicators() {
+    var count = getCartItemCount();
+    var total = getCartTotal();
+    var totalLabel = formatCurrency(total);
+    if (!totalLabel) {
+      totalLabel = '$0.00';
+    }
+    document.querySelectorAll('[data-events-cart-count]').forEach(function (node) {
+      node.textContent = String(count);
+    });
+    document.querySelectorAll('[data-events-cart-total]').forEach(function (node) {
+      node.textContent = totalLabel;
+    });
+    document.querySelectorAll('[data-events-cart-open]').forEach(function (button) {
+      if (!(button instanceof HTMLElement)) {
+        return;
+      }
+      if (count > 0) {
+        button.classList.add('events-block__cart-button--active');
+      } else {
+        button.classList.remove('events-block__cart-button--active');
+      }
+    });
+  }
+
+  function updateCartButtonsExpanded(expanded) {
+    document.querySelectorAll('[data-events-cart-open]').forEach(function (button) {
+      if (button instanceof HTMLElement) {
+        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      }
+    });
+  }
+
+  function addTicketsToCart(detail, selections) {
+    if (!detail || !Array.isArray(selections) || !selections.length) {
+      return false;
+    }
+    var items = getCartItems().slice();
+    var didAdd = false;
+    selections.forEach(function (selection) {
+      if (!selection || !selection.ticket || !selection.ticketId) {
+        return;
+      }
+      var quantity = parseInt(selection.quantity, 10);
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        return;
+      }
+      var existing = items.find(function (item) {
+        return item.eventId === detail.id && item.ticketId === selection.ticketId;
+      });
+      var available = Number(selection.ticket.quantity);
+      if (existing) {
+        var targetQuantity = existing.quantity + quantity;
+        if (Number.isFinite(available) && available > 0) {
+          targetQuantity = Math.min(targetQuantity, available);
+        }
+        if (targetQuantity > existing.quantity) {
+          existing.quantity = targetQuantity;
+          didAdd = true;
+        }
+        return;
+      }
+      if (Number.isFinite(available) && available > 0) {
+        quantity = Math.min(quantity, available);
+      }
+      if (quantity <= 0) {
+        return;
+      }
+      items.push({
+        eventId: detail.id,
+        eventTitle: detail.title,
+        eventStart: detail.startDate instanceof Date ? detail.startDate.toISOString() : null,
+        eventEnd: detail.endDate instanceof Date ? detail.endDate.toISOString() : null,
+        ticketId: selection.ticketId,
+        ticketName: selection.ticket.name || 'General Admission',
+        price: Number(selection.ticket.price) || 0,
+        quantity: quantity
+      });
+      didAdd = true;
+    });
+    if (!didAdd) {
+      return false;
+    }
+    setCartItems(items);
+    return true;
+  }
+
+  function removeCartItem(eventId, ticketId) {
+    var items = getCartItems().filter(function (item) {
+      return !(item.eventId === eventId && item.ticketId === ticketId);
+    });
+    setCartItems(items);
+  }
+
+  function clearCart() {
+    setCartItems([]);
+  }
+
+  function getEventsModalState(container) {
+    if (!(container instanceof HTMLElement)) {
+      return null;
+    }
+    if (container._eventsModalState && container._eventsModalState.modal) {
+      return container._eventsModalState;
+    }
+    var modal = container.querySelector('[data-events-modal]');
+    if (!(modal instanceof HTMLElement)) {
+      return null;
+    }
+    var dialog = modal.querySelector('.events-modal__dialog');
+    var content = modal.querySelector('[data-events-modal-content]');
+    if (!(dialog instanceof HTMLElement) || !(content instanceof HTMLElement)) {
+      return null;
+    }
+    var state = {
+      container: container,
+      modal: modal,
+      dialog: dialog,
+      content: content,
+      titleId: content.dataset.eventsModalTitleId || dialog.getAttribute('aria-labelledby') || '',
+      lastTrigger: null,
+      currentMode: null,
+      notice: null
+    };
+    dialog.setAttribute('tabindex', '-1');
+    if (!modal.dataset.eventsModalBound) {
+      modal.dataset.eventsModalBound = 'true';
+      modal.addEventListener('click', function (event) {
+        var target = event.target;
+        if (!(target instanceof HTMLElement)) {
+          return;
+        }
+        if (target.dataset && target.dataset.eventsModalClose !== undefined) {
+          event.preventDefault();
+          closeEventsModal();
+        }
+      });
+    }
+    container._eventsModalState = state;
+    return state;
+  }
+
+  function trapModalFocus(dialog, event) {
+    var selectors = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    var focusable = Array.prototype.slice.call(dialog.querySelectorAll(selectors));
+    if (!focusable.length) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    var active = document.activeElement;
+    if (event.shiftKey) {
+      if (active === first || !dialog.contains(active)) {
+        event.preventDefault();
+        last.focus();
+      }
+    } else if (active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function handleModalKeydown(event) {
+    if (!activeEventsModalState || !(activeEventsModalState.dialog instanceof HTMLElement)) {
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeEventsModal();
+      return;
+    }
+    if (event.key === 'Tab') {
+      trapModalFocus(activeEventsModalState.dialog, event);
+    }
+  }
+
+  function openEventsModal(state, trigger) {
+    if (!state || !(state.modal instanceof HTMLElement) || !(state.dialog instanceof HTMLElement)) {
+      return;
+    }
+    if (activeEventsModalState && activeEventsModalState !== state) {
+      closeEventsModal();
+    }
+    state.lastTrigger = trigger || null;
+    state.modal.hidden = false;
+    activeEventsModalState = state;
+    if (document && document.body) {
+      document.body.classList.add('events-modal-open');
+    }
+    requestAnimationFrame(function () {
+      try {
+        state.dialog.focus();
+      } catch (error) {}
+    });
+    document.addEventListener('keydown', handleModalKeydown);
+  }
+
+  function closeEventsModal() {
+    if (!activeEventsModalState) {
+      return;
+    }
+    var state = activeEventsModalState;
+    activeEventsModalState = null;
+    if (state.modal instanceof HTMLElement) {
+      state.modal.hidden = true;
+    }
+    if (document && document.body) {
+      document.body.classList.remove('events-modal-open');
+    }
+    document.removeEventListener('keydown', handleModalKeydown);
+    if (state.currentMode === 'cart') {
+      updateCartButtonsExpanded(false);
+    }
+    var trigger = state.lastTrigger;
+    state.lastTrigger = null;
+    if (trigger && typeof trigger.focus === 'function') {
+      try {
+        trigger.focus();
+      } catch (error) {}
+    }
+  }
+
+  function setEventsModalNotice(state, message, type) {
+    if (!state || !(state.notice instanceof HTMLElement)) {
+      return;
+    }
+    if (!message) {
+      state.notice.textContent = '';
+      state.notice.className = 'events-modal__notice';
+      state.notice.hidden = true;
+      return;
+    }
+    var className = 'events-modal__notice';
+    if (type === 'success') {
+      className += ' events-modal__notice--success';
+    } else if (type === 'error') {
+      className += ' events-modal__notice--error';
+    }
+    state.notice.className = className;
+    state.notice.textContent = message;
+    state.notice.hidden = false;
+  }
+
+  function renderEventDetailsModal(state, detail) {
+    if (!state || !detail || !(state.content instanceof HTMLElement)) {
+      return;
+    }
+    state.content.innerHTML = '';
+    var titleId = state.titleId || 'events-modal-title';
+    var header = document.createElement('header');
+    header.className = 'events-modal__header';
+    var title = document.createElement('h3');
+    title.className = 'events-modal__title';
+    title.id = titleId;
+    title.textContent = detail.title;
+    header.appendChild(title);
+
+    var meta = document.createElement('div');
+    meta.className = 'events-modal__meta';
+    var hasMeta = false;
+    if (detail.startDate instanceof Date) {
+      var metaTime = document.createElement('time');
+      metaTime.dateTime = detail.startDate.toISOString();
+      metaTime.textContent = formatEventRange(detail.startDate, detail.endDate);
+      meta.appendChild(metaTime);
+      hasMeta = true;
+    }
+    if (detail.location) {
+      var metaLocation = document.createElement('span');
+      metaLocation.textContent = 'Location: ' + detail.location;
+      meta.appendChild(metaLocation);
+      hasMeta = true;
+    }
+    if (detail.categoryNames && detail.categoryNames.length) {
+      var badgeWrap = document.createElement('span');
+      badgeWrap.className = 'events-modal__meta-badges';
+      detail.categoryNames.forEach(function (name) {
+        var badge = document.createElement('span');
+        badge.className = 'events-block__badge';
+        badge.textContent = name;
+        badgeWrap.appendChild(badge);
+      });
+      meta.appendChild(badgeWrap);
+      hasMeta = true;
+    }
+    if (hasMeta) {
+      header.appendChild(meta);
+    }
+    state.content.appendChild(header);
+
+    state.dialog.setAttribute('aria-labelledby', title.id);
+
+    var body = document.createElement('div');
+    body.className = 'events-modal__body';
+    if (detail.description) {
+      var description = document.createElement('div');
+      description.className = 'events-modal__description';
+      description.innerHTML = sanitizeEventHtml(detail.description);
+      body.appendChild(description);
+    }
+
+    var tickets = detail.tickets || [];
+    var ticketEntries = [];
+    if (tickets.length) {
+      var ticketsContainer = document.createElement('div');
+      ticketsContainer.className = 'events-modal__tickets';
+      tickets.forEach(function (ticket, index) {
+        if (!ticket) {
+          return;
+        }
+        var ticketNode = document.createElement('div');
+        ticketNode.className = 'events-modal__ticket';
+
+        var info = document.createElement('div');
+        var heading = document.createElement('h4');
+        heading.textContent = ticket.name || 'Ticket ' + (index + 1);
+        info.appendChild(heading);
+        var price = document.createElement('div');
+        price.className = 'events-modal__ticket-price';
+        var priceValue = Number(ticket.price);
+        price.textContent = Number.isFinite(priceValue) && priceValue > 0 ? formatCurrency(priceValue) : 'Free';
+        info.appendChild(price);
+        if (Number.isFinite(Number(ticket.quantity)) && Number(ticket.quantity) > 0) {
+          var availability = document.createElement('div');
+          availability.className = 'events-modal__ticket-availability';
+          availability.textContent = 'Available: ' + Number(ticket.quantity);
+          info.appendChild(availability);
+        }
+        ticketNode.appendChild(info);
+
+        var quantityWrapper = document.createElement('label');
+        var quantityId = titleId + '-qty-' + (ticket.id || index);
+        quantityWrapper.setAttribute('for', quantityId);
+        quantityWrapper.textContent = 'Quantity';
+        var quantityInput = document.createElement('input');
+        quantityInput.type = 'number';
+        quantityInput.min = '0';
+        quantityInput.step = '1';
+        quantityInput.id = quantityId;
+        quantityInput.value = '0';
+        if (Number.isFinite(Number(ticket.quantity)) && Number(ticket.quantity) > 0) {
+          quantityInput.max = String(Number(ticket.quantity));
+        }
+        quantityInput.setAttribute('aria-label', 'Quantity for ' + (ticket.name || 'ticket'));
+        quantityWrapper.appendChild(quantityInput);
+        ticketNode.appendChild(quantityWrapper);
+
+        ticketsContainer.appendChild(ticketNode);
+        ticketEntries.push({
+          input: quantityInput,
+          ticket: ticket,
+          ticketId: ticket.id || String(index)
+        });
+      });
+      body.appendChild(ticketsContainer);
+    } else {
+      var noTickets = document.createElement('p');
+      noTickets.className = 'events-modal__ticket-availability';
+      noTickets.textContent = 'Tickets are not currently available for this event.';
+      body.appendChild(noTickets);
+    }
+
+    state.content.appendChild(body);
+
+    var notice = document.createElement('div');
+    notice.className = 'events-modal__notice';
+    notice.hidden = true;
+    notice.setAttribute('role', 'status');
+    state.content.appendChild(notice);
+    state.notice = notice;
+
+    var footer = document.createElement('div');
+    footer.className = 'events-modal__footer';
+    if (tickets.length) {
+      var addButton = document.createElement('button');
+      addButton.type = 'button';
+      addButton.className = 'events-modal__primary';
+      addButton.textContent = 'Add to cart';
+      addButton.addEventListener('click', function () {
+        var selections = ticketEntries
+          .map(function (entry) {
+            var quantity = parseInt(entry.input.value, 10);
+            return {
+              ticket: entry.ticket,
+              ticketId: entry.ticketId,
+              quantity: quantity
+            };
+          })
+          .filter(function (entry) {
+            return Number.isFinite(entry.quantity) && entry.quantity > 0;
+          });
+        if (!selections.length) {
+          setEventsModalNotice(state, 'Please choose at least one ticket to add to your cart.', 'error');
+          return;
+        }
+        var added = addTicketsToCart(detail, selections);
+        if (!added) {
+          setEventsModalNotice(state, 'Unable to add tickets to your cart. Please try a smaller quantity.', 'error');
+          return;
+        }
+        ticketEntries.forEach(function (entry) {
+          entry.input.value = '0';
+        });
+        updateEventsCartIndicators();
+        setEventsModalNotice(state, 'Tickets added to your cart.', 'success');
+      });
+      footer.appendChild(addButton);
+    }
+
+    var closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'events-modal__secondary';
+    closeButton.textContent = 'Close';
+    closeButton.addEventListener('click', function () {
+      closeEventsModal();
+    });
+    footer.appendChild(closeButton);
+
+    state.content.appendChild(footer);
+    state.currentMode = 'details';
+  }
+
+  function openEventDetailsModal(container, eventId, trigger) {
+    var state = getEventsModalState(container);
+    if (!state) {
+      return;
+    }
+    var detail = getEventDetailById(eventId);
+    if (!detail) {
+      return;
+    }
+    renderEventDetailsModal(state, detail);
+    setEventsModalNotice(state, '', null);
+    openEventsModal(state, trigger || null);
+  }
+
+  function renderCartModal(state) {
+    if (!state || !(state.content instanceof HTMLElement)) {
+      return;
+    }
+    state.content.innerHTML = '';
+    var titleId = state.titleId || 'events-modal-title';
+    var header = document.createElement('header');
+    header.className = 'events-modal__header';
+    var title = document.createElement('h3');
+    title.className = 'events-modal__title';
+    title.id = titleId;
+    title.textContent = 'Your event cart';
+    header.appendChild(title);
+    state.content.appendChild(header);
+    state.dialog.setAttribute('aria-labelledby', title.id);
+
+    var body = document.createElement('div');
+    body.className = 'events-modal__body events-modal__cart-summary';
+    var items = getCartItems();
+    if (!items.length) {
+      var empty = document.createElement('div');
+      empty.className = 'events-modal__empty-cart';
+      empty.textContent = 'Your cart is empty. Add tickets from an event to get started.';
+      body.appendChild(empty);
+    } else {
+      var list = document.createElement('div');
+      list.className = 'events-modal__cart-list';
+      items.forEach(function (item) {
+        var entry = document.createElement('div');
+        entry.className = 'events-modal__cart-item';
+        var info = document.createElement('div');
+        var heading = document.createElement('h4');
+        heading.textContent = item.eventTitle || 'Event';
+        info.appendChild(heading);
+        var meta = document.createElement('div');
+        meta.className = 'events-modal__cart-item-meta';
+        if (item.eventStart) {
+          var startDate = new Date(item.eventStart);
+          var endDate = item.eventEnd ? new Date(item.eventEnd) : null;
+          if (!Number.isNaN(startDate.getTime())) {
+            var time = document.createElement('time');
+            time.dateTime = startDate.toISOString();
+            time.textContent = formatEventRange(startDate, endDate instanceof Date && !Number.isNaN(endDate.getTime()) ? endDate : null);
+            meta.appendChild(time);
+          }
+        }
+        var ticketLine = document.createElement('span');
+        ticketLine.textContent = (item.ticketName || 'Ticket') + ' × ' + item.quantity;
+        meta.appendChild(ticketLine);
+        var priceLine = document.createElement('span');
+        priceLine.textContent = formatCurrency(Number(item.price) * Number(item.quantity)) || '$0.00';
+        meta.appendChild(priceLine);
+        info.appendChild(meta);
+        entry.appendChild(info);
+
+        var removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'events-modal__cart-remove';
+        removeButton.textContent = 'Remove';
+        removeButton.addEventListener('click', function () {
+          removeCartItem(item.eventId, item.ticketId);
+          renderCartModal(state);
+        });
+        entry.appendChild(removeButton);
+        list.appendChild(entry);
+      });
+      body.appendChild(list);
+
+      var total = document.createElement('div');
+      total.className = 'events-modal__cart-total';
+      total.textContent = 'Total: ' + (formatCurrency(getCartTotal()) || '$0.00');
+      body.appendChild(total);
+    }
+
+    state.content.appendChild(body);
+
+    var notice = document.createElement('div');
+    notice.className = 'events-modal__notice';
+    notice.hidden = true;
+    notice.setAttribute('role', 'status');
+    state.content.appendChild(notice);
+    state.notice = notice;
+
+    var footer = document.createElement('div');
+    footer.className = 'events-modal__footer';
+    if (items.length) {
+      var clearButton = document.createElement('button');
+      clearButton.type = 'button';
+      clearButton.className = 'events-modal__secondary';
+      clearButton.textContent = 'Clear cart';
+      clearButton.addEventListener('click', function () {
+        clearCart();
+        renderCartModal(state);
+      });
+      footer.appendChild(clearButton);
+
+      var checkoutButton = document.createElement('button');
+      checkoutButton.type = 'button';
+      checkoutButton.className = 'events-modal__primary';
+      checkoutButton.textContent = 'Proceed to checkout';
+      checkoutButton.addEventListener('click', function () {
+        setEventsModalNotice(state, 'Checkout is not available in this demo experience. Please contact our team to complete your registration.', 'error');
+      });
+      footer.appendChild(checkoutButton);
+    } else {
+      var closeButton = document.createElement('button');
+      closeButton.type = 'button';
+      closeButton.className = 'events-modal__primary';
+      closeButton.textContent = 'Browse events';
+      closeButton.addEventListener('click', function () {
+        closeEventsModal();
+      });
+      footer.appendChild(closeButton);
+    }
+
+    state.content.appendChild(footer);
+    state.currentMode = 'cart';
+  }
+
+  function openEventsCartModal(container, trigger) {
+    var state = getEventsModalState(container);
+    if (!state) {
+      return;
+    }
+    renderCartModal(state);
+    setEventsModalNotice(state, '', null);
+    updateCartButtonsExpanded(true);
+    openEventsModal(state, trigger || null);
+  }
+
   function createEventsItem(event, options) {
     var item = document.createElement('article');
     item.className = 'events-block__item';
+    rememberEventDetail(event);
+    var eventId = event && event.raw && event.raw.id ? String(event.raw.id) : '';
+    if (eventId) {
+      item.setAttribute('data-events-id', eventId);
+    }
     if (event.id) {
       item.setAttribute('data-events-id', String(event.id));
     }
@@ -647,12 +1422,32 @@
       body.appendChild(description);
     }
 
+    var actions = document.createElement('div');
+    actions.className = 'events-block__actions';
+
+    if (eventId && options.container) {
+      var registerButton = document.createElement('button');
+      registerButton.type = 'button';
+      registerButton.className = 'events-block__cta events-block__cta--register';
+      registerButton.textContent = 'Details & Register';
+      registerButton.addEventListener('click', function (evt) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        openEventDetailsModal(options.container, eventId, registerButton);
+      });
+      actions.appendChild(registerButton);
+    }
+
     if (options.showButton && linkUrl) {
       var cta = document.createElement('a');
       cta.className = 'events-block__cta';
       cta.href = linkUrl;
       cta.textContent = options.buttonLabel || 'View event';
-      body.appendChild(cta);
+      actions.appendChild(cta);
+    }
+
+    if (actions.childNodes.length) {
+      body.appendChild(actions);
     }
 
     item.appendChild(body);
@@ -666,6 +1461,19 @@
     var itemsHost = container.querySelector('[data-events-items]');
     if (!itemsHost) {
       return;
+    }
+
+    updateEventsCartIndicators();
+
+    if (!container.dataset.eventsControlsBound) {
+      container.dataset.eventsControlsBound = 'true';
+      var cartButton = container.querySelector('[data-events-cart-open]');
+      if (cartButton) {
+        cartButton.addEventListener('click', function (event) {
+          event.preventDefault();
+          openEventsCartModal(container, cartButton);
+        });
+      }
     }
 
     itemsHost.innerHTML = '';
@@ -698,7 +1506,8 @@
       showDescription: parseBooleanOption(container.dataset.eventsShowDescription, true),
       showLocation: parseBooleanOption(container.dataset.eventsShowLocation, true),
       showCategories: parseBooleanOption(container.dataset.eventsShowCategories, true),
-      showPrice: parseBooleanOption(container.dataset.eventsShowPrice, true)
+      showPrice: parseBooleanOption(container.dataset.eventsShowPrice, true),
+      container: container
     };
 
     Promise.all([fetchEvents(), fetchEventCategories()])
@@ -773,6 +1582,7 @@
           var node = createEventsItem(event, options);
           itemsHost.appendChild(node);
         });
+        updateEventsCartIndicators();
       })
       .catch(function () {
         itemsHost.innerHTML = '';
@@ -785,6 +1595,7 @@
     blocks.forEach(function (block) {
       renderEventsBlock(block);
     });
+    updateEventsCartIndicators();
   }
 
   var calendarEventsPromise = null;
@@ -1266,6 +2077,7 @@
   ready(function () {
     initBlogLists();
     initEventsBlocks();
+    updateEventsCartIndicators();
     initCalendarBlocks();
     observe();
   });
