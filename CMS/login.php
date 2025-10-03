@@ -13,6 +13,8 @@ $username = sanitize_text($_POST['username'] ?? '');
 $password = $_POST['password'] ?? '';
 $user = find_user($username);
     if ($user && password_verify($password, $user['password'])) {
+        session_regenerate_id(true);
+        session_unset();
         $_SESSION['user'] = $user;
         header('Location: admin.php');
         exit;
