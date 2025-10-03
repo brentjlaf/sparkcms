@@ -170,7 +170,7 @@ $(function(){
         if (!$button.length) {
             return;
         }
-        const $text = $button.find('.analytics-btn__text');
+        const $text = $button.find('.a11y-btn__text, .analytics-btn__text');
         const defaultText = $button.data('defaultText') ?? $text.text();
         if ($button.data('defaultText') === undefined) {
             $button.data('defaultText', defaultText);

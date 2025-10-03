@@ -3949,44 +3949,42 @@
             color: rgba(255,255,255,0.85);
         }
 
-        .analytics-btn {
-            display: inline-flex;
-            align-items: center;
+        .analytics-hero-actions .a11y-btn {
             gap: 10px;
+            padding: 10px 18px;
             border-radius: 25px;
             border: none;
-            cursor: pointer;
-            font-weight: 600;
             font-size: 14px;
-            padding: 10px 18px;
             transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            box-shadow: none;
         }
 
-        .analytics-btn i {
+        .analytics-hero-actions .a11y-btn i {
             font-size: 14px;
         }
 
-        .analytics-btn--primary {
+        .analytics-hero-actions .a11y-btn--primary {
             background: #38bdf8;
             color: #0f172a;
             box-shadow: 0 16px 32px rgba(56, 189, 248, 0.35);
         }
 
-        .analytics-btn--primary:hover {
+        .analytics-hero-actions .a11y-btn--primary:hover {
             transform: translateY(-1px);
             box-shadow: 0 20px 36px rgba(56, 189, 248, 0.45);
         }
 
-        .analytics-btn--ghost {
+        .analytics-hero-actions .a11y-btn--ghost {
             background: rgba(15,23,42,0.35);
             color: #e2e8f0;
+            border: none;
         }
 
-        .analytics-btn--ghost:hover {
+        .analytics-hero-actions .a11y-btn--ghost:hover {
             background: rgba(15,23,42,0.5);
         }
 
-        .analytics-btn.is-loading {
+        .analytics-hero-actions .a11y-btn.is-loading {
             opacity: 0.7;
             cursor: wait;
         }
