@@ -5,599 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accessibility Dashboard - WCAG Compliance Overview</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #f8fafc;
-            color: #334155;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px;
-        }
-
-        /* Header Section */
-        .header {
-            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
-            color: white;
-            padding: 50px;
-            border-radius: 16px;
-            margin-bottom: 40px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 300px;
-            height: 300px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            transform: translate(30%, -30%);
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .header h1 {
-            font-size: 36px;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 18px;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-
-        .site-overview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-        }
-
-        .overview-stat {
-            text-align: center;
-            padding: 20px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-        }
-
-        .overview-stat-value {
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .overview-stat-label {
-            font-size: 14px;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Controls */
-        .controls {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .search-box {
-            position: relative;
-            flex: 1;
-            max-width: 400px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 45px 12px 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #7c3aed;
-        }
-
-        .search-box i {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 20px;
-            background: white;
-            color: #64748b;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .filter-btn:hover {
-            border-color: #7c3aed;
-            color: #7c3aed;
-        }
-
-        .filter-btn.active {
-            background: #7c3aed;
-            color: white;
-            border-color: #7c3aed;
-        }
-
-        .view-toggle {
-            display: flex;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .view-btn {
-            padding: 8px 15px;
-            border: none;
-            background: white;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .view-btn.active {
-            background: #7c3aed;
-            color: white;
-        }
-
-        /* Pages Grid */
-        .pages-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .page-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: all 0.3s;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .page-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .page-card-header {
-            padding: 25px 25px 0 25px;
-            position: relative;
-        }
-
-        .page-score {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            font-size: 18px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-
-        .score-aaa { background: linear-gradient(135deg, #059669, #047857); }
-        .score-aa { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .score-partial { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .score-failing { background: linear-gradient(135deg, #ef4444, #dc2626); }
-
-        .page-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 8px;
-            padding-right: 70px;
-            line-height: 1.3;
-        }
-
-        .page-url {
-            font-family: monospace;
-            font-size: 13px;
-            color: #64748b;
-            margin-bottom: 20px;
-        }
-
-        .page-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .page-stat {
-            text-align: center;
-        }
-
-        .page-stat-value {
-            font-size: 20px;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 4px;
-        }
-
-        .page-stat-label {
-            font-size: 11px;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .page-issues {
-            padding: 20px 25px 25px 25px;
-            background: #f8fafc;
-            border-top: 1px solid #f1f5f9;
-        }
-
-        .issues-summary {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .issues-count {
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .wcag-level {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .level-aaa {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .level-aa {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
-
-        .level-partial {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        .level-failing {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .issues-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .issue-tag {
-            padding: 4px 10px;
-            background: #f1f5f9;
-            color: #475569;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .issue-tag.critical {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .issue-tag.serious {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        /* Table View */
-        .table-view {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            overflow: hidden;
-            display: none;
-        }
-
-        .table-view.active {
-            display: block;
-        }
-
-        .table-header {
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .table-row {
-            display: grid;
-            grid-template-columns: 2fr 100px 100px 100px 100px 150px 80px;
-            align-items: center;
-            padding: 20px 25px;
-            border-bottom: 1px solid #f1f5f9;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .table-row:hover {
-            background: #f8fafc;
-        }
-
-        .table-header .table-row {
-            cursor: default;
-            font-weight: 600;
-            color: #64748b;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .table-header .table-row:hover {
-            background: #f8fafc;
-        }
-
-        .table-score {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            font-size: 14px;
-        }
-
-        .table-issues {
-            font-size: 12px;
-        }
-
-        .last-updated {
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        /* Action Buttons */
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .bulk-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
-        }
-
-        .btn-secondary {
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid #e2e8f0;
-        }
-
-        .btn-secondary:hover {
-            background: #e2e8f0;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-
-            .header {
-                padding: 30px 25px;
-            }
-
-            .header h1 {
-                font-size: 28px;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-box {
-                max-width: none;
-            }
-
-            .pages-container {
-                grid-template-columns: 1fr;
-            }
-
-            .table-row {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .table-view .table-row > div {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #64748b;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: #1e293b;
-        }
-
-        /* Page Detail Modal */
-        .page-detail {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .page-detail.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .detail-content {
-            background: white;
-            border-radius: 16px;
-            max-width: 800px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .detail-header {
-            padding: 30px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: #64748b;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-
-        .close-btn:hover {
-            background: #f1f5f9;
-            color: #1e293b;
-        }
-
-        .analyze-btn {
-            background: linear-gradient(135deg, #059669, #047857);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
-        }
-
-        .analyze-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
-        }
-
-        .compliance-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-    </style>
+    <link rel="stylesheet" href="../spark-cms.css">
+    <link rel="stylesheet" href="accessibility.css">
 </head>
-<body>
-    <div class="container">
+<body class="accessibility-page accessibility-dashboard-page">
+    <div class="a11y-container">
         <!-- Header -->
         <header class="header">
             <div class="header-content">
@@ -687,7 +99,7 @@
         </div>
 
         <!-- Empty State -->
-        <div class="empty-state" id="empty-state" style="display: none;">
+        <div class="empty-state" id="empty-state" hidden>
             <i class="fas fa-universal-access"></i>
             <h3>No pages found</h3>
             <p>Try adjusting your search or filter criteria</p>
@@ -908,11 +320,11 @@
             if (filteredPages.length === 0) {
                 grid.style.display = 'none';
                 document.getElementById('table-view').style.display = 'none';
-                emptyState.style.display = 'block';
+                emptyState.hidden = false;
                 return;
             }
 
-            emptyState.style.display = 'none';
+            emptyState.hidden = true;
             
             // Render grid view
             grid.innerHTML = '';
@@ -937,14 +349,16 @@
             card.onclick = () => openPageDetail(path, data);
 
             const scoreClass = getScoreClass(data.accessibilityScore);
-            const levelClass = getLevelClass(data.wcagLevel);
+            const compliance = getComplianceStatus(data);
+            const issueSeverityClass = getIssueSeverity(data);
+            const severitySuffix = issueSeverityClass ? ` ${issueSeverityClass}` : '';
 
             card.innerHTML = `
                 <div class="page-card-header">
                     <div class="page-score ${scoreClass}">${data.accessibilityScore}%</div>
                     <div class="page-title">${data.title}</div>
                     <div class="page-url">${data.url}</div>
-                    
+
                     <div class="page-stats">
                         <div class="page-stat">
                             <div class="page-stat-value">${data.violations.total}</div>
@@ -960,19 +374,15 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="page-issues">
                     <div class="issues-summary">
                         <div class="issues-count">${data.violations.total} Issues Found</div>
-                        <div class="wcag-level ${levelClass}">
-                            ${data.wcagLevel} ${data.violations.critical > 0 ? 'Failing' : 
-                              data.wcagLevel === 'AAA' ? 'Compliant' : 
-                              data.wcagLevel === 'AA' ? 'Compliant' : 'Partial'}
-                        </div>
+                        <span class="status-badge ${compliance.statusClass}">${compliance.label}</span>
                     </div>
                     <div class="issues-preview">
-                        ${data.issues.preview.map(issue => 
-                            `<div class="issue-tag ${data.violations.critical > 0 ? 'critical' : data.violations.serious > 0 ? 'serious' : ''}">${issue}</div>`
+                        ${data.issues.preview.map(issue =>
+                            `<span class="issue-tag${severitySuffix}">${issue}</span>`
                         ).join('')}
                     </div>
                 </div>
@@ -987,27 +397,28 @@
             row.onclick = () => openPageDetail(path, data);
 
             const scoreClass = getScoreClass(data.accessibilityScore);
+            const compliance = getComplianceStatus(data);
 
             row.innerHTML = `
                 <div>
-                    <div style="font-weight: 600; color: #1e293b; margin-bottom: 4px;">${data.title}</div>
-                    <div style="font-family: monospace; font-size: 12px; color: #64748b;">${data.url}</div>
+                    <div class="table-row-title">${data.title}</div>
+                    <div class="table-row-url">${data.url}</div>
                 </div>
                 <div class="table-score ${scoreClass}">${data.accessibilityScore}%</div>
                 <div>
-                    <span class="compliance-indicator">
-                        <i class="fas ${getWcagIcon(data.wcagLevel)}" style="color: ${getWcagColor(data.wcagLevel)};"></i>
+                    <span class="compliance-indicator ${compliance.statusClass}">
+                        <i class="fas ${getWcagIcon(data.wcagLevel)}"></i>
                         ${data.wcagLevel}
                     </span>
                 </div>
                 <div class="table-issues">
-                    <div style="font-weight: 600; margin-bottom: 2px;">${data.violations.total} total</div>
-                    <div style="color: #ef4444;">${data.violations.critical} critical</div>
+                    <div class="table-issues-count">${data.violations.total} total</div>
+                    <div class="table-issues-critical">${data.violations.critical} critical</div>
                 </div>
-                <div style="color: #f59e0b;">${data.warnings}</div>
+                <div class="table-warnings">${data.warnings}</div>
                 <div class="last-updated">${data.lastScanned}</div>
                 <div>
-                    <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation(); analyzePageFull('${path}')">
+                    <button class="btn btn-primary btn-compact" type="button" onclick="event.stopPropagation(); analyzePageFull('${path}')">
                         <i class="fas fa-universal-access"></i>
                     </button>
                 </div>
@@ -1041,19 +452,32 @@
         }
 
         function getScoreClass(score) {
-            if (score >= 90) return 'score-aaa';
-            if (score >= 80) return 'score-aa';
-            if (score >= 60) return 'score-partial';
-            return 'score-failing';
+            if (score >= 90) return 'status-good';
+            if (score >= 80) return 'status-warning';
+            if (score >= 60) return 'status-partial';
+            return 'status-critical';
         }
 
-        function getLevelClass(level) {
-            switch(level) {
-                case 'AAA': return 'level-aaa';
-                case 'AA': return 'level-aa';
-                case 'Partial': return 'level-partial';
-                default: return 'level-failing';
+        function getComplianceStatus(data) {
+            if (data.violations.critical > 0 || data.accessibilityScore < 60) {
+                return { statusClass: 'status-critical', label: `${data.wcagLevel} Failing` };
             }
+
+            if (data.wcagLevel === 'AAA') {
+                return { statusClass: 'status-good', label: 'AAA Compliant' };
+            }
+
+            if (data.wcagLevel === 'AA') {
+                return { statusClass: 'status-good', label: 'AA Compliant' };
+            }
+
+            return { statusClass: 'status-warning', label: `${data.wcagLevel} Partial` };
+        }
+
+        function getIssueSeverity(data) {
+            if (data.violations.critical > 0) return 'critical';
+            if (data.violations.serious > 0) return 'serious';
+            return '';
         }
 
         function getWcagIcon(level) {
@@ -1062,15 +486,6 @@
                 case 'AA': return 'fa-check';
                 case 'Partial': return 'fa-exclamation-triangle';
                 default: return 'fa-times-circle';
-            }
-        }
-
-        function getWcagColor(level) {
-            switch(level) {
-                case 'AAA': return '#059669';
-                case 'AA': return '#3b82f6';
-                case 'Partial': return '#f59e0b';
-                default: return '#ef4444';
             }
         }
 
