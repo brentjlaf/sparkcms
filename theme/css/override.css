@@ -144,7 +144,8 @@ button:focus-visible,
     transition: all 0.3s ease;
 }
 
-.main-nav li:hover ul {
+.main-nav li:hover > ul,
+.main-nav li:focus-within > ul {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
