@@ -1,6 +1,6 @@
 <?php
 // File: bundle.php
-// Combine theme CSS and JS files into single bundles.
+// Combine theme CSS files into a single bundle.
 
 $base = __DIR__;
 
@@ -10,12 +10,6 @@ $cssFiles = [
     "$base/theme/css/override.css",
 ];
 $cssOutput = "$base/theme/css/combined.css";
-
-$jsFiles = [
-    "$base/theme/js/global.js",
-    "$base/theme/js/script.js",
-];
-$jsOutput = "$base/theme/js/combined.js";
 
 function bundle(array $files, string $output): void
 {
@@ -31,4 +25,3 @@ function bundle(array $files, string $output): void
 }
 
 bundle($cssFiles, $cssOutput);
-bundle($jsFiles, $jsOutput);

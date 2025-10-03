@@ -502,10 +502,7 @@ if ($templateFile && (!$logged_in || $preview_mode)) {
         &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($settings['site_name'] ?? 'SparkCMS'); ?>
     </footer>
 <?php endif; ?>
-<?php if ($logged_in): ?>
-<script src="<?php echo $scriptBase; ?>/theme/js/combined.js"></script>
-<?php else: ?>
-<script src="<?php echo $scriptBase; ?>/theme/js/combined.js"></script>
-<?php endif; ?>
+<script src="<?php echo $scriptBase; ?>/theme/js/global.js"></script>
+<script src="<?php echo $scriptBase; ?>/theme/js/script.js"></script>
 </body>
 </html>
