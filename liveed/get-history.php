@@ -1,23 +1,19 @@
 <?php
 require_once __DIR__ . '/../CMS/includes/auth.php';
-require_once __DIR__ . '/../CMS/includes/data.php';
+require_once __DIR__ . '/lib/helpers.php';
+require_once __DIR__ . '/lib/PageRepository.php';
 require_login();
 
-$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-if (!$id) {
-    http_response_code(400);
-    echo 'Invalid ID';
-    exit;
+$repository = new PageRepository();
+
+try {
+    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
+    $history = $repository->getHistory($id, $limit);
+    header('Content-Type: application/json');
+    echo json_encode(['history' => $history]);
+} catch (PageRepositoryException $exception) {
+    respond_json(['error' => $exception->getMessage()], $exception->getStatusCode());
+} catch (Throwable $exception) {
+    respond_json(['error' => 'Unexpected error loading history.'], 500);
 }
-
-$limit = isset($_GET['limit']) ? intval($_GET['limit']) : 20;
-if ($limit <= 0) {
-    $limit = 20;
-}
-
-$historyFile = __DIR__ . '/../CMS/data/page_history.json';
-$historyData = get_cached_json($historyFile);
-$entries = isset($historyData[$id]) ? array_slice($historyData[$id], -$limit) : [];
-header('Content-Type: application/json');
-echo json_encode(['history' => $entries]);
-
