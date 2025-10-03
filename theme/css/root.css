@@ -199,6 +199,22 @@
   --font-weight-black: 900;
   /*
    |--------------------------------
+   | Spacing Scale
+   |--------------------------------
+  */
+  --space-0: 0px;
+  --space-2xs: 10px;
+  --space-xs: 15px;
+  --space-sm: 20px;
+  --space-md: 25px;
+  --space-lg: 30px;
+  --space-xl: 45px;
+  --space-2xl: 60px;
+  --space-3xl: 90px;
+  --space-4xl: 120px;
+  --space-5xl: 150px;
+  /*
+   |--------------------------------
    | Line heights
    |--------------------------------
   */
@@ -406,64 +422,64 @@
    | Medium / Default
    |--------------------------------
   */
-  --content-area-p-x: 45px;
-  --content-area-p-x-tablet: 25px;
-  --content-area-p-x-phone: 0px;
+  --content-area-p-x: var(--space-xl);
+  --content-area-p-x-tablet: var(--space-md);
+  --content-area-p-x-phone: var(--space-0);
   /*
    |--------------------------------
    | Small
    |--------------------------------
   */
-  --content-area-sm-p-t: 45px;
-  --content-area-sm-p-b: 30px;
-  --content-area-sm-p-t-tablet: 45px;
-  --content-area-sm-p-b-tablet: 30px;
-  --content-area-sm-p-t-phone: 45px;
-  --content-area-sm-p-b-phone: 30px;
+  --content-area-sm-p-t: var(--space-xl);
+  --content-area-sm-p-b: var(--space-lg);
+  --content-area-sm-p-t-tablet: var(--content-area-sm-p-t);
+  --content-area-sm-p-b-tablet: var(--content-area-sm-p-b);
+  --content-area-sm-p-t-phone: var(--content-area-sm-p-t);
+  --content-area-sm-p-b-phone: var(--content-area-sm-p-b);
   /*
    |--------------------------------
    | Medium
    |--------------------------------
   */
-  --content-area-md-p-t: 60px;
-  --content-area-md-p-b: 30px;
-  --content-area-md-p-t-tablet: 60px;
-  --content-area-md-p-b-tablet: 30px;
-  --content-area-md-p-t-phone: 60px;
-  --content-area-md-p-b-phone: 30px;
+  --content-area-md-p-t: var(--space-2xl);
+  --content-area-md-p-b: var(--space-lg);
+  --content-area-md-p-t-tablet: var(--content-area-md-p-t);
+  --content-area-md-p-b-tablet: var(--content-area-md-p-b);
+  --content-area-md-p-t-phone: var(--content-area-md-p-t);
+  --content-area-md-p-b-phone: var(--content-area-md-p-b);
   /*
    |--------------------------------
    | Large
    |--------------------------------
   */
-  --content-area-lg-p-t: 90px;
-  --content-area-lg-p-b: 60px;
-  --content-area-lg-p-t-tablet: 90px;
-  --content-area-lg-p-b-tablet: 60px;
-  --content-area-lg-p-t-phone: 60px;
-  --content-area-lg-p-b-phone: 30px;
+  --content-area-lg-p-t: clamp(var(--space-2xl), 12vw, var(--space-3xl));
+  --content-area-lg-p-b: var(--space-2xl);
+  --content-area-lg-p-t-tablet: var(--content-area-lg-p-t);
+  --content-area-lg-p-b-tablet: var(--content-area-lg-p-b);
+  --content-area-lg-p-t-phone: var(--space-2xl);
+  --content-area-lg-p-b-phone: var(--space-lg);
   /*
    |--------------------------------
    | Extra Large
    |--------------------------------
   */
-  --content-area-xl-p-t: 120px;
-  --content-area-xl-p-b: 90px;
-  --content-area-xl-p-t-tablet: 120px;
-  --content-area-xl-p-b-tablet: 90px;
-  --content-area-xl-p-t-phone: 60px;
-  --content-area-xl-p-b-phone: 30px;
+  --content-area-xl-p-t: clamp(var(--space-2xl), 16vw, var(--space-4xl));
+  --content-area-xl-p-b: var(--space-3xl);
+  --content-area-xl-p-t-tablet: var(--content-area-xl-p-t);
+  --content-area-xl-p-b-tablet: var(--content-area-xl-p-b);
+  --content-area-xl-p-t-phone: var(--space-2xl);
+  --content-area-xl-p-b-phone: var(--space-lg);
   /*
    |--------------------------------
    | XX Large
    |--------------------------------
   */
-  --content-area-xxl-p-t: 150px;
-  --content-area-xxl-p-b: 120px;
-  --content-area-xxl-p-t-tablet: 150px;
-  --content-area-xxl-p-b-tablet: 120px;
-  --content-area-xxl-p-t-phone: 90px;
-  --content-area-xxl-p-b-phone: 60px;
+  --content-area-xxl-p-t: clamp(var(--space-3xl), 20vw, var(--space-5xl));
+  --content-area-xxl-p-b: var(--space-4xl);
+  --content-area-xxl-p-t-tablet: var(--content-area-xxl-p-t);
+  --content-area-xxl-p-b-tablet: var(--content-area-xxl-p-b);
+  --content-area-xxl-p-t-phone: var(--space-3xl);
+  --content-area-xxl-p-b-phone: var(--space-2xl);
   /*
    |-----------------------------------------------------------
    |
