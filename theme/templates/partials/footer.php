@@ -29,7 +29,7 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <button id="back-to-top-btn" class="_js-scroll-top" aria-label="Back to Top">
+    <button id="back-to-top-btn" class="_js-scroll-top" aria-label="Back to Top" hidden aria-hidden="true">
         <span>
             <span>
                 <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
