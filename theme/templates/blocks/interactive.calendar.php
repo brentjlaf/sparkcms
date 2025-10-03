@@ -6,6 +6,7 @@
         <dd>
             <select name="custom_layout">
                 <option value="list" selected>Event list</option>
+                <option value="calendar">Calendar view</option>
                 <option value="cards">Event cards</option>
                 <option value="compact">Compact list</option>
             </select>

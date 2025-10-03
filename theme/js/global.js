@@ -1853,9 +1853,181 @@
     return startLabel + ' ' + startTime + ' – ' + endLabel + ' ' + endTime;
   }
 
+  function formatMonthYearLabel(date) {
+    if (!(date instanceof Date)) {
+      return '';
+    }
+    try {
+      return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    } catch (err) {
+      return (MONTH_NAMES[date.getMonth()] || '') + ' ' + date.getFullYear();
+    }
+  }
+
+  function formatCalendarRangeLabel(start, end) {
+    if (!(start instanceof Date) || !(end instanceof Date)) {
+      return '';
+    }
+    try {
+      var formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+      return formatter.format(start) + ' – ' + formatter.format(end);
+    } catch (err) {
+      var startLabel = (MONTH_NAMES[start.getMonth()] || '') + ' ' + start.getDate();
+      var endLabel = (MONTH_NAMES[end.getMonth()] || '') + ' ' + end.getDate();
+      return startLabel + ' – ' + endLabel;
+    }
+  }
+
+  function computeCalendarWindow(reference) {
+    var base = reference instanceof Date ? reference : new Date();
+    var monthStart = new Date(base.getFullYear(), base.getMonth(), 1);
+    var monthEnd = new Date(base.getFullYear(), base.getMonth() + 1, 0);
+    var gridStart = new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
+    gridStart.setDate(gridStart.getDate() - gridStart.getDay());
+    gridStart.setHours(0, 0, 0, 0);
+    var gridEnd = new Date(monthEnd.getFullYear(), monthEnd.getMonth(), monthEnd.getDate());
+    gridEnd.setDate(gridEnd.getDate() + (6 - gridEnd.getDay()));
+    gridEnd.setHours(23, 59, 59, 999);
+    var totalDays = Math.round((gridEnd.getTime() - gridStart.getTime()) / 86400000) + 1;
+    return {
+      displayMonth: monthStart,
+      monthStart: monthStart,
+      monthEnd: monthEnd,
+      gridStart: gridStart,
+      gridEnd: gridEnd,
+      totalDays: totalDays
+    };
+  }
+
+  function formatDateKey(date) {
+    if (!(date instanceof Date)) {
+      return '';
+    }
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var monthLabel = month < 10 ? '0' + month : String(month);
+    var dayLabel = day < 10 ? '0' + day : String(day);
+    return year + '-' + monthLabel + '-' + dayLabel;
+  }
+
+  function renderCalendarMonth(container, host, occurrences, settings) {
+    var calendar = document.createElement('div');
+    calendar.className = 'calendar-block__calendar';
+    var windowInfo = settings.window || computeCalendarWindow(new Date());
+
+    var header = document.createElement('div');
+    header.className = 'calendar-block__calendar-header';
+    var monthEl = document.createElement('div');
+    monthEl.className = 'calendar-block__calendar-month';
+    monthEl.textContent = formatMonthYearLabel(windowInfo.displayMonth);
+    header.appendChild(monthEl);
+    var rangeEl = document.createElement('div');
+    rangeEl.className = 'calendar-block__calendar-range';
+    rangeEl.textContent = formatCalendarRangeLabel(windowInfo.monthStart, windowInfo.monthEnd);
+    header.appendChild(rangeEl);
+    calendar.appendChild(header);
+
+    var weekdaysRow = document.createElement('div');
+    weekdaysRow.className = 'calendar-block__calendar-weekdays';
+    for (var i = 0; i < 7; i += 1) {
+      var weekdayCell = document.createElement('div');
+      weekdayCell.textContent = WEEKDAY_NAMES[i];
+      weekdaysRow.appendChild(weekdayCell);
+    }
+    calendar.appendChild(weekdaysRow);
+
+    var grid = document.createElement('div');
+    grid.className = 'calendar-block__calendar-grid';
+    var eventsByDay = {};
+    occurrences.forEach(function (occurrence) {
+      var key = formatDateKey(occurrence.start);
+      if (!key) {
+        return;
+      }
+      if (!eventsByDay[key]) {
+        eventsByDay[key] = [];
+      }
+      eventsByDay[key].push(occurrence);
+    });
+
+    Object.keys(eventsByDay).forEach(function (key) {
+      eventsByDay[key].sort(function (a, b) {
+        return a.start.getTime() - b.start.getTime();
+      });
+    });
+
+    var cursor = new Date(windowInfo.gridStart.getTime());
+    var dayEventLimit = Number.isFinite(settings.dayEventLimit) ? settings.dayEventLimit : 3;
+    for (var dayIndex = 0; dayIndex < windowInfo.totalDays; dayIndex += 1) {
+      var cell = document.createElement('div');
+      cell.className = 'calendar-block__calendar-day';
+      if (cursor.getMonth() !== windowInfo.monthStart.getMonth()) {
+        cell.classList.add('calendar-block__calendar-day--outside');
+      }
+
+      var dateLabel = document.createElement('span');
+      dateLabel.className = 'calendar-block__calendar-date';
+      dateLabel.textContent = String(cursor.getDate());
+      cell.appendChild(dateLabel);
+
+      var eventsList = document.createElement('ul');
+      eventsList.className = 'calendar-block__calendar-events';
+      var dayKey = formatDateKey(cursor);
+      var dayEvents = eventsByDay[dayKey] || [];
+      dayEvents.slice(0, dayEventLimit).forEach(function (occurrence) {
+        var eventItem = document.createElement('li');
+        eventItem.className = 'calendar-block__calendar-event';
+
+        var timeLabel = formatTimeRangeDisplay(occurrence.start, occurrence.end);
+        if (timeLabel) {
+          var timeEl = document.createElement('span');
+          timeEl.className = 'calendar-block__calendar-event-time';
+          timeEl.textContent = timeLabel;
+          eventItem.appendChild(timeEl);
+        }
+
+        var titleEl = document.createElement('span');
+        titleEl.className = 'calendar-block__calendar-event-title';
+        titleEl.textContent = occurrence.title || 'Untitled Event';
+        eventItem.appendChild(titleEl);
+
+        if (settings.showCategory && occurrence.category) {
+          var categoryEl = document.createElement('span');
+          categoryEl.className = 'calendar-block__calendar-event-category';
+          categoryEl.textContent = occurrence.category;
+          eventItem.appendChild(categoryEl);
+        }
+
+        if (settings.showDescription && occurrence.description) {
+          var descriptionEl = document.createElement('span');
+          descriptionEl.className = 'calendar-block__calendar-event-description';
+          descriptionEl.textContent = occurrence.description;
+          eventItem.appendChild(descriptionEl);
+        }
+
+        eventsList.appendChild(eventItem);
+      });
+
+      if (dayEvents.length > dayEventLimit) {
+        var moreItem = document.createElement('li');
+        moreItem.className = 'calendar-block__calendar-more';
+        moreItem.textContent = '+' + (dayEvents.length - dayEventLimit) + ' more';
+        eventsList.appendChild(moreItem);
+      }
+
+      cell.appendChild(eventsList);
+      grid.appendChild(cell);
+      cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + 1);
+    }
+
+    calendar.appendChild(grid);
+    host.appendChild(calendar);
+  }
+
   function normalizeCalendarLayout(value) {
     var layout = (value || '').toString().toLowerCase();
-    if (layout !== 'cards' && layout !== 'compact') {
+    if (layout !== 'cards' && layout !== 'compact' && layout !== 'calendar') {
       layout = 'list';
     }
     return layout;
@@ -1974,7 +2146,12 @@
 
     var layout = normalizeCalendarLayout(container.dataset.calendarLayout);
     container.dataset.calendarLayout = layout;
-    container.classList.remove('calendar-block--layout-list', 'calendar-block--layout-cards', 'calendar-block--layout-compact');
+    container.classList.remove(
+      'calendar-block--layout-list',
+      'calendar-block--layout-cards',
+      'calendar-block--layout-compact',
+      'calendar-block--layout-calendar'
+    );
     container.classList.add('calendar-block--layout-' + layout);
 
     var limit = parsePositiveInt(container.dataset.calendarLimit, 6);
@@ -1988,14 +2165,30 @@
     fetchCalendarEvents()
       .then(function (records) {
         var now = new Date();
+        var calendarWindow = null;
+        var windowStart = now;
+        var windowEnd = null;
+        var fetchLimit = limit;
+        var perEventLimit = Math.max(limit * 3, 18);
+        var maxIterations = Math.max(limit * 6, 120);
+        var perDayDisplay = 3;
+        if (layout === 'calendar') {
+          calendarWindow = computeCalendarWindow(now);
+          windowStart = calendarWindow.gridStart;
+          windowEnd = calendarWindow.gridEnd;
+          fetchLimit = 0;
+          perEventLimit = 180;
+          maxIterations = 360;
+          perDayDisplay = limit > 0 ? Math.min(limit, 10) : 3;
+        }
         var occurrences = buildCalendarOccurrences(records, {
           now: now,
-          windowStart: now,
-          windowEnd: null,
-          limit: limit,
+          windowStart: windowStart,
+          windowEnd: windowEnd,
+          limit: fetchLimit,
           category: category,
-          perEventLimit: Math.max(limit * 3, 18),
-          maxIterations: Math.max(limit * 6, 120)
+          perEventLimit: perEventLimit,
+          maxIterations: maxIterations
         });
         itemsHost.innerHTML = '';
         if (!occurrences.length) {
@@ -2003,13 +2196,22 @@
           return;
         }
         hideCalendarEmpty(container);
-        occurrences.forEach(function (occurrence) {
-          var node = createCalendarItem(occurrence, {
+        if (layout === 'calendar') {
+          renderCalendarMonth(container, itemsHost, occurrences, {
+            window: calendarWindow,
             showDescription: showDescriptionFlag,
-            showCategory: showCategoryFlag
+            showCategory: showCategoryFlag,
+            dayEventLimit: perDayDisplay
           });
-          itemsHost.appendChild(node);
-        });
+        } else {
+          occurrences.forEach(function (occurrence) {
+            var node = createCalendarItem(occurrence, {
+              showDescription: showDescriptionFlag,
+              showCategory: showCategoryFlag
+            });
+            itemsHost.appendChild(node);
+          });
+        }
       })
       .catch(function () {
         itemsHost.innerHTML = '';
