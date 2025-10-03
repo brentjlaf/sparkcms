@@ -3,6 +3,7 @@
 // Template: page
 // Variables provided by index.php: $settings, $menus, $page, $scriptBase, $themeBase
 $siteName = $settings['site_name'] ?? 'My Site';
+$tagline = $settings['tagline'] ?? 'Welcome';
 if (!empty($settings['logo'])) {
     $logo = $scriptBase . '/CMS/' . ltrim($settings['logo'], '/');
 } else {
@@ -77,50 +78,63 @@ function renderFooterMenu($items){
     <div id="app" class="page-template default-page d-flex flex-column min-vh-100">
 
         <!-- Header -->
-        <header class="bg-white shadow-sm border-bottom">
-            <nav class="navbar navbar-expand-lg navbar-light" role="navigation">
-                <div class="container">
-                    <!-- Brand/Logo -->
-                    <a class="navbar-brand d-flex align-items-center" href="<?php echo $scriptBase; ?>/">
-                        <img src="<?php echo htmlspecialchars($logo); ?>" alt="<?php echo htmlspecialchars($siteName); ?>" class="d-inline-block align-text-top" style="height: 40px;">
-                        <span class="ms-2 fw-bold d-none d-sm-inline"><?php echo htmlspecialchars($siteName); ?></span>
+        <header class="site-header" role="banner">
+            <div class="container header-inner">
+                <!-- Brand/Logo -->
+                <a class="logo d-inline-flex align-items-center" href="<?php echo $scriptBase; ?>/">
+                    <img src="<?php echo htmlspecialchars($logo); ?>" alt="<?php echo htmlspecialchars($siteName); ?>">
+                    <span class="logo-text ms-2"><?php echo htmlspecialchars($siteName); ?></span>
+                </a>
+
+                <!-- Mobile Toggle Button -->
+                <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Toggle navigation">
+                    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                </button>
+
+                <!-- Navigation -->
+                <nav class="main-nav" id="main-nav" role="navigation">
+                    <ul>
+                        <?php renderMenu($mainMenu); ?>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <!-- Search Form -->
+                    <form class="search-box" action="<?php echo $scriptBase; ?>/search" method="get" role="search">
+                        <label class="visually-hidden" for="header-search">Search</label>
+                        <input id="header-search" class="search-input" type="search" name="q" placeholder="Search..." aria-label="Search">
+                        <button class="search-icon" type="submit" aria-label="Submit search">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                        </button>
+                    </form>
+
+                    <!-- Contact Button -->
+                    <a href="<?php echo $scriptBase; ?>/contact-us" class="cta-btn">
+                        <span class="cta-label">Contact Us</span>
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
                     </a>
-                    
-                    <!-- Mobile Toggle Button -->
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    
-                    <!-- Navigation -->
-                    <div class="collapse navbar-collapse" id="main-nav">
-                        <!-- Main Menu -->
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            <?php renderMenu($mainMenu); ?>
-                        </ul>
-                        
-                        <!-- Search Form -->
-                        <form class="d-flex me-3" action="<?php echo $scriptBase; ?>/search" method="get" role="search">
-                            <div class="input-group">
-                                <input class="form-control" type="search" name="q" placeholder="Search..." aria-label="Search" />
-                                <button class="btn btn-outline-secondary" type="submit" aria-label="Search">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </div>
-                        </form>
-                        
-                        <!-- Contact Button -->
-                        <a href="<?php echo $scriptBase; ?>/contact-us" class="btn btn-primary">
-                            <i class="fas fa-envelope btn-icon" aria-hidden="true"></i>
-                            <span class="btn-label">Contact Us</span>
-                        </a>
-                    </div>
                 </div>
-            </nav>
+            </div>
         </header>
 
         <!-- Main Content -->
         <main id="main-area" class="flex-grow-1">
-            <div class="drop-area"></div>
+            <section class="page-hero">
+                <div class="container">
+                    <div class="hero-content">
+                        <p class="eyebrow"><?php echo htmlspecialchars($tagline); ?></p>
+                        <h1 class="page-title"><?php echo htmlspecialchars($page['title'] ?? $siteName); ?></h1>
+                        <?php if (!empty($page['summary'])): ?>
+                            <p class="page-subtitle"><?php echo htmlspecialchars($page['summary']); ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </section>
+            <div class="content-wrapper">
+                <div class="container">
+                    <div class="drop-area"></div>
+                </div>
+            </div>
         </main>
 
         <!-- Footer -->
@@ -134,27 +148,27 @@ function renderFooterMenu($items){
                         <p class="small opacity-75 mb-3">Your trusted partner for exceptional service and innovative solutions.</p>
                         <div class="footer-social">
                             <?php if (!empty($social['facebook'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['facebook']); ?>" class="btn btn-outline-light btn-sm me-2" aria-label="Facebook" target="_blank">
+                            <a href="<?php echo htmlspecialchars($social['facebook']); ?>" aria-label="Facebook" target="_blank">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
                             <?php endif; ?>
                             <?php if (!empty($social['twitter'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['twitter']); ?>" class="btn btn-outline-light btn-sm me-2" aria-label="Twitter" target="_blank">
+                            <a href="<?php echo htmlspecialchars($social['twitter']); ?>" aria-label="Twitter" target="_blank">
                                 <i class="fab fa-x-twitter"></i>
                             </a>
                             <?php endif; ?>
                             <?php if (!empty($social['instagram'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['instagram']); ?>" class="btn btn-outline-light btn-sm me-2" aria-label="Instagram" target="_blank">
+                            <a href="<?php echo htmlspecialchars($social['instagram']); ?>" aria-label="Instagram" target="_blank">
                                 <i class="fab fa-instagram"></i>
                             </a>
                             <?php endif; ?>
                             <?php if (!empty($social['linkedin'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['linkedin']); ?>" class="btn btn-outline-light btn-sm me-2" aria-label="LinkedIn" target="_blank">
+                            <a href="<?php echo htmlspecialchars($social['linkedin']); ?>" aria-label="LinkedIn" target="_blank">
                                 <i class="fab fa-linkedin-in"></i>
                             </a>
                             <?php endif; ?>
                             <?php if (!empty($social['youtube'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['youtube']); ?>" class="btn btn-outline-light btn-sm" aria-label="YouTube" target="_blank">
+                            <a href="<?php echo htmlspecialchars($social['youtube']); ?>" aria-label="YouTube" target="_blank">
                                 <i class="fab fa-youtube"></i>
                             </a>
                             <?php endif; ?>
@@ -205,8 +219,13 @@ function renderFooterMenu($items){
         </footer>
 
         <!-- Back to Top Button -->
-        <button id="back-to-top-btn" class="btn btn-primary position-fixed shadow" style="bottom: 20px; right: 20px; z-index: 1000; display: none;" aria-label="Back to Top">
-            <i class="fas fa-chevron-up"></i>
+        <button id="back-to-top-btn" aria-label="Back to Top">
+            <span>
+                <span>
+                    <i class="fas fa-chevron-up" aria-hidden="true"></i>
+                </span>
+            </span>
+            <span class="visually-hidden">Back to Top</span>
         </button>
 
     </div>
@@ -217,9 +236,27 @@ function renderFooterMenu($items){
     <!-- Custom JavaScript -->
     <script>window.cmsBase = <?php echo json_encode($scriptBase); ?>;</script>
     <script src="<?php echo $themeBase; ?>/js/combined.js?v=mw3.2"></script>
-    
-    <!-- Back to Top Button Script -->
+
+    <!-- Navigation & Back to Top Scripts -->
     <script>
+        const navToggle = document.querySelector('.nav-toggle');
+        const mainNav = document.getElementById('main-nav');
+
+        if (navToggle && mainNav) {
+            navToggle.addEventListener('click', () => {
+                const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+                navToggle.setAttribute('aria-expanded', String(!isExpanded));
+                mainNav.classList.toggle('active');
+            });
+
+            mainNav.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => {
+                    navToggle.setAttribute('aria-expanded', 'false');
+                    mainNav.classList.remove('active');
+                });
+            });
+        }
+
         // Show/hide back to top button
         window.addEventListener('scroll', function() {
             const backToTopBtn = document.getElementById('back-to-top-btn');
@@ -229,7 +266,7 @@ function renderFooterMenu($items){
                 backToTopBtn.style.display = 'none';
             }
         });
-        
+
         // Smooth scroll to top
         document.getElementById('back-to-top-btn').addEventListener('click', function(e) {
             e.preventDefault();
