@@ -1902,12 +1902,21 @@ import basePath from './utils/base-path.js';
       });
   }
 
-  function initEventsBlocks() {
+  function initEventsBlocks(options) {
+    var force = isForceRefresh(options);
+    var shouldUpdateIndicators = force;
     var blocks = document.querySelectorAll('[data-events-block]');
     blocks.forEach(function (block) {
+      if (!force && block.dataset.sparkEventsInitialized === 'true') {
+        return;
+      }
+      block.dataset.sparkEventsInitialized = 'true';
+      shouldUpdateIndicators = true;
       renderEventsBlock(block);
     });
-    updateEventsCartIndicators();
+    if (shouldUpdateIndicators) {
+      updateEventsCartIndicators();
+    }
   }
 
   var calendarEventsPromise = null;
@@ -2531,23 +2540,51 @@ import basePath from './utils/base-path.js';
       });
   }
 
-  function initCalendarBlocks() {
+  function isForceRefresh(options) {
+    if (options === true) {
+      return true;
+    }
+    if (options && options.force === true) {
+      return true;
+    }
+    if (options && typeof options === 'object' && typeof options.preventDefault === 'function') {
+      return true;
+    }
+    return false;
+  }
+
+  function initCalendarBlocks(options) {
+    var force = isForceRefresh(options);
     var blocks = document.querySelectorAll('[data-calendar-block]');
     blocks.forEach(function (block) {
+      if (!force && block.dataset.sparkCalendarInitialized === 'true') {
+        return;
+      }
+      block.dataset.sparkCalendarInitialized = 'true';
       renderCalendarBlock(block);
     });
   }
 
-  function initBlogLists() {
+  function initBlogLists(options) {
+    var force = isForceRefresh(options);
     var lists = document.querySelectorAll('[data-blog-list]');
     lists.forEach(function (container) {
+      if (!force && container.dataset.sparkBlogListInitialized === 'true') {
+        return;
+      }
+      container.dataset.sparkBlogListInitialized = 'true';
       hydrate(container);
     });
   }
 
-  function initBlogDetails() {
+  function initBlogDetails(options) {
+    var force = isForceRefresh(options);
     var details = document.querySelectorAll('[data-blog-detail]');
     details.forEach(function (container) {
+      if (!force && container.dataset.sparkBlogDetailInitialized === 'true') {
+        return;
+      }
+      container.dataset.sparkBlogDetailInitialized = 'true';
       renderBlogDetail(container);
     });
   }
@@ -2753,6 +2790,37 @@ import basePath from './utils/base-path.js';
     if (typeof MutationObserver === 'undefined') {
       return;
     }
+    var scheduleRefresh = (function () {
+      var pending = Object.create(null);
+      var enqueue;
+      if (typeof queueMicrotask === 'function') {
+        enqueue = queueMicrotask;
+      } else if (typeof Promise !== 'undefined') {
+        enqueue = function (callback) {
+          Promise.resolve()
+            .then(callback)
+            .catch(function (error) {
+              setTimeout(function () {
+                throw error;
+              });
+            });
+        };
+      } else {
+        enqueue = function (callback) {
+          setTimeout(callback, 0);
+        };
+      }
+      return function (key, callback) {
+        if (pending[key]) {
+          return;
+        }
+        pending[key] = true;
+        enqueue(function () {
+          pending[key] = false;
+          callback();
+        });
+      };
+    })();
     var observer = new MutationObserver(function (mutations) {
       var shouldRefreshBlogs = false;
       var shouldRefreshBlogDetails = false;
@@ -2792,19 +2860,29 @@ import basePath from './utils/base-path.js';
         });
       });
       if (shouldRefreshBlogDetails) {
-        initBlogDetails();
+        scheduleRefresh('blogDetails', function () {
+          initBlogDetails();
+        });
       }
       if (shouldRefreshBlogs) {
-        initBlogLists();
+        scheduleRefresh('blogLists', function () {
+          initBlogLists();
+        });
       }
       if (shouldRefreshCalendars) {
-        initCalendarBlocks();
+        scheduleRefresh('calendars', function () {
+          initCalendarBlocks();
+        });
       }
       if (shouldRefreshEvents) {
-        initEventsBlocks();
+        scheduleRefresh('events', function () {
+          initEventsBlocks();
+        });
       }
       if (shouldRefreshNavigation) {
-        initNavigationFeatures();
+        scheduleRefresh('navigation', function () {
+          initNavigationFeatures();
+        });
       }
       if (shouldRefreshCarousels) {
         initImageGalleries();
@@ -2883,19 +2961,43 @@ import basePath from './utils/base-path.js';
     refresh: initNavigationFeatures
   };
   window.SparkCMSBlogLists = {
-    refresh: initBlogLists
+    refresh: function (options) {
+      if (typeof options === 'undefined') {
+        initBlogLists({ force: true });
+        return;
+      }
+      initBlogLists(options);
+    }
   };
 
   window.SparkCMSBlogDetails = {
-    refresh: initBlogDetails
+    refresh: function (options) {
+      if (typeof options === 'undefined') {
+        initBlogDetails({ force: true });
+        return;
+      }
+      initBlogDetails(options);
+    }
   };
 
   window.SparkCMSEvents = {
-    refresh: initEventsBlocks
+    refresh: function (options) {
+      if (typeof options === 'undefined') {
+        initEventsBlocks({ force: true });
+        return;
+      }
+      initEventsBlocks(options);
+    }
   };
 
   window.SparkCMSCalendars = {
-    refresh: initCalendarBlocks
+    refresh: function (options) {
+      if (typeof options === 'undefined') {
+        initCalendarBlocks({ force: true });
+        return;
+      }
+      initCalendarBlocks(options);
+    }
   };
 
   window.SparkCMSImageGalleries = {
