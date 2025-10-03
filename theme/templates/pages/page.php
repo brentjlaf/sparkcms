@@ -151,145 +151,47 @@ function renderFooterMenu($items){
             </div>
         </main>
 
-        <!-- Footer -->
-        <footer id="footer-area" class="site-footer mt-auto">
-            <div class="container">
-                <div class="footer-main">
-                    <div>
-                        <a href="<?php echo $scriptBase; ?>/" class="navbar-brand d-inline-block mb-3">
-                            <img src="<?php echo htmlspecialchars($logo); ?>" alt="<?php echo htmlspecialchars($siteName); ?>" style="height: 40px;" class="filter-invert">
-                        </a>
-                        <p class="small opacity-75 mb-3">Your trusted partner for exceptional service and innovative solutions.</p>
-                        <div class="footer-social">
-                            <?php if (!empty($social['facebook'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['facebook']); ?>" aria-label="Facebook" target="_blank">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <?php endif; ?>
-                            <?php if (!empty($social['twitter'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['twitter']); ?>" aria-label="Twitter" target="_blank">
-                                <i class="fab fa-x-twitter"></i>
-                            </a>
-                            <?php endif; ?>
-                            <?php if (!empty($social['instagram'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['instagram']); ?>" aria-label="Instagram" target="_blank">
-                                <i class="fab fa-instagram"></i>
-                            </a>
-                            <?php endif; ?>
-                            <?php if (!empty($social['linkedin'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['linkedin']); ?>" aria-label="LinkedIn" target="_blank">
-                                <i class="fab fa-linkedin-in"></i>
-                            </a>
-                            <?php endif; ?>
-                            <?php if (!empty($social['youtube'])): ?>
-                            <a href="<?php echo htmlspecialchars($social['youtube']); ?>" aria-label="YouTube" target="_blank">
-                                <i class="fab fa-youtube"></i>
-                            </a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <nav class="footer-menu">
-                        <h5 class="text-white mb-3">Quick Links</h5>
-                        <ul>
-                            <?php renderFooterMenu($footerMenu); ?>
-                        </ul>
-                    </nav>
-                    <div>
-                        <h5 class="text-white mb-3">Contact Info</h5>
-                        <ul class="list-unstyled">
-                            <?php if (!empty($settings['address'])): ?>
-                            <li class="mb-2">
-                                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                                <span class="text-muted"><?php echo htmlspecialchars($settings['address']); ?></span>
-                            </li>
-                            <?php endif; ?>
-                            <?php if (!empty($settings['phone'])): ?>
-                            <li class="mb-2">
-                                <i class="fas fa-phone me-2 text-primary"></i>
-                                <a href="tel:<?php echo htmlspecialchars($settings['phone']); ?>" class="text-muted text-decoration-none"><?php echo htmlspecialchars($settings['phone']); ?></a>
-                            </li>
-                            <?php endif; ?>
-                            <?php if (!empty($settings['email'])): ?>
-                            <li class="mb-2">
-                                <i class="fas fa-envelope me-2 text-primary"></i>
-                                <a href="mailto:<?php echo htmlspecialchars($settings['email']); ?>" class="text-muted text-decoration-none"><?php echo htmlspecialchars($settings['email']); ?></a>
-                            </li>
-                            <?php endif; ?>
-                        </ul>
-                    </div>
-                </div>
-                <div class="footer-copy d-flex flex-column flex-md-row justify-content-between align-items-center">
-                    <p class="mb-2 mb-md-0">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($siteName); ?>. All rights reserved.</p>
-                    <ul class="nav">
-                        <li class="nav-item">
-                            <a class="nav-link text-muted px-2" href="<?php echo $scriptBase; ?>/privacy-policy">Privacy Policy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-muted px-2" href="<?php echo $scriptBase; ?>/terms-of-service">Terms of Service</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </footer>
+        <!-- Page Scripts -->
+        <script>window.cmsBase = <?php echo json_encode($scriptBase); ?>;</script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const navToggle = document.querySelector('.nav-toggle');
+                const mainNav = document.getElementById('main-nav');
 
-        <!-- Back to Top Button -->
-        <button id="back-to-top-btn" aria-label="Back to Top">
-            <span>
-                <span>
-                    <i class="fas fa-chevron-up" aria-hidden="true"></i>
-                </span>
-            </span>
-            <span class="visually-hidden">Back to Top</span>
-        </button>
+                if (navToggle && mainNav) {
+                    navToggle.addEventListener('click', () => {
+                        const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+                        navToggle.setAttribute('aria-expanded', String(!isExpanded));
+                        mainNav.classList.toggle('active');
+                    });
 
-    </div>
+                    mainNav.querySelectorAll('a').forEach((link) => {
+                        link.addEventListener('click', () => {
+                            navToggle.setAttribute('aria-expanded', 'false');
+                            mainNav.classList.remove('active');
+                        });
+                    });
+                }
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JavaScript -->
-    <script>window.cmsBase = <?php echo json_encode($scriptBase); ?>;</script>
-    <script src="<?php echo $themeBase; ?>/js/combined.js?v=mw3.2"></script>
+                const backToTopBtn = document.getElementById('back-to-top-btn');
+                if (backToTopBtn) {
+                    window.addEventListener('scroll', function () {
+                        if (window.scrollY > 100) {
+                            backToTopBtn.style.display = 'block';
+                        } else {
+                            backToTopBtn.style.display = 'none';
+                        }
+                    });
 
-    <!-- Navigation & Back to Top Scripts -->
-    <script>
-        const navToggle = document.querySelector('.nav-toggle');
-        const mainNav = document.getElementById('main-nav');
-
-        if (navToggle && mainNav) {
-            navToggle.addEventListener('click', () => {
-                const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
-                navToggle.setAttribute('aria-expanded', String(!isExpanded));
-                mainNav.classList.toggle('active');
+                    backToTopBtn.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    });
+                }
             });
+        </script>
 
-            mainNav.querySelectorAll('a').forEach((link) => {
-                link.addEventListener('click', () => {
-                    navToggle.setAttribute('aria-expanded', 'false');
-                    mainNav.classList.remove('active');
-                });
-            });
-        }
-
-        // Show/hide back to top button
-        window.addEventListener('scroll', function() {
-            const backToTopBtn = document.getElementById('back-to-top-btn');
-            if (window.scrollY > 100) {
-                backToTopBtn.style.display = 'block';
-            } else {
-                backToTopBtn.style.display = 'none';
-            }
-        });
-
-        // Smooth scroll to top
-        document.getElementById('back-to-top-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    </script>
-
-</body>
-</html>
+        <?php include __DIR__ . '/../partials/footer.php'; ?>
