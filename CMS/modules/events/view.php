@@ -1,34 +1,22 @@
 <?php
 // File: modules/events/view.php
 require_once __DIR__ . '/../../includes/auth.php';
-require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/helpers.php';
 
 require_login();
 
-events_ensure_storage();
+$service = events_service();
 
-$events = events_read_events();
-$orders = events_read_orders();
-$categories = events_read_categories();
-$salesByEvent = events_compute_sales($events, $orders);
-
-$orderSummaries = [];
-foreach ($orders as $order) {
-    $orderSummaries[] = events_order_summary($order, $events);
-}
+$initialPayload = $service->getInitialPayload();
+$events = $initialPayload['events'];
+$salesByEvent = $initialPayload['sales'];
+$categories = $initialPayload['categories'];
+$orderSummaries = $initialPayload['orders'];
 
 $totalEvents = count($events);
 $totalTicketsSold = array_sum(array_column($salesByEvent, 'tickets_sold'));
 $totalRevenue = array_sum(array_column($salesByEvent, 'revenue'));
-$upcoming = array_slice(events_filter_upcoming($events), 0, 5);
-
-$initialPayload = [
-    'events' => $events,
-    'orders' => $orderSummaries,
-    'sales' => $salesByEvent,
-    'categories' => $categories,
-];
+$upcoming = $service->getUpcomingEvents();
 ?>
 <div class="content-section" id="events">
     <div class="events-dashboard a11y-dashboard" data-events-endpoint="modules/events/api.php" data-events-initial='<?php echo json_encode($initialPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>'>
@@ -60,7 +48,7 @@ $initialPayload = [
                     <div class="a11y-overview-label">Tickets Sold</div>
                 </div>
                 <div class="a11y-overview-card events-overview-card">
-                    <div class="events-overview-value" data-events-stat="revenue"><?php echo events_format_currency((float) $totalRevenue); ?></div>
+                    <div class="events-overview-value" data-events-stat="revenue"><?php echo $service->formatCurrency((float) $totalRevenue); ?></div>
                     <div class="a11y-overview-label">Total Revenue</div>
                 </div>
             </div>
@@ -98,7 +86,7 @@ $initialPayload = [
                             </div>
                             <div class="events-upcoming-meta">
                                 <span class="events-upcoming-stat" data-label="Tickets sold"><?php echo (int) ($metrics['tickets_sold'] ?? 0); ?></span>
-                                <span class="events-upcoming-stat" data-label="Revenue"><?php echo events_format_currency((float) ($metrics['revenue'] ?? 0)); ?></span>
+                                <span class="events-upcoming-stat" data-label="Revenue"><?php echo $service->formatCurrency((float) ($metrics['revenue'] ?? 0)); ?></span>
                             </div>
                         </li>
                         <?php endforeach; ?>
