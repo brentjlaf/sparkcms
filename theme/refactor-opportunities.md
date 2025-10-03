@@ -12,7 +12,7 @@ This document lists concrete areas inside the `theme/` directory that could bene
 
 ## CSS
 
-- **`css/root.css`** – The design tokens are hand-written with repeated number series (primary/secondary/third/fourth color scales). Move these into a data-driven format or use CSS custom property fallbacks/mixins to avoid manual duplication and ensure consistent naming (e.g., fix `--text-color-on-sucess`).【F:theme/css/root.css†L21-L191】
+- **`css/root.css`** – The design tokens are hand-written with repeated number series (primary/secondary/third/fourth color scales). Move these into a data-driven format or use CSS custom property fallbacks/mixins to avoid manual duplication and ensure consistent naming (e.g., fix `--text-color-on-success`).【F:theme/css/root.css†L21-L191】
 - **`css/skin.css`** – Component styles (buttons, headings, gallery layouts) mix layout, color, and interaction rules. Consider splitting into component-specific files or adopting utility classes to reuse transitions and spacing tokens instead of redefining them per block.【F:theme/css/skin.css†L7-L144】
 - **`css/override.css`** – Contains global resets, layout primitives, navigation, hero, footer, cards, forms, and responsive rules all in one stylesheet. Break it into scoped modules (e.g., navigation, hero, cards) to simplify maintenance and reduce cascade conflicts.【F:theme/css/override.css†L1-L320】
 - **`css/override.css`** – Hard-coded colors and shadows (`#667eea`, `rgba(255, 107, 107, 0.3)`, etc.) bypass the token system from `root.css`. Refactor to reference CSS variables so themes remain consistent and configurable.【F:theme/css/override.css†L44-L151】
