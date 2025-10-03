@@ -1,87 +1,20 @@
 <?php
 // File: export.php
 require_once __DIR__ . '/../../includes/auth.php';
-require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/AnalyticsService.php';
 
 require_login();
 
 $filter = isset($_GET['filter']) ? strtolower((string) $_GET['filter']) : 'all';
 $search = isset($_GET['search']) ? trim((string) $_GET['search']) : '';
 
+$service = new AnalyticsService();
 $allowedFilters = ['all', 'top', 'growing', 'no-views'];
 if (!in_array($filter, $allowedFilters, true)) {
     $filter = 'all';
 }
 
-$pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = read_json_file($pagesFile);
-
-$entries = [];
-foreach ($pages as $page) {
-    $title = isset($page['title']) ? (string) $page['title'] : 'Untitled';
-    $slug = isset($page['slug']) ? (string) $page['slug'] : '';
-    $views = isset($page['views']) ? (int) $page['views'] : 0;
-    if ($views < 0) {
-        $views = 0;
-    }
-
-    $entries[] = [
-        'title' => $title,
-        'slug' => $slug,
-        'views' => $views,
-    ];
-}
-
-usort($entries, static function ($a, $b) {
-    return ($b['views'] ?? 0) <=> ($a['views'] ?? 0);
-});
-
-$totalViews = 0;
-$totalPages = count($entries);
-foreach ($entries as $entry) {
-    $totalViews += $entry['views'];
-}
-
-$averageViews = $totalPages > 0 ? $totalViews / $totalPages : 0;
-
-foreach ($entries as $index => &$entry) {
-    $status = 'growing';
-    $label = 'Steady traffic';
-
-    if ($entry['views'] === 0) {
-        $status = 'no-views';
-        $label = 'Needs promotion';
-    } elseif ($index < 3 || $entry['views'] >= $averageViews) {
-        $status = 'top';
-        $label = 'Top performer';
-    }
-
-    $entry['status'] = $status;
-    $entry['label'] = $label;
-    $entry['rank'] = $index + 1;
-}
-unset($entry);
-
-$searchTerm = $search;
-
-$filtered = array_values(array_filter($entries, static function ($entry) use ($filter, $searchTerm) {
-    if ($filter !== 'all' && $entry['status'] !== $filter) {
-        return false;
-    }
-
-    if ($searchTerm === '') {
-        return true;
-    }
-
-    $encoding = 'UTF-8';
-    if (function_exists('mb_stripos')) {
-        return (mb_stripos($entry['title'], $searchTerm, 0, $encoding) !== false)
-            || (mb_stripos($entry['slug'], $searchTerm, 0, $encoding) !== false);
-    }
-
-    return (stripos($entry['title'], $searchTerm) !== false)
-        || (stripos($entry['slug'], $searchTerm) !== false);
-}));
+$filtered = $service->filterForExport($filter, $search);
 
 $filename = 'analytics-export-' . date('Ymd-His') . '.csv';
 

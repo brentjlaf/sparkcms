@@ -1,83 +1,24 @@
 <?php
 // File: view.php
 require_once __DIR__ . '/../../includes/auth.php';
-require_once __DIR__ . '/../../includes/data.php';
-require_once __DIR__ . '/../../includes/analytics.php';
+require_once __DIR__ . '/AnalyticsService.php';
 require_login();
 
-$pagesFile = __DIR__ . '/../../data/pages.json';
-$pages = read_json_file($pagesFile);
+$service = new AnalyticsService();
+$dashboard = $service->getDashboardData();
 
-$totalViews = 0;
-$lastUpdatedTimestamp = 0;
-foreach ($pages as $p) {
-    $totalViews += (int) ($p['views'] ?? 0);
-    $modified = isset($p['last_modified']) ? (int) $p['last_modified'] : 0;
-    if ($modified > $lastUpdatedTimestamp) {
-        $lastUpdatedTimestamp = $modified;
-    }
-}
-
-$totalPages = count($pages);
-$averageViews = $totalPages > 0 ? $totalViews / $totalPages : 0;
-
-$sortedPages = $pages;
-usort($sortedPages, function ($a, $b) {
-    return ($b['views'] ?? 0) <=> ($a['views'] ?? 0);
-});
-
-$topPages = array_slice($sortedPages, 0, 3);
-$zeroViewPages = array_values(array_filter($pages, static function ($page) {
-    return (int) ($page['views'] ?? 0) === 0;
-}));
-$zeroViewCount = count($zeroViewPages);
-$zeroViewExamples = array_slice($zeroViewPages, 0, 3);
-
-$initialEntries = [];
-$previousTotalViews = 0;
-$previousZeroViewCount = 0;
-foreach ($sortedPages as $page) {
-    $views = (int) ($page['views'] ?? 0);
-    $slug = isset($page['slug']) ? (string) $page['slug'] : '';
-    $previousViews = analytics_previous_views($slug, $views);
-
-    $initialEntries[] = [
-        'title' => isset($page['title']) ? (string) $page['title'] : 'Untitled',
-        'slug' => $slug,
-        'views' => $views,
-        'previousViews' => $previousViews,
-    ];
-
-    $previousTotalViews += $previousViews;
-    if ($previousViews === 0) {
-        $previousZeroViewCount++;
-    }
-}
-
+$totalViews = (int) ($dashboard['totalViews'] ?? 0);
+$averageViews = (float) ($dashboard['averageViews'] ?? 0);
+$totalPages = (int) ($dashboard['totalPages'] ?? 0);
+$zeroViewCount = (int) ($dashboard['zeroViewCount'] ?? 0);
+$topPages = $dashboard['topPages'] ?? [];
+$zeroViewExamples = $dashboard['zeroViewExamples'] ?? [];
+$initialEntries = $dashboard['initialEntries'] ?? [];
+$summaryComparisons = $dashboard['summaryComparisons'] ?? [];
+$lastUpdatedTimestamp = (int) ($dashboard['lastUpdatedTimestamp'] ?? 0);
 $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
     ? date('M j, Y g:i a', $lastUpdatedTimestamp)
     : null;
-
-$previousAverageViews = $totalPages > 0 ? $previousTotalViews / $totalPages : 0;
-
-$summaryComparisons = [
-    'totalViews' => [
-        'current' => $totalViews,
-        'previous' => $previousTotalViews,
-    ],
-    'averageViews' => [
-        'current' => $averageViews,
-        'previous' => $previousAverageViews,
-    ],
-    'totalPages' => [
-        'current' => $totalPages,
-        'previous' => $totalPages,
-    ],
-    'zeroViews' => [
-        'current' => $zeroViewCount,
-        'previous' => $previousZeroViewCount,
-    ],
-];
 ?>
 <link rel="stylesheet" href="modules/analytics/analytics.css">
 <div class="content-section" id="analytics">
