@@ -966,7 +966,7 @@
         }
 
         /* Import/Export module */
-        #import .import-dashboard {
+        #import .import-dashboard.a11y-dashboard {
             display: flex;
             flex-direction: column;
             gap: 24px;
