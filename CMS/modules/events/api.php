@@ -212,7 +212,12 @@ function handle_save_event(array $events, array $categories): void
 
 function handle_copy_event(array $events, array $categories): void
 {
-    $id = $_POST['id'] ?? ($_GET['id'] ?? '');
+    $payload = parse_json_body();
+    if (empty($payload)) {
+        $payload = $_POST;
+    }
+
+    $id = $payload['id'] ?? ($_GET['id'] ?? '');
     $id = trim((string) $id);
     if ($id === '') {
         respond_json(['error' => 'Missing event id.'], 400);
