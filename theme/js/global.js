@@ -81,13 +81,14 @@ import basePath from './utils/base-path.js';
     if (!detail) {
       detail = '/blog';
     }
+    var safeSlug = encodeURIComponent(String(slug));
     if (/^https?:\/\//i.test(detail)) {
-      return detail.replace(/\/+$/, '') + '/' + slug;
+      return detail.replace(/\/+$/, '') + '/' + safeSlug;
     }
     var base = basePath();
     detail = detail.replace(/\/+$/, '');
     detail = detail.replace(/^\/+/, '');
-    var path = detail ? detail + '/' + slug : slug;
+    var path = detail ? detail + '/' + safeSlug : safeSlug;
     var start = base;
     if (start && start.charAt(0) !== '/') {
       start = '/' + start;
@@ -874,13 +875,14 @@ import basePath from './utils/base-path.js';
       return '';
     }
     var slug = createEventSlug(event);
+    var encodedSlug = slug ? encodeURIComponent(String(slug)) : '';
     if (/^https?:\/\//i.test(base)) {
-      return base.replace(/\/+$/, '') + (slug ? '/' + slug : '');
+      return base.replace(/\/+$/, '') + (encodedSlug ? '/' + encodedSlug : '');
     }
     var normalized = base.replace(/\/+$/, '').replace(/^\/+/, '');
     var path = normalized;
-    if (slug) {
-      path = normalized ? normalized + '/' + slug : slug;
+    if (encodedSlug) {
+      path = normalized ? normalized + '/' + encodedSlug : encodedSlug;
     }
     var start = basePath();
     if (start && start.charAt(0) !== '/') {
