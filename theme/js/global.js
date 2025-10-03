@@ -371,6 +371,74 @@
     }
   }
 
+  function sanitizeRichText(html) {
+    if (!html) {
+      return '';
+    }
+    var wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    var forbidden = wrapper.querySelectorAll('script, style, iframe, object, embed, link, meta');
+    forbidden.forEach(function (node) {
+      if (node && node.parentNode) {
+        node.parentNode.removeChild(node);
+      }
+    });
+    var allowed = {
+      P: true,
+      BR: true,
+      STRONG: true,
+      EM: true,
+      B: true,
+      I: true,
+      UL: true,
+      OL: true,
+      LI: true,
+      A: true,
+      H1: true,
+      H2: true,
+      H3: true,
+      H4: true,
+      H5: true,
+      H6: true,
+      BLOCKQUOTE: true,
+      SPAN: true,
+      DIV: true
+    };
+    var nodes = wrapper.querySelectorAll('*');
+    nodes.forEach(function (node) {
+      if (!allowed[node.tagName]) {
+        var parent = node.parentNode;
+        if (!parent) {
+          return;
+        }
+        while (node.firstChild) {
+          parent.insertBefore(node.firstChild, node);
+        }
+        parent.removeChild(node);
+        return;
+      }
+      Array.prototype.slice
+        .call(node.attributes || [])
+        .forEach(function (attr) {
+          var name = attr.name.toLowerCase();
+          if (node.tagName === 'A' && (name === 'href' || name === 'title')) {
+            if (name === 'href') {
+              var href = node.getAttribute('href') || '';
+              if (/^javascript:/i.test(href) || /^data:/i.test(href)) {
+                node.removeAttribute('href');
+              }
+            }
+            return;
+          }
+          if (name.indexOf('aria-') === 0) {
+            return;
+          }
+          node.removeAttribute(attr.name);
+        });
+    });
+    return wrapper.innerHTML;
+  }
+
   function populateBlogDetail(container, post, options) {
     options = options || {};
     var loading = container.querySelector('[data-blog-loading]');
@@ -462,7 +530,11 @@
 
     var contentEl = container.querySelector('[data-blog-content]');
     if (contentEl) {
-      contentEl.innerHTML = post.content || '<p>This post does not have any content yet.</p>';
+      var sanitized = sanitizeRichText(post.content || '');
+      if (!sanitized) {
+        sanitized = sanitizeRichText('<p>This post does not have any content yet.</p>');
+      }
+      contentEl.innerHTML = sanitized;
     }
 
     var tagsContainer = container.querySelector('[data-blog-tags]');
@@ -862,71 +934,7 @@
   }
 
   function sanitizeEventHtml(html) {
-    if (!html) {
-      return '';
-    }
-    var wrapper = document.createElement('div');
-    wrapper.innerHTML = html;
-    var forbidden = wrapper.querySelectorAll('script, style, iframe, object, embed, link, meta');
-    forbidden.forEach(function (node) {
-      if (node && node.parentNode) {
-        node.parentNode.removeChild(node);
-      }
-    });
-    var allowed = {
-      P: true,
-      BR: true,
-      STRONG: true,
-      EM: true,
-      B: true,
-      I: true,
-      UL: true,
-      OL: true,
-      LI: true,
-      A: true,
-      H1: true,
-      H2: true,
-      H3: true,
-      H4: true,
-      H5: true,
-      H6: true,
-      BLOCKQUOTE: true,
-      SPAN: true,
-      DIV: true
-    };
-    var nodes = wrapper.querySelectorAll('*');
-    nodes.forEach(function (node) {
-      if (!allowed[node.tagName]) {
-        var parent = node.parentNode;
-        if (!parent) {
-          return;
-        }
-        while (node.firstChild) {
-          parent.insertBefore(node.firstChild, node);
-        }
-        parent.removeChild(node);
-        return;
-      }
-      Array.prototype.slice
-        .call(node.attributes || [])
-        .forEach(function (attr) {
-          var name = attr.name.toLowerCase();
-          if (node.tagName === 'A' && (name === 'href' || name === 'title')) {
-            if (name === 'href') {
-              var href = node.getAttribute('href') || '';
-              if (/^javascript:/i.test(href) || /^data:/i.test(href)) {
-                node.removeAttribute('href');
-              }
-            }
-            return;
-          }
-          if (name.indexOf('aria-') === 0) {
-            return;
-          }
-          node.removeAttribute(attr.name);
-        });
-    });
-    return wrapper.innerHTML;
+    return sanitizeRichText(html);
   }
 
   function loadEventsCartState() {
