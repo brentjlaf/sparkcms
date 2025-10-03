@@ -109,15 +109,8 @@ $pagesWord = $totalPages === 1 ? 'page' : 'pages';
             </div>
         </div>
 
-        <section class="a11y-detail-card table-card pages-table-card" aria-labelledby="pagesInventoryTitle" aria-describedby="pagesInventoryDescription">
-            <header class="table-header pages-table-header">
-                <div class="table-header-text">
-                    <h3 class="table-title" id="pagesInventoryTitle">Page inventory</h3>
-                    <p class="table-description" id="pagesInventoryDescription">Manage publishing status, homepage selection, and metadata across all content.</p>
-                </div>
-                <span class="table-meta pages-table-meta" id="pagesVisibleCount" aria-live="polite">Showing <?php echo $totalPages . ' ' . $pagesWord; ?></span>
-            </header>
-            <table class="pages-list-view" id="pagesListView" aria-describedby="pagesInventoryDescription">
+        <section class="a11y-detail-card table-card pages-table-card">
+            <table class="pages-list-view" id="pagesListView">
                 <thead>
                     <tr>
                         <th scope="col" aria-sort="none">
