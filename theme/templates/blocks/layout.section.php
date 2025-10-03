@@ -50,21 +50,8 @@
         </dd>
     </dl>
 </templateSetting>
-<toggle rel="custom_type" value="container">
-	<div style="background-color:{custom_bg_color};" data-tpl-tooltip="Section">
-    <section class="container" >
+<div style="background-color:{custom_bg_color};" data-tpl-tooltip="Section">
+    <section class="{custom_type}">
         <div class="drop-area"></div>
     </section>
-	</div>
-</toggle>
-<toggle rel="custom_type" value="container-fluid">
-	
-		<div style="background-color:{custom_bg_color};" data-tpl-tooltip="Section">
-
-    <section class="container-fluid" >
-        <div class="drop-area"></div>
-    </section>
-		</div>
-
-	
-</toggle>
+</div>
