@@ -118,14 +118,14 @@ button:focus-visible,
 
 .main-nav a:hover,
 .main-nav a:focus-visible {
-    color: #ffffff;
+    color: var(--text-color-on-primary);
     transform: translateY(-2px);
 }
 
 .main-nav a:focus-visible {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.35);
     outline: none;
-    color: #fff;
+    color: var(--text-color-on-primary);
 }
 
 /* Dropdown Menu */
@@ -252,13 +252,13 @@ button:focus-visible,
     border: 1px solid rgba(255, 255, 255, 0.45);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    color: var(--text-color-on-primary);
     width: 220px;
     transition: all 0.3s ease;
 }
 
 .search-input::placeholder {
-    color: #f0f0f0;
+    color: var(--text-color-on-primary-soft);
 }
 
 .search-input:focus {
@@ -314,7 +314,7 @@ button:focus-visible,
     font-family: var(--font-family-serif);
     font-weight: 700;
     font-size: clamp(2.5rem, 3.5vw, 3.75rem);
-    color: #fff;
+    color: var(--text-color-on-primary);
     line-height: 1.1;
     margin-bottom: 1.25rem;
 }

@@ -112,6 +112,7 @@
   --primary-7: #312e81;
   --primary: var(--primary-5);
   --text-color-on-primary: var(--white);
+  --text-color-on-primary-soft: #f0f0f0;
   --text-color-on-primary-dark: var(--white);
 
   --secondary-1: #ecfdf5;
