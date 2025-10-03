@@ -4,7 +4,7 @@ import { initSettings, openSettings, applyStoredSettings, confirmDelete } from '
 import { ensureBlockState, getSettings, setSetting } from './modules/state.js';
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
-import { initMediaPicker, openMediaPicker } from './modules/mediaPicker.js';
+import { createMediaPicker } from './modules/mediaPicker.js';
 import { executeScripts } from "./modules/executeScripts.js";
 
 let allBlockFiles = [];
@@ -528,8 +528,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
   initWysiwyg(canvas, true);
-  initMediaPicker({ basePath: window.builderBase });
-  window.openMediaPicker = openMediaPicker;
+  const mediaPickerApi = createMediaPicker({
+    basePath: window.builderBase,
+    document,
+    fetchImpl: window.fetch.bind(window),
+  });
+  window.openMediaPicker = mediaPickerApi.open;
+  window.closeMediaPicker = mediaPickerApi.close;
 
   canvas.addEventListener('input', scheduleSave);
   canvas.addEventListener('change', scheduleSave);
