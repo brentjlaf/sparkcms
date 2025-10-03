@@ -1,14 +1,15 @@
 {
-    "site_name": "SparkCMS",
-    "tagline": "Modern Content Management",
-    "admin_email": "admin@example.com",
-    "homepage": "home",
-    "items_per_page": 10,
+  "site_name": "SparkCMS",
+  "tagline": "Accessible, SEO-Ready Digital Experiences for Growing Teams",
+  "admin_email": "admin@example.com",
+  "homepage": "home",
+  "items_per_page": 10,
   "logo": "/images/logo.png",
   "canvas_placeholder": "Drag blocks from the palette to start building your page",
   "social": {
-        "facebook": "https://facebook.com/mywebsite",
-        "twitter": "https://twitter.com/mywebsite",
-        "instagram": "https://instagram.com/mywebsite"
-    }
+    "facebook": "https://facebook.com/mywebsite",
+    "twitter": "https://twitter.com/mywebsite",
+    "instagram": "https://instagram.com/mywebsite"
+  },
+  "default_meta_description": "SparkCMS helps teams launch fast, accessible, and search-optimized websites with modular blocks and collaborative workflows."
 }
