@@ -106,10 +106,17 @@
 </templateSetting>
 <section id="<?= $blockId ?>" class="events-block events-block--layout-{custom_layout}" data-tpl-tooltip="Events" data-events-block data-events-layout="{custom_layout}" data-events-limit="{custom_limit}" data-events-category="{custom_category}" data-events-detail-base="{custom_detail_base}" data-events-button-label="{custom_button_label}" data-events-show-button="{custom_show_button}" data-events-show-description="{custom_show_description}" data-events-description-length="{custom_description_length}" data-events-show-location="{custom_show_location}" data-events-show-categories="{custom_show_categories}" data-events-show-price="{custom_show_price}" data-events-empty="{custom_empty}">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center mb-4">
+        <div class="row align-items-center justify-content-between mb-4 g-3">
+            <div class="col-lg-8 text-center text-lg-start">
                 <h2 class="events-block__heading" data-editable>{custom_title}</h2>
                 <p class="events-block__intro text-muted" data-editable>{custom_intro}</p>
+            </div>
+            <div class="col-lg-auto text-center">
+                <button type="button" class="events-block__cart-button" data-events-cart-open aria-haspopup="dialog" aria-expanded="false">
+                    <span class="events-block__cart-label">View cart</span>
+                    <span class="events-block__cart-pill" aria-live="polite"><span data-events-cart-count>0</span></span>
+                    <span class="events-block__cart-total" data-events-cart-total>$0.00</span>
+                </button>
             </div>
         </div>
         <div class="events-block__items" data-events-items>
@@ -121,5 +128,15 @@
             </article>
         </div>
         <div class="events-block__empty text-center text-muted d-none" data-events-empty>{custom_empty}</div>
+    </div>
+    <div class="events-modal" data-events-modal hidden>
+        <div class="events-modal__overlay" data-events-modal-close></div>
+        <div class="events-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="<?= $blockId ?>-modal-title">
+            <button type="button" class="events-modal__close" data-events-modal-close>
+                <span aria-hidden="true">&times;</span>
+                <span class="sr-only">Close</span>
+            </button>
+            <div class="events-modal__content" data-events-modal-content data-events-modal-title-id="<?= $blockId ?>-modal-title"></div>
+        </div>
     </div>
 </section>
