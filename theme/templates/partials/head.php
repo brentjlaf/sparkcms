@@ -7,6 +7,8 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
 } else {
     $favicon = $themeBase . '/images/favicon.png';
 }
+$headExtra = $headExtra ?? '';
+$bodyAttributes = isset($bodyAttributes) ? trim($bodyAttributes) : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -34,6 +36,7 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
         <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/root.css?v=mw3.2"/>
         <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
         <link nocache="nocache" rel="stylesheet" href="<?php echo $themeBase; ?>/css/override.css?v=mw3.2"/>
+        <?php if (!empty($headExtra)) { echo $headExtra; } ?>
     </head>
-    <body>
+    <body<?php echo $bodyAttributes !== '' ? ' ' . $bodyAttributes : ''; ?>>
 
