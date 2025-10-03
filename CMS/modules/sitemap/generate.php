@@ -3,10 +3,10 @@
 // Generate sitemap.xml listing all published pages
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
-require_once __DIR__ . '/SitemapGenerator.php';
+require_once __DIR__ . '/SitemapRegenerator.php';
 require_login();
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=UTF-8');
 
 try {
     $pagesFile = __DIR__ . '/../../data/pages.json';
@@ -15,16 +15,21 @@ try {
         $pages = [];
     }
 
-    $generator = new SitemapGenerator(__DIR__ . '/../../../sitemap.xml');
-    $result = $generator->generate($pages);
+    $result = regenerate_sitemap($pages, __DIR__ . '/../../../sitemap.xml');
+    if (($result['success'] ?? false) !== true) {
+        http_response_code(500);
+    }
 
-    echo json_encode($result);
+    echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $exception) {
     http_response_code(500);
+    $message = $exception->getMessage();
+    if (!is_string($message) || $message === '') {
+        $message = 'Failed to regenerate sitemap.';
+    }
     echo json_encode([
         'success' => false,
-        'message' => 'Failed to regenerate sitemap.',
-        'error' => $exception->getMessage(),
-    ]);
+        'message' => $message,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
 ?>
