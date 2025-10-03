@@ -5,12 +5,21 @@ import basePath from './utils/base-path.js';
   var formCache = {};
   var formRequests = {};
 
-  function fetchFormDefinition(id) {
-    var key = String(id);
+  function cacheKey(id, version) {
+    var idPart = String(id);
+    var versionPart = version == null ? '' : String(version);
+    return idPart + '::' + versionPart;
+  }
+
+  function fetchFormDefinition(id, version) {
+    var key = cacheKey(id, version);
     if (formCache[key]) return Promise.resolve(formCache[key]);
     if (formRequests[key]) return formRequests[key];
     var prefix = basePath();
     var url = (prefix || '') + '/forms/get.php?id=' + encodeURIComponent(id);
+    if (version != null) {
+      url += '&v=' + encodeURIComponent(version);
+    }
     formRequests[key] = fetch(url, { credentials: 'same-origin' })
       .then(function (response) {
         if (!response.ok) throw new Error('Failed to load form');
@@ -25,6 +34,30 @@ import basePath from './utils/base-path.js';
         throw err;
       });
     return formRequests[key];
+  }
+
+  function clearFormCache(id, version) {
+    if (id == null) {
+      formCache = {};
+      formRequests = {};
+      return;
+    }
+
+    var idString = String(id);
+    var hasVersion = version !== undefined && version !== null;
+    var targetKey = hasVersion ? cacheKey(id, version) : null;
+
+    Object.keys(formCache).forEach(function (key) {
+      if (key.split('::')[0] !== idString) return;
+      if (hasVersion && key !== targetKey) return;
+      delete formCache[key];
+    });
+
+    Object.keys(formRequests).forEach(function (key) {
+      if (key.split('::')[0] !== idString) return;
+      if (hasVersion && key !== targetKey) return;
+      delete formRequests[key];
+    });
   }
 
   function escapeSelector(value) {
@@ -65,6 +98,7 @@ import basePath from './utils/base-path.js';
     placeholder.textContent = message || container.dataset.placeholderMessage || '';
     container.appendChild(placeholder);
     container.removeAttribute('data-rendered-form-id');
+    container.removeAttribute('data-rendered-form-version');
   }
 
   function showLoading(container) {
@@ -84,6 +118,7 @@ import basePath from './utils/base-path.js';
     error.textContent = message || 'This form is currently unavailable.';
     container.appendChild(error);
     container.removeAttribute('data-rendered-form-id');
+    container.removeAttribute('data-rendered-form-version');
   }
 
   function buildField(field, index) {
@@ -400,18 +435,34 @@ import basePath from './utils/base-path.js';
         showPlaceholder(container, container.dataset.placeholderMessage || 'Select a form to display.');
         return;
       }
+      var formVersionAttr = container.getAttribute('data-form-version');
+      var formTimestampAttr = container.getAttribute('data-form-timestamp');
+      var formVersion = formVersionAttr !== null ? formVersionAttr : formTimestampAttr;
+      if (formVersion === null) {
+        formVersion = '';
+      }
       var renderedId = parseInt(container.getAttribute('data-rendered-form-id') || '0', 10);
-      if (renderedId === formId && container.querySelector('form.spark-form')) {
+      var renderedVersion = container.getAttribute('data-rendered-form-version') || '';
+      if (
+        renderedId === formId &&
+        renderedVersion === formVersion &&
+        container.querySelector('form.spark-form')
+      ) {
         return;
       }
       showLoading(container);
       var token = Date.now().toString(36) + Math.random().toString(36).slice(2);
       container.setAttribute('data-render-token', token);
-      fetchFormDefinition(formId)
+      fetchFormDefinition(formId, formVersion)
         .then(function (form) {
           if (container.getAttribute('data-render-token') !== token) return;
           renderSparkForm(container, form);
           container.setAttribute('data-rendered-form-id', String(formId));
+          if (formVersion) {
+            container.setAttribute('data-rendered-form-version', formVersion);
+          } else {
+            container.removeAttribute('data-rendered-form-version');
+          }
           container.removeAttribute('data-render-token');
         })
         .catch(function () {
@@ -465,10 +516,25 @@ import basePath from './utils/base-path.js';
       var observer = new MutationObserver(function (mutations) {
         var needsRefresh = false;
         mutations.forEach(function (mutation) {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'data-form-id') {
-            var target = mutation.target;
-            if (target && target.classList && target.classList.contains('spark-form-embed')) {
-              needsRefresh = true;
+          if (mutation.type === 'attributes') {
+            if (mutation.attributeName === 'data-form-id') {
+              var target = mutation.target;
+              if (target && target.classList && target.classList.contains('spark-form-embed')) {
+                needsRefresh = true;
+              }
+            }
+            if (
+              mutation.attributeName === 'data-form-version' ||
+              mutation.attributeName === 'data-form-timestamp'
+            ) {
+              var versionTarget = mutation.target;
+              if (
+                versionTarget &&
+                versionTarget.classList &&
+                versionTarget.classList.contains('spark-form-embed')
+              ) {
+                needsRefresh = true;
+              }
             }
           }
           if (mutation.type === 'childList') {
@@ -492,8 +558,12 @@ import basePath from './utils/base-path.js';
         attributes: true,
         attributeFilter: [
           'data-form-id',
+          'data-form-version',
+          'data-form-timestamp',
         ],
       });
     }
   });
+  window.SparkForms = window.SparkForms || {};
+  window.SparkForms.clearCache = clearFormCache;
 })();
