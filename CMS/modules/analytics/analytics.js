@@ -726,28 +726,31 @@ $(function(){
 
     function getTrendBadgeClass(entry){
         if (!entry) {
-            return 'analytics-detail__badge--neutral';
+            return '';
         }
-        if (entry.trend === 'up' || entry.trend === 'new') {
-            return 'analytics-detail__badge--positive';
+        if (entry.trend === 'new') {
+            return 'status-draft';
+        }
+        if (entry.trend === 'up') {
+            return 'status-good';
         }
         if (entry.trend === 'down') {
-            return 'analytics-detail__badge--negative';
+            return 'status-critical';
         }
-        return 'analytics-detail__badge--neutral';
+        return '';
     }
 
     function getStatusBadgeClass(entry){
         if (!entry) {
-            return 'analytics-detail__badge--neutral';
+            return '';
         }
         if (entry.status === 'top') {
-            return 'analytics-detail__badge--success';
+            return 'status-good';
         }
         if (entry.status === 'no-views') {
-            return 'analytics-detail__badge--warning';
+            return 'status-warning';
         }
-        return 'analytics-detail__badge--neutral';
+        return '';
     }
 
     function getInsightSuggestions(entry){
@@ -817,13 +820,15 @@ $(function(){
                 .text(buildDeltaText(entry));
         }
         if ($detailBadge.length) {
+            const statusClass = getStatusBadgeClass(entry);
             $detailBadge
-                .attr('class', 'analytics-detail__badge ' + getStatusBadgeClass(entry))
+                .attr('class', 'analytics-detail__badge status-badge' + (statusClass ? ' ' + statusClass : ''))
                 .text(entry.badge || 'Page insight');
         }
         if ($detailTrend.length) {
+            const trendClass = getTrendBadgeClass(entry);
             $detailTrend
-                .attr('class', 'analytics-detail__badge ' + getTrendBadgeClass(entry))
+                .attr('class', 'analytics-detail__badge status-badge' + (trendClass ? ' ' + trendClass : ''))
                 .text(getTrendLabel(entry));
         }
 

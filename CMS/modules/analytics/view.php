@@ -211,7 +211,7 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
     </div>
     <div class="a11y-page-detail analytics-detail" id="analyticsDetail" hidden role="dialog" aria-modal="true" aria-labelledby="analyticsDetailTitle">
         <div class="a11y-detail-content analytics-detail__content" role="document">
-            <button type="button" class="a11y-detail-close analytics-detail__close" id="analyticsDetailClose" aria-label="Close page analytics">
+            <button type="button" class="a11y-detail-close analytics-detail__close btn btn-secondary btn-sm" id="analyticsDetailClose" aria-label="Close page analytics">
                 <span class="analytics-detail__close-text">Close</span>
             </button>
             <header class="analytics-detail__header">
@@ -227,8 +227,8 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
                 </div>
             </header>
             <div class="analytics-detail__badges">
-                <span id="analyticsDetailBadge" class="analytics-detail__badge analytics-detail__badge--neutral">Page insight</span>
-                <span id="analyticsDetailTrend" class="analytics-detail__badge analytics-detail__badge--neutral">Traffic holding steady</span>
+                <span id="analyticsDetailBadge" class="analytics-detail__badge status-badge">Page insight</span>
+                <span id="analyticsDetailTrend" class="analytics-detail__badge status-badge">Traffic holding steady</span>
             </div>
             <div class="analytics-detail__body">
                 <ul id="analyticsDetailMetrics" class="analytics-detail__metrics"></ul>
@@ -238,7 +238,7 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
                 </section>
             </div>
             <footer class="analytics-detail__footer">
-                <a id="analyticsDetailVisit" class="analytics-detail__link" href="/" target="_blank" rel="noopener">
+                <a id="analyticsDetailVisit" class="analytics-detail__link btn btn-primary" href="/" target="_blank" rel="noopener">
                     <span>Open live page</span>
                 </a>
             </footer>
