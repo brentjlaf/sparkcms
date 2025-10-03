@@ -5,6 +5,16 @@ require_once __DIR__ . '/../CMS/includes/data.php';
 require_once __DIR__ . '/../CMS/includes/settings.php';
 require_login();
 
+if (!function_exists('render_partial')) {
+    function render_partial(string $path, array $data = []): string
+    {
+        extract($data, EXTR_SKIP);
+        ob_start();
+        include $path;
+        return ob_get_clean();
+    }
+}
+
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $pagesFile = __DIR__ . '/../CMS/data/pages.json';
 $pages = read_json_file($pagesFile);
@@ -38,7 +48,12 @@ $placeholderText = !empty($settings['canvas_placeholder'])
     ? htmlspecialchars($settings['canvas_placeholder'])
     : 'Drag blocks from the palette to start building your page';
 $canvasContent = $page['content'] ?: '<div class="canvas-placeholder">' . $placeholderText . '</div>';
-$themeHtml = preg_replace('/<div class="drop-area"><\\/div>/', '<div id="canvas" class="canvas">' . $canvasContent . '</div>', $themeHtml);
+$dropAreaHook = '<div class="drop-area" id="liveed-canvas-placeholder"></div>';
+if (strpos($themeHtml, $dropAreaHook) !== false) {
+    $themeHtml = str_replace($dropAreaHook, '<div id="canvas" class="canvas">' . $canvasContent . '</div>', $themeHtml);
+} else {
+    $themeHtml = str_replace('<div class="drop-area"></div>', '<div id="canvas" class="canvas">' . $canvasContent . '</div>', $themeHtml);
+}
 
 $cssFiles = [
     'builder-core.css',
@@ -51,67 +66,62 @@ $cssFiles = [
 ];
 $headInject = '';
 foreach ($cssFiles as $css) {
-    $headInject .= "<link rel=\"stylesheet\" href=\"{$scriptBase}/liveed/css/$css\">";
+    $headInject .= '<link rel="stylesheet" href="' . htmlspecialchars($scriptBase, ENT_QUOTES, 'UTF-8') . '/liveed/css/' . $css . '">' . "\n";
 }
-$headInject .= "<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css\"/>";
-$themeHtml = preg_replace('/<head>/', '<head>' . $headInject, $themeHtml, 1);
+$headInject .= '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">' . "\n";
 
-$previewToolbar = '<div class="preview-toolbar">'
-    . '<button type="button" class="preview-btn active" data-size="desktop" title="Desktop"><i class="fa-solid fa-desktop"></i></button>'
-    . '<button type="button" class="preview-btn" data-size="tablet" title="Tablet"><i class="fa-solid fa-tablet-screen-button"></i></button>'
-    . '<button type="button" class="preview-btn" data-size="phone" title="Phone"><i class="fa-solid fa-mobile-screen-button"></i></button>'
-    . '</div>';
+$headHook = '<!-- liveed-head -->';
+if (strpos($themeHtml, $headHook) !== false) {
+    $themeHtml = str_replace($headHook, $headInject, $themeHtml);
+} else {
+    $headPos = strpos($themeHtml, '<head>');
+    if ($headPos !== false) {
+        $themeHtml = substr_replace($themeHtml, '<head>' . $headInject, $headPos, strlen('<head>'));
+    }
+}
 
-$builderHeader = '<header class="builder-header" title="Drag to reposition">'
-    . '<div  class="title-top"><div class="title">Editing: ' . htmlspecialchars($page['title']) . '</div> '
-    . '<button type="button" class="manual-save-btn btn btn-primary"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button></div>'
-    . '<div id="saveStatus" class="save-status"></div>'
-    . $previewToolbar
-    . '</header>';
+$lastSavedLabel = date('Y-m-d H:i', (int) $page['last_modified']);
+$paletteHtml = render_partial(__DIR__ . '/templates/palette.php', [
+    'pageTitle' => $page['title'],
+    'lastSavedLabel' => $lastSavedLabel,
+]);
 
-$paletteFooter = '<div class="footer"><div class="action-row">'
-    . '<button class="action-btn undo-btn"><i class="fas fa-undo"></i><span>Undo</span></button>'
-    . '<button class="action-btn page-history-btn"><i class="fas fa-clock-rotate-left"></i><span>History</span></button>'
-    . '<button class="action-btn redo-btn"><i class="fas fa-redo"></i><span>Redo</span></button>'
-    . '</div><div class="footer-links">'
-    . '<span id="lastSavedTime" class="last-saved-time">Last saved: ' . date('Y-m-d H:i', $page['last_modified']) . '</span>'
-    . '</div></div>';
+$builderStart = render_partial(__DIR__ . '/templates/builder-start.php', [
+    'paletteHtml' => $paletteHtml,
+]);
 
-$builderStart = '<div class="builder"><button type="button" id="viewModeToggle" class="view-toggle" title="View mode"><i class="fa-solid fa-eye"></i></button><aside class="block-palette">'
-    . $builderHeader
-    . '<h2 class="blocks-title">Blocks</h2><div class="palette-search-container"><i class="fa-solid fa-search search-icon"></i><input type="text" class="palette-search" placeholder="Search blocks"></div><div class="palette-items"></div>'
-    . $paletteFooter
-    . '</aside><main class="canvas-container">';
+$modalsHtml = render_partial(__DIR__ . '/templates/modals.php');
 
-$mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
-    . '<div class="modal-content media-picker">'
-    . '<div class="picker-sidebar"><ul id="pickerFolderList"></ul></div>'
-    . '<div class="picker-main"><div id="pickerImageGrid" class="picker-grid"></div>'
-    . '<div class="modal-footer"><button type="button" class="btn btn-secondary" id="mediaPickerClose"><i class="fa-solid fa-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Close</span></button></div>'
-    . '</div></div></div>'
-    . '<div id="pickerEditModal" class="modal">'
-    . '<div class="modal-content"><div class="crop-container"><img id="pickerEditImage" src="" style="max-width:100%;"></div>'
-    . '<div class="modal-footer"><input type="range" id="pickerScale" min="0.5" max="3" step="0.1" value="1">'
-    . '<button class="btn btn-secondary" id="pickerEditCancel"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>'
-    . '<button class="btn btn-primary" id="pickerEditSave"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button></div>'
-    . '</div></div>'
-    . '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">'
-    . '<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>';
+$builderEnd = render_partial(__DIR__ . '/templates/builder-end.php', [
+    'modalsHtml' => $modalsHtml,
+    'scriptBase' => $scriptBase,
+    'pageId' => $page['id'],
+    'pageSlug' => $page['slug'],
+    'pageLastModified' => $page['last_modified'],
+]);
 
-$previewModalHtml = '<div id="previewModal" class="modal">'
-    . '<div class="modal-content preview-frame">'
-    . '<div class="frame-wrapper"><iframe id="previewFrame" src=""></iframe></div>'
-    . '<div class="modal-footer"><button type="button" class="btn btn-secondary" id="closePreview"><i class="fa-solid fa-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Close</span></button></div>'
-    . '</div></div>';
+$builderStartHook = '<!-- liveed-builder:start -->';
+if (strpos($themeHtml, $builderStartHook) !== false) {
+    $themeHtml = str_replace($builderStartHook, $builderStart, $themeHtml);
+} else {
+    $bodyPos = strpos($themeHtml, '<body');
+    if ($bodyPos !== false) {
+        $bodyClose = strpos($themeHtml, '>', $bodyPos);
+        if ($bodyClose !== false) {
+            $insertPos = $bodyClose + 1;
+            $themeHtml = substr_replace($themeHtml, $builderStart, $insertPos, 0);
+        }
+    }
+}
 
-$builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><span class="title">Settings</span><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
-    . '<div id="historyPanel" class="history-panel"><div class="history-header"><span class="title">Page History</span><button type="button" class="close-btn">&times;</button></div><div class="history-content"></div></div>'
-    . $mediaPickerHtml . $previewModalHtml . '</div>'
-    . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';window.builderSlug = ' . json_encode($page['slug']) . ';window.builderLastModified = ' . json_encode($page['last_modified']) . ';</script>'
-    . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>'
-    . '<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>';
-
-$themeHtml = preg_replace('/<body([^>]*)>/', '<body$1>' . $builderStart, $themeHtml, 1);
-$themeHtml = preg_replace('/<\/body>/', $builderEnd . '</body>', $themeHtml, 1);
+$builderEndHook = '<!-- liveed-builder:end -->';
+if (strpos($themeHtml, $builderEndHook) !== false) {
+    $themeHtml = str_replace($builderEndHook, $builderEnd, $themeHtml);
+} else {
+    $endPos = strripos($themeHtml, '</body>');
+    if ($endPos !== false) {
+        $themeHtml = substr_replace($themeHtml, $builderEnd, $endPos, 0);
+    }
+}
 
 echo $themeHtml;

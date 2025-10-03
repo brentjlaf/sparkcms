@@ -70,8 +70,10 @@ function renderFooterMenu($items){
     <link rel="stylesheet" href="<?php echo $themeBase; ?>/css/root.css?v=mw3.2"/>
     <link rel="stylesheet" href="<?php echo $themeBase; ?>/css/skin.css?v=mw3.2"/>
     <link rel="stylesheet" href="<?php echo $themeBase; ?>/css/override.css?v=mw3.2"/>
+    <!-- liveed-head -->
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <!-- liveed-builder:start -->
 
     <!-- Default Page -->
     <div id="app" class="page-template default-page d-flex flex-column min-vh-100">
@@ -120,7 +122,7 @@ function renderFooterMenu($items){
 
         <!-- Main Content -->
         <main id="main-area" class="flex-grow-1">
-            <div class="drop-area"></div>
+            <div class="drop-area" id="liveed-canvas-placeholder"></div>
         </main>
 
         <!-- Footer -->
@@ -240,5 +242,6 @@ function renderFooterMenu($items){
         });
     </script>
 
+    <!-- liveed-builder:end -->
 </body>
 </html>
