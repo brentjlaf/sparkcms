@@ -96,6 +96,9 @@ import basePath from './utils/base-path.js';
     var wrapper = document.createElement('div');
     wrapper.className = 'mb-3 spark-form-field';
     wrapper.setAttribute('data-field-name', name);
+    if (required) {
+      wrapper.dataset.required = 'true';
+    }
 
     if (type === 'submit') {
       var submitBtn = document.createElement('button');
@@ -123,7 +126,6 @@ import basePath from './utils/base-path.js';
       checkbox.id = fieldId;
       checkbox.name = name;
       checkbox.value = '1';
-      if (required) checkbox.required = true;
       var checkboxLabel = document.createElement('label');
       checkboxLabel.className = 'form-check-label';
       checkboxLabel.setAttribute('for', fieldId);
@@ -153,13 +155,6 @@ import basePath from './utils/base-path.js';
         var optionId = fieldId + '-' + optionIndex;
         input.id = optionId;
         input.value = option;
-        if (required) {
-          if (type === 'radio') {
-            input.required = true;
-          } else if (type === 'checkbox' && optionIndex === 0) {
-            input.required = true;
-          }
-        }
         var optLabel = document.createElement('label');
         optLabel.className = 'form-check-label';
         optLabel.setAttribute('for', optionId);
@@ -295,18 +290,46 @@ import basePath from './utils/base-path.js';
     });
   }
 
+  function collectChoiceFieldErrors(formEl) {
+    var errors = [];
+    formEl.querySelectorAll('.spark-form-field[data-required="true"]').forEach(function (wrapper) {
+      var choiceInputs = wrapper.querySelectorAll('input[type="checkbox"], input[type="radio"]');
+      if (!choiceInputs.length) return;
+      var hasSelection = Array.prototype.some.call(choiceInputs, function (input) {
+        return input.checked;
+      });
+      if (!hasSelection) {
+        errors.push({
+          field: wrapper.getAttribute('data-field-name'),
+          message: 'Please select at least one option.'
+        });
+      }
+    });
+    return errors;
+  }
+
   function attachSubmitHandler(formEl, statusEl, successMessage) {
     if (!formEl) return;
     formEl.addEventListener('submit', function (event) {
       event.preventDefault();
       if (formEl.dataset.submitting === 'true') return;
+      var submitButtons = formEl.querySelectorAll('button[type="submit"], input[type="submit"]');
       clearFieldErrors(formEl);
+      var clientErrors = collectChoiceFieldErrors(formEl);
+      if (clientErrors.length) {
+        applyFieldErrors(formEl, clientErrors);
+        if (statusEl) {
+          statusEl.textContent = 'Please correct the highlighted fields.';
+          statusEl.classList.remove('text-success', 'text-danger');
+          statusEl.classList.add('text-danger');
+        }
+        return;
+      }
       if (statusEl) {
         statusEl.textContent = 'Submitting…';
         statusEl.classList.remove('text-success', 'text-danger');
       }
       formEl.dataset.submitting = 'true';
-      var submitButtons = formEl.querySelectorAll('button[type="submit"], input[type="submit"]');
       submitButtons.forEach(function (btn) {
         btn.disabled = true;
       });
