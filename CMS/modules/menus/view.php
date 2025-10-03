@@ -88,7 +88,7 @@ $filterCounts = [
     'single' => $singleLevelMenus,
 ];
 ?>
-<div class="content-section" id="menus">
+<div class="content-section a11y-dashboard" id="menus">
     <div class="menu-dashboard" data-last-updated="<?php echo htmlspecialchars($lastUpdatedIso, ENT_QUOTES); ?>">
         <header class="a11y-hero menu-hero">
             <div class="a11y-hero-content menu-hero-content">
@@ -98,11 +98,11 @@ $filterCounts = [
                     <p class="a11y-hero-subtitle menu-hero-subtitle">Craft intuitive navigation experiences and keep every menu in sync with your site's structure.</p>
                 </div>
                 <div class="a11y-hero-actions menu-hero-actions">
-                    <button type="button" class="menu-btn menu-btn--primary" id="newMenuBtn">
+                    <button type="button" class="a11y-btn a11y-btn--primary" id="newMenuBtn">
                         <i class="fas fa-plus" aria-hidden="true"></i>
                         <span>New Menu</span>
                     </button>
-                    <button type="button" class="menu-btn menu-btn--icon" id="refreshMenusBtn" aria-label="Refresh menus">
+                    <button type="button" class="a11y-btn a11y-btn--icon" id="refreshMenusBtn" aria-label="Refresh menus">
                         <i class="fas fa-rotate" aria-hidden="true"></i>
                     </button>
                     <span class="a11y-hero-meta menu-hero-meta">
@@ -163,7 +163,7 @@ $filterCounts = [
             <i class="fas fa-sitemap" aria-hidden="true"></i>
             <h3>No menus yet</h3>
             <p>Create your first navigation menu to help visitors find key pages.</p>
-            <button type="button" class="menu-btn menu-btn--primary" id="emptyStateCreateMenu">
+            <button type="button" class="a11y-btn a11y-btn--primary" id="emptyStateCreateMenu">
                 <i class="fas fa-plus" aria-hidden="true"></i>
                 <span>Create Menu</span>
             </button>
@@ -176,7 +176,7 @@ $filterCounts = [
                 <h3 id="menuFormTitle">Add Menu</h3>
                 <p class="menu-editor-subtitle">Drag and drop to arrange links and nest submenus.</p>
             </div>
-            <button type="button" class="menu-editor-close" id="closeMenuEditor" aria-label="Close menu editor">
+            <button type="button" class="a11y-btn a11y-btn--ghost menu-editor-close" id="closeMenuEditor" aria-label="Close menu editor">
                 <i class="fas fa-times" aria-hidden="true"></i>
             </button>
         </header>
@@ -190,14 +190,14 @@ $filterCounts = [
                 <label class="form-label">Menu Items</label>
                 <p class="menu-editor-hint">Choose a page or custom URL, then drag handles to reorder or nest items.</p>
                 <ul id="menuItems" class="menu-list"></ul>
-                <button type="button" class="menu-btn menu-btn--secondary menu-btn--sm" id="addMenuItem">
+                <button type="button" class="a11y-btn a11y-btn--secondary a11y-btn--sm" id="addMenuItem">
                     <i class="fas fa-plus" aria-hidden="true"></i>
                     <span>Add Item</span>
                 </button>
             </div>
             <div class="menu-form-actions">
-                <button type="submit" class="menu-btn menu-btn--primary">Save Menu</button>
-                <button type="button" class="menu-btn menu-btn--ghost" id="cancelMenuEdit">Cancel</button>
+                <button type="submit" class="a11y-btn a11y-btn--primary">Save Menu</button>
+                <button type="button" class="a11y-btn a11y-btn--ghost" id="cancelMenuEdit">Cancel</button>
             </div>
         </form>
     </div>
