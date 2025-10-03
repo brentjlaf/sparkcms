@@ -15,7 +15,8 @@ foreach ($pages as $p) {
     if ($p['id'] == $id) { $deletedPage = $p; break; }
 }
 $pages = array_filter($pages, function($p) use ($id) { return $p['id'] != $id; });
-file_put_contents($pagesFile, json_encode(array_values($pages), JSON_PRETTY_PRINT));
+$pages = array_values($pages);
+file_put_contents($pagesFile, json_encode($pages, JSON_PRETTY_PRINT));
 
 // Remove the deleted page from any menus
 $menusFile = __DIR__ . '/../../data/menus.json';
@@ -68,7 +69,21 @@ if (file_exists($menusFile)) {
 }
 
 // Update sitemap after a page is deleted
-require_once __DIR__ . '/../sitemap/generate.php';
+require_once __DIR__ . '/../sitemap/SitemapRegenerator.php';
+$sitemapResult = regenerate_sitemap($pages, __DIR__ . '/../../../sitemap.xml');
+if (($sitemapResult['success'] ?? false) !== true) {
+    $message = $sitemapResult['message'] ?? 'Failed to regenerate sitemap.';
+    if (!is_string($message) || $message === '') {
+        $message = 'Failed to regenerate sitemap.';
+    }
+
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => $message,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    return;
+}
 
 $historyFile = __DIR__ . '/../../data/page_history.json';
 $historyData = read_json_file($historyFile);
