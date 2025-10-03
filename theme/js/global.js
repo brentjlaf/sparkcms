@@ -99,6 +99,41 @@ import basePath from './utils/base-path.js';
     return start.replace(/\/+$/, '') + '/' + path;
   }
 
+  function resolveBlogImageUrl(value) {
+    if (!value) {
+      return '';
+    }
+    var raw = String(value).trim();
+    if (!raw) {
+      return '';
+    }
+    var lower = raw.toLowerCase();
+    if (lower.indexOf('javascript:') === 0) {
+      return '';
+    }
+    if (raw.slice(0, 2) === '//') {
+      return '';
+    }
+    if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
+      return raw;
+    }
+
+    var base = basePath() || '';
+    var normalizedBase = base.replace(/\/+$/, '');
+    if (!normalizedBase) {
+      return raw;
+    }
+
+    if (raw.charAt(0) === '/') {
+      if (raw.indexOf(normalizedBase + '/') === 0 || raw === normalizedBase) {
+        return raw;
+      }
+      return normalizedBase + raw;
+    }
+
+    return normalizedBase + '/' + raw.replace(/^\/+/, '');
+  }
+
   function parseBooleanOption(value, fallback) {
     if (value == null || value === '') {
       return fallback;
@@ -523,8 +558,9 @@ import basePath from './utils/base-path.js';
     var imageWrapper = container.querySelector('[data-blog-image-wrapper]');
     var imageEl = container.querySelector('[data-blog-image]');
     if (imageWrapper) {
-      if (options.showImage && post.image && imageEl) {
-        imageEl.src = post.image;
+      var resolvedImage = resolveBlogImageUrl(post.image);
+      if (options.showImage && resolvedImage && imageEl) {
+        imageEl.src = resolvedImage;
         imageEl.alt = post.imageAlt || ('Featured image for ' + (post.title || 'blog post'));
         imageWrapper.style.display = '';
       } else {
