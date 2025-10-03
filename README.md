@@ -64,6 +64,26 @@ Modules live in `CMS/modules` and provide specific functionality:
 - **sitemap** – XML sitemap generation
 - **users** – User management
 
+## Potential Future Modules
+
+The following modules could extend the backend and are arranged from easiest to hardest to implement:
+
+1. **Announcements** – Simple interface for posting one-off notices to the dashboard.
+2. **Redirects** – Manage URL redirects with optional scheduling.
+3. **FAQs** – Maintain categorized question-and-answer content blocks.
+4. **Testimonials** – Collect and display client feedback snippets for reuse across pages.
+5. **Newsletter** – Export subscriber lists and integrate basic email campaign settings.
+6. **Events Calendar** – Create events with dates, descriptions, and venue details.
+7. **Tag Manager** – Define reusable tags and apply them across content types.
+8. **Content Scheduler** – Schedule publish/unpublish dates for pages and posts.
+9. **Backup Manager** – Trigger manual backups of JSON data and media archives.
+10. **Comment Moderation** – Review, approve, or delete comments from blog posts.
+11. **A/B Testing** – Configure simple experiments for selected pages or blocks.
+12. **Workflow Approvals** – Route content changes through multi-step approval chains.
+13. **Role-Based Permissions** – Define custom roles with granular access controls.
+14. **Headless API** – Expose JSON endpoints for content consumption by external apps.
+15. **Marketplace Integration** – Connect to third-party services for selling digital products.
+
 ## Coding Standards
 
 - PHP files follow a simple procedural style with one file per feature.
