@@ -149,6 +149,8 @@
   --text-color-on-fourth-dark: var(--white);
 
   --background-gradient: radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.1), transparent 55%), radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.12), transparent 50%), linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+  --hero-gradient-1: rgba(79, 70, 229, 0.15);
+  --hero-gradient-2: rgba(16, 185, 129, 0.12);
   --card-background: var(--white);
   --card-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.15);
   --card-radius: 1.25rem;
