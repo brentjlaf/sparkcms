@@ -636,20 +636,36 @@ import basePath from './utils/base-path.js';
   var eventsCartState = loadEventsCartState();
   var activeEventsModalState = null;
 
+  function fetchJsonResource(endpoint, options) {
+    var mapData = options && typeof options.mapData === 'function' ? options.mapData : function (data) {
+      return data;
+    };
+    var handleError = options && options.handleError;
+    var errorMessage = options && options.errorMessage ? options.errorMessage : 'Failed to load resource';
+    var url = basePath() + endpoint;
+    return fetch(url, { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error(errorMessage);
+        }
+        return response.json();
+      })
+      .then(mapData)
+      .catch(function (error) {
+        if (typeof handleError === 'function') {
+          return handleError(error);
+        }
+        throw error;
+      });
+  }
+
   function fetchEvents() {
     if (eventsPromise) {
       return eventsPromise;
     }
-    var base = basePath();
-    var url = base + '/CMS/data/events.json';
-    eventsPromise = fetch(url, { credentials: 'same-origin', cache: 'no-store' })
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error('Failed to load events');
-        }
-        return response.json();
-      })
-      .then(function (events) {
+    eventsPromise = fetchJsonResource('/CMS/data/events.json', {
+      errorMessage: 'Failed to load events',
+      mapData: function (events) {
         if (!Array.isArray(events)) {
           return [];
         }
@@ -660,12 +676,13 @@ import basePath from './utils/base-path.js';
           var status = String(event.status || '').toLowerCase();
           return !status || status === 'published';
         });
-      })
-      .catch(function (error) {
+      },
+      handleError: function (error) {
         console.error('[SparkCMS] Events load error:', error);
         eventsPromise = null;
         throw error;
-      });
+      }
+    });
     return eventsPromise;
   }
 
@@ -673,16 +690,9 @@ import basePath from './utils/base-path.js';
     if (eventCategoriesPromise) {
       return eventCategoriesPromise;
     }
-    var base = basePath();
-    var url = base + '/CMS/data/event_categories.json';
-    eventCategoriesPromise = fetch(url, { credentials: 'same-origin', cache: 'no-store' })
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error('Failed to load event categories');
-        }
-        return response.json();
-      })
-      .then(function (records) {
+    eventCategoriesPromise = fetchJsonResource('/CMS/data/event_categories.json', {
+      errorMessage: 'Failed to load event categories',
+      mapData: function (records) {
         if (!Array.isArray(records)) {
           return {};
         }
@@ -704,12 +714,13 @@ import basePath from './utils/base-path.js';
           };
           return map;
         }, {});
-      })
-      .catch(function (error) {
+      },
+      handleError: function (error) {
         console.error('[SparkCMS] Event categories load error:', error);
         eventCategoriesPromise = null;
         return {};
-      });
+      }
+    });
     return eventCategoriesPromise;
   }
 
