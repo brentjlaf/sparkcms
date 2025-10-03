@@ -6961,7 +6961,7 @@
     gap: 12px;
     padding: 10px 16px;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 25px;
     background: #fff;
     color: #64748b;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
