@@ -89,17 +89,19 @@
     if (!slug) {
       return '#';
     }
+    var slugValue = String(slug);
+    var safeSlug = encodeURIComponent(slugValue);
     var detail = (prefix || '').toString().trim();
     if (!detail) {
       detail = '/blog';
     }
     if (/^https?:\/\//i.test(detail)) {
-      return detail.replace(/\/+$/, '') + '/' + slug;
+      return detail.replace(/\/+$/, '') + '/' + safeSlug;
     }
     var base = normalizeBasePath();
     detail = detail.replace(/\/+$/, '');
     detail = detail.replace(/^\/+/, '');
-    var path = detail ? detail + '/' + slug : slug;
+    var path = detail ? detail + '/' + safeSlug : safeSlug;
     var start = base;
     if (start && start.charAt(0) !== '/') {
       start = '/' + start;
@@ -797,13 +799,14 @@
       return '';
     }
     var slug = createEventSlug(event);
+    var safeSlug = slug ? encodeURIComponent(String(slug)) : '';
     if (/^https?:\/\//i.test(base)) {
-      return base.replace(/\/+$/, '') + (slug ? '/' + slug : '');
+      return base.replace(/\/+$/, '') + (safeSlug ? '/' + safeSlug : '');
     }
     var normalized = base.replace(/\/+$/, '').replace(/^\/+/, '');
     var path = normalized;
-    if (slug) {
-      path = normalized ? normalized + '/' + slug : slug;
+    if (safeSlug) {
+      path = normalized ? normalized + '/' + safeSlug : safeSlug;
     }
     var start = normalizeBasePath();
     if (start && start.charAt(0) !== '/') {
