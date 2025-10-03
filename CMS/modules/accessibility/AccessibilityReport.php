@@ -71,11 +71,6 @@ class AccessibilityReport
         return array_values(array_filter($pages, 'is_array'));
     }
 
-    public function getLastScan(): string
-    {
-        return $this->lastScan;
-    }
-
     /**
      * Generate the accessibility report for all pages.
      *

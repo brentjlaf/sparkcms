@@ -74,11 +74,6 @@ class SeoReport
         return array_values(array_filter($pages, 'is_array'));
     }
 
-    public function getLastScan(): string
-    {
-        return $this->lastScan;
-    }
-
     /**
      * Generate the SEO report for all pages.
      *

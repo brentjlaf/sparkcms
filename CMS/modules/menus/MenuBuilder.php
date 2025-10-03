@@ -16,19 +16,6 @@ class MenuBuilder
         return $this->normalizeLevel($rawItems, $pageIndex);
     }
 
-    /**
-     * Prepare stored items for UI editing, keeping parity with normalizeItems.
-     *
-     * @param array $storedItems
-     * @param array $pages
-     * @return array
-     */
-    public function denormalizeItems(array $storedItems, array $pages): array
-    {
-        $pageIndex = $this->indexPages($pages);
-        return $this->denormalizeLevel($storedItems, $pageIndex);
-    }
-
     private function normalizeLevel($rawItems, array $pageIndex): array
     {
         if (!is_array($rawItems)) {
@@ -88,45 +75,6 @@ class MenuBuilder
         }
 
         return $items;
-    }
-
-    private function denormalizeLevel(array $storedItems, array $pageIndex): array
-    {
-        $result = [];
-        foreach ($storedItems as $storedItem) {
-            if (!is_array($storedItem)) {
-                continue;
-            }
-
-            $type = isset($storedItem['type']) ? (string)$storedItem['type'] : 'custom';
-            $denormalized = [
-                'label' => isset($storedItem['label']) ? (string)$storedItem['label'] : '',
-                'type' => $type,
-                'new_tab' => !empty($storedItem['new_tab']),
-            ];
-
-            if ($type === 'page') {
-                $pageId = isset($storedItem['page']) ? (int)$storedItem['page'] : 0;
-                $denormalized['page'] = $pageId;
-                if ($pageId && isset($pageIndex[$pageId]['slug'])) {
-                    $denormalized['link'] = '/' . ltrim((string)$pageIndex[$pageId]['slug'], '/');
-                } elseif (isset($storedItem['link'])) {
-                    $denormalized['link'] = (string)$storedItem['link'];
-                } else {
-                    $denormalized['link'] = '';
-                }
-            } else {
-                $denormalized['link'] = isset($storedItem['link']) ? (string)$storedItem['link'] : '';
-            }
-
-            if (!empty($storedItem['children']) && is_array($storedItem['children'])) {
-                $denormalized['children'] = $this->denormalizeLevel($storedItem['children'], $pageIndex);
-            }
-
-            $result[] = $denormalized;
-        }
-
-        return $result;
     }
 
     private function indexPages(array $pages): array

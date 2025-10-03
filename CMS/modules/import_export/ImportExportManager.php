@@ -40,11 +40,6 @@ class ImportExportManager
         return $this->datasetMetadata;
     }
 
-    public function getDatasetFilename(string $key): ?string
-    {
-        return $this->datasetMap[$key] ?? null;
-    }
-
     public function getAvailableDatasets(bool $includeDrafts = true): array
     {
         $datasets = array_keys($this->datasetMap);
