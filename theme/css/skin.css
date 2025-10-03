@@ -145,17 +145,17 @@ img[data-tpl-tooltip="Image"] {
 .layout-carousel { display: flex; overflow-x: auto; }
 .layout-single { display: block; }
 
-.columns-1 { grid-template-columns: 1fr; }
-.columns-2 { grid-template-columns: repeat(2, 1fr); }
-.columns-3 { grid-template-columns: repeat(3, 1fr); }
-.columns-4 { grid-template-columns: repeat(4, 1fr); }
-.columns-5 { grid-template-columns: repeat(5, 1fr); }
-.columns-6 { grid-template-columns: repeat(6, 1fr); }
+.image-gallery.columns-1 { grid-template-columns: 1fr; }
+.image-gallery.columns-2 { grid-template-columns: repeat(2, 1fr); }
+.image-gallery.columns-3 { grid-template-columns: repeat(3, 1fr); }
+.image-gallery.columns-4 { grid-template-columns: repeat(4, 1fr); }
+.image-gallery.columns-5 { grid-template-columns: repeat(5, 1fr); }
+.image-gallery.columns-6 { grid-template-columns: repeat(6, 1fr); }
 
-.spacing-none { gap: 0; }
-.spacing-small { gap: 0.5rem; }
-.spacing-medium { gap: 1rem; }
-.spacing-large { gap: 1.5rem; }
+.image-gallery.spacing-none { gap: 0; }
+.image-gallery.spacing-small { gap: 0.5rem; }
+.image-gallery.spacing-medium { gap: 1rem; }
+.image-gallery.spacing-large { gap: 1.5rem; }
 
 .gallery-item {
     position: relative;
