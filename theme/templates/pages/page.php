@@ -18,30 +18,7 @@ $social = $settings['social'] ?? [];
 $headExtra = $page['head'] ?? ($page['head_extra'] ?? '');
 $bodyAttributes = 'class="d-flex flex-column min-vh-100"';
 
-function renderMenu($items, $isDropdown = false){
-    foreach ($items as $it) {
-        $hasChildren = !empty($it['children']);
-        if ($hasChildren) {
-            echo '<li class="nav-item dropdown">';
-            echo '<a class="nav-link dropdown-toggle" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').' role="button" data-bs-toggle="dropdown" aria-expanded="false">'.htmlspecialchars($it['label']).'</a>';
-            echo '<ul class="dropdown-menu">';
-            renderMenu($it['children'], true);
-            echo '</ul>';
-        } else {
-            echo '<li class="nav-item'.($isDropdown ? '' : '').'">';
-            echo '<a class="nav-link" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
-        }
-        echo '</li>';
-    }
-}
-
-function renderFooterMenu($items){
-    foreach ($items as $it) {
-        echo '<li class="nav-item">';
-        echo '<a class="nav-link text-light px-2" href="'.htmlspecialchars($it['link']).'"'.(!empty($it['new_tab']) ? ' target="_blank"' : '').'>'.htmlspecialchars($it['label']).'</a>';
-        echo '</li>';
-    }
-}
+require_once __DIR__ . '/../partials/menu.php';
 ?>
 <?php include __DIR__ . "/../partials/head.php"; ?>
 
