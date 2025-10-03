@@ -20,6 +20,11 @@ class PageRepositoryException extends RuntimeException
 
 class PageRepository
 {
+    private const DISABLED_BLOCKS = [
+        'commerce.pricing-table.php',
+        'commerce.product-grid.php',
+    ];
+
     private string $pagesFile;
     private string $historyFile;
     private string $draftDirectory;
@@ -149,6 +154,12 @@ class PageRepository
         }
 
         $blocks = array_map('basename', $paths);
+        $blocks = array_values(array_filter(
+            $blocks,
+            static function (string $block): bool {
+                return !in_array($block, self::DISABLED_BLOCKS, true);
+            }
+        ));
         sort($blocks, SORT_STRING);
         return $blocks;
     }
@@ -165,7 +176,12 @@ class PageRepository
             throw new PageRepositoryException('Blocks directory is unavailable.', 500);
         }
 
-        $resolvedPath = realpath($this->blocksDirectory . '/' . basename($filename));
+        $resolvedFilename = basename($filename);
+        if (in_array($resolvedFilename, self::DISABLED_BLOCKS, true)) {
+            throw new PageRepositoryException('Block not found.', 404);
+        }
+
+        $resolvedPath = realpath($this->blocksDirectory . '/' . $resolvedFilename);
         if ($resolvedPath === false || strpos($resolvedPath, $basePath) !== 0 || !is_file($resolvedPath)) {
             throw new PageRepositoryException('Block not found.', 404);
         }
