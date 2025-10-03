@@ -251,45 +251,5 @@ function renderFooterMenu($items){
     <script>window.cmsBase = <?php echo json_encode($scriptBase); ?>;</script>
     <script src="<?php echo $themeBase; ?>/js/combined.js?v=mw3.2"></script>
 
-    <!-- Navigation & Back to Top Scripts -->
-    <script>
-        const navToggle = document.querySelector('.nav-toggle');
-        const mainNav = document.getElementById('main-nav');
-
-        if (navToggle && mainNav) {
-            navToggle.addEventListener('click', () => {
-                const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
-                navToggle.setAttribute('aria-expanded', String(!isExpanded));
-                mainNav.classList.toggle('active');
-            });
-
-            mainNav.querySelectorAll('a').forEach((link) => {
-                link.addEventListener('click', () => {
-                    navToggle.setAttribute('aria-expanded', 'false');
-                    mainNav.classList.remove('active');
-                });
-            });
-        }
-
-        // Show/hide back to top button
-        window.addEventListener('scroll', function() {
-            const backToTopBtn = document.getElementById('back-to-top-btn');
-            if (window.scrollY > 100) {
-                backToTopBtn.style.display = 'block';
-            } else {
-                backToTopBtn.style.display = 'none';
-            }
-        });
-
-        // Smooth scroll to top
-        document.getElementById('back-to-top-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    </script>
-
 </body>
 </html>
