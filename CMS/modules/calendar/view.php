@@ -166,16 +166,6 @@ $initialPayload = [
             </div>
         </section>
 
-        <section class="a11y-detail-card calendar-categories-card">
-            <header>
-                <h3>Categories</h3>
-                <p>Tag events with unique colors to make schedules easier to scan.</p>
-            </header>
-            <div class="calendar-categories" data-calendar-categories>
-                <div class="calendar-category-empty">No categories available. Add one to get started.</div>
-            </div>
-        </section>
-
         <template id="calendarData" type="application/json"><?php echo htmlspecialchars(json_encode($initialPayload), ENT_QUOTES, 'UTF-8'); ?></template>
     </div>
 </div>
