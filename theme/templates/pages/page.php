@@ -233,7 +233,7 @@ function renderFooterMenu($items){
         </footer>
 
         <!-- Back to Top Button -->
-        <button id="back-to-top-btn" aria-label="Back to Top">
+        <button id="back-to-top-btn" aria-label="Back to Top" hidden aria-hidden="true">
             <span>
                 <span>
                     <i class="fas fa-chevron-up" aria-hidden="true"></i>
@@ -255,6 +255,7 @@ function renderFooterMenu($items){
     <script>
         const navToggle = document.querySelector('.nav-toggle');
         const mainNav = document.getElementById('main-nav');
+        const backToTopBtn = document.getElementById('back-to-top-btn');
 
         if (navToggle && mainNav) {
             navToggle.addEventListener('click', () => {
@@ -271,24 +272,25 @@ function renderFooterMenu($items){
             });
         }
 
-        // Show/hide back to top button
-        window.addEventListener('scroll', function() {
-            const backToTopBtn = document.getElementById('back-to-top-btn');
-            if (window.scrollY > 100) {
-                backToTopBtn.style.display = 'block';
-            } else {
-                backToTopBtn.style.display = 'none';
-            }
-        });
+        if (backToTopBtn) {
+            const updateBackToTopVisibility = () => {
+                const shouldShow = window.scrollY > 100;
+                backToTopBtn.toggleAttribute('hidden', !shouldShow);
+                backToTopBtn.setAttribute('aria-hidden', String(!shouldShow));
+            };
 
-        // Smooth scroll to top
-        document.getElementById('back-to-top-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+            updateBackToTopVisibility();
+            window.addEventListener('scroll', updateBackToTopVisibility);
+
+            // Smooth scroll to top
+            backToTopBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
             });
-        });
+        }
     </script>
 
 </body>

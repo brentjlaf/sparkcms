@@ -458,6 +458,10 @@ button:focus-visible,
     box-shadow: 0 25px 45px -18px rgba(15, 23, 42, 0.45);
     transition: all 0.3s ease;
     z-index: 999;
+}
+
+#back-to-top-btn[hidden],
+#back-to-top-btn[aria-hidden="true"] {
     display: none;
 }
 
