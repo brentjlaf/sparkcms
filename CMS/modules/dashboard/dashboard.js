@@ -209,6 +209,25 @@ $(function(){
             })
             : modules;
 
+        function capitalizeLastWord(text) {
+            if (typeof text !== 'string') {
+                return text;
+            }
+
+            const match = text.match(/(\S+)(\s*)$/);
+            if (!match) {
+                return text;
+            }
+
+            const [, lastWord, trailing] = match;
+            if (!lastWord) {
+                return text;
+            }
+
+            const capitalizedWord = lastWord.charAt(0).toUpperCase() + lastWord.slice(1);
+            return text.slice(0, match.index) + capitalizedWord + (trailing || '');
+        }
+
         sortedModules.forEach(function (module) {
             const id = module.id || module.module || module.name || '';
             const name = module.module || module.name || id || '';
@@ -218,7 +237,7 @@ $(function(){
             const statusKey = String(module.status || 'ok').toLowerCase();
             const statusClass = statusClassMap[statusKey] || statusClassMap.ok;
             const statusLabel = module.statusLabel || statusLabelFallback[statusKey] || statusLabelFallback.ok;
-            const cta = module.cta || `Open ${name}`;
+            const cta = capitalizeLastWord(module.cta || `Open ${name}`);
 
             const $card = $('<article>', {
                 class: `dashboard-module-card ${statusClass}`,
