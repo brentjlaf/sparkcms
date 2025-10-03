@@ -22,7 +22,7 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
 ?>
 <link rel="stylesheet" href="modules/analytics/analytics.css">
 <div class="content-section" id="analytics">
-    <div class="analytics-dashboard">
+    <div class="analytics-dashboard a11y-dashboard">
         <header class="a11y-hero analytics-hero">
             <div class="a11y-hero-content analytics-hero-content">
                 <div class="analytics-hero-text">
@@ -31,13 +31,13 @@ $lastUpdatedDisplay = $lastUpdatedTimestamp > 0
                     <p class="a11y-hero-subtitle analytics-hero-subtitle">Monitor traffic trends, understand what resonates, and uncover pages that need promotion.</p>
                 </div>
                 <div class="a11y-hero-actions analytics-hero-actions">
-                    <button type="button" class="analytics-btn analytics-btn--primary" data-analytics-action="refresh" data-loading-text="Refreshing&hellip;">
+                    <button type="button" class="a11y-btn a11y-btn--primary" data-analytics-action="refresh" data-loading-text="Refreshing&hellip;">
                         <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-                        <span class="analytics-btn__text">Refresh data</span>
+                        <span class="a11y-btn__text">Refresh data</span>
                     </button>
-                    <button type="button" class="analytics-btn analytics-btn--ghost" data-analytics-action="export" data-loading-text="Exporting&hellip;">
+                    <button type="button" class="a11y-btn a11y-btn--ghost" data-analytics-action="export" data-loading-text="Exporting&hellip;">
                         <i class="fa-solid fa-download" aria-hidden="true"></i>
-                        <span class="analytics-btn__text">Export CSV</span>
+                        <span class="a11y-btn__text">Export CSV</span>
                     </button>
                     <span class="a11y-hero-meta analytics-hero-meta" id="analyticsLastUpdated" data-timestamp="<?php echo $lastUpdatedTimestamp > 0 ? htmlspecialchars(date(DATE_ATOM, $lastUpdatedTimestamp), ENT_QUOTES) : ''; ?>">
                         <?php echo $lastUpdatedDisplay
