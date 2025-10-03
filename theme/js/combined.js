@@ -395,7 +395,56 @@
 
     var categoryEl = container.querySelector('[data-blog-category]');
     if (categoryEl) {
-      if (options.showCategory && post.category) {
+      var categories = [];
+      var rawCategories = post && (post.categories || post.category);
+
+      function normalizeCategories(value) {
+        if (!value) {
+          return [];
+        }
+        if (Array.isArray(value)) {
+          return value
+            .map(function (item) {
+              return (item && item.toString && item.toString()) || '';
+            })
+            .map(function (item) {
+              return item.trim();
+            })
+            .filter(function (item) {
+              return item.length > 0;
+            });
+        }
+        if (typeof value === 'string') {
+          return value
+            .split(',')
+            .map(function (item) {
+              return item.trim();
+            })
+            .filter(function (item) {
+              return item.length > 0;
+            });
+        }
+        return [];
+      }
+
+      categories = normalizeCategories(rawCategories);
+
+      if (!categories.length && typeof post.category === 'string') {
+        categories = normalizeCategories(post.category);
+      }
+
+      if (options.showCategory && categories.length) {
+        categoryEl.innerHTML = '';
+        var fragment = document.createDocumentFragment();
+        categories.forEach(function (category) {
+          var chip = document.createElement('span');
+          chip.className = 'blog-detail-category-chip';
+          chip.textContent = category;
+          fragment.appendChild(chip);
+        });
+        categoryEl.appendChild(fragment);
+        categoryEl.style.display = '';
+      } else if (options.showCategory && post.category) {
         categoryEl.textContent = post.category;
         categoryEl.style.display = '';
       } else {
