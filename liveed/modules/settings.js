@@ -12,10 +12,13 @@ let templateNameEl;
 
 const FORMS_SELECT_ATTR = 'data-forms-select';
 const BLOG_CATEGORY_SELECT_ATTR = 'data-blog-category-select';
+const EVENTS_CATEGORY_SELECT_ATTR = 'data-events-category-select';
 let cachedForms = null;
 let formsRequest = null;
 let cachedBlogCategories = null;
 let blogCategoriesRequest = null;
+let cachedEventCategories = null;
+let eventCategoriesRequest = null;
 
 function getFormsEndpoint() {
   const base = (window.builderBase || window.cmsBase || '').replace(/\/$/, '');
@@ -78,6 +81,49 @@ function fetchBlogCategories() {
       return cachedBlogCategories;
     });
   return blogCategoriesRequest;
+}
+
+function getEventCategoriesEndpoint() {
+  const base = (window.builderBase || window.cmsBase || '').replace(/\/$/, '');
+  return (base || '') + '/CMS/modules/events/api.php?action=list_categories';
+}
+
+function fetchEventCategories() {
+  if (cachedEventCategories) return Promise.resolve(cachedEventCategories);
+  if (eventCategoriesRequest) return eventCategoriesRequest;
+  const endpoint = getEventCategoriesEndpoint();
+  eventCategoriesRequest = fetch(endpoint, { credentials: 'same-origin' })
+    .then((response) => {
+      if (!response.ok) throw new Error('Failed to load event categories');
+      return response.json();
+    })
+    .then((data) => {
+      const categories = data && Array.isArray(data.categories) ? data.categories : [];
+      const seen = new Set();
+      const result = [];
+      categories.forEach((entry) => {
+        if (!entry || typeof entry !== 'object') return;
+        const name = typeof entry.name === 'string' ? entry.name.trim() : '';
+        const slug = typeof entry.slug === 'string' ? entry.slug.trim() : '';
+        const id = typeof entry.id === 'string' ? entry.id.trim() : '';
+        const value = slug || id || name;
+        if (!value) return;
+        const normalized = value.toLowerCase();
+        if (seen.has(normalized)) return;
+        seen.add(normalized);
+        result.push({
+          value,
+          label: name || slug || id,
+        });
+      });
+      cachedEventCategories = result;
+      return cachedEventCategories;
+    })
+    .catch(() => {
+      cachedEventCategories = [];
+      return cachedEventCategories;
+    });
+  return eventCategoriesRequest;
 }
 
 function formatSegment(text = '') {
@@ -250,6 +296,36 @@ function populateBlogCategorySelects(container, block) {
         const option = document.createElement('option');
         option.value = category;
         option.textContent = category;
+        fragment.appendChild(option);
+      });
+
+      select.innerHTML = '';
+      select.appendChild(fragment);
+      applySelectValue(select, storedValue);
+    });
+  });
+}
+
+function populateEventCategorySelects(container, block) {
+  if (!container) return;
+  const selects = container.querySelectorAll(`select[${EVENTS_CATEGORY_SELECT_ATTR}]`);
+  if (!selects.length) return;
+
+  fetchEventCategories().then((categories) => {
+    selects.forEach((select) => {
+      const storedValue = block ? getSetting(block, select.name) : select.value;
+      const fragment = document.createDocumentFragment();
+      const placeholder = select.dataset.placeholder || 'All categories';
+
+      const allOption = document.createElement('option');
+      allOption.value = '';
+      allOption.textContent = placeholder;
+      fragment.appendChild(allOption);
+
+      categories.forEach((category) => {
+        const option = document.createElement('option');
+        option.value = category.value;
+        option.textContent = category.label;
         fragment.appendChild(option);
       });
 
@@ -469,6 +545,7 @@ function initTemplateSettingValues(block) {
   if (!templateSetting || !settingsPanel) return;
   populateFormsSelects(settingsPanel, block);
   populateBlogCategorySelects(settingsPanel, block);
+  populateEventCategorySelects(settingsPanel, block);
   // Prefill alt text suggestions for any alt inputs
   const altInputs = templateSetting.querySelectorAll('input[name^="custom_alt"]');
   altInputs.forEach((inp) => {

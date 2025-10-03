@@ -38,8 +38,10 @@
     <dl class="sparkDialog _tpl-box mb-3">
         <dt>Filter by Category</dt>
         <dd>
-            <input type="text" class="form-control" name="custom_category" placeholder="All categories">
-            <small class="form-text text-muted">Match an event category name, slug, or ID to limit the results.</small>
+            <select name="custom_category" class="form-select" data-events-category-select data-placeholder="All categories">
+                <option value="">All categories</option>
+            </select>
+            <small class="form-text text-muted">Choose a category to limit the results. Select “All categories” to include every published category.</small>
         </dd>
     </dl>
     <dl class="sparkDialog _tpl-box mb-3">
