@@ -72,7 +72,7 @@
     return String(value)
       .split(',')
       .map(function (entry) {
-        return entry.toLowerCase().trim();
+        return normalizeCategory(entry);
       })
       .filter(function (entry) {
         if (entry.length === 0 || seen[entry]) {
@@ -245,11 +245,25 @@
         var filtered = posts.slice();
         if (categories.length) {
           filtered = filtered.filter(function (post) {
+            var postCategories = [];
+            if (Array.isArray(post.categories)) {
+              post.categories.forEach(function (entry) {
+                var normalized = normalizeCategory(entry);
+                if (normalized) {
+                  postCategories.push(normalized);
+                }
+              });
+            }
             var postCategory = normalizeCategory(post.category);
-            if (!postCategory) {
+            if (postCategory) {
+              postCategories.push(postCategory);
+            }
+            if (!postCategories.length) {
               return false;
             }
-            return categories.indexOf(postCategory) !== -1;
+            return categories.some(function (category) {
+              return postCategories.indexOf(category) !== -1;
+            });
           });
         }
         filtered.sort(function (a, b) {
