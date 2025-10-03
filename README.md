@@ -1,122 +1,157 @@
 # Spark CMS
 
-Spark CMS is a lightweight content management system written in PHP. It aims to provide basic page editing, blog functionality, and an extendable theme system.
+Spark CMS is a lightweight PHP content management system focused on delivering an approachable editing experience for small marketing sites. The project combines flat-file JSON storage with a drag-and-drop live editor, modular administration screens, and a themable front-end so teams can ship sites without a traditional database.
 
-## Requirements
+## Feature Highlights
 
-- PHP 8.0 or higher
-- A web server (Apache, Nginx or the built in PHP server)
+- **Modular administration area.** Each capability (pages, blog, analytics, media library, SEO, etc.) lives in its own module under `CMS/modules`, making it easy to maintain or disable features individually.
+- **Drag-and-drop Live Editor.** Content authors can launch the builder at `/liveed/builder.php?id=<pageId>` to rearrange blocks, preview responsive breakpoints, review page history, and manage media without writing HTML.
+- **Flat-file persistence.** Site content, users, and configuration are stored as JSON documents in `CMS/data`, making deployments simple and version-control friendly.
+- **Theme-driven presentation.** Public pages render via `theme/templates` templates with assets in `theme/css`, `theme/js`, and `theme/images`. A simple bundler script (`bundle.php`) combines core CSS/JS for production.
+- **Built-in marketing tooling.** Modules ship for analytics reporting, SEO audits, speed checks, accessibility scoring, forms, search, and more so site operators can monitor performance from the dashboard.
+- **PHP-first stack.** Spark CMS runs anywhere PHP 8.0+ is available—Apache, Nginx, or the built-in PHP server—and does not require Composer or external databases.
+
+## System Architecture
+
+Spark CMS follows a classic PHP front controller model:
+
+1. `index.php` receives incoming requests, serves static assets directly, and delegates dynamic requests to `CMS/index.php`.
+2. `CMS/index.php` loads JSON data, site settings, and theme templates before rendering the requested page.
+3. Admin routes live under `CMS/` (e.g., `CMS/admin.php`, `CMS/login.php`). Authentication helpers in `CMS/includes/auth.php` guard these endpoints.
+4. Modules register their own PHP entry points under `CMS/modules/<module>`, optionally paired with JavaScript/CSS assets.
+5. The Live Editor (`/liveed`) consumes the same JSON data and templates to provide an interactive editing experience.
+
+All content data is cached through utility functions in `CMS/includes/data.php`, while template rendering helpers live in `CMS/includes/template_renderer.php`. Shared services (analytics, search, reporting, etc.) live under `CMS/includes` and are reused by multiple modules.
+
+## Directory Layout
+
+```
+/
+├── CMS/                     # Admin interface and shared includes
+│   ├── data/                # JSON datasets (pages, posts, menus, settings, users, etc.)
+│   ├── images/              # Admin UI assets
+│   ├── includes/            # Authentication, data access, sanitizers, templating helpers
+│   ├── modules/             # Feature modules (pages, blogs, media, analytics, …)
+│   ├── admin.php            # Admin shell that loads modules
+│   ├── index.php            # Front-end bootstrapper used by public theme
+│   └── spark-cms.css        # Admin styles
+├── forms/                   # Public form submission endpoints
+├── liveed/                  # Drag-and-drop page builder (PHP + JS + CSS)
+├── theme/                   # Public-facing theme assets and templates
+├── tests/                   # Lightweight PHP test scripts for services/modules
+├── bundle.php               # Utility script to concatenate core theme assets
+├── router.php               # Helper router for `php -S`
+└── index.php                # Front controller used by web server
+```
 
 ## Installation
 
-1. Clone the repository or download the files to your web server directory:
+1. **Clone or copy the project.**
    ```bash
    git clone <repo-url>
+   cd sparkcms
    ```
-2. Ensure the `CMS/data` and `uploads` directories are writable by the web server.
-3. Point your web server's document root to the project directory. If using the PHP development server you can run:
-   ```bash
-   php -S localhost:8000 router.php
-   ```
+2. **Configure file permissions.** Ensure the web server can write to `CMS/data` and any upload directories you plan to use (e.g., `CMS/images/uploads`).
+3. **Serve the application.**
+   - **Built-in PHP server:** `php -S localhost:8000 router.php`
+   - **Apache/Nginx:** Point the virtual host document root to the repository root and route PHP requests to `index.php`.
+4. **First run.** When the CMS boots it will seed default JSON data under `CMS/data` if the files are missing.
 
-When first run, Spark CMS will create default data files in the `CMS/data` directory.
+### Default Credentials
 
-## Default Credentials
-
-The CMS ships with an administrator account for the initial login:
+Log in at `/CMS/login.php` with the bundled administrator account:
 
 - **Username:** `admin`
 - **Password:** `password`
 
-You should log in and change the password immediately after installation. User data is stored in `CMS/data/users.json`.
+Change the password immediately from the Users module; user records are stored in `CMS/data/users.json`.
 
-## Folder Structure
+## Configuration & Data Storage
 
+Spark CMS stores site configuration and content in JSON files located under `CMS/data`:
+
+- `pages.json`, `page_history.json` – Page content, metadata, and revision history
+- `blog_posts.json` – Blog posts with author, status, and category metadata
+- `menus.json` – Navigation structures referenced by templates
+- `forms.json`, `form_submissions.json` – Form definitions and captured submissions
+- `media.json` – Media library metadata (files live alongside in `CMS/images`)
+- `settings.json` – Site-wide settings such as homepage slug, theme options, feature toggles
+- `users.json` – Admin user accounts and hashed passwords
+- `events.json`, `calendar_events.json`, `calendar_categories.json` – Data powering the Events and Calendar modules
+- `speed_snapshot.json`, `analytics`/`seo` reports – Cached marketing metrics
+
+The helper functions in `CMS/includes/data.php` provide cached read/write access with automatic fallbacks for missing files. Backups can be taken by copying the `CMS/data` directory; for production deployments consider storing this directory outside your web root and symlinking it back into the project.
+
+## Administration Workflow
+
+1. Visit `/CMS/login.php` and authenticate.
+2. Navigate between modules using the sidebar in `CMS/admin.php`.
+3. Modules present data grids, analytics dashboards, or settings forms depending on their purpose. Most modules read and write the JSON files listed above.
+4. The Live Editor integrates with the Pages module to launch a visual builder for individual pages (`Edit ➜ Open Builder`). Authors can preview responsive layouts, manage blocks, undo/redo, review revision history, and launch media pickers without leaving the page.
+5. Use the Settings module to configure site defaults (homepage, theme options, SEO metadata). Changes propagate immediately to front-end rendering.
+
+## Module Reference
+
+| Module | Purpose |
+| --- | --- |
+| **accessibility** | Generates accessibility scores for pages, surfaces issues, and tracks score history.
+| **analytics** | Aggregates page view metrics and exports filtered datasets.
+| **blogs** | CRUD for blog posts, including category filters and publishing workflow.
+| **calendar** | Manages calendar categories and recurring events.
+| **dashboard** | Landing page summarizing metrics from other modules.
+| **events** | Handles event listings, orders, and categorizations distinct from calendar items.
+| **forms** | Builds and manages contact/lead forms; submissions land in `form_submissions.json` and can trigger notifications.
+| **logs** | Displays application logs and audit events.
+| **media** | Uploads, crops, and organizes media assets consumed by the theme and Live Editor.
+| **menus** | Constructs navigation menus and exposes drag-and-drop ordering.
+| **pages** | Manages static pages, integrates with revision history and the Live Editor.
+| **search** | Indexes pages/posts, provides search suggestions, and tunes relevance settings.
+| **seo** | Runs SEO reports, flagging metadata gaps and providing recommendations.
+| **settings** | Houses global configuration, feature toggles, and theme options.
+| **sitemap** | Generates XML sitemaps and pings search engines when updated.
+| **speed** | Captures performance budgets and Lighthouse-like insights for pages.
+| **users** | Manages administrator accounts, roles, and password resets.
+
+Each module usually exposes a `view.php` entry point with supporting services, JavaScript, and CSS. Modules can share helper classes from `CMS/includes` for consistent sanitization, reporting, and rendering.
+
+## Live Editor & Theme Pipeline
+
+- **Builder UI (`/liveed`).** Provides block palette management, responsive preview toggles, media picker, undo/redo, manual save, and page history integration. Builder assets live under `liveed/css`, `liveed/modules`, and `liveed/builder.js`.
+- **Theme templates.** Located in `theme/templates` with folders for pages (`templates/pages`), blocks (`templates/blocks`), and partials. Templates expect arrays of pages, menus, blog posts, and site settings injected by `CMS/index.php`.
+- **Asset bundling.** Run `php bundle.php` to concatenate the primary theme stylesheets (`theme/css/root.css`, `skin.css`, `override.css`) and scripts (`theme/js/global.js`, `script.js`) into `combined.css`/`combined.js` for fewer HTTP requests.
+- **Customization.** Override CSS variables in `theme/css/override.css`, add scripts in `theme/js`, or introduce new block templates for the builder. The theme can be versioned independently of content by committing changes to the repository.
+
+## Public Forms & Integrations
+
+- Public form submissions post to `forms/submit.php`, which validates input, stores data in `CMS/data/form_submissions.json`, and can send notifications based on module settings.
+- Form definitions are retrieved via `forms/get.php` so front-end templates can render dynamic forms without duplicating schema.
+- Additional integrations (maps, newsletters, tag manager, etc.) can be built as new modules following the existing module structure.
+
+## Testing & Quality Assurance
+
+The `tests/` directory contains standalone PHP scripts that exercise key services (analytics aggregation, search ranking, media library behaviors, login handling, etc.). Execute a test with the PHP CLI:
+
+```bash
+php tests/analytics_service_test.php
+php tests/login_handler_test.php
 ```
-/
-├── CMS/                – Backend PHP files and modules
-│   ├── data/           – JSON files storing pages, posts, users and settings
-│   ├── includes/       – Helper libraries for authentication and data access
-│   └── modules/        – Individual modules like pages, blogs, media and more
-├── theme/              – Public theme assets
-│   ├── css/            – Stylesheets
-│   ├── js/             – Front‑end scripts
-│   └── templates/      – Page and block templates
-├── index.php           – Front controller
-└── router.php          – Helper for PHP's built‑in server
-```
 
-## Modules Overview
+These scripts throw a `RuntimeException` if an assertion fails. They are designed for quick smoke-testing without PHPUnit. Manual QA scripts (e.g., `tests/page_repository_manual.md`) outline exploratory scenarios such as verifying session rotation after login.
 
-Modules live in `CMS/modules` and provide specific functionality:
+## Development Guidelines
 
-- **analytics** – Tracking code management
-- **blogs** – Blog post management
-- **dashboard** – Admin home page
-- **forms** – Contact forms
-- **logs** – View system logs
-- **maps** – Embed maps
-- **media** – Upload and organize media files
-- **menus** – Manage navigation menus
-- **pages** – Create and edit pages
-- **search** – Site search configuration
-- **settings** – Global site settings
-- **sitemap** – XML sitemap generation
-- **users** – User management
+- **PHP style.** The project favors procedural PHP with one feature per file; avoid wrapping includes in `try/catch` blocks. Use helper functions from `CMS/includes` for data access and sanitization.
+- **JavaScript/CSS.** Theme scripts use plain ES6; admin builder scripts rely on vanilla JS and lightweight libraries like Cropper.js. Keep custom CSS variables in `theme/css/root.css` and overrides in `override.css`.
+- **Data formats.** JSON files use two-space indentation. Ensure new datasets follow existing schema conventions so modules can interoperate.
+- **Extending modules.** Duplicate an existing module directory as a starting point, register new routes inside `view.php`, and read/write JSON data via `read_json_file` / `write_json_file` helpers. For marketing-focused modules, check `CMS/includes/reporting_helpers.php` for reusable patterns.
+- **Access control.** Protect new admin endpoints by invoking `require_login()` from `CMS/includes/auth.php`. For front-end forms use sanitization helpers in `CMS/includes/sanitize.php`.
 
-## Potential Future Modules
+## Deployment Considerations
 
-The following modules could extend the backend and are arranged from easiest to hardest to implement:
-
-1. **Announcements** – Simple interface for posting one-off notices to the dashboard.
-2. **Redirects** – Manage URL redirects with optional scheduling.
-3. **FAQs** – Maintain categorized question-and-answer content blocks.
-4. **Testimonials** – Collect and display client feedback snippets for reuse across pages.
-5. **Newsletter** – Export subscriber lists and integrate basic email campaign settings.
-6. **Events Calendar** – Create events with dates, descriptions, and venue details.
-7. **Tag Manager** – Define reusable tags and apply them across content types.
-8. **Content Scheduler** – Schedule publish/unpublish dates for pages and posts.
-9. **Backup Manager** – Trigger manual backups of JSON data and media archives.
-10. **Comment Moderation** – Review, approve, or delete comments from blog posts.
-11. **A/B Testing** – Configure simple experiments for selected pages or blocks.
-12. **Workflow Approvals** – Route content changes through multi-step approval chains.
-13. **Role-Based Permissions** – Define custom roles with granular access controls.
-14. **Headless API** – Expose JSON endpoints for content consumption by external apps.
-15. **Marketplace Integration** – Connect to third-party services for selling digital products.
-
-## Coding Standards
-
-- PHP files follow a simple procedural style with one file per feature.
-- JavaScript modules in `theme/js` are written in plain ES6.
-- CSS uses custom properties defined in `theme/css/root.css`; overrides go in `theme/css/override.css`.
-- JSON data files are formatted with two‑space indentation.
-
-## Customizing Themes
-
-Theme files are stored under the `theme` directory. To modify the site appearance:
-
-1. Edit stylesheets in `theme/css`. You can override variables or add new rules in `override.css`.
-2. Update markup in `theme/templates`. The `blocks` directory holds reusable sections while `pages` contains full page templates.
-3. Add images to `theme/images` and JavaScript to `theme/js` as needed.
-
-After editing templates or CSS, refresh your browser to see the changes.
-
-## Manual QA
-
-- **Verify session cookie rotation after login:**
-  1. Start the development server with `php -S localhost:8000 router.php` and open the site in a private browser window.
-  2. Before logging in, note the value of the `PHPSESSID` cookie in your browser's developer tools.
-  3. Log in with a valid account and confirm the `PHPSESSID` cookie value changes, indicating the session ID was regenerated for the authenticated session.
-
-## Developing Modules
-
-Modules are self contained directories inside `CMS/modules`. A module typically contains PHP endpoints and optional JavaScript. To create a custom module:
-
-1. Create a new directory under `CMS/modules/<your-module>`.
-2. Add any PHP files required for your functionality.
-3. Expose routes by referencing the PHP files via AJAX or direct links from the admin interface.
-
-Refer to existing modules such as `pages` or `blogs` for minimal examples of loading and saving JSON data.
+- Serve the project behind HTTPS and configure your web server to deny direct access to `CMS/data` and other sensitive directories.
+- Regularly back up `CMS/data`, especially `users.json`, `forms`, and media uploads. Consider offloading uploads to cloud storage for high-traffic sites.
+- Use strong passwords for admin accounts and rotate them periodically. Two-factor authentication is not included by default but can be added via the Users module.
+- Monitor performance using the built-in Speed and Analytics modules, and address SEO/accessibility issues highlighted in their dashboards.
 
 ## License
 
