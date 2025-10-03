@@ -412,6 +412,76 @@ import basePath from './utils/base-path.js';
     attachSubmitHandler(formEl, status, successMessage);
   }
 
+  var sparkFormObserver = null;
+
+  function hasSparkFormEmbeds() {
+    return !!document.querySelector('.spark-form-embed[data-form-id]');
+  }
+
+  function disconnectSparkFormObserver() {
+    if (sparkFormObserver) {
+      sparkFormObserver.disconnect();
+      sparkFormObserver = null;
+    }
+  }
+
+  function ensureSparkFormObserver() {
+    if (!window.MutationObserver) {
+      return;
+    }
+
+    if (!hasSparkFormEmbeds()) {
+      disconnectSparkFormObserver();
+      return;
+    }
+
+    if (sparkFormObserver) {
+      return;
+    }
+
+    sparkFormObserver = new MutationObserver(function (mutations) {
+      var needsRefresh = false;
+      mutations.forEach(function (mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-form-id') {
+          var target = mutation.target;
+          if (target && target.classList && target.classList.contains('spark-form-embed')) {
+            needsRefresh = true;
+          }
+        }
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(function (node) {
+            if (node.nodeType !== 1) return;
+            if (node.classList && node.classList.contains('spark-form-embed')) {
+              needsRefresh = true;
+            } else if (node.querySelector && node.querySelector('.spark-form-embed')) {
+              needsRefresh = true;
+            }
+          });
+          mutation.removedNodes.forEach(function (node) {
+            if (node.nodeType !== 1) return;
+            if (node.classList && node.classList.contains('spark-form-embed')) {
+              needsRefresh = true;
+            } else if (node.querySelector && node.querySelector('.spark-form-embed')) {
+              needsRefresh = true;
+            }
+          });
+        }
+      });
+      if (needsRefresh) {
+        initializeSparkForms();
+        ensureSparkFormObserver();
+      }
+    });
+    sparkFormObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: [
+        'data-form-id',
+      ],
+    });
+  }
+
   function initializeSparkForms() {
     var containers = document.querySelectorAll('.spark-form-embed[data-form-id]');
     containers.forEach(function (container) {
@@ -482,41 +552,11 @@ import basePath from './utils/base-path.js';
     });
 
     initializeSparkForms();
-    document.addEventListener('canvasUpdated', initializeSparkForms);
-
-    if (window.MutationObserver) {
-      var observer = new MutationObserver(function (mutations) {
-        var needsRefresh = false;
-        mutations.forEach(function (mutation) {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'data-form-id') {
-            var target = mutation.target;
-            if (target && target.classList && target.classList.contains('spark-form-embed')) {
-              needsRefresh = true;
-            }
-          }
-          if (mutation.type === 'childList') {
-            mutation.addedNodes.forEach(function (node) {
-              if (node.nodeType !== 1) return;
-              if (node.classList && node.classList.contains('spark-form-embed')) {
-                needsRefresh = true;
-              } else if (node.querySelector && node.querySelector('.spark-form-embed')) {
-                needsRefresh = true;
-              }
-            });
-          }
-        });
-        if (needsRefresh) {
-          initializeSparkForms();
-        }
-      });
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: [
-          'data-form-id',
-        ],
-      });
-    }
+    ensureSparkFormObserver();
+    document.addEventListener('canvasUpdated', function () {
+      initializeSparkForms();
+      ensureSparkFormObserver();
+    });
+    window.addEventListener('unload', disconnectSparkFormObserver);
   });
 })();
