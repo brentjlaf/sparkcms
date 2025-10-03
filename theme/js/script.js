@@ -1,17 +1,9 @@
 // File: script.js
+import basePath from './utils/base-path.js';
+
 (function () {
   var formCache = {};
   var formRequests = {};
-
-  function basePath() {
-    var base = typeof window.cmsBase === 'string' ? window.cmsBase : '';
-    base = base.trim();
-    if (!base) return '';
-    if (base.charAt(0) !== '/') {
-      base = '/' + base;
-    }
-    return base.replace(/\/$/, '');
-  }
 
   function fetchFormDefinition(id) {
     var key = String(id);

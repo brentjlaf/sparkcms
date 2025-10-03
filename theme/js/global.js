@@ -1,4 +1,6 @@
 // File: global.js
+import basePath from './utils/base-path.js';
+
 (function () {
   var blogPostsPromise = null;
 
@@ -10,23 +12,11 @@
     }
   }
 
-  function normalizeBasePath() {
-    var base = typeof window.cmsBase === 'string' ? window.cmsBase : '';
-    base = base ? String(base).trim() : '';
-    if (!base || base === '/') {
-      return '';
-    }
-    if (base.charAt(0) !== '/') {
-      base = '/' + base;
-    }
-    return base.replace(/\/+$/, '');
-  }
-
   function fetchBlogPosts() {
     if (blogPostsPromise) {
       return blogPostsPromise;
     }
-    var base = normalizeBasePath();
+    var base = basePath();
     var url = base + '/CMS/data/blog_posts.json';
     blogPostsPromise = fetch(url, { credentials: 'same-origin', cache: 'no-store' })
       .then(function (response) {
@@ -94,7 +84,7 @@
     if (/^https?:\/\//i.test(detail)) {
       return detail.replace(/\/+$/, '') + '/' + slug;
     }
-    var base = normalizeBasePath();
+    var base = basePath();
     detail = detail.replace(/\/+$/, '');
     detail = detail.replace(/^\/+/, '');
     var path = detail ? detail + '/' + slug : slug;
@@ -141,7 +131,7 @@
       return '';
     }
     var path = window.location.pathname || '';
-    var base = normalizeBasePath();
+    var base = basePath();
     if (base && path.indexOf(base) === 0) {
       path = path.slice(base.length);
     }
@@ -560,7 +550,7 @@
     if (eventsPromise) {
       return eventsPromise;
     }
-    var base = normalizeBasePath();
+    var base = basePath();
     var url = base + '/CMS/data/events.json';
     eventsPromise = fetch(url, { credentials: 'same-origin', cache: 'no-store' })
       .then(function (response) {
@@ -593,7 +583,7 @@
     if (eventCategoriesPromise) {
       return eventCategoriesPromise;
     }
-    var base = normalizeBasePath();
+    var base = basePath();
     var url = base + '/CMS/data/event_categories.json';
     eventCategoriesPromise = fetch(url, { credentials: 'same-origin', cache: 'no-store' })
       .then(function (response) {
@@ -803,7 +793,7 @@
     if (slug) {
       path = normalized ? normalized + '/' + slug : slug;
     }
-    var start = normalizeBasePath();
+    var start = basePath();
     if (start && start.charAt(0) !== '/') {
       start = '/' + start;
     }
@@ -1875,7 +1865,7 @@
     if (calendarEventsPromise) {
       return calendarEventsPromise;
     }
-    var base = normalizeBasePath();
+    var base = basePath();
     var url = base + '/CMS/data/calendar_events.json';
     calendarEventsPromise = fetch(url, { credentials: 'same-origin', cache: 'no-store' })
       .then(function (response) {
