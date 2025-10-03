@@ -329,7 +329,11 @@
           var readMore = document.createElement('a');
           readMore.className = 'blog-read-more';
           readMore.href = resolveDetailUrl(settings.base, post.slug);
-          readMore.innerHTML = 'Read more <span aria-hidden="true">&rarr;</span>';
+          readMore.textContent = 'Read more';
+          var arrow = document.createElement('span');
+          arrow.setAttribute('aria-hidden', 'true');
+          arrow.textContent = ' \u2192';
+          readMore.appendChild(arrow);
           article.appendChild(readMore);
 
           itemsHost.appendChild(article);
