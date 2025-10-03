@@ -28,11 +28,6 @@ class EventsService
         return $this->repository->getOrders();
     }
 
-    public function getCategoriesData(): array
-    {
-        return $this->repository->getCategories();
-    }
-
     public function formatCurrency(float $value): string
     {
         return '$' . number_format($value, 2);

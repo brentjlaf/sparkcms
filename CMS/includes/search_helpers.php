@@ -712,16 +712,4 @@ function get_search_history($limit = 10)
     return $history;
 }
 
-/**
- * Return the raw search history terms only.
- *
- * @param int $limit
- * @return array
- */
-function get_search_history_terms($limit = 10)
-{
-    return array_map(function ($item) {
-        return $item['term'];
-    }, get_search_history($limit));
-}
 ?>

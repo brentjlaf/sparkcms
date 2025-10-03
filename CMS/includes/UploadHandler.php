@@ -157,8 +157,4 @@ class UploadHandler
         }
     }
 
-    public function getUploadsRoot(): string
-    {
-        return $this->uploadsRoot;
-    }
 }
