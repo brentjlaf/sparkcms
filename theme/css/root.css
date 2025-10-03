@@ -264,6 +264,21 @@
   /*
    |-----------------------------------------------------------
    |
+   | Spacing Scale
+   |
+   |-----------------------------------------------------------
+  */
+  --space-unit: 5px;
+  --space-2xs: calc(var(--space-unit) * 1);
+  --space-xs: calc(var(--space-unit) * 2);
+  --space-sm: calc(var(--space-unit) * 3);
+  --space-md: calc(var(--space-unit) * 4);
+  --space-lg: calc(var(--space-unit) * 6);
+  --space-xl: calc(var(--space-unit) * 12);
+  --space-2xl: calc(var(--space-unit) * 18);
+  /*
+   |-----------------------------------------------------------
+   |
    | Border
    |
    |-----------------------------------------------------------
@@ -565,12 +580,12 @@
    |
    |-----------------------------------------------------------
   */
-  --mwSpacer-height-sm: 30px;
-  --mwSpacer-height-sm-mobile: 30px;
-  --mwSpacer-height-md: 60px;
-  --mwSpacer-height-md-mobile: 60px;
-  --mwSpacer-height-lg: 90px;
-  --mwSpacer-height-lg-mobile: 90px;
+  --spacer-sm: var(--space-lg);
+  --spacer-sm-mobile: var(--space-lg);
+  --spacer-md: var(--space-xl);
+  --spacer-md-mobile: var(--space-xl);
+  --spacer-lg: var(--space-2xl);
+  --spacer-lg-mobile: var(--space-2xl);
   /*
    |-----------------------------------------------------------
    |
