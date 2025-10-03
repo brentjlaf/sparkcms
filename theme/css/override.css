@@ -293,7 +293,7 @@ button:focus-visible,
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.15), transparent 60%), radial-gradient(circle at 80% 0%, rgba(16, 185, 129, 0.12), transparent 55%);
+    background: radial-gradient(circle at 20% 20%, var(--hero-gradient-1), transparent 60%), radial-gradient(circle at 80% 0%, var(--hero-gradient-2), transparent 55%);
     z-index: -1;
 }
 
