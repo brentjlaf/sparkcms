@@ -39,11 +39,12 @@ function renderGroupItems(details) {
   const favs = favorites;
   const list = details._items || [];
   const frag = document.createDocumentFragment();
-  list.forEach((it) => {
+  list.forEach((it, idx) => {
     const item = document.createElement('div');
     item.className = 'block-item';
     item.setAttribute('draggable', 'true');
     item.dataset.file = it.file;
+    item.style.setProperty('--block-animation-delay', `${(idx + 1) * 0.05}s`);
     const label = it.label
       .replace(/[-_]/g, ' ')
       .replace(/\b\w/g, (c) => c.toUpperCase());
@@ -285,6 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
   const paletteHeader = palette ? palette.querySelector('.builder-header') : null;
+
+  document
+    .querySelectorAll('.history-toolbar button, .preview-toolbar button')
+    .forEach((btn) => btn.classList.add('builder-btn'));
 
   builderDraftKey = 'builderDraft-' + window.builderPageId;
   lastSavedTimestamp = window.builderLastModified || 0;

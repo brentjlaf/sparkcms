@@ -34,7 +34,7 @@
 }
 /* --- Palette refresh styles --- */
 .manual-save-btn {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: var(--builder-accent-gradient, linear-gradient(135deg, #3b82f6, #1d4ed8));
   color: #fff;
   font-weight: 600;
   font-size: 11px;
@@ -43,7 +43,7 @@
   letter-spacing: 0.5px;
 }
 .manual-save-btn:hover {
-  background: linear-gradient(135deg, #2563eb, #1e40af);
+  background: var(--builder-accent-gradient-hover, linear-gradient(135deg, #2563eb, #1e40af));
 }
 .save-status {
   color: #64748b;
@@ -52,21 +52,16 @@
 }
 .preview-btn {
   padding: 8px 10px;
-  border: none;
-  background: rgba(30, 41, 59, 0.6);
-  color: #64748b;
   border-radius: 6px;
-  cursor: pointer;
   transition: all 0.2s ease;
   font-size: 12px;
 }
 .preview-btn.active {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: var(--builder-accent-gradient, linear-gradient(135deg, #3b82f6, #1d4ed8));
   color: #fff;
 }
-.preview-btn:hover:not(.active) {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+.preview-btn.active {
+  box-shadow: var(--builder-accent-shadow, 0 4px 8px rgba(59, 130, 246, 0.3));
 }
 .blocks-title {
   padding: 16px 16px 8px;
