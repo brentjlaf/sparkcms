@@ -155,32 +155,6 @@
   box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
 }
 
-.canvas-container.preview-desktop .page-template.default-page {
-  width: 100%;
-}
-
-.canvas-container.preview-tablet .page-template.default-page {
-  width: 768px;
-  margin: auto;
-}
-
-.canvas-container.preview-tablet .site-header,
-.canvas-container.preview-tablet .site-footer {
-  max-width: 768px;
-  margin: auto;
-}
-
-.canvas-container.preview-phone .page-template.default-page {
-  width: 375px;
-  margin: auto;
-}
-
-.canvas-container.preview-phone .site-header,
-.canvas-container.preview-phone .site-footer {
-  max-width: 375px;
-  margin: auto;
-}
-
 @media (max-width: 480px) {
   .canvas-container {
     padding: 15px;
