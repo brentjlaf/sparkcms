@@ -148,10 +148,14 @@ img[data-tpl-tooltip="Image"] {
     flex-wrap: wrap;
     width: 100%;
     gap: 1rem;
+    --gallery-spacing: 1rem;
 }
 
 .layout-grid { display: grid; }
-.layout-masonry { display: grid; grid-template-rows: masonry; }
+.layout-masonry {
+    display: block;
+    column-gap: var(--gallery-spacing, 1rem);
+}
 .layout-carousel { display: flex; overflow-x: auto; }
 .layout-single { display: block; }
 
@@ -162,10 +166,81 @@ img[data-tpl-tooltip="Image"] {
 .image-gallery.columns-5 { grid-template-columns: repeat(5, 1fr); }
 .image-gallery.columns-6 { grid-template-columns: repeat(6, 1fr); }
 
-.image-gallery.spacing-none { gap: 0; }
-.image-gallery.spacing-small { gap: 0.5rem; }
-.image-gallery.spacing-medium { gap: 1rem; }
-.image-gallery.spacing-large { gap: 1.5rem; }
+.image-gallery.spacing-none {
+    gap: 0;
+    --gallery-spacing: 0;
+}
+.image-gallery.spacing-small {
+    gap: 0.5rem;
+    --gallery-spacing: 0.5rem;
+}
+.image-gallery.spacing-medium {
+    gap: 1rem;
+    --gallery-spacing: 1rem;
+}
+.image-gallery.spacing-large {
+    gap: 1.5rem;
+    --gallery-spacing: 1.5rem;
+}
+
+.layout-masonry .gallery-item {
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+    margin-bottom: var(--gallery-spacing, 1rem);
+}
+
+.layout-masonry.columns-1 { column-count: 1; }
+.layout-masonry.columns-2 { column-count: 2; }
+.layout-masonry.columns-3 { column-count: 3; }
+.layout-masonry.columns-4 { column-count: 4; }
+.layout-masonry.columns-5 { column-count: 5; }
+.layout-masonry.columns-6 { column-count: 6; }
+
+@supports (grid-template-rows: masonry) {
+    .layout-masonry {
+        display: grid;
+        grid-template-rows: masonry;
+        grid-auto-flow: dense;
+        gap: var(--gallery-spacing, 1rem);
+        column-gap: 0;
+    }
+
+    .layout-masonry .gallery-item {
+        display: block;
+        margin-bottom: 0;
+    }
+
+    .layout-masonry.columns-1 {
+        column-count: initial;
+        grid-template-columns: 1fr;
+    }
+
+    .layout-masonry.columns-2 {
+        column-count: initial;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .layout-masonry.columns-3 {
+        column-count: initial;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .layout-masonry.columns-4 {
+        column-count: initial;
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .layout-masonry.columns-5 {
+        column-count: initial;
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .layout-masonry.columns-6 {
+        column-count: initial;
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
 
 .gallery-item {
     position: relative;
