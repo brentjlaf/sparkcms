@@ -4,7 +4,7 @@ This document lists concrete areas inside the `theme/` directory that could bene
 
 ## JavaScript
 
-- **`js/combined.js`** – The file is a manual concatenation of `global.js` and `script.js`, duplicating the source modules verbatim. Maintaining three separate bundles with identical logic risks divergence and increases payload size. Replace it with an automated build step (e.g., bundler) or load the original modules directly.【F:theme/js/combined.js†L1-L76】
+- **JavaScript build tooling** – `global.js` and `script.js` are served individually today. Introduce an automated bundler that consumes these canonical sources, applies minification/tree-shaking, and emits cache-busted assets for production without reintroducing duplicated bundles.【F:theme/js/global.js†L2-L8】【F:theme/js/script.js†L2-L8】
 - **`js/global.js` & `js/script.js`** – Both define nearly identical base-path helpers (`normalizeBasePath` vs. `basePath`) and maintain independent caching for fetch calls. Extract shared utilities into a reusable module to avoid drift and reduce bundle size.【F:theme/js/global.js†L14-L75】【F:theme/js/script.js†L6-L36】
 - **`js/global.js`** – Contains long procedural blocks for rendering blog posts (e.g., `renderBlogList`) with repeated DOM manipulation patterns. Break these into smaller renderer functions or use templating helpers to improve readability and testability.【F:theme/js/global.js†L147-L292】
 - **`js/script.js`** – The dynamic form builder mixes DOM creation, validation, and event wiring in a single file. Consider splitting responsibilities into separate modules (field factory, state manager, validation) and leverage templating for repeated markup like feedback blocks and choice inputs.【F:theme/js/script.js†L97-L268】

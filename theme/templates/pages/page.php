@@ -249,7 +249,8 @@ function renderFooterMenu($items){
     
     <!-- Custom JavaScript -->
     <script>window.cmsBase = <?php echo json_encode($scriptBase); ?>;</script>
-    <script src="<?php echo $themeBase; ?>/js/combined.js?v=mw3.2"></script>
+    <script src="<?php echo $themeBase; ?>/js/global.js?v=mw3.2"></script>
+    <script src="<?php echo $themeBase; ?>/js/script.js?v=mw3.2"></script>
 
     <!-- Navigation & Back to Top Scripts -->
     <script>
