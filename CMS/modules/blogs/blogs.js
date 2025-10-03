@@ -713,7 +713,6 @@ $(document).ready(function(){
                             ${thumbnail}
                             <div>
                                 <div class="post-title">${post.title}</div>
-                                <div class="post-excerpt">${post.excerpt}</div>
                             </div>
                         </div>
                         ${post.image ? '' : '<span class="sr-only">No featured image</span>'}
