@@ -21,7 +21,7 @@
                 <option value=" g-1">Small</option>
                 <option value=" g-3" selected="selected">Medium (default)</option>
                 <option value=" g-5">Large</option>
-                <option value=" g-5">Extra Large</option>
+                <option value=" g-6">Extra Large</option>
             </select>
         </dd>
         <dt>Alignment:</dt>

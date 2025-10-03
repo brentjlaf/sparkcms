@@ -1804,6 +1804,7 @@ section.container-fluid {
 .g-1 { --row-gap: 0.75rem; --row-gap-mobile: 0.75rem; }
 .g-3 { --row-gap: 1.5rem; --row-gap-mobile: 1.25rem; }
 .g-5 { --row-gap: 2.5rem; --row-gap-mobile: 2rem; }
+.g-6 { --row-gap: 3.5rem; --row-gap-mobile: 2.75rem; }
 
 ._tpl-box,
 .mwDialog,
