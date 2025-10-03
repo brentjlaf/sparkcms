@@ -284,9 +284,5 @@ $(function(){
     </script>
 </div>
 
-<footer class="footer">
-    © 2025 SparkCMS
-</footer>
-
 </body>
 </html>
