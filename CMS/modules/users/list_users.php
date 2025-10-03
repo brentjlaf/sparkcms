@@ -2,10 +2,12 @@
 // File: list_users.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/UserService.php';
 require_login();
 
 $usersFile = __DIR__ . '/../../data/users.json';
-$users = read_json_file($usersFile);
+$service = new UserService(new UserRepository($usersFile));
+$users = $service->getUsers();
 
 $clean = [];
 foreach ($users as $u) {
