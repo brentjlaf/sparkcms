@@ -93,6 +93,31 @@
             </div>
         </header>
 
+        <section class="dashboard-panel dashboard-quick-panel" aria-labelledby="dashboardQuickActionsHeading">
+            <header class="dashboard-panel-header">
+                <div>
+                    <h3 class="dashboard-panel-title" id="dashboardQuickActionsHeading">Quick actions</h3>
+                    <p class="dashboard-panel-description">
+                        Jump straight to the areas that most need your attention.
+                    </p>
+                </div>
+            </header>
+            <div class="dashboard-quick-actions" id="dashboardQuickActions" role="list" aria-live="polite" aria-busy="true">
+                <article class="dashboard-quick-card placeholder" role="listitem" tabindex="-1" aria-label="Loading quick actions">
+                    <span class="dashboard-quick-icon pages" aria-hidden="true">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                    </span>
+                    <div class="dashboard-quick-content">
+                        <span class="dashboard-quick-label">Loading actions…</span>
+                        <p class="dashboard-quick-description">We&apos;re preparing the most relevant shortcuts for you.</p>
+                    </div>
+                    <span class="dashboard-quick-arrow" aria-hidden="true">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </span>
+                </article>
+            </div>
+        </section>
+
         <section class="dashboard-panel dashboard-module-panel" aria-labelledby="dashboardSectionModules">
             <header class="dashboard-panel-header">
                 <div>

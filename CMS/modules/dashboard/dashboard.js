@@ -144,6 +144,26 @@ $(function(){
         ok: 'On track'
     };
 
+    const quickActionIcons = {
+        pages: { icon: 'fa-solid fa-file-lines', className: 'pages' },
+        media: { icon: 'fa-solid fa-images', className: 'media' },
+        users: { icon: 'fa-solid fa-users', className: 'users' },
+        analytics: { icon: 'fa-solid fa-chart-line', className: 'analytics' },
+        blogs: { icon: 'fa-solid fa-newspaper', className: 'blogs' },
+        forms: { icon: 'fa-solid fa-square-poll-horizontal', className: 'forms' },
+        menus: { icon: 'fa-solid fa-bars', className: 'menus' },
+        logs: { icon: 'fa-solid fa-clock-rotate-left', className: 'logs' },
+        search: { icon: 'fa-solid fa-magnifying-glass', className: 'search' },
+        settings: { icon: 'fa-solid fa-sliders', className: 'settings' },
+        sitemap: { icon: 'fa-solid fa-sitemap', className: 'sitemap' },
+        speed: { icon: 'fa-solid fa-gauge-high', className: 'speed' },
+        events: { icon: 'fa-solid fa-ticket', className: 'events' },
+        calendar: { icon: 'fa-solid fa-calendar-days', className: 'calendar' },
+        seo: { icon: 'fa-solid fa-bullseye', className: 'seo' },
+        accessibility: { icon: 'fa-solid fa-universal-access', className: 'accessibility' },
+        default: { icon: 'fa-solid fa-circle-info', className: 'settings' }
+    };
+
     function renderModuleSummaries(modules, options) {
         const $grid = $('#dashboardModuleCards');
         if (!$grid.length) {
@@ -306,6 +326,168 @@ $(function(){
         $grid.attr('aria-busy', 'false');
     }
 
+    function renderQuickActions(modules) {
+        const $quick = $('#dashboardQuickActions');
+        if (!$quick.length) {
+            return;
+        }
+
+        $quick.empty();
+
+        if (!Array.isArray(modules) || modules.length === 0) {
+            $quick.append(
+                $('<article>', {
+                    class: 'dashboard-quick-card empty',
+                    role: 'listitem',
+                    tabindex: -1,
+                    'aria-label': 'No quick actions available'
+                }).append(
+                    $('<div>', { class: 'dashboard-quick-content' }).append(
+                        $('<span>', {
+                            class: 'dashboard-quick-label',
+                            text: 'All caught up'
+                        }),
+                        $('<p>', {
+                            class: 'dashboard-quick-description',
+                            text: 'There are no modules that require attention right now.'
+                        })
+                    )
+                )
+            );
+            $quick.attr('aria-busy', 'false');
+            return;
+        }
+
+        const statusPriority = {
+            urgent: 0,
+            warning: 1,
+            ok: 2
+        };
+
+        const attentionStatuses = ['urgent', 'warning'];
+
+        const sortedModules = modules.slice().sort(function (a, b) {
+            const statusA = String(a && a.status ? a.status : 'ok').toLowerCase();
+            const statusB = String(b && b.status ? b.status : 'ok').toLowerCase();
+            const priorityA = Object.prototype.hasOwnProperty.call(statusPriority, statusA)
+                ? statusPriority[statusA]
+                : statusPriority.ok;
+            const priorityB = Object.prototype.hasOwnProperty.call(statusPriority, statusB)
+                ? statusPriority[statusB]
+                : statusPriority.ok;
+
+            if (priorityA === priorityB) {
+                const nameA = (a && (a.module || a.name || '')) || '';
+                const nameB = (b && (b.module || b.name || '')) || '';
+                return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
+            }
+
+            return priorityA - priorityB;
+        });
+
+        const seen = Object.create(null);
+        const ordered = [];
+
+        sortedModules.forEach(function (module) {
+            const id = String(module && (module.id || module.module || module.name || '')).toLowerCase();
+            if (!id || seen[id]) {
+                return;
+            }
+
+            seen[id] = true;
+            ordered.push(module);
+        });
+
+        const priorityModules = ordered.filter(function (module) {
+            const status = String(module && module.status ? module.status : 'ok').toLowerCase();
+            return attentionStatuses.indexOf(status) !== -1;
+        });
+
+        const fallbackModules = ordered.filter(function (module) {
+            return priorityModules.indexOf(module) === -1;
+        });
+
+        const selection = priorityModules.concat(fallbackModules).slice(0, 3);
+
+        if (selection.length === 0) {
+            $quick.append(
+                $('<article>', {
+                    class: 'dashboard-quick-card empty',
+                    role: 'listitem',
+                    tabindex: -1,
+                    'aria-label': 'No quick actions available'
+                }).append(
+                    $('<div>', { class: 'dashboard-quick-content' }).append(
+                        $('<span>', {
+                            class: 'dashboard-quick-label',
+                            text: 'All caught up'
+                        }),
+                        $('<p>', {
+                            class: 'dashboard-quick-description',
+                            text: 'There are no modules that require attention right now.'
+                        })
+                    )
+                )
+            );
+            $quick.attr('aria-busy', 'false');
+            return;
+        }
+
+        selection.forEach(function (module) {
+            const id = String(module && (module.id || module.module || module.name || '')).toLowerCase();
+            const name = module.module || module.name || module.id || '';
+            const statusKey = String(module.status || 'ok').toLowerCase();
+            const statusLabel = module.statusLabel || statusLabelFallback[statusKey] || statusLabelFallback.ok;
+            const detail = module.trend || module.secondary || module.primary || '';
+            const description = detail ? statusLabel + ' — ' + detail : statusLabel;
+
+            const iconConfig = Object.prototype.hasOwnProperty.call(quickActionIcons, id)
+                ? quickActionIcons[id]
+                : quickActionIcons.default;
+
+            const $card = $('<article>', {
+                class: 'dashboard-quick-card',
+                role: 'listitem',
+                tabindex: 0,
+                'data-module': id,
+                'aria-label': `${name} – ${description}`
+            });
+
+            const $icon = $('<span>', {
+                class: `dashboard-quick-icon ${iconConfig.className}`,
+                'aria-hidden': 'true'
+            }).append(
+                $('<i>', { class: iconConfig.icon })
+            );
+
+            const $content = $('<div>', { class: 'dashboard-quick-content' });
+            $content.append(
+                $('<span>', {
+                    class: 'dashboard-quick-label',
+                    text: name
+                })
+            );
+            $content.append(
+                $('<p>', {
+                    class: 'dashboard-quick-description',
+                    text: description
+                })
+            );
+
+            const $arrow = $('<span>', {
+                class: 'dashboard-quick-arrow',
+                'aria-hidden': 'true'
+            }).append(
+                $('<i>', { class: 'fa-solid fa-arrow-right' })
+            );
+
+            $card.append($icon, $content, $arrow);
+            $quick.append($card);
+        });
+
+        $quick.attr('aria-busy', 'false');
+    }
+
     function navigateToModule(section) {
         if (!section) {
             return;
@@ -377,6 +559,7 @@ $(function(){
         setRefreshState(true);
         setMetricsLoading(true);
         $('#dashboardModuleCards').attr('aria-busy', 'true');
+        $('#dashboardQuickActions').attr('aria-busy', 'true');
 
         const request = $.getJSON('modules/dashboard/dashboard_data.php', function(data){
             updateText('#statPages, [data-stat="pages"]', data.pages);
@@ -415,7 +598,9 @@ $(function(){
                 return `Accessibility reviews pending: ${formatNumber(value || 0)}`;
             });
 
-            renderModuleSummaries(data.moduleSummaries || data.modules || []);
+            const modules = data.moduleSummaries || data.modules || [];
+            renderModuleSummaries(modules);
+            renderQuickActions(modules);
         });
 
         return request
@@ -427,6 +612,7 @@ $(function(){
             .fail(function(){
                 updateLastUpdated(null);
                 renderModuleSummaries([], { message: 'Unable to load module data' });
+                renderQuickActions([]);
                 setMetricsLoading(false, metricsMessages.error);
             })
             .always(function(){
