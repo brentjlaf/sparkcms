@@ -1,6 +1,6 @@
 <!-- File: view.php -->
                 <div class="content-section" id="media">
-                    <div class="media-dashboard">
+                    <div class="media-dashboard a11y-dashboard">
                         <header class="a11y-hero media-hero">
                             <div class="a11y-hero-content media-hero-content">
                                 <div>
@@ -9,10 +9,10 @@
                                     <p class="a11y-hero-subtitle media-hero-subtitle">Keep your images, documents, and videos organised with a modern, visual workspace that mirrors the accessibility dashboard experience.</p>
                                 </div>
                                 <div class="a11y-hero-actions media-hero-actions">
-                                    <button type="button" class="media-btn media-btn--ghost" id="createFolderBtn">
+                                    <button type="button" class="a11y-btn a11y-btn--ghost" id="createFolderBtn">
                                         <span>New Folder</span>
                                     </button>
-                                    <button type="button" class="media-btn media-btn--primary is-disabled" id="uploadBtn" disabled aria-disabled="true">
+                                    <button type="button" class="a11y-btn a11y-btn--primary is-disabled" id="uploadBtn" disabled aria-disabled="true">
                                         <span>Upload Media</span>
                                     </button>
                                 </div>
@@ -67,8 +67,8 @@
                                         <div class="folder-stats" id="folderStats"></div>
                                     </div>
                                     <div class="gallery-actions">
-                                        <button class="btn btn-secondary" id="renameFolderBtn"><i class="fa-solid fa-pen-to-square btn-icon" aria-hidden="true"></i><span class="btn-label">Rename</span></button>
-                                        <button class="btn btn-danger" id="deleteFolderBtn"><i class="fa-solid fa-trash btn-icon" aria-hidden="true"></i><span class="btn-label">Delete</span></button>
+                                        <button class="a11y-btn a11y-btn--secondary" id="renameFolderBtn"><i class="fa-solid fa-pen-to-square btn-icon" aria-hidden="true"></i><span class="btn-label">Rename</span></button>
+                                        <button class="a11y-btn a11y-btn--danger" id="deleteFolderBtn"><i class="fa-solid fa-trash btn-icon" aria-hidden="true"></i><span class="btn-label">Delete</span></button>
                                     </div>
                                 </div>
                                 <div class="gallery-content" id="galleryContent">
@@ -139,8 +139,8 @@
                                 <input type="text" id="newFolderName" placeholder="Folder name">
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" id="cancelBtn"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
-                                <button class="btn btn-primary" id="confirmCreateBtn"><i class="fa-solid fa-folder-plus btn-icon" aria-hidden="true"></i><span class="btn-label">Create</span></button>
+                                <button class="a11y-btn a11y-btn--secondary" id="cancelBtn"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
+                                <button class="a11y-btn a11y-btn--primary" id="confirmCreateBtn"><i class="fa-solid fa-folder-plus btn-icon" aria-hidden="true"></i><span class="btn-label">Create</span></button>
                             </div>
                         </div>
                     </div>
@@ -157,8 +157,8 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" id="cancelRenameFolderBtn"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
-                                <button class="btn btn-primary" id="confirmRenameFolderBtn"><i class="fa-solid fa-pen-to-square btn-icon" aria-hidden="true"></i><span class="btn-label">Rename</span></button>
+                                <button class="a11y-btn a11y-btn--secondary" id="cancelRenameFolderBtn"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
+                                <button class="a11y-btn a11y-btn--primary" id="confirmRenameFolderBtn"><i class="fa-solid fa-pen-to-square btn-icon" aria-hidden="true"></i><span class="btn-label">Rename</span></button>
                             </div>
                         </div>
                     </div>
@@ -194,8 +194,8 @@
                                         </div>
                                     </div>
                                     <div class="form-actions" id="infoActions">
-                                        <button class="btn btn-danger" id="deleteBtn"><i class="fa-solid fa-trash btn-icon" aria-hidden="true"></i><span class="btn-label">Delete</span></button>
-                                        <button class="btn btn-primary" id="saveEditBtn"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button>
+                                        <button class="a11y-btn a11y-btn--danger" id="deleteBtn"><i class="fa-solid fa-trash btn-icon" aria-hidden="true"></i><span class="btn-label">Delete</span></button>
+                                        <button class="a11y-btn a11y-btn--primary" id="saveEditBtn"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button>
                                     </div>
                                 </div>
                             </div>
@@ -212,10 +212,10 @@
                                 </div>
                                 <div class="crop-sidebar">
                                     <div class="form-group">
-                                        <button class="btn btn-secondary" id="flipHorizontal"><i class="fa-solid fa-arrows-left-right btn-icon" aria-hidden="true"></i><span class="btn-label">Flip Horizontal</span></button>
+                                        <button class="a11y-btn a11y-btn--secondary" id="flipHorizontal"><i class="fa-solid fa-arrows-left-right btn-icon" aria-hidden="true"></i><span class="btn-label">Flip Horizontal</span></button>
                                     </div>
                                     <div class="form-group">
-                                        <button class="btn btn-secondary" id="flipVertical"><i class="fa-solid fa-arrows-up-down btn-icon" aria-hidden="true"></i><span class="btn-label">Flip Vertical</span></button>
+                                        <button class="a11y-btn a11y-btn--secondary" id="flipVertical"><i class="fa-solid fa-arrows-up-down btn-icon" aria-hidden="true"></i><span class="btn-label">Flip Vertical</span></button>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" for="scaleSlider">Scale</label>
@@ -245,8 +245,8 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-secondary" id="imageEditCancel"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
-                                <button class="btn btn-primary" id="imageEditSave"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button>
+                                <button class="a11y-btn a11y-btn--secondary" id="imageEditCancel"><i class="fa-solid fa-circle-xmark btn-icon" aria-hidden="true"></i><span class="btn-label">Cancel</span></button>
+                                <button class="a11y-btn a11y-btn--primary" id="imageEditSave"><i class="fa-solid fa-floppy-disk btn-icon" aria-hidden="true"></i><span class="btn-label">Save</span></button>
                             </div>
                         </div>
                     </div>

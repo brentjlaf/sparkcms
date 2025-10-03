@@ -26,7 +26,7 @@ $(function(){
         const container = $(containerSelector);
         let btn = container.find('button.retry-button');
         if(!btn.length){
-            btn = $('<button type="button" class="btn btn-secondary retry-button"><i class="fa-solid fa-rotate-right btn-icon" aria-hidden="true"></i><span class="btn-label">Retry</span></button>');
+            btn = $('<button type="button" class="a11y-btn a11y-btn--secondary retry-button"><i class="fa-solid fa-rotate-right btn-icon" aria-hidden="true"></i><span class="btn-label">Retry</span></button>');
             container.append(btn);
         }
         btn.off('click').on('click', function(e){
