@@ -1,7 +1,6 @@
 // File: global.js
 (function () {
   var blogPostsPromise = null;
-  var commerceDataPromise = null;
 
   function ready(fn) {
     if (document.readyState === 'loading') {
@@ -50,27 +49,6 @@
         throw error;
       });
     return blogPostsPromise;
-  }
-
-  function fetchCommerceData() {
-    if (commerceDataPromise) {
-      return commerceDataPromise;
-    }
-    var base = normalizeBasePath();
-    var url = base + '/CMS/data/commerce.json';
-    commerceDataPromise = fetch(url, { credentials: 'same-origin', cache: 'no-store' })
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error('Failed to load commerce data');
-        }
-        return response.json();
-      })
-      .catch(function (error) {
-        console.error('[SparkCMS] Commerce grid error:', error);
-        commerceDataPromise = null;
-        throw error;
-      });
-    return commerceDataPromise;
   }
 
   function parseLimit(value, fallback) {
@@ -161,86 +139,6 @@
     if (emptyState) {
       emptyState.classList.add('d-none');
     }
-  }
-
-  function showCommerceError(container, message) {
-    var itemsHost = container.querySelector('[data-commerce-items]') || container;
-    clearContainer(itemsHost);
-    var error = document.createElement('div');
-    error.className = 'commerce-product-card commerce-product-card--error';
-    error.textContent = message || 'Unable to load products.';
-    itemsHost.appendChild(error);
-    var emptyState = container.querySelector('[data-commerce-empty]');
-    if (emptyState) {
-      emptyState.classList.add('d-none');
-    }
-  }
-
-  function slugifyProduct(product) {
-    if (!product || typeof product !== 'object') {
-      return '';
-    }
-    if (product.slug) {
-      var existing = String(product.slug).trim();
-      if (existing) {
-        return existing;
-      }
-    }
-    if (product.name) {
-      var fromName = String(product.name)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      if (fromName) {
-        return fromName;
-      }
-    }
-    if (product.sku) {
-      return String(product.sku)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    }
-    return '';
-  }
-
-  function formatCurrencyValue(amount, currency) {
-    var numeric = Number(amount);
-    if (!Number.isFinite(numeric)) {
-      return '';
-    }
-    var code = (currency || '').toString().trim().toUpperCase();
-    if (!code) {
-      code = 'USD';
-    }
-    try {
-      return new Intl.NumberFormat(undefined, { style: 'currency', currency: code }).format(numeric);
-    } catch (error) {
-      var symbol = code === 'USD' ? '$' : code + ' ';
-      return symbol + numeric.toFixed(2);
-    }
-  }
-
-  function formatProductSummary(product) {
-    if (!product || typeof product !== 'object') {
-      return '';
-    }
-    var parts = [];
-    if (product.category) {
-      parts.push(String(product.category));
-    }
-    if (Number.isFinite(Number(product.inventory))) {
-      var inventory = Number(product.inventory);
-      if (inventory > 0) {
-        parts.push(inventory + ' in stock');
-      } else if (inventory === 0) {
-        parts.push('Out of stock');
-      }
-    }
-    if (product.status) {
-      parts.push(String(product.status));
-    }
-    return parts.join(' • ');
   }
 
   function hydrate(container) {
@@ -362,133 +260,6 @@
       })
       .catch(function () {
         showError(container, 'Unable to load blog posts at this time.');
-      });
-  }
-
-  function hydrateCommerceGrid(container) {
-    if (!(container instanceof HTMLElement)) {
-      return;
-    }
-    var itemsHost = container.querySelector('[data-commerce-items]');
-    if (!itemsHost) {
-      itemsHost = container;
-    }
-    clearContainer(itemsHost);
-    var placeholder = document.createElement('article');
-    placeholder.className = 'commerce-product-card commerce-product-card--placeholder';
-    var placeholderBody = document.createElement('div');
-    placeholderBody.className = 'commerce-product-body';
-    var placeholderTitle = document.createElement('h3');
-    placeholderTitle.className = 'commerce-product-title';
-    placeholderTitle.textContent = 'Loading products…';
-    placeholderBody.appendChild(placeholderTitle);
-    var placeholderDescription = document.createElement('p');
-    placeholderDescription.className = 'commerce-product-description';
-    placeholderDescription.textContent = 'Latest catalogue items will appear here automatically.';
-    placeholderBody.appendChild(placeholderDescription);
-    placeholder.appendChild(placeholderBody);
-    itemsHost.appendChild(placeholder);
-    var emptyState = container.querySelector('[data-commerce-empty]');
-    if (emptyState) {
-      emptyState.classList.add('d-none');
-    }
-    var settings = container.dataset || {};
-    var limit = parseLimit(settings.limit, 3);
-    var categories = parseCategoriesList(settings.categories);
-    var base = settings.base || '/store';
-    var linkLabel = settings.linkText || 'View product';
-    var emptyMessage = settings.empty || 'No products available right now.';
-    fetchCommerceData()
-      .then(function (data) {
-        var catalog = data && Array.isArray(data.catalog) ? data.catalog.slice() : [];
-        var currency = data && data.settings && data.settings.currency;
-        var visible = catalog.filter(function (product) {
-          if (!product || typeof product !== 'object') {
-            return false;
-          }
-          var visibility = String(product.visibility || '').toLowerCase();
-          if (visibility && visibility !== 'published') {
-            return false;
-          }
-          var status = String(product.status || '').toLowerCase();
-          if (status === 'archived') {
-            return false;
-          }
-          return true;
-        });
-        if (categories.length) {
-          visible = visible.filter(function (product) {
-            return categories.indexOf(normalizeCategory(product.category)) !== -1;
-          });
-        }
-        visible.sort(function (a, b) {
-          var aTime = Date.parse(a && a.updated ? a.updated : '') || 0;
-          var bTime = Date.parse(b && b.updated ? b.updated : '') || 0;
-          return bTime - aTime;
-        });
-        if (limit && visible.length > limit) {
-          visible = visible.slice(0, limit);
-        }
-        clearContainer(itemsHost);
-        if (!visible.length) {
-          if (emptyState) {
-            emptyState.textContent = emptyMessage;
-            emptyState.classList.remove('d-none');
-          } else {
-            var notice = document.createElement('div');
-            notice.className = 'commerce-product-card commerce-product-card--placeholder';
-            notice.textContent = emptyMessage;
-            itemsHost.appendChild(notice);
-          }
-          return;
-        }
-        if (emptyState) {
-          emptyState.classList.add('d-none');
-        }
-        visible.forEach(function (product) {
-          var card = document.createElement('article');
-          card.className = 'commerce-product-card';
-          if (product.featured_image) {
-            var figure = document.createElement('figure');
-            figure.className = 'commerce-product-media';
-            var img = document.createElement('img');
-            img.src = product.featured_image;
-            img.alt = product.name || product.sku || 'Product image';
-            figure.appendChild(img);
-            card.appendChild(figure);
-          }
-          var body = document.createElement('div');
-          body.className = 'commerce-product-body';
-          var title = document.createElement('h3');
-          title.className = 'commerce-product-title';
-          title.textContent = product.name || product.sku || 'Product';
-          body.appendChild(title);
-          var priceText = formatCurrencyValue(product.price, currency);
-          if (priceText) {
-            var price = document.createElement('p');
-            price.className = 'commerce-product-price';
-            price.textContent = priceText;
-            body.appendChild(price);
-          }
-          var summary = formatProductSummary(product);
-          if (summary) {
-            var description = document.createElement('p');
-            description.className = 'commerce-product-description';
-            description.textContent = summary;
-            body.appendChild(description);
-          }
-          var detailSlug = slugifyProduct(product);
-          var link = document.createElement('a');
-          link.className = 'commerce-product-link';
-          link.href = resolveDetailUrl(base, detailSlug || String(product.sku || '').trim());
-          link.textContent = linkLabel;
-          body.appendChild(link);
-          card.appendChild(body);
-          itemsHost.appendChild(card);
-        });
-      })
-      .catch(function () {
-        showCommerceError(container, 'Unable to load products at this time.');
       });
   }
 
@@ -1442,13 +1213,6 @@
     });
   }
 
-  function initCommerceGrids() {
-    var grids = document.querySelectorAll('[data-commerce-grid]');
-    grids.forEach(function (grid) {
-      hydrateCommerceGrid(grid);
-    });
-  }
-
   function initBlogLists() {
     var lists = document.querySelectorAll('[data-blog-list]');
     lists.forEach(function (container) {
@@ -1461,7 +1225,6 @@
       return;
     }
     var observer = new MutationObserver(function (mutations) {
-      var shouldRefreshCommerce = false;
       var shouldRefreshBlogs = false;
       var shouldRefreshCalendars = false;
       var shouldRefreshEvents = false;
@@ -1472,9 +1235,6 @@
         mutation.addedNodes.forEach(function (node) {
           if (!(node instanceof HTMLElement)) {
             return;
-          }
-          if (node.matches('[data-commerce-grid]') || node.querySelector('[data-commerce-grid]')) {
-            shouldRefreshCommerce = true;
           }
           if (node.matches('[data-blog-list]') || node.querySelector('[data-blog-list]')) {
             shouldRefreshBlogs = true;
@@ -1487,9 +1247,6 @@
           }
         });
       });
-      if (shouldRefreshCommerce) {
-        initCommerceGrids();
-      }
       if (shouldRefreshBlogs) {
         initBlogLists();
       }
@@ -1507,16 +1264,11 @@
   }
 
   ready(function () {
-    initCommerceGrids();
     initBlogLists();
     initEventsBlocks();
     initCalendarBlocks();
     observe();
   });
-
-  window.SparkCMSCommerce = {
-    refresh: initCommerceGrids
-  };
 
   window.SparkCMSBlogLists = {
     refresh: initBlogLists

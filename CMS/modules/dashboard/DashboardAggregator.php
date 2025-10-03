@@ -86,9 +86,6 @@ final class DashboardAggregator
     /** @var array<int, array<string, mixed>> */
     private array $calendarCategories = [];
 
-    /** @var array<string, mixed> */
-    private array $commerce = [];
-
     private string $scriptBase;
 
     private ?string $templateDir;
@@ -135,9 +132,8 @@ final class DashboardAggregator
         $dataFileCount = $this->countDataFiles($this->dataDirectory);
         $analyticsSummary = $this->buildAnalyticsSummary($views, count($this->pages), $topPage);
 
-        $eventsSummary = $this->summariseEvents($this->events, $this->eventOrders, $this->commerce);
+        $eventsSummary = $this->summariseEvents($this->events, $this->eventOrders);
         $calendarSummary = $this->summariseCalendar($this->calendarEvents, $this->calendarCategories);
-        $commerceSummary = $this->summariseCommerce($this->commerce);
 
         $moduleSummaries = $this->buildModuleSummaries(
             count($this->pages),
@@ -162,7 +158,6 @@ final class DashboardAggregator
             $dataFileCount,
             $eventsSummary,
             $calendarSummary,
-            $commerceSummary,
             $accessibilitySummary,
             $seoSummary
         );
@@ -220,16 +215,6 @@ final class DashboardAggregator
             'speedHeaviestPage' => $largestPage['title'],
             'speedHeaviestPageLength' => $largestPage['length'],
             'dataFileCount' => $dataFileCount,
-            'commerceRevenue' => $commerceSummary['revenue'],
-            'commerceOrders' => $commerceSummary['orders'],
-            'commerceAverageOrder' => $commerceSummary['averageOrder'],
-            'commerceConversionRate' => $commerceSummary['conversionRate'],
-            'commerceRefundRate' => $commerceSummary['refundRate'],
-            'commerceLowStock' => $commerceSummary['lowStock'],
-            'commercePendingOrders' => $commerceSummary['pendingOrders'],
-            'commerceRefundRequests' => $commerceSummary['refundRequests'],
-            'commerceStorefrontStatus' => $commerceSummary['storefrontStatus'],
-            'commerceCurrency' => $commerceSummary['currency'],
             'eventsCurrency' => $eventsSummary['currency'],
             'seoOptimised' => $seoSummary['optimised'],
             'seoMissingTitle' => $seoSummary['missing_title'],
@@ -257,7 +242,6 @@ final class DashboardAggregator
         $this->eventOrders = $this->loadCollection('event_orders.json');
         $this->calendarEvents = $this->loadCollection('calendar_events.json');
         $this->calendarCategories = $this->loadCollection('calendar_categories.json');
-        $this->commerce = $this->loadObject('commerce.json');
     }
 
     /**
@@ -299,15 +283,6 @@ final class DashboardAggregator
         }
 
         return $result;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function loadObject(string $file): array
-    {
-        $data = read_json_file($this->dataDirectory . DIRECTORY_SEPARATOR . $file);
-        return is_array($data) ? $data : [];
     }
 
     /**
@@ -756,7 +731,6 @@ final class DashboardAggregator
     /**
      * @param array<int, array<string, mixed>> $events
      * @param array<int, array<string, mixed>> $orders
-     * @param array<string, mixed> $commerce
      * @return array{
      *     total: int,
      *     published: int,
@@ -767,7 +741,7 @@ final class DashboardAggregator
      *     currency: string
      * }
      */
-    private function summariseEvents(array $events, array $orders, array $commerce): array
+    private function summariseEvents(array $events, array $orders): array
     {
         $total = count($events);
         $published = 0;
@@ -776,14 +750,6 @@ final class DashboardAggregator
         $revenue = 0.0;
         $pendingOrders = 0;
         $currency = 'USD';
-
-        $commerceSettings = [];
-        if (isset($commerce['settings']) && is_array($commerce['settings'])) {
-            $commerceSettings = $commerce['settings'];
-        }
-        if (!empty($commerceSettings['currency'])) {
-            $currency = strtoupper((string) $commerceSettings['currency']);
-        }
 
         $now = time();
         foreach ($events as $event) {
@@ -800,6 +766,12 @@ final class DashboardAggregator
         foreach ($orders as $order) {
             $status = strtolower(trim((string) ($order['status'] ?? 'paid')));
             $amount = isset($order['amount']) ? (float) $order['amount'] : 0.0;
+            if (!empty($order['currency']) && is_string($order['currency'])) {
+                $orderCurrency = strtoupper(trim($order['currency']));
+                if ($orderCurrency !== '') {
+                    $currency = $orderCurrency;
+                }
+            }
             $tickets = 0;
             if (!empty($order['tickets']) && is_array($order['tickets'])) {
                 foreach ($order['tickets'] as $ticket) {
@@ -883,93 +855,6 @@ final class DashboardAggregator
     }
 
     /**
-     * @param array<string, mixed> $commerce
-     * @return array{
-     *     revenue: float,
-     *     orders: int,
-     *     averageOrder: float,
-     *     conversionRate: float,
-     *     refundRate: float,
-     *     lowStock: int,
-     *     pendingOrders: int,
-     *     refundRequests: int,
-     *     storefrontStatus: string,
-     *     currency: string
-     * }
-     */
-    private function summariseCommerce(array $commerce): array
-    {
-        $orders = 0;
-        $revenue = 0.0;
-        $conversionRate = 0.0;
-        $refundRate = 0.0;
-        $lowStock = 0;
-        $pendingOrders = 0;
-        $refundRequests = 0;
-        $currency = 'USD';
-        $storefrontStatus = '';
-
-        if (!empty($commerce['orders']) && is_array($commerce['orders'])) {
-            foreach ($commerce['orders'] as $order) {
-                if (!is_array($order)) {
-                    continue;
-                }
-                $orders++;
-                $revenue += isset($order['total']) ? (float) $order['total'] : 0.0;
-                if (isset($order['status']) && in_array(strtolower((string) $order['status']), ['pending', 'awaiting-payment'], true)) {
-                    $pendingOrders++;
-                }
-                if (isset($order['status']) && strtolower((string) $order['status']) === 'refund-requested') {
-                    $refundRequests++;
-                }
-            }
-        }
-
-        if (!empty($commerce['metrics']) && is_array($commerce['metrics'])) {
-            $metrics = $commerce['metrics'];
-            $conversionRate = isset($metrics['conversion_rate']) ? (float) $metrics['conversion_rate'] : 0.0;
-            $refundRate = isset($metrics['refund_rate']) ? (float) $metrics['refund_rate'] : 0.0;
-        }
-
-        if (!empty($commerce['inventory']) && is_array($commerce['inventory'])) {
-            foreach ($commerce['inventory'] as $item) {
-                if (!is_array($item)) {
-                    continue;
-                }
-                $stock = isset($item['stock']) ? (int) $item['stock'] : 0;
-                if ($stock > 0 && $stock <= 5) {
-                    $lowStock++;
-                }
-            }
-        }
-
-        if (!empty($commerce['settings']) && is_array($commerce['settings'])) {
-            $settings = $commerce['settings'];
-            if (!empty($settings['currency'])) {
-                $currency = strtoupper((string) $settings['currency']);
-            }
-            if (!empty($settings['storefront_status'])) {
-                $storefrontStatus = strtolower((string) $settings['storefront_status']);
-            }
-        }
-
-        $averageOrder = $orders > 0 ? $revenue / $orders : 0.0;
-
-        return [
-            'revenue' => $revenue,
-            'orders' => $orders,
-            'averageOrder' => $averageOrder,
-            'conversionRate' => $conversionRate,
-            'refundRate' => $refundRate,
-            'lowStock' => $lowStock,
-            'pendingOrders' => $pendingOrders,
-            'refundRequests' => $refundRequests,
-            'storefrontStatus' => $storefrontStatus,
-            'currency' => $currency,
-        ];
-    }
-
-    /**
      * @param array<int, array<string, mixed>> $moduleSummaries
      * @return array<int, array<string, mixed>>
      */
@@ -1007,7 +892,6 @@ final class DashboardAggregator
      * @param array{title: ?string, length: int} $largestPage
      * @param array<string, mixed> $eventsSummary
      * @param array<string, mixed> $calendarSummary
-     * @param array<string, mixed> $commerceSummary
      * @param array<string, int> $accessibilitySummary
      * @param array<string, int> $seoSummary
      * @return array<int, array<string, mixed>>
@@ -1035,7 +919,6 @@ final class DashboardAggregator
         int $dataFileCount,
         array $eventsSummary,
         array $calendarSummary,
-        array $commerceSummary,
         array $accessibilitySummary,
         array $seoSummary
     ): array {
@@ -1097,38 +980,6 @@ final class DashboardAggregator
             $calendarTrend = 'No upcoming entries scheduled';
         }
         $calendarCta = $calendarSummary['total'] === 0 ? 'Add calendar event' : 'Open calendar';
-
-        $commerceStatus = 'ok';
-        if ($commerceSummary['orders'] === 0 && $commerceSummary['revenue'] <= 0.0) {
-            $commerceStatus = 'urgent';
-        }
-        if ($commerceSummary['lowStock'] > 0 || $commerceSummary['pendingOrders'] > 0 || $commerceSummary['refundRequests'] > 0) {
-            $commerceStatus = $commerceStatus === 'urgent' ? 'urgent' : 'warning';
-        }
-        if ($commerceSummary['storefrontStatus'] !== '' && !in_array($commerceSummary['storefrontStatus'], ['live', 'enabled'], true)) {
-            $commerceStatus = in_array($commerceSummary['storefrontStatus'], ['paused', 'offline', 'maintenance'], true) ? 'urgent' : 'warning';
-        }
-        $commerceSecondary = 'Orders: ' . $this->formatNumber($commerceSummary['orders'])
-            . ' • Avg order: ' . $this->formatCurrency($commerceSummary['averageOrder'], $commerceSummary['currency']);
-        $commerceTrendParts = [];
-        if ($commerceSummary['lowStock'] > 0) {
-            $commerceTrendParts[] = 'Low stock: ' . $this->formatNumber($commerceSummary['lowStock']);
-        }
-        if ($commerceSummary['pendingOrders'] > 0) {
-            $commerceTrendParts[] = 'Pending: ' . $this->formatNumber($commerceSummary['pendingOrders']);
-        }
-        if ($commerceSummary['refundRequests'] > 0) {
-            $commerceTrendParts[] = 'Refunds: ' . $this->formatNumber($commerceSummary['refundRequests']);
-        }
-        $commerceTrend = $commerceTrendParts ? implode(' • ', $commerceTrendParts) : 'Store operating normally';
-        $commerceCta = 'Open commerce';
-        if ($commerceStatus === 'urgent' && $commerceSummary['orders'] === 0 && $commerceSummary['revenue'] <= 0.0) {
-            $commerceCta = 'Launch store';
-        } elseif ($commerceSummary['lowStock'] > 0) {
-            $commerceCta = 'Review inventory';
-        } elseif ($commerceSummary['pendingOrders'] > 0) {
-            $commerceCta = 'Manage orders';
-        }
 
         $formsStatus = count($forms) === 0 ? 'warning' : 'ok';
         $formsTrend = $formsFields > 0
@@ -1353,16 +1204,6 @@ final class DashboardAggregator
                 'statusLabel' => $this->statusLabel($calendarStatus),
                 'trend' => $calendarTrend,
                 'cta' => $calendarCta,
-            ],
-            [
-                'id' => 'commerce',
-                'module' => 'Commerce',
-                'primary' => 'Revenue: ' . $this->formatCurrency($commerceSummary['revenue'], $commerceSummary['currency']),
-                'secondary' => $commerceSecondary,
-                'status' => $commerceStatus,
-                'statusLabel' => $this->statusLabel($commerceStatus),
-                'trend' => $commerceTrend,
-                'cta' => $commerceCta,
             ],
             [
                 'id' => 'seo',
