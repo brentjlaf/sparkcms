@@ -9334,6 +9334,45 @@
     gap: 18px;
 }
 
+.calendar-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.calendar-category-empty {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px dashed #cbd5f5;
+    background: #eef2ff;
+    color: #3730a3;
+    font-weight: 500;
+}
+
+.calendar-category-card-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.15);
+}
+
+.calendar-category-card-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--calendar-category-color, #cbd5f5);
+    box-shadow: inset 0 0 0 1px rgba(30, 64, 175, 0.2);
+}
+
+.calendar-category-card-name {
+    font-weight: 600;
+    color: #1f2937;
+}
+
 .calendar-card-header {
     display: flex;
     flex-direction: column;

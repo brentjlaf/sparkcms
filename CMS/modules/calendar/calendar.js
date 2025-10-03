@@ -53,13 +53,30 @@
 
   const messageBox = root.querySelector('[data-calendar-message]');
   const eventsTableBody = root.querySelector('[data-calendar-events]');
-  const categoriesTableBody = root.querySelector('[data-calendar-categories]');
-  const eventForm = root.querySelector('[data-calendar-form="event"]');
-  const categoryForm = root.querySelector('[data-calendar-form="category"]');
-  const categorySelect = root.querySelector('#calendarEventCategory');
-  const eventModal = root.querySelector('[data-calendar-modal="event"]');
-  const categoriesModal = root.querySelector('[data-calendar-modal="categories"]');
-  const confirmModal = root.querySelector('[data-calendar-modal="confirm"]');
+  const categoriesCardContainer = root.querySelector(
+    '.calendar-categories[data-calendar-categories]'
+  );
+  const eventForm =
+    root.querySelector('[data-calendar-form="event"]') ||
+    document.querySelector('[data-calendar-form="event"]');
+  const categoryForm =
+    root.querySelector('[data-calendar-form="category"]') ||
+    document.querySelector('[data-calendar-form="category"]');
+  const categorySelect =
+    root.querySelector('#calendarEventCategory') ||
+    document.querySelector('#calendarEventCategory');
+  const eventModal =
+    root.querySelector('[data-calendar-modal="event"]') ||
+    document.querySelector('[data-calendar-modal="event"]');
+  const categoriesModal =
+    root.querySelector('[data-calendar-modal="categories"]') ||
+    document.querySelector('[data-calendar-modal="categories"]');
+  const categoriesModalTableBody = categoriesModal
+    ? categoriesModal.querySelector('[data-calendar-categories]')
+    : null;
+  const confirmModal =
+    root.querySelector('[data-calendar-modal="confirm"]') ||
+    document.querySelector('[data-calendar-modal="confirm"]');
   const confirmTitle = confirmModal
     ? confirmModal.querySelector('[data-calendar-confirm-title]')
     : null;
@@ -69,7 +86,9 @@
   const confirmAcceptButton = confirmModal
     ? confirmModal.querySelector('[data-calendar-confirm-accept]')
     : null;
-  const eventModalTitle = root.querySelector('#calendarEventModalTitle');
+  const eventModalTitle =
+    root.querySelector('#calendarEventModalTitle') ||
+    document.querySelector('#calendarEventModalTitle');
   const heroNextEvent = root.querySelector('[data-calendar-next-event]');
   const heroStatElements = {
     total: root.querySelector('[data-calendar-stat="total"]'),
@@ -1117,45 +1136,70 @@
   }
 
   function renderCategories() {
-    if (!categoriesTableBody) {
-      return;
+    const categories = Array.isArray(state.categories)
+      ? state.categories.slice()
+      : [];
+
+    const sortedCategories = categories.sort((a, b) => {
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return (a.id || 0) - (b.id || 0);
+    });
+
+    if (categoriesModalTableBody) {
+      if (sortedCategories.length === 0) {
+        categoriesModalTableBody.innerHTML =
+          '<tr><td colspan="4" class="calendar-empty">No categories yet.</td></tr>';
+      } else {
+        categoriesModalTableBody.innerHTML = sortedCategories
+          .map((category) => {
+            const color = category.color || '#ffffff';
+            return (
+              '<tr>' +
+              '<td>' + escapeHtml(category.id || '') + '</td>' +
+              '<td>' + escapeHtml(category.name || '') + '</td>' +
+              '<td>' +
+              '<span class="calendar-category-color" style="--calendar-category-color:' +
+              escapeHtml(color) +
+              ';">' +
+              escapeHtml(color) +
+              '</span>' +
+              '</td>' +
+              '<td>' +
+              '<button type="button" class="calendar-delete-btn" data-calendar-action="delete-category" data-category-id="' +
+              String(category.id || '') +
+              '">Delete</button>' +
+              '</td>' +
+              '</tr>'
+            );
+          })
+          .join('');
+      }
     }
 
-    if (!Array.isArray(state.categories) || state.categories.length === 0) {
-      categoriesTableBody.innerHTML =
-        '<tr><td colspan="4" class="calendar-empty">No categories yet.</td></tr>';
-    } else {
-      categoriesTableBody.innerHTML = state.categories
-        .slice()
-        .sort((a, b) => {
-          const nameA = (a.name || '').toLowerCase();
-          const nameB = (b.name || '').toLowerCase();
-          if (nameA < nameB) return -1;
-          if (nameA > nameB) return 1;
-          return (a.id || 0) - (b.id || 0);
-        })
-        .map((category) => {
-          const color = category.color || '#ffffff';
-          return (
-            '<tr>' +
-            '<td>' + escapeHtml(category.id || '') + '</td>' +
-            '<td>' + escapeHtml(category.name || '') + '</td>' +
-            '<td>' +
-            '<span class="calendar-category-color" style="--calendar-category-color:' +
-            escapeHtml(color) +
-            ';">' +
-            escapeHtml(color) +
-            '</span>' +
-            '</td>' +
-            '<td>' +
-            '<button type="button" class="calendar-delete-btn" data-calendar-action="delete-category" data-category-id="' +
-            String(category.id || '') +
-            '">Delete</button>' +
-            '</td>' +
-            '</tr>'
-          );
-        })
-        .join('');
+    if (categoriesCardContainer) {
+      if (sortedCategories.length === 0) {
+        categoriesCardContainer.innerHTML =
+          '<div class="calendar-category-empty">No categories available. Add one to get started.</div>';
+      } else {
+        categoriesCardContainer.innerHTML = sortedCategories
+          .map((category) => {
+            const color = category.color || '#ffffff';
+            return (
+              '<div class="calendar-category-card-item">' +
+              '<span class="calendar-category-card-swatch" style="--calendar-category-color:' +
+              escapeHtml(color) +
+              ';"></span>' +
+              '<span class="calendar-category-card-name">' +
+              escapeHtml(category.name || '') +
+              '</span>' +
+              '</div>'
+            );
+          })
+          .join('');
+      }
     }
 
     renderCategoryOptions();
@@ -1518,7 +1562,21 @@
     });
   }
 
-  root.addEventListener('click', (event) => {
+  function isCalendarContext(node) {
+    if (!(node instanceof HTMLElement)) {
+      return false;
+    }
+    if (root.contains(node)) {
+      return true;
+    }
+    return Boolean(node.closest('[data-calendar-modal]'));
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!document.body.contains(root)) {
+      return;
+    }
+
     const rawTarget = event.target;
     if (!(rawTarget instanceof HTMLElement)) {
       return;
@@ -1526,7 +1584,7 @@
 
     const target = rawTarget.closest('[data-calendar-open], [data-calendar-close], [data-calendar-action]');
 
-    if (!target) {
+    if (!target || !isCalendarContext(target)) {
       return;
     }
 
@@ -1565,12 +1623,15 @@
     }
   });
 
-  root.addEventListener('mousedown', (event) => {
+  document.addEventListener('mousedown', (event) => {
+    if (!document.body.contains(root)) {
+      return;
+    }
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
       return;
     }
-    if (target.matches('.calendar-modal-backdrop')) {
+    if (target.matches('.calendar-modal-backdrop') && isCalendarContext(target)) {
       closeModal(target);
     }
   });
