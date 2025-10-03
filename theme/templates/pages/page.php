@@ -18,6 +18,8 @@ if (is_string($faviconSetting) && $faviconSetting !== '' && preg_match('#^https?
     $favicon = $themeBase . '/images/favicon.png';
 }
 $mainMenu = $menus[0]['items'] ?? [];
+$primaryMenuItems = array_slice($mainMenu, 0, 5);
+$overflowMenuItems = array_slice($mainMenu, 5);
 $footerMenu = $menus[1]['items'] ?? [];
 $social = $settings['social'] ?? [];
 
@@ -94,7 +96,17 @@ function renderFooterMenu($items){
                 <!-- Navigation -->
                 <nav class="main-nav" id="main-nav" role="navigation">
                     <ul>
-                        <?php renderMenu($mainMenu); ?>
+                        <?php renderMenu($primaryMenuItems); ?>
+                        <?php if (!empty($overflowMenuItems)): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="more-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    More
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="more-menu">
+                                    <?php renderMenu($overflowMenuItems, true); ?>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </nav>
 
