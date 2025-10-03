@@ -1,15 +1,10 @@
 <?php
 // File: list_categories.php
-require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/BlogRepository.php';
 
-$postsFile = __DIR__ . '/../../data/blog_posts.json';
-$posts = read_json_file($postsFile);
-$categories = [];
-foreach ($posts as $p) {
-    if (!empty($p['category']) && !in_array($p['category'], $categories)) {
-        $categories[] = $p['category'];
-    }
-}
+$repository = new BlogRepository();
+$categories = $repository->listCategories();
+
 header('Content-Type: application/json');
-echo json_encode(array_values($categories));
+echo json_encode($categories);
 ?>
