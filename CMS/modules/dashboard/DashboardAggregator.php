@@ -5,6 +5,13 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../includes/data.php';
 require_once __DIR__ . '/../../includes/settings.php';
 require_once __DIR__ . '/../../includes/template_renderer.php';
+require_once __DIR__ . '/../analytics/AnalyticsService.php';
+require_once __DIR__ . '/../blogs/BlogRepository.php';
+require_once __DIR__ . '/../forms/FormRepository.php';
+require_once __DIR__ . '/../forms/FormAnalytics.php';
+require_once __DIR__ . '/../events/EventsService.php';
+require_once __DIR__ . '/../calendar/CalendarRepository.php';
+require_once __DIR__ . '/../users/UserService.php';
 
 /**
  * Immutable value object containing a snapshot of dashboard metrics.
@@ -53,6 +60,20 @@ final class DashboardAggregator
     /** @var array<string, mixed> */
     private array $settings;
 
+    private AnalyticsService $analyticsService;
+
+    private FormRepository $formRepository;
+
+    private FormAnalytics $formAnalytics;
+
+    private EventsService $eventsService;
+
+    private CalendarRepository $calendarRepository;
+
+    private UserService $userService;
+
+    private BlogRepository $blogRepository;
+
     /** @var array<int, array<string, mixed>> */
     private array $pages = [];
 
@@ -100,12 +121,12 @@ final class DashboardAggregator
         $this->templateDir = $templateDir ?: null;
         $this->settings = $settingsOverride ?? get_site_settings();
 
+        $this->initializeModuleServices();
         $this->loadDatasets();
     }
 
     public function aggregate(): DashboardSnapshot
     {
-        $views = $this->calculateTotalViews($this->pages);
         $slugCounts = $this->countSlugs($this->pages);
 
         $analysis = $this->analysePages($this->pages, $this->settings, $this->menus, $this->scriptBase, $this->templateDir);
@@ -119,21 +140,26 @@ final class DashboardAggregator
 
         $seoSummary = $this->applySlugDuplicates($seoSummary, $slugCounts);
 
+        $analyticsData = $this->analyticsService->getDashboardData();
+        $analyticsSummary = $this->buildAnalyticsSummary($analyticsData, $this->pages);
+        $views = $analyticsSummary['totalViews'];
+
         $mediaTotalSize = $this->calculateMediaBytes($this->media);
         $usersByRole = $this->groupUsersByRole($this->users);
         $postsByStatus = $this->groupPostsByStatus($this->posts);
         $formsFields = $this->countFormFields($this->forms);
+        $formsDashboard = $this->formAnalytics->getDashboardContext();
         $menuItems = $this->countMenuItems($this->menus);
         $logStats = $this->summariseLogs($this->history);
         $searchBreakdown = $this->buildSearchBreakdown($this->pages, $this->posts, $this->media);
         $settingsSummary = $this->summariseSettings($this->settings);
         $sitemapEntries = $this->countPublishedPages($this->pages);
-        $topPage = $this->findTopPage($this->pages);
         $dataFileCount = $this->countDataFiles($this->dataDirectory);
-        $analyticsSummary = $this->buildAnalyticsSummary($views, count($this->pages), $topPage);
 
-        $eventsSummary = $this->summariseEvents($this->events, $this->eventOrders);
-        $calendarSummary = $this->summariseCalendar($this->calendarEvents, $this->calendarCategories);
+        $eventsOverview = $this->eventsService->getOverview();
+        $eventsSummary = $this->summariseEvents($this->events, $this->eventOrders, $eventsOverview);
+        $calendarMetrics = CalendarRepository::computeMetrics($this->calendarEvents, $this->calendarCategories);
+        $calendarSummary = $this->summariseCalendar($calendarMetrics);
 
         $moduleSummaries = $this->buildModuleSummaries(
             count($this->pages),
@@ -147,6 +173,7 @@ final class DashboardAggregator
             $postsByStatus,
             $this->forms,
             $formsFields,
+            $formsDashboard,
             $this->menus,
             $menuItems,
             $logStats,
@@ -157,6 +184,7 @@ final class DashboardAggregator
             $largestPage,
             $dataFileCount,
             $eventsSummary,
+            $eventsOverview,
             $calendarSummary,
             $accessibilitySummary,
             $seoSummary
@@ -177,6 +205,7 @@ final class DashboardAggregator
             'analyticsAvgViews' => $analyticsSummary['averageViews'],
             'analyticsTopPage' => $analyticsSummary['topPage'],
             'analyticsTopViews' => $analyticsSummary['topViews'],
+            'analyticsZeroViews' => (int) ($analyticsData['zeroViewCount'] ?? 0),
             'blogsTotal' => count($this->posts),
             'blogsPublished' => $postsByStatus['published'],
             'blogsDraft' => $postsByStatus['draft'],
@@ -187,8 +216,13 @@ final class DashboardAggregator
             'eventsTicketsSold' => $eventsSummary['ticketsSold'],
             'eventsRevenue' => $eventsSummary['revenue'],
             'eventsPendingOrders' => $eventsSummary['pendingOrders'],
-            'formsTotal' => count($this->forms),
+            'formsTotal' => (int) ($formsDashboard['totalForms'] ?? count($this->forms)),
             'formsFields' => $formsFields,
+            'formsTotalSubmissions' => (int) ($formsDashboard['totalSubmissions'] ?? 0),
+            'formsRecentSubmissions' => (int) ($formsDashboard['recentSubmissions'] ?? 0),
+            'formsActive' => (int) ($formsDashboard['activeForms'] ?? 0),
+            'formsLastSubmissionTimestamp' => $formsDashboard['lastSubmissionTimestamp'] ?? null,
+            'formsLastSubmissionLabel' => $formsDashboard['lastSubmissionLabel'] ?? 'No submissions yet',
             'menusCount' => count($this->menus),
             'menuItems' => $menuItems,
             'calendarTotal' => $calendarSummary['total'],
@@ -229,19 +263,46 @@ final class DashboardAggregator
         return new DashboardSnapshot($snapshot);
     }
 
+    private function initializeModuleServices(): void
+    {
+        $pagesFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'pages.json';
+        $this->analyticsService = new AnalyticsService($pagesFile);
+
+        $formsFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'forms.json';
+        $submissionsFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'form_submissions.json';
+        $this->formRepository = new FormRepository($formsFile, $submissionsFile);
+        $this->formAnalytics = new FormAnalytics($this->formRepository);
+
+        $eventsFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'events.json';
+        $ordersFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'event_orders.json';
+        $categoriesFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'event_categories.json';
+        $eventsRepository = new EventsRepository($eventsFile, $ordersFile, $categoriesFile);
+        $this->eventsService = new EventsService($eventsRepository);
+
+        $calendarEventsFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'calendar_events.json';
+        $calendarCategoriesFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'calendar_categories.json';
+        $this->calendarRepository = new CalendarRepository($calendarEventsFile, $calendarCategoriesFile);
+
+        $userRepository = new UserRepository($this->dataDirectory . DIRECTORY_SEPARATOR . 'users.json');
+        $this->userService = new UserService($userRepository);
+
+        $postsFile = $this->dataDirectory . DIRECTORY_SEPARATOR . 'blog_posts.json';
+        $this->blogRepository = new BlogRepository($postsFile);
+    }
+
     private function loadDatasets(): void
     {
         $this->pages = $this->loadCollection('pages.json');
         $this->media = $this->loadCollection('media.json');
-        $this->users = $this->loadCollection('users.json');
+        $this->users = $this->userService->getUsers();
         $this->menus = $this->loadCollection('menus.json');
-        $this->forms = $this->loadCollection('forms.json');
-        $this->posts = $this->loadCollection('blog_posts.json');
+        $this->forms = $this->formRepository->getForms();
+        $this->posts = $this->blogRepository->readPosts();
         $this->history = $this->loadAssociativeCollection('page_history.json');
-        $this->events = $this->loadCollection('events.json');
-        $this->eventOrders = $this->loadCollection('event_orders.json');
-        $this->calendarEvents = $this->loadCollection('calendar_events.json');
-        $this->calendarCategories = $this->loadCollection('calendar_categories.json');
+        $this->events = $this->eventsService->getEventsData();
+        $this->eventOrders = $this->eventsService->getOrdersData();
+        $this->calendarEvents = $this->calendarRepository->getEvents();
+        $this->calendarCategories = $this->calendarRepository->getCategories();
     }
 
     /**
@@ -715,22 +776,58 @@ final class DashboardAggregator
     }
 
     /**
-     * @param array{title: ?string, views: int}|null $topPage
+     * @param array<string, mixed> $analyticsData
+     * @param array<int, array<string, mixed>> $pages
      * @return array{totalViews: int, averageViews: int, topPage: ?string, topViews: int}
      */
-    private function buildAnalyticsSummary(int $views, int $totalPages, ?array $topPage): array
+    private function buildAnalyticsSummary(array $analyticsData, array $pages): array
     {
+        $totalPages = count($pages);
+        $totalViews = (int) round((float) ($analyticsData['totalViews'] ?? 0));
+        $averageValue = $analyticsData['averageViews'] ?? null;
+        $averageViews = is_numeric($averageValue)
+            ? (int) round((float) $averageValue)
+            : ($totalPages > 0 ? (int) round($totalViews / $totalPages) : 0);
+
+        $topPageTitle = null;
+        $topViews = 0;
+        $topPages = $analyticsData['topPages'] ?? null;
+        if (is_array($topPages) && isset($topPages[0]) && is_array($topPages[0])) {
+            $first = $topPages[0];
+            $title = isset($first['title']) ? trim((string) $first['title']) : '';
+            $slug = isset($first['slug']) ? trim((string) $first['slug']) : '';
+            $topPageTitle = $title !== '' ? $title : ($slug !== '' ? $slug : null);
+            $topViews = (int) round((float) ($first['views'] ?? 0));
+        }
+
+        if ($topPageTitle === null && $totalPages > 0) {
+            $top = $this->findTopPage($pages);
+            if ($top !== null) {
+                $title = isset($top['title']) ? trim((string) $top['title']) : '';
+                $topPageTitle = $title !== '' ? $title : null;
+                $topViews = (int) ($top['views'] ?? 0);
+            }
+        }
+
+        if ($totalViews === 0 && $totalPages > 0) {
+            $totalViews = $this->calculateTotalViews($pages);
+            if ($totalPages > 0) {
+                $averageViews = (int) round($totalViews / $totalPages);
+            }
+        }
+
         return [
-            'totalViews' => $views,
-            'averageViews' => $totalPages > 0 ? (int) round($views / $totalPages) : 0,
-            'topPage' => $topPage['title'] ?? null,
-            'topViews' => $topPage['views'] ?? 0,
+            'totalViews' => $totalViews,
+            'averageViews' => $averageViews,
+            'topPage' => $topPageTitle,
+            'topViews' => $topViews,
         ];
     }
 
     /**
      * @param array<int, array<string, mixed>> $events
      * @param array<int, array<string, mixed>> $orders
+     * @param array<string, mixed>|null $overview
      * @return array{
      *     total: int,
      *     published: int,
@@ -741,9 +838,11 @@ final class DashboardAggregator
      *     currency: string
      * }
      */
-    private function summariseEvents(array $events, array $orders): array
+    private function summariseEvents(array $events, array $orders, ?array $overview = null): array
     {
-        $total = count($events);
+        $stats = is_array($overview['stats'] ?? null) ? $overview['stats'] : null;
+
+        $total = $stats !== null ? (int) ($stats['total_events'] ?? count($events)) : count($events);
         $published = 0;
         $upcoming = 0;
         $ticketsSold = 0;
@@ -772,6 +871,7 @@ final class DashboardAggregator
                     $currency = $orderCurrency;
                 }
             }
+
             $tickets = 0;
             if (!empty($order['tickets']) && is_array($order['tickets'])) {
                 foreach ($order['tickets'] as $ticket) {
@@ -792,6 +892,15 @@ final class DashboardAggregator
 
             $ticketsSold += $tickets;
             $revenue += $amount;
+        }
+
+        if ($stats !== null) {
+            if (isset($stats['total_tickets_sold'])) {
+                $ticketsSold = (int) $stats['total_tickets_sold'];
+            }
+            if (isset($stats['total_revenue'])) {
+                $revenue = (float) $stats['total_revenue'];
+            }
         }
 
         return [
@@ -816,32 +925,28 @@ final class DashboardAggregator
      *     nextEvent: ?array{title: string, time: string}
      * }
      */
-    private function summariseCalendar(array $calendarEvents, array $calendarCategories): array
+    private function summariseCalendar(array $metrics): array
     {
-        $total = count($calendarEvents);
-        $upcoming = 0;
-        $recurring = 0;
+        $total = (int) ($metrics['total_events'] ?? 0);
+        $upcoming = (int) ($metrics['upcoming_count'] ?? 0);
+        $recurring = (int) ($metrics['recurring_count'] ?? 0);
+        $categoryCount = (int) ($metrics['category_count'] ?? 0);
+
         $nextEvent = null;
-        $now = time();
-
-        foreach ($calendarEvents as $event) {
-            $start = isset($event['start']) ? strtotime((string) $event['start']) : false;
-            if ($start !== false && $start >= $now) {
-                $upcoming++;
-                if ($nextEvent === null || $start < strtotime($nextEvent['time'])) {
-                    $title = trim((string) ($event['title'] ?? ''));
-                    if ($title === '') {
-                        $title = 'Untitled event';
-                    }
-                    $nextEvent = [
-                        'title' => $title,
-                        'time' => date('c', $start),
-                    ];
-                }
+        if (isset($metrics['next_event']) && is_array($metrics['next_event'])) {
+            $next = $metrics['next_event'];
+            $title = isset($next['title']) ? trim((string) $next['title']) : '';
+            if ($title === '') {
+                $title = 'Untitled event';
             }
-
-            if (!empty($event['recurring'])) {
-                $recurring++;
+            $time = isset($next['start_date'])
+                ? (string) $next['start_date']
+                : (isset($next['time']) ? (string) $next['time'] : '');
+            if ($time !== '') {
+                $nextEvent = [
+                    'title' => $title,
+                    'time' => $time,
+                ];
             }
         }
 
@@ -849,7 +954,7 @@ final class DashboardAggregator
             'total' => $total,
             'upcoming' => $upcoming,
             'recurring' => $recurring,
-            'categoryCount' => count($calendarCategories),
+            'categoryCount' => $categoryCount,
             'nextEvent' => $nextEvent,
         ];
     }
@@ -884,6 +989,7 @@ final class DashboardAggregator
      * @param array<string, int> $usersByRole
      * @param array<string, int> $postsByStatus
      * @param array<int, array<string, mixed>> $forms
+     * @param array<string, mixed> $formsDashboard
      * @param array<int, array<string, mixed>> $menus
      * @param array{count: int, lastActivity: ?string} $logStats
      * @param array{pages: int, posts: int, media: int} $searchBreakdown
@@ -891,6 +997,7 @@ final class DashboardAggregator
      * @param array{fast: int, monitor: int, slow: int} $speedSummary
      * @param array{title: ?string, length: int} $largestPage
      * @param array<string, mixed> $eventsSummary
+     * @param array<string, mixed> $eventsOverview
      * @param array<string, mixed> $calendarSummary
      * @param array<string, int> $accessibilitySummary
      * @param array<string, int> $seoSummary
@@ -908,6 +1015,7 @@ final class DashboardAggregator
         array $postsByStatus,
         array $forms,
         int $formsFields,
+        array $formsDashboard,
         array $menus,
         int $menuItems,
         array $logStats,
@@ -918,6 +1026,7 @@ final class DashboardAggregator
         array $largestPage,
         int $dataFileCount,
         array $eventsSummary,
+        array $eventsOverview,
         array $calendarSummary,
         array $accessibilitySummary,
         array $seoSummary
@@ -956,6 +1065,24 @@ final class DashboardAggregator
         }
         $eventsSecondary = 'Upcoming: ' . $this->formatNumber($eventsSummary['upcoming'])
             . ' • Tickets sold: ' . $this->formatNumber($eventsSummary['ticketsSold']);
+        $upcomingEvents = isset($eventsOverview['upcoming']) && is_array($eventsOverview['upcoming'])
+            ? $eventsOverview['upcoming']
+            : [];
+        if (!empty($upcomingEvents) && is_array($upcomingEvents[0])) {
+            $firstUpcoming = $upcomingEvents[0];
+            $title = isset($firstUpcoming['title']) ? trim((string) $firstUpcoming['title']) : '';
+            $start = isset($firstUpcoming['start']) ? (string) $firstUpcoming['start'] : '';
+            if ($title !== '') {
+                $summary = $title;
+                if ($start !== '') {
+                    $timestamp = strtotime($start);
+                    if ($timestamp !== false) {
+                        $summary .= ' (' . date('M j', $timestamp) . ')';
+                    }
+                }
+                $eventsSecondary .= ' • Next: ' . $summary;
+            }
+        }
         $eventsTrend = $eventsSummary['pendingOrders'] > 0
             ? 'Pending orders: ' . $this->formatNumber($eventsSummary['pendingOrders'])
             : ($eventsSummary['revenue'] > 0
@@ -974,18 +1101,39 @@ final class DashboardAggregator
         $calendarSecondary = 'Upcoming: ' . $this->formatNumber($calendarSummary['upcoming'])
             . ' • Categories: ' . $this->formatNumber($calendarSummary['categoryCount']);
         if ($calendarSummary['nextEvent']) {
-            $calendarTrend = 'Next: ' . $calendarSummary['nextEvent']['title']
-                . ' (' . date('M j', strtotime($calendarSummary['nextEvent']['time'])) . ')';
+            $nextEventTime = isset($calendarSummary['nextEvent']['time'])
+                ? strtotime((string) $calendarSummary['nextEvent']['time'])
+                : false;
+            if ($nextEventTime !== false) {
+                $calendarTrend = 'Next: ' . $calendarSummary['nextEvent']['title']
+                    . ' (' . date('M j', $nextEventTime) . ')';
+            } else {
+                $calendarTrend = 'Next: ' . $calendarSummary['nextEvent']['title'];
+            }
         } else {
             $calendarTrend = 'No upcoming entries scheduled';
         }
         $calendarCta = $calendarSummary['total'] === 0 ? 'Add calendar event' : 'Open calendar';
 
-        $formsStatus = count($forms) === 0 ? 'warning' : 'ok';
-        $formsTrend = $formsFields > 0
-            ? $this->formatNumber($formsFields) . ' total form fields'
-            : 'No forms configured';
-        $formsCta = count($forms) === 0 ? 'Create form' : 'View forms';
+        $formsTotal = (int) ($formsDashboard['totalForms'] ?? count($forms));
+        $formsStatus = $formsTotal === 0 ? 'warning' : 'ok';
+        $totalSubmissions = (int) ($formsDashboard['totalSubmissions'] ?? 0);
+        $activeForms = (int) ($formsDashboard['activeForms'] ?? 0);
+        $recentSubmissions = (int) ($formsDashboard['recentSubmissions'] ?? 0);
+        $lastSubmissionLabel = isset($formsDashboard['lastSubmissionLabel'])
+            ? (string) $formsDashboard['lastSubmissionLabel']
+            : 'No submissions yet';
+
+        $formsSecondary = 'Submissions: ' . $this->formatNumber($totalSubmissions)
+            . ' • Active: ' . $this->formatNumber($activeForms);
+        if ($formsFields > 0) {
+            $formsSecondary .= ' • Fields: ' . $this->formatNumber($formsFields);
+        }
+
+        $formsTrend = $recentSubmissions > 0
+            ? 'Last 30 days: ' . $this->formatNumber($recentSubmissions)
+            : $lastSubmissionLabel;
+        $formsCta = $formsTotal === 0 ? 'Create form' : 'View forms';
 
         $menusStatus = $menuItems === 0 ? 'warning' : 'ok';
         $menusTrend = $menuItems === 0
@@ -1108,8 +1256,8 @@ final class DashboardAggregator
             [
                 'id' => 'forms',
                 'module' => 'Forms',
-                'primary' => $this->formatNumber(count($forms)) . ' active forms',
-                'secondary' => $formsTrend,
+                'primary' => $this->formatNumber($formsTotal) . ' active forms',
+                'secondary' => $formsSecondary,
                 'status' => $formsStatus,
                 'statusLabel' => $this->statusLabel($formsStatus),
                 'trend' => $formsTrend,
