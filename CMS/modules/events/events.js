@@ -78,6 +78,12 @@
         toast: document.querySelector('[data-events-toast]'),
     };
 
+    const tabsController = {
+        activate(tabId, options) {
+            /* no-op until initialized */
+        },
+    };
+
     const state = {
         events: new Map(),
         eventRows: [],
@@ -175,6 +181,10 @@
                 tab.focus();
             }
         }
+
+        tabsController.activate = (tabId, options = {}) => {
+            activate(tabId, options);
+        };
 
         function focusByIndex(index) {
             const normalizedIndex = (index + tabButtons.length) % tabButtons.length;
@@ -2025,6 +2035,7 @@
                         });
                     break;
                 case 'sales':
+                    tabsController.activate('orders');
                     document.getElementById('eventsOrdersTitle')?.scrollIntoView({ behavior: 'smooth' });
                     if (selectors.orders.filterEvent) {
                         selectors.orders.filterEvent.value = id;
