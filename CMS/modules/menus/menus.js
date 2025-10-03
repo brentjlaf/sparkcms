@@ -238,13 +238,13 @@ $(function () {
 
             const $actionsCell = $('<div class="menu-table-cell menu-table-actions"></div>');
             const $editBtn = $(
-                '<button type="button" class="menu-btn menu-btn--ghost menu-btn--sm editMenu">' +
+                '<button type="button" class="a11y-btn a11y-btn--ghost a11y-btn--sm editMenu">' +
                     '<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>' +
                     '<span>Edit</span>' +
                 '</button>'
             );
             const $deleteBtn = $(
-                '<button type="button" class="menu-btn menu-btn--danger menu-btn--sm deleteMenu">' +
+                '<button type="button" class="a11y-btn a11y-btn--danger a11y-btn--sm deleteMenu">' +
                     '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
                     '<span>Delete</span>' +
                 '</button>'
