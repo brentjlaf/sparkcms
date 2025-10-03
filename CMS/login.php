@@ -9,10 +9,14 @@ $settings = get_site_settings();
 
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-$username = sanitize_text($_POST['username'] ?? '');
-$password = $_POST['password'] ?? '';
-$user = find_user($username);
-    if ($user && password_verify($password, $user['password'])) {
+    $username = sanitize_text($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $user = find_user($username);
+    if (
+        $user &&
+        ($user['status'] ?? null) === 'active' &&
+        password_verify($password, $user['password'])
+    ) {
         $_SESSION['user'] = $user;
         header('Location: admin.php');
         exit;
