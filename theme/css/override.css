@@ -314,7 +314,7 @@ button:focus-visible,
     font-family: var(--font-family-serif);
     font-weight: 700;
     font-size: clamp(2.5rem, 3.5vw, 3.75rem);
-    color: var(--text-color-on-primary);
+    color: var(--text-color-on-primary, #fff);
     line-height: 1.1;
     margin-bottom: 1.25rem;
 }
