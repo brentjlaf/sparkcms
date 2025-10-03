@@ -128,7 +128,7 @@ $selectedTypesAttr = htmlspecialchars(json_encode($selectedTypes, JSON_UNESCAPED
                                     </td>
                                     <td><?php echo htmlspecialchars($r['slug'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><a class="btn btn-secondary" href="<?php echo htmlspecialchars($viewUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square btn-icon" aria-hidden="true"></i><span class="btn-label">View</span></a></td>
+                                    <td><a class="a11y-btn a11y-btn--ghost" href="<?php echo htmlspecialchars($viewUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span>View</span></a></td>
                                 </tr>
                             <?php endforeach; ?>
                             <tr class="search-empty-row" data-filter-empty="true" style="display:none;"><td colspan="5">No results match the selected filters.</td></tr>
