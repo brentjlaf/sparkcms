@@ -10,7 +10,19 @@ $forms = read_json_file($formsFile);
 
 $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
 $name = sanitize_text($_POST['name'] ?? '');
-$fieldsData = isset($_POST['fields']) ? json_decode($_POST['fields'], true) : [];
+$fieldsData = [];
+if (isset($_POST['fields'])) {
+    $decodedFields = json_decode($_POST['fields'], true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        http_response_code(400);
+        echo 'Invalid fields data';
+        exit;
+    }
+    if (is_array($decodedFields)) {
+        $fieldsData = $decodedFields;
+    }
+}
+
 $fields = [];
 foreach ($fieldsData as $field) {
     if (!is_array($field)) continue;
