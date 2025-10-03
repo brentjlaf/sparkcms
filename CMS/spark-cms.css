@@ -6987,8 +6987,8 @@
 
 .blog-post-cell {
     display: flex;
-    align-items: center;
     gap: 16px;
+    align-items: center; /* Ensure thumbnail and title stay vertically aligned */
 }
 
 .blog-table-thumb {
