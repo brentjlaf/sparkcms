@@ -1,6 +1,6 @@
 <!-- File: view.php -->
                 <div class="content-section" id="import">
-                    <div class="import-dashboard">
+                    <div class="import-dashboard a11y-dashboard">
                         <header class="a11y-hero import-hero">
                             <div class="a11y-hero-content import-hero-content">
                                 <div>
