@@ -46,6 +46,23 @@ $pageEntries = $report['pages'];
 $pageEntryMap = $report['pageMap'];
 $dashboardStats = $report['stats'];
 
+$totalPages = isset($dashboardStats['totalPages']) ? (int) $dashboardStats['totalPages'] : 0;
+$avgScore = isset($dashboardStats['avgScore']) ? (int) $dashboardStats['avgScore'] : 0;
+$criticalIssues = isset($dashboardStats['criticalIssues']) ? (int) $dashboardStats['criticalIssues'] : 0;
+$aaCompliant = isset($dashboardStats['aaCompliant']) ? (int) $dashboardStats['aaCompliant'] : 0;
+$lastScan = isset($dashboardStats['lastScan']) && $dashboardStats['lastScan'] !== ''
+    ? $dashboardStats['lastScan']
+    : 'Never';
+$filterCounts = [
+    'all' => 0,
+    'failing' => 0,
+    'partial' => 0,
+    'compliant' => 0,
+];
+if (isset($dashboardStats['filterCounts']) && is_array($dashboardStats['filterCounts'])) {
+    $filterCounts = array_merge($filterCounts, $dashboardStats['filterCounts']);
+}
+
 $moduleUrl = $_SERVER['PHP_SELF'] . '?module=accessibility';
 $dashboardStats['moduleUrl'] = $moduleUrl;
 $dashboardStats['detailBaseUrl'] = $moduleUrl . '&page=';
