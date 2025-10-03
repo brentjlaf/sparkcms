@@ -8,6 +8,7 @@ let settingsContent;
 let savePageFn;
 let renderDebounce;
 let addBlockControlsFn;
+let templateNameEl;
 
 const FORMS_SELECT_ATTR = 'data-forms-select';
 const BLOG_CATEGORY_SELECT_ATTR = 'data-blog-category-select';
@@ -77,6 +78,41 @@ function fetchBlogCategories() {
       return cachedBlogCategories;
     });
   return blogCategoriesRequest;
+}
+
+function formatSegment(text = '') {
+  return text
+    .replace(/[-_]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatTemplateName(template) {
+  if (!template) return '';
+  const base = String(template).replace(/\.php$/i, '');
+  const parts = base.split('.');
+  if (!parts.length) return '';
+  const group = parts.shift() || '';
+  const name = parts.length ? parts.join(' ') : group;
+  const groupLabel = formatSegment(group);
+  const nameLabel = formatSegment(name);
+  if (groupLabel && nameLabel && groupLabel !== nameLabel) {
+    return `${groupLabel} / ${nameLabel}`;
+  }
+  return nameLabel || groupLabel;
+}
+
+function updateTemplateHeading(template = '') {
+  if (!templateNameEl) return;
+  const label = formatTemplateName(template);
+  if (label) {
+    templateNameEl.textContent = `Template: ${label}`;
+    templateNameEl.title = template;
+  } else {
+    templateNameEl.textContent = '';
+    templateNameEl.removeAttribute('title');
+  }
 }
 
 function splitCommaValues(value) {
@@ -285,6 +321,8 @@ export function initSettings(options = {}) {
   addBlockControlsFn = options.addBlockControls;
   if (settingsPanel) {
     settingsContent = settingsPanel.querySelector('.settings-content');
+    templateNameEl = settingsPanel.querySelector('.template-name');
+    updateTemplateHeading();
     settingsPanel.addEventListener('click', (e) => {
       if (e.target.id === 'apply-settings') {
         const block = settingsPanel.block;
@@ -293,12 +331,16 @@ export function initSettings(options = {}) {
           applySettings(template, block);
           settingsPanel.classList.remove('open');
           settingsPanel.block = null;
+          settingsPanel.template = null;
+          updateTemplateHeading();
           canvas.querySelectorAll('.block-wrapper').forEach((b) => b.classList.remove('selected'));
           savePageFn();
         }
       } else if (e.target.id === 'cancel-settings' || e.target.classList.contains('close-btn')) {
         settingsPanel.classList.remove('open');
         settingsPanel.block = null;
+        settingsPanel.template = null;
+        updateTemplateHeading();
         canvas.querySelectorAll('.block-wrapper').forEach((b) => b.classList.remove('selected'));
       }
     });
@@ -353,6 +395,7 @@ export function openSettings(block) {
     settingsPanel.classList.add('open');
     settingsPanel.block = block;
     settingsPanel.template = template;
+    updateTemplateHeading(template);
   }
 }
 
