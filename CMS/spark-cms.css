@@ -7264,11 +7264,6 @@
     font-size: 15px;
 }
 
-.blog-table .post-excerpt {
-    margin-top: 4px;
-    font-size: 13px;
-}
-
 .blog-post-cell {
     display: flex;
     align-items: flex-start;
@@ -7308,11 +7303,6 @@
 
 .post-title {
     font-weight: 600;
-}
-
-.post-excerpt {
-    color: #64748b;
-    font-size: 14px;
 }
 
 .author-info {
