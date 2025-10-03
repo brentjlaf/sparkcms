@@ -102,7 +102,8 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="password">Password</label>
-                    <input type="password" class="form-input" name="password" id="password" placeholder="Leave blank to keep current password">
+                    <input type="password" class="form-input" name="password" id="password"
+                        placeholder="Set a password for new users; leave blank to keep the current password">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="role">Role</label>

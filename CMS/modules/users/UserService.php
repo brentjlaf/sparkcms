@@ -60,6 +60,8 @@ class UserService
             throw new InvalidArgumentException('Missing username');
         }
 
+        $password = trim((string) $password);
+
         $role = $this->normalizeRole($role);
         $status = $this->normalizeStatus($status);
         $users = $this->repository->loadUsers();
@@ -92,10 +94,14 @@ class UserService
                 throw new InvalidArgumentException('User not found.');
             }
         } else {
+            if ($password === '') {
+                throw new InvalidArgumentException('Missing password');
+            }
+
             $newUser = [
                 'id' => $this->repository->getNextId($users),
                 'username' => $username,
-                'password' => password_hash($password !== '' ? $password : 'password', PASSWORD_DEFAULT),
+                'password' => password_hash($password, PASSWORD_DEFAULT),
                 'role' => $role,
                 'status' => $status,
                 'created_at' => time(),
