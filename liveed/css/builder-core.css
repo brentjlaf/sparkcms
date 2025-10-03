@@ -313,12 +313,24 @@
   background: rgba(15, 23, 42, 0.8);
   border-bottom: 1px solid rgba(51, 65, 85, 0.2);
 }
+.settings-panel .settings-header .title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 .settings-panel .settings-header .title {
   font-weight: 600;
   font-size: 14px;
   color: #e2e8f0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+.settings-panel .settings-header .template-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #cbd5f5;
+  text-transform: none;
+  letter-spacing: 0;
 }
 .settings-panel .settings-header .close-btn {
   background: none;
