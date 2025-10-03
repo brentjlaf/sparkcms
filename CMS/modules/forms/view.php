@@ -2,84 +2,21 @@
 // File: modules/forms/view.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/data.php';
+require_once __DIR__ . '/FormRepository.php';
+require_once __DIR__ . '/FormAnalytics.php';
 require_login();
 
-$formsFile = __DIR__ . '/../../data/forms.json';
-$forms = read_json_file($formsFile);
-if (!is_array($forms)) {
-    $forms = [];
-}
-
-$forms = array_values(array_filter($forms, static function ($item) {
-    return is_array($item);
-}));
-
-$submissionsFile = __DIR__ . '/../../data/form_submissions.json';
-$submissions = read_json_file($submissionsFile);
-if (!is_array($submissions)) {
-    $submissions = [];
-}
-
-$submissions = array_values(array_filter($submissions, static function ($item) {
-    return is_array($item);
-}));
-
-$extractTimestamp = static function (array $entry): int {
-    $candidates = ['submitted_at', 'created_at', 'timestamp'];
-    foreach ($candidates as $key) {
-        if (empty($entry[$key])) {
-            continue;
-        }
-        $value = $entry[$key];
-        if (is_numeric($value)) {
-            $value = (float) $value;
-            if ($value > 0) {
-                return $value < 1_000_000_000_000 ? (int) round($value) : (int) round($value / 1000);
-            }
-            continue;
-        }
-        $time = strtotime((string) $value);
-        if ($time !== false) {
-            return $time;
-        }
-    }
-    return 0;
-};
-
-$totalForms = count($forms);
-$totalSubmissions = count($submissions);
-$recentSubmissions = 0;
-$activeForms = [];
-$latestSubmission = 0;
-$thirtyDaysAgo = time() - (30 * 24 * 60 * 60);
-
-foreach ($submissions as $submission) {
-    if (isset($submission['form_id'])) {
-        $activeForms[(int) $submission['form_id']] = true;
-    }
-    $timestamp = $extractTimestamp($submission);
-    if ($timestamp > 0) {
-        if ($timestamp > $latestSubmission) {
-            $latestSubmission = $timestamp;
-        }
-        if ($timestamp >= $thirtyDaysAgo) {
-            $recentSubmissions++;
-        }
-    }
-}
-
-$activeFormsCount = count($activeForms);
-$lastSubmissionLabel = $latestSubmission > 0
-    ? date('M j, Y g:i A', $latestSubmission)
-    : 'No submissions yet';
+$repository = new FormRepository();
+$analytics = new FormAnalytics($repository);
+$dashboardContext = $analytics->getDashboardContext();
 ?>
 <div class="content-section" id="forms">
     <div class="forms-dashboard a11y-dashboard"
-         data-total-forms="<?php echo (int) $totalForms; ?>"
-         data-total-submissions="<?php echo (int) $totalSubmissions; ?>"
-         data-recent-submissions="<?php echo (int) $recentSubmissions; ?>"
-         data-active-forms="<?php echo (int) $activeFormsCount; ?>"
-         data-last-submission="<?php echo htmlspecialchars($lastSubmissionLabel, ENT_QUOTES); ?>">
+         data-total-forms="<?php echo (int) $dashboardContext['totalForms']; ?>"
+         data-total-submissions="<?php echo (int) $dashboardContext['totalSubmissions']; ?>"
+         data-recent-submissions="<?php echo (int) $dashboardContext['recentSubmissions']; ?>"
+         data-active-forms="<?php echo (int) $dashboardContext['activeForms']; ?>"
+         data-last-submission="<?php echo htmlspecialchars($dashboardContext['lastSubmissionLabel'], ENT_QUOTES); ?>">
         <header class="a11y-hero forms-hero">
             <div class="a11y-hero-content">
                 <div>
@@ -94,25 +31,25 @@ $lastSubmissionLabel = $latestSubmission > 0
                     </button>
                     <span class="a11y-hero-meta forms-last-submission">
                         <i class="fas fa-inbox" aria-hidden="true"></i>
-                        Last submission <span id="formsLastSubmission"><?php echo htmlspecialchars($lastSubmissionLabel); ?></span>
+                        Last submission <span id="formsLastSubmission"><?php echo htmlspecialchars($dashboardContext['lastSubmissionLabel']); ?></span>
                     </span>
                 </div>
             </div>
             <div class="a11y-overview-grid forms-overview">
                 <div class="a11y-overview-card">
-                    <div class="a11y-overview-value" id="formsStatForms"><?php echo (int) $totalForms; ?></div>
+                    <div class="a11y-overview-value" id="formsStatForms"><?php echo (int) $dashboardContext['totalForms']; ?></div>
                     <div class="a11y-overview-label">Published forms</div>
                 </div>
                 <div class="a11y-overview-card">
-                    <div class="a11y-overview-value" id="formsStatActive"><?php echo (int) $activeFormsCount; ?></div>
+                    <div class="a11y-overview-value" id="formsStatActive"><?php echo (int) $dashboardContext['activeForms']; ?></div>
                     <div class="a11y-overview-label">Collecting responses</div>
                 </div>
                 <div class="a11y-overview-card">
-                    <div class="a11y-overview-value" id="formsStatSubmissions"><?php echo (int) $totalSubmissions; ?></div>
+                    <div class="a11y-overview-value" id="formsStatSubmissions"><?php echo (int) $dashboardContext['totalSubmissions']; ?></div>
                     <div class="a11y-overview-label">Total submissions</div>
                 </div>
                 <div class="a11y-overview-card">
-                    <div class="a11y-overview-value" id="formsStatRecent"><?php echo (int) $recentSubmissions; ?></div>
+                    <div class="a11y-overview-value" id="formsStatRecent"><?php echo (int) $dashboardContext['recentSubmissions']; ?></div>
                     <div class="a11y-overview-label">Last 30 days</div>
                 </div>
             </div>
