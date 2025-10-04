@@ -204,6 +204,7 @@ class SeoReport
             'missingAlt' => 0,
             'links' => ['internal' => 0, 'external' => 0],
             'hasCanonical' => false,
+            'hasCanonicalSetting' => false,
             'hasStructuredData' => false,
             'hasOpenGraph' => false,
             'isNoindex' => false,
@@ -217,6 +218,11 @@ class SeoReport
             $metrics['wordCount'] = $this->extractWordCount($pageHtml);
         } else {
             $metrics['wordCount'] = $this->extractWordCount($pageHtml);
+        }
+
+        $canonicalSetting = trim((string)($page['canonical_url'] ?? ''));
+        if ($canonicalSetting !== '') {
+            $metrics['hasCanonicalSetting'] = true;
         }
 
         $this->applyFallbackMetadata($page, $metrics);
@@ -441,7 +447,11 @@ class SeoReport
         }
 
         if (!$metrics['hasCanonical']) {
-            $addIssue('Canonical URL tag is missing', self::IMPACT_MODERATE);
+            if ($metrics['hasCanonicalSetting']) {
+                $addIssue('Canonical URL saved but canonical link tag is missing', self::IMPACT_MODERATE);
+            } else {
+                $addIssue('Canonical URL tag is missing', self::IMPACT_MODERATE);
+            }
         }
 
         if (!$metrics['hasOpenGraph']) {
