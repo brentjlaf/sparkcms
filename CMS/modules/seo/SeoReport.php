@@ -204,6 +204,7 @@ class SeoReport
             'missingAlt' => 0,
             'links' => ['internal' => 0, 'external' => 0],
             'hasCanonical' => false,
+            'hasCanonicalSetting' => false,
             'hasStructuredData' => false,
             'hasOpenGraph' => false,
             'isNoindex' => false,
@@ -217,6 +218,11 @@ class SeoReport
             $metrics['wordCount'] = $this->extractWordCount($pageHtml);
         } else {
             $metrics['wordCount'] = $this->extractWordCount($pageHtml);
+        }
+
+        $canonicalSetting = trim((string)($page['canonical_url'] ?? ''));
+        if ($canonicalSetting !== '') {
+            $metrics['hasCanonicalSetting'] = true;
         }
 
         $this->applyFallbackMetadata($page, $metrics);
@@ -275,8 +281,13 @@ class SeoReport
 
         $linkTags = $doc->getElementsByTagName('link');
         foreach ($linkTags as $link) {
-            $rel = strtolower(trim((string)$link->getAttribute('rel')));
-            if ($rel === 'canonical' && trim((string)$link->getAttribute('href')) !== '') {
+            $relRaw = strtolower(trim((string)$link->getAttribute('rel')));
+            if ($relRaw === '') {
+                continue;
+            }
+
+            $relTokens = preg_split('/\s+/', $relRaw) ?: [];
+            if (in_array('canonical', $relTokens, true) && trim((string)$link->getAttribute('href')) !== '') {
                 $metrics['hasCanonical'] = true;
             }
         }
@@ -436,7 +447,11 @@ class SeoReport
         }
 
         if (!$metrics['hasCanonical']) {
-            $addIssue('Canonical URL tag is missing', self::IMPACT_MODERATE);
+            if ($metrics['hasCanonicalSetting']) {
+                $addIssue('Canonical URL saved but canonical link tag is missing', self::IMPACT_MODERATE);
+            } else {
+                $addIssue('Canonical URL tag is missing', self::IMPACT_MODERATE);
+            }
         }
 
         if (!$metrics['hasOpenGraph']) {
