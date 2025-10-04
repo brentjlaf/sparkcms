@@ -621,7 +621,15 @@
             });
             $modal.find('[data-seo-action="full-audit"]').on('click', function () {
                 var slug = $modal.data('active-slug');
-                window.alert('Launching full SEO audit for ' + (slug || 'selected page') + '.\n\nCrawl will refresh metadata, structured data, and internal linking diagnostics.');
+                if (!slug) {
+                    return;
+                }
+
+                if (!loadSeoModule('page=' + encodeURIComponent(slug))) {
+                    if (stats && stats.detailBaseUrl) {
+                        window.location.href = stats.detailBaseUrl + encodeURIComponent(slug);
+                    }
+                }
             });
         }
 
