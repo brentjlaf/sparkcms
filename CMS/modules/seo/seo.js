@@ -379,10 +379,28 @@
         var issuesMarkup = [];
         if (page.issues && Array.isArray(page.issues.details) && page.issues.details.length) {
             page.issues.details.forEach(function (issue) {
-                issuesMarkup.push('<li><strong>' + $('<div>').text(issue.description || '').html() + '</strong><span>' + $('<div>').text(issue.recommendation || '').html() + '</span></li>');
+                var impact = String(issue.impact || '').toLowerCase();
+                var impactClass = impact ? 'impact-' + impact : '';
+                var impactLabel = impact ? impact.charAt(0).toUpperCase() + impact.slice(1) : '';
+                var description = $('<div>').text(issue.description || '').html();
+                var recommendation = $('<div>').text(issue.recommendation || '').html();
+                var parts = ['<li'];
+                if (impactClass) {
+                    parts.push(' class="' + impactClass + '"');
+                }
+                parts.push('>');
+                if (impactLabel) {
+                    parts.push('<span class="impact ' + impactClass + '">' + impactLabel + '</span>');
+                }
+                parts.push('<span class="issue">' + description + '</span>');
+                if (recommendation) {
+                    parts.push('<span class="tip">' + recommendation + '</span>');
+                }
+                parts.push('</li>');
+                issuesMarkup.push(parts.join(''));
             });
         } else {
-            issuesMarkup.push('<li>No outstanding issues detected.</li>');
+            issuesMarkup.push('<li class="no-issues">No outstanding issues detected.</li>');
         }
         $issuesList.html(issuesMarkup.join(''));
 
