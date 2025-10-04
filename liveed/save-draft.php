@@ -10,10 +10,15 @@ $repository = new PageRepository();
 $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
 $content = $_POST['content'] ?? '';
 $timestamp = isset($_POST['timestamp']) ? intval($_POST['timestamp']) : null;
+$revision = isset($_POST['revision']) ? trim((string)$_POST['revision']) : null;
 
 try {
-    $repository->saveDraft($id, $content, $timestamp);
-    echo 'OK';
+    $result = $repository->saveDraft($id, $content, $timestamp, $revision);
+    respond_json([
+        'ok' => true,
+        'revision' => $result['revision'] ?? '',
+        'timestamp' => $result['timestamp'] ?? ($timestamp ?? time()),
+    ]);
 } catch (PageRepositoryException $exception) {
     respond_json(['error' => $exception->getMessage()], $exception->getStatusCode());
 } catch (Throwable $exception) {

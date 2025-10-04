@@ -42,7 +42,12 @@ class PageRepository
         $this->blocksDirectory = $blocksDirectory ?? __DIR__ . '/../../theme/templates/blocks';
     }
 
-    public function updatePageContent(int $pageId, string $content, string $username = 'Unknown'): array
+    public function updatePageContent(
+        int $pageId,
+        string $content,
+        string $username = 'Unknown',
+        ?string $expectedRevision = null
+    ): array
     {
         $pageId = $this->validatePageId($pageId);
         $pages = $this->readPages();
@@ -60,15 +65,32 @@ class PageRepository
         }
 
         $previousContent = $pages[$pageIndex]['content'] ?? '';
+        $currentRevision = (string)($pages[$pageIndex]['revision'] ?? '');
+
+        if ($expectedRevision !== null && $expectedRevision !== '') {
+            if ($currentRevision !== '' && !hash_equals($currentRevision, $expectedRevision)) {
+                throw new PageRepositoryException('Page content is outdated. Please reload to continue editing.', 409);
+            }
+        }
+
         $timestamp = time();
+        $newRevision = $this->generateRevision($timestamp);
         $pages[$pageIndex]['content'] = $content;
         $pages[$pageIndex]['last_modified'] = $timestamp;
+        $pages[$pageIndex]['revision'] = $newRevision;
 
         if (!$this->writeJson($this->pagesFile, $pages)) {
             throw new PageRepositoryException('Unable to save page content.', 500);
         }
 
-        $historyEntry = $this->buildHistoryEntry($pageId, $username, $previousContent, $content, $timestamp);
+        $historyEntry = $this->buildHistoryEntry(
+            $pageId,
+            $username,
+            $previousContent,
+            $content,
+            $timestamp,
+            $newRevision
+        );
         $this->updateHistory($pageId, $historyEntry);
 
         return [
@@ -76,10 +98,16 @@ class PageRepository
             'history_entry' => $historyEntry,
             'timestamp' => $timestamp,
             'previous_content' => $previousContent,
+            'revision' => $newRevision,
         ];
     }
 
-    public function saveDraft(int $pageId, string $content, ?int $timestamp = null): void
+    public function saveDraft(
+        int $pageId,
+        string $content,
+        ?int $timestamp = null,
+        ?string $expectedRevision = null
+    ): array
     {
         $pageId = $this->validatePageId($pageId);
         $timestamp = $timestamp ?? time();
@@ -89,14 +117,36 @@ class PageRepository
         }
 
         $draftFile = $this->draftPath($pageId);
+        $existingDraft = [];
+        if (is_file($draftFile)) {
+            $decodedDraft = read_json_file($draftFile);
+            if (is_array($decodedDraft)) {
+                $existingDraft = $decodedDraft;
+            }
+        }
+
+        $currentRevision = (string)($existingDraft['revision'] ?? '');
+        if ($expectedRevision !== null && $expectedRevision !== '') {
+            if ($currentRevision !== '' && !hash_equals($currentRevision, $expectedRevision)) {
+                throw new PageRepositoryException('Draft is outdated. Please reload to continue editing.', 409);
+            }
+        }
+
+        $newRevision = $this->generateRevision();
         $data = [
             'content' => $content,
             'timestamp' => $timestamp,
+            'revision' => $newRevision,
         ];
 
         if (!$this->writeJson($draftFile, $data)) {
             throw new PageRepositoryException('Unable to save draft.', 500);
         }
+
+        return [
+            'timestamp' => $timestamp,
+            'revision' => $newRevision,
+        ];
     }
 
     public function loadDraft(int $pageId): array
@@ -105,17 +155,18 @@ class PageRepository
         $draftFile = $this->draftPath($pageId);
 
         if (!is_file($draftFile)) {
-            return ['content' => '', 'timestamp' => 0];
+            return ['content' => '', 'timestamp' => 0, 'revision' => ''];
         }
 
         $data = read_json_file($draftFile);
         if (!is_array($data)) {
-            return ['content' => '', 'timestamp' => 0];
+            return ['content' => '', 'timestamp' => 0, 'revision' => ''];
         }
 
         return [
             'content' => (string)($data['content'] ?? ''),
             'timestamp' => (int)($data['timestamp'] ?? 0),
+            'revision' => isset($data['revision']) ? (string)$data['revision'] : '',
         ];
     }
 
@@ -221,7 +272,14 @@ class PageRepository
         return rtrim($this->draftDirectory, '/\\') . '/page-' . $pageId . '.json';
     }
 
-    private function buildHistoryEntry(int $pageId, string $username, string $previousContent, string $newContent, int $timestamp): array
+    private function buildHistoryEntry(
+        int $pageId,
+        string $username,
+        string $previousContent,
+        string $newContent,
+        int $timestamp,
+        string $revision
+    ): array
     {
         $username = $username !== '' ? $username : 'Unknown';
         $oldWordCount = str_word_count(strip_tags($previousContent));
@@ -240,7 +298,20 @@ class PageRepository
             'details' => $details,
             'context' => 'page',
             'page_id' => $pageId,
+            'revision' => $revision,
         ];
+    }
+
+    private function generateRevision(?int $timestamp = null): string
+    {
+        $timestamp = $timestamp ?? time();
+        try {
+            $random = bin2hex(random_bytes(8));
+        } catch (Throwable $exception) {
+            $random = bin2hex(pack('N', mt_rand()));
+        }
+
+        return $random . '-' . $timestamp;
     }
 
     private function updateHistory(int $pageId, array $entry): void

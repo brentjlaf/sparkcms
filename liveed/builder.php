@@ -91,10 +91,14 @@ $mediaPickerHtml = '<div id="mediaPickerModal" class="modal">'
     . '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">'
     . '<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>';
 
+$currentRevision = isset($page['revision']) && $page['revision'] !== ''
+    ? $page['revision']
+    : ('legacy-' . ($page['last_modified'] ?? time()));
+
 $builderEnd = '</main><div id="settingsPanel" class="settings-panel"><div class="settings-header"><div class="title-group"><span class="title">Settings</span><span class="template-name"></span></div><button type="button" class="close-btn">&times;</button></div><div class="settings-content"></div></div>'
     . '<div id="historyPanel" class="history-panel"><div class="history-header"><span class="title">Page History</span><button type="button" class="close-btn">&times;</button></div><div class="history-content"></div></div>'
     . $mediaPickerHtml . '</div>'
-    . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';window.builderSlug = ' . json_encode($page['slug']) . ';window.builderLastModified = ' . json_encode($page['last_modified']) . ';</script>'
+    . '<script>window.builderPageId = ' . json_encode($page['id']) . ';window.builderBase = ' . json_encode($scriptBase) . ';window.builderSlug = ' . json_encode($page['slug']) . ';window.builderLastModified = ' . json_encode($page['last_modified']) . ';window.builderRevision = ' . json_encode($currentRevision) . ';</script>'
     . '<script type="module" src="' . $scriptBase . '/liveed/builder.js"></script>'
     . '<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>';
 

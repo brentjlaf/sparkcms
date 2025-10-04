@@ -19,24 +19,104 @@ let builderDraftKey = '';
 let lastSavedTimestamp = 0;
 let canvas;
 let paletteEl;
+let pageRevision = window.builderRevision || '';
+let draftRevision = '';
+let historyEntries = [];
+let conflictActive = false;
+let conflictPromptShown = false;
 // Delay before auto-saving after a change. A longer delay prevents rapid
 // successive saves while the user is still actively editing.
 const SAVE_DEBOUNCE_DELAY = 1000;
+
+function setPageRevision(value = '') {
+  pageRevision = value || '';
+  if (typeof window !== 'undefined') {
+    window.builderPageRevision = pageRevision;
+  }
+}
+
+function setDraftRevision(value = '') {
+  draftRevision = value || '';
+  if (typeof window !== 'undefined') {
+    window.builderDraftRevision = draftRevision;
+  }
+}
+
+function setHistoryEntriesCache(entries = []) {
+  historyEntries = Array.isArray(entries) ? entries : [];
+  if (typeof window !== 'undefined') {
+    window.builderHistoryEntries = historyEntries;
+  }
+}
+
+setPageRevision(pageRevision);
+setDraftRevision(draftRevision);
+setHistoryEntriesCache(historyEntries);
+
+function handleConflict(source = 'content', message = '') {
+  conflictActive = true;
+  const statusEl = document.getElementById('saveStatus');
+  const defaultMessage =
+    source === 'draft'
+      ? 'Draft update rejected. Reload to sync with the latest changes.'
+      : 'Update rejected. Reload to sync with the latest changes.';
+  if (statusEl) {
+    statusEl.textContent = message || defaultMessage;
+    statusEl.classList.add('error');
+    statusEl.classList.remove('saving');
+  }
+  if (conflictPromptShown) return;
+  conflictPromptShown = true;
+  const promptMessage =
+    (message ? message + '\n\n' : '') +
+    'Another session saved changes to this page. Reload now to discard your draft and use the latest version?\n\nSelect Cancel to keep your edits visible here so you can copy and merge them manually.';
+  const shouldReload = window.confirm(promptMessage);
+  if (shouldReload) {
+    window.location.reload();
+  }
+}
+
 function storeDraft() {
   if (!canvas) return;
   const data = {
     schema: serializeCanvas(canvas),
     timestamp: Date.now(),
+    revision: draftRevision || '',
   };
   localStorage.setItem(builderDraftKey, JSON.stringify(data));
+  if (conflictActive) return;
   const fd = new FormData();
   fd.append('id', window.builderPageId);
   fd.append('content', JSON.stringify(data));
   fd.append('timestamp', data.timestamp);
+  fd.append('revision', draftRevision || '');
   fetch(window.builderBase + '/liveed/save-draft.php', {
     method: 'POST',
     body: fd,
-  }).catch(() => {});
+  })
+    .then((response) => {
+      if (response.status === 409) {
+        return response
+          .json()
+          .catch(() => ({}))
+          .then((payload) => {
+            handleConflict('draft', payload.error);
+            throw new Error('conflict');
+          });
+      }
+      if (!response.ok) throw new Error('Draft save failed');
+      return response.json().catch(() => ({}));
+    })
+    .then((payload) => {
+      if (payload && payload.revision) {
+        setDraftRevision(payload.revision);
+        data.revision = draftRevision;
+        localStorage.setItem(builderDraftKey, JSON.stringify(data));
+      }
+    })
+    .catch((error) => {
+      if (error && error.message === 'conflict') return;
+    });
 }
 
 function renderGroupItems(details) {
@@ -194,6 +274,10 @@ function checkLinks(html) {
 
 function savePage() {
   if (!canvas) return;
+  if (conflictActive) {
+    handleConflict('content');
+    return;
+  }
   const statusEl = document.getElementById('saveStatus');
   const html = canvas.innerHTML;
 
@@ -222,6 +306,7 @@ function savePage() {
     const fd = new FormData();
     fd.append('id', window.builderPageId);
     fd.append('content', html);
+    fd.append('revision', pageRevision || '');
 
     if (statusEl) statusEl.textContent = 'Saving...';
 
@@ -229,27 +314,44 @@ function savePage() {
       method: 'POST',
       body: fd,
     })
-      .then((r) => {
-        if (!r.ok) throw new Error('Save failed');
-        return r.text();
+      .then((response) => {
+        if (response.status === 409) {
+          return response
+            .json()
+            .catch(() => ({}))
+            .then((payload) => {
+              handleConflict('content', payload.error);
+              throw new Error('conflict');
+            });
+        }
+        if (!response.ok) throw new Error('Save failed');
+        return response.json().catch(() => ({}));
       })
-      .then(() => {
+      .then((payload) => {
         localStorage.removeItem(builderDraftKey);
-        lastSavedTimestamp = Date.now();
+        setDraftRevision('');
+        const serverTimestamp = payload && payload.timestamp ? Number(payload.timestamp) : null;
+        const serverMs = serverTimestamp ? serverTimestamp * 1000 : Date.now();
+        lastSavedTimestamp = serverMs;
+        if (payload && payload.revision) {
+          setPageRevision(payload.revision);
+        }
         if (statusEl) {
           statusEl.textContent = 'Saved';
           statusEl.classList.remove('saving');
+          statusEl.classList.remove('error');
         }
         const lastSavedEl = document.getElementById('lastSavedTime');
         if (lastSavedEl) {
-          const now = new Date();
-          lastSavedEl.textContent = 'Last saved: ' + now.toLocaleString();
+          const displayDate = new Date(serverMs);
+          lastSavedEl.textContent = 'Last saved: ' + displayDate.toLocaleString();
         }
         setTimeout(() => {
           if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
         }, 2000);
       })
-      .catch(() => {
+      .catch((error) => {
+        if (error && error.message === 'conflict') return;
         if (statusEl) {
           statusEl.textContent = 'Error saving';
           statusEl.classList.add('error');
@@ -262,6 +364,7 @@ function savePage() {
 function scheduleSave() {
   clearTimeout(saveTimer);
   storeDraft();
+  if (conflictActive) return;
   saveTimer = setTimeout(savePage, SAVE_DEBOUNCE_DELAY);
 }
 
@@ -278,7 +381,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     .forEach((btn) => btn.classList.add('builder-btn'));
 
   builderDraftKey = 'builderDraft-' + window.builderPageId;
-  lastSavedTimestamp = window.builderLastModified || 0;
+  lastSavedTimestamp = (window.builderLastModified || 0) * 1000;
   const dragDropController = createDragDropController({
     palette,
     canvas,
@@ -303,13 +406,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!data) return false;
     const timestamp = Number(data.timestamp) || 0;
     if (timestamp <= lastSavedTimestamp) return false;
+    const revision =
+      typeof data.revision === 'string' && data.revision !== ''
+        ? data.revision
+        : draftRevision;
+    if (revision) {
+      setDraftRevision(revision);
+    }
     if (data.schema && typeof data.schema === 'object') {
       await renderCanvasFromSchema(canvas, data.schema, rendererOptions);
       lastSavedTimestamp = timestamp;
       if (persistLocal) {
         localStorage.setItem(
           builderDraftKey,
-          JSON.stringify({ schema: data.schema, timestamp })
+          JSON.stringify({ schema: data.schema, timestamp, revision: draftRevision })
         );
       }
       return true;
@@ -322,7 +432,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (schema && schema.blocks) {
         localStorage.setItem(
           builderDraftKey,
-          JSON.stringify({ schema, timestamp })
+          JSON.stringify({ schema, timestamp, revision: draftRevision })
         );
       }
       return true;
@@ -349,6 +459,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const decoded = decodeDraftContent(serverDraft.content);
       if (!decoded) return;
       decoded.timestamp = serverDraft.timestamp || decoded.timestamp;
+      if (typeof serverDraft.revision === 'string') {
+        decoded.revision = serverDraft.revision;
+      }
       await applyDraftData(decoded, { persistLocal: true });
     } catch (e) {}
   })();
@@ -467,19 +580,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             const entries = data.history
               .slice()
               .sort((a, b) => b.time - a.time);
+            setHistoryEntriesCache(
+              entries.map((entry) => Object.assign({}, entry))
+            );
             entries.forEach((h) => {
               const li = document.createElement('li');
               const d = new Date(h.time * 1000);
               const action = h.action ? ' - ' + h.action : '';
               li.textContent = d.toLocaleString() + ' - ' + h.user + action;
+              if (h.revision) {
+                li.dataset.revision = h.revision;
+                li.title = 'Revision ' + h.revision;
+              }
               ul.appendChild(li);
             });
             cont.appendChild(ul);
           } else {
+            setHistoryEntriesCache([]);
             cont.textContent = 'No history yet.';
           }
         })
         .catch(() => {
+          setHistoryEntriesCache([]);
           const cont = historyPanel.querySelector('.history-content');
           cont.textContent = 'Error loading history.';
         });
