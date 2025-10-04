@@ -25,6 +25,10 @@ let historyEntries = [];
 let conflictActive = false;
 let conflictPromptShown = false;
 let historyApi = null;
+let linkCheckWorker = null;
+let linkWarningPanel = null;
+let latestLinkCheckJobId = 0;
+let linkCheckJobSeq = 0;
 // Delay before auto-saving after a change. A longer delay prevents rapid
 // successive saves while the user is still actively editing.
 const SAVE_DEBOUNCE_DELAY = 1000;
@@ -53,6 +57,108 @@ function setHistoryEntriesCache(entries = []) {
 setPageRevision(pageRevision);
 setDraftRevision(draftRevision);
 setHistoryEntriesCache(historyEntries);
+
+function initLinkCheckWorker() {
+  if (linkCheckWorker || typeof window === 'undefined' || typeof Worker === 'undefined') {
+    return;
+  }
+  try {
+    linkCheckWorker = new Worker(new URL('./modules/link-check-worker.js', import.meta.url), {
+      type: 'module',
+    });
+    linkCheckWorker.addEventListener('message', handleLinkCheckMessage);
+    linkCheckWorker.addEventListener('error', (event) => {
+      console.error('Link check worker error', event);
+    });
+  } catch (error) {
+    console.warn('Link check worker unavailable', error);
+    linkCheckWorker = null;
+  }
+}
+
+function queueLinkCheck(html) {
+  if (!linkCheckWorker) return 0;
+  const jobId = ++linkCheckJobSeq;
+  latestLinkCheckJobId = jobId;
+  try {
+    linkCheckWorker.postMessage({
+      type: 'checkLinks',
+      html,
+      baseUrl: typeof window !== 'undefined' ? window.location.href : '',
+      jobId,
+    });
+  } catch (error) {
+    console.error('Unable to start link check', error);
+    return 0;
+  }
+  return jobId;
+}
+
+function displayLinkWarnings(warnings = []) {
+  if (!linkWarningPanel) return;
+  linkWarningPanel.innerHTML = '';
+  if (!warnings.length) {
+    linkWarningPanel.classList.add('hidden');
+    return;
+  }
+  const title = document.createElement('div');
+  title.className = 'link-warning-title';
+  title.textContent = 'Link warnings';
+  const list = document.createElement('ul');
+  list.className = 'link-warning-list';
+  warnings.forEach((warning) => {
+    const item = document.createElement('li');
+    item.textContent = warning;
+    list.appendChild(item);
+  });
+  linkWarningPanel.appendChild(title);
+  linkWarningPanel.appendChild(list);
+  linkWarningPanel.classList.remove('hidden');
+}
+
+function handleLinkCheckMessage(event) {
+  const data = event.data || {};
+  if (data.type !== 'linkCheckResult') return;
+  const { warnings = [], jobId, error } = data;
+  if (jobId && jobId !== latestLinkCheckJobId) {
+    return;
+  }
+  const statusEl = document.getElementById('saveStatus');
+  if (!statusEl) return;
+
+  if (error) {
+    statusEl.textContent = 'Link check failed';
+    statusEl.classList.add('error');
+    statusEl.classList.remove('saving');
+    displayLinkWarnings([]);
+    setTimeout(() => {
+      if (statusEl.textContent === 'Link check failed') {
+        statusEl.textContent = '';
+        statusEl.classList.remove('error');
+      }
+    }, 4000);
+    return;
+  }
+
+  if (!warnings.length) {
+    if (statusEl.textContent === '' || statusEl.textContent === 'Saved') {
+      statusEl.textContent = 'Links look good';
+      setTimeout(() => {
+        if (statusEl.textContent === 'Links look good') statusEl.textContent = '';
+      }, 2500);
+    }
+    displayLinkWarnings([]);
+    return;
+  }
+
+  statusEl.textContent = 'Link issues found';
+  statusEl.classList.add('error');
+  statusEl.classList.remove('saving');
+  if (warnings.length) {
+    console.warn('Link issues found:', warnings.join('\n'));
+  }
+  displayLinkWarnings(warnings);
+}
 
 function handleConflict(source = 'content', message = '') {
   conflictActive = true;
@@ -246,33 +352,6 @@ function toggleFavorite(file) {
 
 let saveTimer;
 
-function checkLinks(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const warnings = [];
-  const checks = [];
-
-  const check = (url, type) => {
-    if (!url) return;
-    try {
-      const full = new URL(url, window.location.href).href;
-      checks.push(
-        fetch(full, { method: 'HEAD' })
-          .then((r) => {
-            if (!r.ok) warnings.push(`${type} ${url} returned ${r.status}`);
-          })
-          .catch(() => warnings.push(`${type} ${url} unreachable`))
-      );
-    } catch (e) {
-      warnings.push(`${type} ${url} invalid`);
-    }
-  };
-
-  doc.querySelectorAll('a[href]').forEach((el) => check(el.getAttribute('href'), 'Link'));
-  doc.querySelectorAll('img[src]').forEach((el) => check(el.getAttribute('src'), 'Image'));
-
-  return Promise.all(checks).then(() => warnings);
-}
-
 function savePage() {
   if (!canvas) return;
   if (conflictActive) {
@@ -282,84 +361,69 @@ function savePage() {
   const statusEl = document.getElementById('saveStatus');
   const html = canvas.innerHTML;
 
+  const linkJobId = queueLinkCheck(html);
+  displayLinkWarnings([]);
+
   if (statusEl) {
-    statusEl.textContent = 'Checking links...';
+    statusEl.dataset.linkJobId = linkJobId ? String(linkJobId) : '';
+    statusEl.textContent = linkJobId ? 'Saving... (link check running)' : 'Saving...';
     statusEl.classList.add('saving');
     statusEl.classList.remove('error');
   }
 
-  checkLinks(html).then((warnings) => {
-    if (warnings.length) {
-      console.warn('Link issues found:', warnings.join('\n'));
+  const fd = new FormData();
+  fd.append('id', window.builderPageId);
+  fd.append('content', html);
+  fd.append('revision', pageRevision || '');
+
+  fetch(window.builderBase + '/liveed/save-content.php', {
+    method: 'POST',
+    body: fd,
+  })
+    .then((response) => {
+      if (response.status === 409) {
+        return response
+          .json()
+          .catch(() => ({}))
+          .then((payload) => {
+            handleConflict('content', payload.error);
+            throw new Error('conflict');
+          });
+      }
+      if (!response.ok) throw new Error('Save failed');
+      return response.json().catch(() => ({}));
+    })
+    .then((payload) => {
+      localStorage.removeItem(builderDraftKey);
+      setDraftRevision('');
+      const serverTimestamp = payload && payload.timestamp ? Number(payload.timestamp) : null;
+      const serverMs = serverTimestamp ? serverTimestamp * 1000 : Date.now();
+      lastSavedTimestamp = serverMs;
+      if (payload && payload.revision) {
+        setPageRevision(payload.revision);
+      }
       if (statusEl) {
-        statusEl.textContent = 'Link issues found';
+        statusEl.textContent = 'Saved';
+        statusEl.classList.remove('saving');
+        statusEl.classList.remove('error');
+      }
+      const lastSavedEl = document.getElementById('lastSavedTime');
+      if (lastSavedEl) {
+        const displayDate = new Date(serverMs);
+        lastSavedEl.textContent = 'Last saved: ' + displayDate.toLocaleString();
+      }
+      setTimeout(() => {
+        if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
+      }, 2000);
+    })
+    .catch((error) => {
+      if (error && error.message === 'conflict') return;
+      if (statusEl) {
+        statusEl.textContent = 'Error saving';
         statusEl.classList.add('error');
         statusEl.classList.remove('saving');
-        setTimeout(() => {
-          if (statusEl.textContent === 'Link issues found') {
-            statusEl.textContent = '';
-            statusEl.classList.remove('error');
-          }
-        }, 4000);
       }
-    }
-
-    const fd = new FormData();
-    fd.append('id', window.builderPageId);
-    fd.append('content', html);
-    fd.append('revision', pageRevision || '');
-
-    if (statusEl) statusEl.textContent = 'Saving...';
-
-    fetch(window.builderBase + '/liveed/save-content.php', {
-      method: 'POST',
-      body: fd,
-    })
-      .then((response) => {
-        if (response.status === 409) {
-          return response
-            .json()
-            .catch(() => ({}))
-            .then((payload) => {
-              handleConflict('content', payload.error);
-              throw new Error('conflict');
-            });
-        }
-        if (!response.ok) throw new Error('Save failed');
-        return response.json().catch(() => ({}));
-      })
-      .then((payload) => {
-        localStorage.removeItem(builderDraftKey);
-        setDraftRevision('');
-        const serverTimestamp = payload && payload.timestamp ? Number(payload.timestamp) : null;
-        const serverMs = serverTimestamp ? serverTimestamp * 1000 : Date.now();
-        lastSavedTimestamp = serverMs;
-        if (payload && payload.revision) {
-          setPageRevision(payload.revision);
-        }
-        if (statusEl) {
-          statusEl.textContent = 'Saved';
-          statusEl.classList.remove('saving');
-          statusEl.classList.remove('error');
-        }
-        const lastSavedEl = document.getElementById('lastSavedTime');
-        if (lastSavedEl) {
-          const displayDate = new Date(serverMs);
-          lastSavedEl.textContent = 'Last saved: ' + displayDate.toLocaleString();
-        }
-        setTimeout(() => {
-          if (statusEl && statusEl.textContent === 'Saved') statusEl.textContent = '';
-        }, 2000);
-      })
-      .catch((error) => {
-        if (error && error.message === 'conflict') return;
-        if (statusEl) {
-          statusEl.textContent = 'Error saving';
-          statusEl.classList.add('error');
-          statusEl.classList.remove('saving');
-        }
-      });
-  });
+    });
 }
 
 function scheduleSave() {
@@ -370,12 +434,21 @@ function scheduleSave() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initLinkCheckWorker();
   canvas = document.getElementById('canvas');
   const palette = (paletteEl = document.querySelector('.block-palette'));
   const settingsPanel = document.getElementById('settingsPanel');
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
   const paletteHeader = palette ? palette.querySelector('.builder-header') : null;
+  const statusEl = document.getElementById('saveStatus');
+
+  if (statusEl && !linkWarningPanel) {
+    linkWarningPanel = document.createElement('div');
+    linkWarningPanel.id = 'linkWarningPanel';
+    linkWarningPanel.className = 'link-warning-panel hidden';
+    statusEl.insertAdjacentElement('afterend', linkWarningPanel);
+  }
 
   document
     .querySelectorAll('.history-toolbar button')
