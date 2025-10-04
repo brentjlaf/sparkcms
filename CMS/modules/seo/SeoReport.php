@@ -275,8 +275,13 @@ class SeoReport
 
         $linkTags = $doc->getElementsByTagName('link');
         foreach ($linkTags as $link) {
-            $rel = strtolower(trim((string)$link->getAttribute('rel')));
-            if ($rel === 'canonical' && trim((string)$link->getAttribute('href')) !== '') {
+            $relRaw = strtolower(trim((string)$link->getAttribute('rel')));
+            if ($relRaw === '') {
+                continue;
+            }
+
+            $relTokens = preg_split('/\s+/', $relRaw) ?: [];
+            if (in_array('canonical', $relTokens, true) && trim((string)$link->getAttribute('href')) !== '') {
                 $metrics['hasCanonical'] = true;
             }
         }
