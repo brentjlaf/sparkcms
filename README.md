@@ -4,11 +4,11 @@ Spark CMS is a lightweight PHP content management system focused on delivering a
 
 ## Feature Highlights
 
-- **Modular administration area.** Each capability (pages, blog, analytics, media library, SEO, etc.) lives in its own module under `CMS/modules`, making it easy to maintain or disable features individually.
+- **Modular administration area.** Each capability (pages, blog, analytics, media library, etc.) lives in its own module under `CMS/modules`, making it easy to maintain or disable features individually.
 - **Drag-and-drop Live Editor.** Content authors can launch the builder at `/liveed/builder.php?id=<pageId>` to rearrange blocks, preview responsive breakpoints, review page history, and manage media without writing HTML.
 - **Flat-file persistence.** Site content, users, and configuration are stored as JSON documents in `CMS/data`, making deployments simple and version-control friendly.
 - **Theme-driven presentation.** Public pages render via `theme/templates` templates with assets in `theme/css`, `theme/js`, and `theme/images`. A simple bundler script (`bundle.php`) combines core CSS/JS for production.
-- **Built-in marketing tooling.** Modules ship for analytics reporting, SEO audits, speed checks, accessibility scoring, forms, search, and more so site operators can monitor performance from the dashboard.
+- **Built-in marketing tooling.** Modules ship for analytics reporting, speed checks, accessibility scoring, forms, search, and more so site operators can monitor performance from the dashboard.
 - **PHP-first stack.** Spark CMS runs anywhere PHP 8.0+ is available—Apache, Nginx, or the built-in PHP server—and does not require Composer or external databases.
 
 ## System Architecture
@@ -78,7 +78,7 @@ Spark CMS stores site configuration and content in JSON files located under `CMS
 - `settings.json` – Site-wide settings such as homepage slug, theme options, feature toggles
 - `users.json` – Admin user accounts and hashed passwords
 - `events.json`, `calendar_events.json`, `calendar_categories.json` – Data powering the Events and Calendar modules
-- `speed_snapshot.json`, `analytics`/`seo` reports – Cached marketing metrics
+- `speed_snapshot.json`, analytics reports – Cached marketing metrics
 
 The helper functions in `CMS/includes/data.php` provide cached read/write access with automatic fallbacks for missing files. Backups can be taken by copying the `CMS/data` directory; for production deployments consider storing this directory outside your web root and symlinking it back into the project.
 
@@ -106,7 +106,6 @@ The helper functions in `CMS/includes/data.php` provide cached read/write access
 | **menus** | Constructs navigation menus and exposes drag-and-drop ordering.
 | **pages** | Manages static pages, integrates with revision history and the Live Editor.
 | **search** | Indexes pages/posts, provides search suggestions, and tunes relevance settings.
-| **seo** | Runs SEO reports, flagging metadata gaps and providing recommendations.
 | **settings** | Houses global configuration, feature toggles, and theme options.
 | **sitemap** | Generates XML sitemaps and pings search engines when updated.
 | **speed** | Captures performance budgets and Lighthouse-like insights for pages.
@@ -151,7 +150,7 @@ These scripts throw a `RuntimeException` if an assertion fails. They are designe
 - Serve the project behind HTTPS and configure your web server to deny direct access to `CMS/data` and other sensitive directories.
 - Regularly back up `CMS/data`, especially `users.json`, `forms`, and media uploads. Consider offloading uploads to cloud storage for high-traffic sites.
 - Use strong passwords for admin accounts and rotate them periodically. Two-factor authentication is not included by default but can be added via the Users module.
-- Monitor performance using the built-in Speed and Analytics modules, and address SEO/accessibility issues highlighted in their dashboards.
+- Monitor performance using the built-in Speed and Analytics modules, and address accessibility issues highlighted in their dashboards.
 
 ## License
 

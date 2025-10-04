@@ -159,7 +159,6 @@ $(function(){
         speed: { icon: 'fa-solid fa-gauge-high', className: 'speed' },
         events: { icon: 'fa-solid fa-ticket', className: 'events' },
         calendar: { icon: 'fa-solid fa-calendar-days', className: 'calendar' },
-        seo: { icon: 'fa-solid fa-bullseye', className: 'seo' },
         accessibility: { icon: 'fa-solid fa-universal-access', className: 'accessibility' },
         default: { icon: 'fa-solid fa-circle-info', className: 'settings' }
     };
