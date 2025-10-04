@@ -386,6 +386,7 @@
         }
         $issuesList.html(issuesMarkup.join(''));
 
+        $overlay.removeAttr('hidden');
         $overlay.addClass('is-visible');
         $overlay.attr('aria-hidden', 'false');
         $overlay.data('active-slug', page.slug || '');
@@ -408,6 +409,7 @@
         }
         $modal.removeClass('is-visible');
         $modal.attr('aria-hidden', 'true');
+        $modal.attr('hidden', 'hidden');
         $(document).off('keydown.seoModal');
         var returnFocus = $modal.data('return-focus');
         if (returnFocus && typeof returnFocus.focus === 'function') {
