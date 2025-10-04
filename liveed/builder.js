@@ -8,7 +8,7 @@ import {
   serializeBlock,
   decodeDraftContent,
 } from './modules/state.js';
-import { initUndoRedo } from './modules/undoRedo.js';
+import { initUndoRedo, getBlockPath, getPathLocation } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { createMediaPicker } from './modules/mediaPicker.js';
 import { executeScripts } from "./modules/executeScripts.js";
@@ -24,6 +24,7 @@ let draftRevision = '';
 let historyEntries = [];
 let conflictActive = false;
 let conflictPromptShown = false;
+let historyApi = null;
 // Delay before auto-saving after a change. A longer delay prevents rapid
 // successive saves while the user is still actively editing.
 const SAVE_DEBOUNCE_DELAY = 1000;
@@ -416,6 +417,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (data.schema && typeof data.schema === 'object') {
       await renderCanvasFromSchema(canvas, data.schema, rendererOptions);
       lastSavedTimestamp = timestamp;
+      if (historyApi) historyApi.resetFromSchema(data.schema);
       if (persistLocal) {
         localStorage.setItem(
           builderDraftKey,
@@ -435,6 +437,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           JSON.stringify({ schema, timestamp, revision: draftRevision })
         );
       }
+      if (historyApi && schema) historyApi.resetFromSchema(schema);
       return true;
     }
     return false;
@@ -545,7 +548,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  const history = initUndoRedo({ canvas, onChange: scheduleSave, maxHistory: 15 });
+  const history = initUndoRedo({
+    canvas,
+    rendererOptions,
+    onChange: scheduleSave,
+    maxHistory: 15,
+  });
+  historyApi = history;
+  dragDropController.setOptions({ recordOperation: history.recordOperation });
   const undoBtn = palette.querySelector('.undo-btn');
   const redoBtn = palette.querySelector('.redo-btn');
   const historyBtn = palette.querySelector('.page-history-btn');
@@ -646,6 +656,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('canvasUpdated', updateCanvasPlaceholder);
   document.addEventListener('canvasUpdated', scheduleSave);
 
+  document.addEventListener('blockSettingsApplied', (event) => {
+    if (!history || !history.recordOperation) return;
+    const detail = event && event.detail ? event.detail : {};
+    const block = detail.block;
+    if (!block || !canvas.contains(block)) return;
+    const path = getBlockPath(block, canvas);
+    if (!path || !path.length) return;
+    const schema = serializeBlock(block);
+    if (!schema) return;
+    history.recordOperation({ type: 'replace', path, block: schema });
+  });
+
   canvas.addEventListener('click', (e) => {
     if (builderEl.classList.contains('view-mode')) return;
     const block = e.target.closest('.block-wrapper');
@@ -660,15 +682,32 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (!clone) return;
           clone.classList.remove('selected');
           block.after(clone);
+          if (history && history.recordOperation) {
+            const path = getBlockPath(clone, canvas);
+            if (path && path.length) {
+              const location = getPathLocation(path);
+              history.recordOperation({
+                type: 'insert',
+                parentPath: location.parentPath,
+                areaIndex: location.areaIndex,
+                index: location.index,
+                block: serializeBlock(clone),
+              });
+            }
+          }
           document.dispatchEvent(new Event('canvasUpdated'));
         })
         .catch(() => {});
     } else if (e.target.closest('.block-controls .delete')) {
       confirmDelete('Delete this block?').then((ok) => {
         if (ok) {
+          const path = history && history.recordOperation ? getBlockPath(block, canvas) : null;
           block.remove();
           updateCanvasPlaceholder();
           scheduleSave();
+          if (history && history.recordOperation && path && path.length) {
+            history.recordOperation({ type: 'delete', path });
+          }
         }
       });
     }

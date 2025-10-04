@@ -417,6 +417,9 @@ export function initSettings(options = {}) {
         const template = settingsPanel.template;
         if (block && validateSettings()) {
           applySettings(template, block);
+          document.dispatchEvent(
+            new CustomEvent('blockSettingsApplied', { detail: { block } })
+          );
           settingsPanel.classList.remove('open');
           settingsPanel.block = null;
           settingsPanel.template = null;
