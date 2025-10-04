@@ -1,25 +1,5 @@
 // File: dragDrop.js
-import { ensureBlockState } from './state.js';
-import { executeScripts } from "./executeScripts.js";
-
-const templateCache = new Map();
-
-function loadTemplate(basePath, file) {
-  const cached = templateCache.get(file);
-  if (cached) {
-    return typeof cached === 'string' ? Promise.resolve(cached) : cached;
-  }
-  const p = fetch(
-    basePath + '/liveed/load-block.php?file=' + encodeURIComponent(file)
-  )
-    .then((r) => r.text())
-    .then((html) => {
-      templateCache.set(file, html);
-      return html;
-    });
-  templateCache.set(file, p);
-  return p;
-}
+import { ensureBlockState, createBlockElementFromSchema } from './state.js';
 
 // caching block control markup avoids rebuilding the DOM for each block
 const controlsTemplate = `
@@ -243,33 +223,21 @@ export function createDragDropController(options = {}) {
     if (state.fromPalette && state.dragSource) {
       const file = state.dragSource.dataset.file;
       if (file) {
-        loadTemplate(state.basePath, file).then((html) => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'block-wrapper';
-          wrapper.dataset.template = file;
-          const { ts, cleaned } = extractTemplateSetting(html);
-          wrapper.dataset.original = cleaned;
-          if (ts) {
-            wrapper.dataset.ts = btoa(ts);
-          }
-          const base = file.replace(/\.php$/, '');
-          const parts = base.split('.');
-          const group = parts.shift();
-          const raw = parts.join(' ') || group;
-          const label = raw
-            .replace(/[-_]/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase());
-          wrapper.setAttribute('data-tpl-tooltip', label);
-          wrapper.innerHTML = cleaned;
-          executeScripts(wrapper);
-          if (state.applyStoredSettings) state.applyStoredSettings(wrapper);
-          addBlockControls(wrapper);
-          if (after == null) area.appendChild(wrapper);
-          else area.insertBefore(wrapper, after);
+        const schema = { template: file, settings: {}, areas: [] };
+        createBlockElementFromSchema(schema, {
+          basePath: state.basePath,
+          applyStoredSettings: state.applyStoredSettings,
+          addBlockControls,
+        })
+          .then((wrapper) => {
+            if (!wrapper) return;
+            if (after == null) area.appendChild(wrapper);
+            else area.insertBefore(wrapper, after);
 
-          if (state.openSettings) state.openSettings(wrapper);
-          document.dispatchEvent(new Event('canvasUpdated'));
-        });
+            if (state.openSettings) state.openSettings(wrapper);
+            document.dispatchEvent(new Event('canvasUpdated'));
+          })
+          .catch(() => {});
       }
     } else if (state.dragSource) {
       state.dragSource.classList.remove('dragging');

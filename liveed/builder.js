@@ -1,7 +1,13 @@
 // File: builder.js
 import { createDragDropController } from './modules/dragDrop.js';
 import { initSettings, openSettings, applyStoredSettings, confirmDelete } from './modules/settings.js';
-import { ensureBlockState, getSettings, setSetting } from './modules/state.js';
+import {
+  serializeCanvas,
+  renderCanvasFromSchema,
+  createBlockElementFromSchema,
+  serializeBlock,
+  decodeDraftContent,
+} from './modules/state.js';
 import { initUndoRedo } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { createMediaPicker } from './modules/mediaPicker.js';
@@ -19,13 +25,13 @@ const SAVE_DEBOUNCE_DELAY = 1000;
 function storeDraft() {
   if (!canvas) return;
   const data = {
-    html: canvas.innerHTML,
+    schema: serializeCanvas(canvas),
     timestamp: Date.now(),
   };
   localStorage.setItem(builderDraftKey, JSON.stringify(data));
   const fd = new FormData();
   fd.append('id', window.builderPageId);
-  fd.append('content', data.html);
+  fd.append('content', JSON.stringify(data));
   fd.append('timestamp', data.timestamp);
   fetch(window.builderBase + '/liveed/save-draft.php', {
     method: 'POST',
@@ -259,7 +265,7 @@ function scheduleSave() {
   saveTimer = setTimeout(savePage, SAVE_DEBOUNCE_DELAY);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   canvas = document.getElementById('canvas');
   const palette = (paletteEl = document.querySelector('.block-palette'));
   const settingsPanel = document.getElementById('settingsPanel');
@@ -273,33 +279,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
   builderDraftKey = 'builderDraft-' + window.builderPageId;
   lastSavedTimestamp = window.builderLastModified || 0;
-  const draft = localStorage.getItem(builderDraftKey);
-  if (draft) {
-    try {
-      const data = JSON.parse(draft);
-      if (data.timestamp > lastSavedTimestamp && data.html) {
-        canvas.innerHTML = data.html;
-        lastSavedTimestamp = data.timestamp;
-      } else {
-        localStorage.removeItem(builderDraftKey);
+  const dragDropController = createDragDropController({
+    palette,
+    canvas,
+    basePath: window.builderBase,
+    loggedIn: true,
+    openSettings,
+    applyStoredSettings,
+  });
+  dragDropController.init();
+  const { addBlockControls } = dragDropController;
+
+  const rendererOptions = {
+    basePath: window.builderBase,
+    applyStoredSettings,
+    addBlockControls,
+  };
+
+  const applyDraftData = async (draft, { persistLocal = false } = {}) => {
+    if (!draft) return false;
+    const data =
+      typeof draft === 'string' ? decodeDraftContent(draft) : draft;
+    if (!data) return false;
+    const timestamp = Number(data.timestamp) || 0;
+    if (timestamp <= lastSavedTimestamp) return false;
+    if (data.schema && typeof data.schema === 'object') {
+      await renderCanvasFromSchema(canvas, data.schema, rendererOptions);
+      lastSavedTimestamp = timestamp;
+      if (persistLocal) {
+        localStorage.setItem(
+          builderDraftKey,
+          JSON.stringify({ schema: data.schema, timestamp })
+        );
       }
-    } catch (e) {
+      return true;
+    }
+    if (data.html) {
+      canvas.innerHTML = data.html;
+      lastSavedTimestamp = timestamp;
+      canvas.querySelectorAll('.block-wrapper').forEach(addBlockControls);
+      const schema = serializeCanvas(canvas);
+      if (schema && schema.blocks) {
+        localStorage.setItem(
+          builderDraftKey,
+          JSON.stringify({ schema, timestamp })
+        );
+      }
+      return true;
+    }
+    return false;
+  };
+
+  const localDraft = localStorage.getItem(builderDraftKey);
+  if (localDraft) {
+    const applied = await applyDraftData(localDraft);
+    if (!applied) {
       localStorage.removeItem(builderDraftKey);
     }
   }
 
-  fetch(
-    window.builderBase + '/liveed/load-draft.php?id=' + window.builderPageId
-  )
-    .then((r) => (r.ok ? r.json() : null))
-    .then((serverDraft) => {
-      if (serverDraft && serverDraft.timestamp > lastSavedTimestamp) {
-        canvas.innerHTML = serverDraft.content;
-        lastSavedTimestamp = serverDraft.timestamp;
-        localStorage.setItem(builderDraftKey, JSON.stringify(serverDraft));
-      }
-    })
-    .catch(() => {});
+  (async () => {
+    try {
+      const response = await fetch(
+        window.builderBase + '/liveed/load-draft.php?id=' + window.builderPageId
+      );
+      if (!response.ok) return;
+      const serverDraft = await response.json();
+      if (!serverDraft) return;
+      const decoded = decodeDraftContent(serverDraft.content);
+      if (!decoded) return;
+      decoded.timestamp = serverDraft.timestamp || decoded.timestamp;
+      await applyDraftData(decoded, { persistLocal: true });
+    } catch (e) {}
+  })();
 
   // Restore palette position
   const storedPos = palette ? localStorage.getItem('palettePosition') : null;
@@ -360,18 +412,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   favorites = JSON.parse(localStorage.getItem('favoriteBlocks') || '[]');
-
-
-  const dragDropController = createDragDropController({
-    palette,
-    canvas,
-    basePath: window.builderBase,
-    loggedIn: true,
-    openSettings,
-    applyStoredSettings,
-  });
-  dragDropController.init();
-  const { addBlockControls } = dragDropController;
 
   initSettings({ canvas, settingsPanel, savePage: scheduleSave, addBlockControls });
 
@@ -491,19 +531,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.closest('.block-controls .edit')) {
       openSettings(block);
     } else if (e.target.closest('.block-controls .duplicate')) {
-      const clone = block.cloneNode(true);
-      clone.classList.remove('selected');
-      delete clone.dataset.blockId;
-      block.after(clone);
-      ensureBlockState(clone);
-      const settings = getSettings(block);
-      for (const key in settings) {
-        setSetting(clone, key, settings[key]);
-      }
-      addBlockControls(clone);
-      applyStoredSettings(clone);
-      executeScripts(clone);
-      document.dispatchEvent(new Event('canvasUpdated'));
+      const schema = serializeBlock(block);
+      if (!schema) return;
+      createBlockElementFromSchema(schema, rendererOptions)
+        .then((clone) => {
+          if (!clone) return;
+          clone.classList.remove('selected');
+          block.after(clone);
+          document.dispatchEvent(new Event('canvasUpdated'));
+        })
+        .catch(() => {});
     } else if (e.target.closest('.block-controls .delete')) {
       confirmDelete('Delete this block?').then((ok) => {
         if (ok) {
