@@ -16,6 +16,26 @@ $bodyAttributes = isset($bodyAttributes) ? trim($bodyAttributes) : '';
         <!-- Metas & Morweb CMS Assets -->
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <?php
+            $pageData = isset($page) && is_array($page) ? $page : [];
+            $pageTitle = trim((string)($pageData['meta_title'] ?? ''));
+            if ($pageTitle === '') {
+                $pageTitle = trim((string)($pageData['title'] ?? ''));
+            }
+            if ($pageTitle === '') {
+                $pageTitle = $settings['site_name'] ?? 'SparkCMS';
+            }
+
+            $metaDescription = trim((string)($pageData['meta_description'] ?? ''));
+            $canonicalUrl = trim((string)($pageData['canonical_url'] ?? ''));
+        ?>
+        <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></title>
+        <?php if ($metaDescription !== ''): ?>
+        <meta name="description" content="<?php echo htmlspecialchars($metaDescription, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+        <?php endif; ?>
+        <?php if ($canonicalUrl !== ''): ?>
+        <link rel="canonical" href="<?php echo htmlspecialchars($canonicalUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+        <?php endif; ?>
 
         <!-- Favicon -->
         <link rel="shortcut icon" href="<?php echo htmlspecialchars($favicon); ?>" type="image/x-icon"/>
