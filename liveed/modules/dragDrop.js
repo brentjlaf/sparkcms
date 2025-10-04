@@ -1,6 +1,7 @@
 // File: dragDrop.js
 import { ensureBlockState, createBlockElementFromSchema, serializeBlock } from './state.js';
 import { getBlockPath, getPathLocation } from './undoRedo.js';
+import { executeScripts } from './executeScripts.js';
 
 // caching block control markup avoids rebuilding the DOM for each block
 const controlsTemplate = `
@@ -240,6 +241,8 @@ export function createDragDropController(options = {}) {
             if (!wrapper) return;
             if (after == null) area.appendChild(wrapper);
             else area.insertBefore(wrapper, after);
+
+            executeScripts(wrapper);
 
             if (typeof state.recordOperation === 'function') {
               const path = getBlockPath(wrapper, state.canvas);

@@ -11,7 +11,7 @@ import {
 import { initUndoRedo, getBlockPath, getPathLocation } from './modules/undoRedo.js';
 import { initWysiwyg } from './modules/wysiwyg.js';
 import { createMediaPicker } from './modules/mediaPicker.js';
-import { executeScripts } from "./modules/executeScripts.js";
+import { executeScripts } from './modules/executeScripts.js';
 
 let allBlockFiles = [];
 let favorites = [];
@@ -682,6 +682,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (!clone) return;
           clone.classList.remove('selected');
           block.after(clone);
+          executeScripts(clone);
           if (history && history.recordOperation) {
             const path = getBlockPath(clone, canvas);
             if (path && path.length) {
