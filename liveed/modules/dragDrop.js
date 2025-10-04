@@ -1,5 +1,6 @@
 // File: dragDrop.js
-import { ensureBlockState, createBlockElementFromSchema } from './state.js';
+import { ensureBlockState, createBlockElementFromSchema, serializeBlock } from './state.js';
+import { getBlockPath, getPathLocation } from './undoRedo.js';
 
 // caching block control markup avoids rebuilding the DOM for each block
 const controlsTemplate = `
@@ -73,9 +74,11 @@ export function createDragDropController(options = {}) {
     openSettings: null,
     applyStoredSettings: null,
     dragSource: null,
+    dragSourcePath: null,
     fromPalette: false,
     placeholder: createPlaceholder(),
     insertionIndicator: createInsertionIndicator(),
+    recordOperation: null,
   };
 
   function setOptions(opts = {}) {
@@ -86,6 +89,8 @@ export function createDragDropController(options = {}) {
     if ('openSettings' in opts) state.openSettings = opts.openSettings;
     if ('applyStoredSettings' in opts)
       state.applyStoredSettings = opts.applyStoredSettings;
+    if ('recordOperation' in opts)
+      state.recordOperation = typeof opts.recordOperation === 'function' ? opts.recordOperation : null;
   }
 
   setOptions(options);
@@ -95,6 +100,7 @@ export function createDragDropController(options = {}) {
     if (item) {
       state.dragSource = item;
       state.fromPalette = true;
+      state.dragSourcePath = null;
       e.dataTransfer.setData('text/plain', item.dataset.file || '');
       e.dataTransfer.effectAllowed = 'copy';
       item.classList.add('dragging');
@@ -117,6 +123,7 @@ export function createDragDropController(options = {}) {
       state.fromPalette = false;
       if (!state.dragSource) return;
       state.dragSource.classList.add('dragging');
+      state.dragSourcePath = getBlockPath(state.dragSource, state.canvas);
       e.dataTransfer.setData('text/plain', 'reorder');
       e.dataTransfer.effectAllowed = 'move';
 
@@ -234,6 +241,20 @@ export function createDragDropController(options = {}) {
             if (after == null) area.appendChild(wrapper);
             else area.insertBefore(wrapper, after);
 
+            if (typeof state.recordOperation === 'function') {
+              const path = getBlockPath(wrapper, state.canvas);
+              if (path && path.length) {
+                const location = getPathLocation(path);
+                state.recordOperation({
+                  type: 'insert',
+                  parentPath: location.parentPath,
+                  areaIndex: location.areaIndex,
+                  index: location.index,
+                  block: serializeBlock(wrapper),
+                });
+              }
+            }
+
             if (state.openSettings) state.openSettings(wrapper);
             document.dispatchEvent(new Event('canvasUpdated'));
           })
@@ -244,12 +265,33 @@ export function createDragDropController(options = {}) {
       if (after == null) area.appendChild(state.dragSource);
       else area.insertBefore(state.dragSource, after);
 
+      if (
+        typeof state.recordOperation === 'function' &&
+        Array.isArray(state.dragSourcePath) &&
+        state.dragSourcePath.length
+      ) {
+        const newPath = getBlockPath(state.dragSource, state.canvas);
+        const oldPath = state.dragSourcePath.slice();
+        const samePath =
+          Array.isArray(newPath) &&
+          newPath.length === oldPath.length &&
+          newPath.every((value, index) => value === oldPath[index]);
+        if (Array.isArray(newPath) && newPath.length && !samePath) {
+          state.recordOperation({
+            type: 'move',
+            fromPath: oldPath,
+            toPath: newPath.slice(),
+          });
+        }
+      }
+
       document.dispatchEvent(new Event('canvasUpdated'));
     }
     state.placeholder.remove();
     state.insertionIndicator.remove();
     area.classList.remove('drag-over');
     state.dragSource = null;
+    state.dragSourcePath = null;
     state.fromPalette = false;
   }
 
@@ -258,6 +300,7 @@ export function createDragDropController(options = {}) {
     state.insertionIndicator.remove();
     if (state.dragSource) state.dragSource.classList.remove('dragging');
     state.dragSource = null;
+    state.dragSourcePath = null;
   }
 
   function getDragAfterElement(container, y) {
