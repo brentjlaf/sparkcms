@@ -1,4 +1,5 @@
 // File: state.js
+import { sanitizeTemplateMarkup } from './sanitizer.js';
 const stateMap = new Map();
 let nextId = 1;
 const RESERVED_KEYS = new Set(['blockId', 'template', 'original', 'active', 'ts']);
@@ -92,8 +93,12 @@ async function loadTemplate(basePath = '', template) {
     .then((r) => r.text())
     .then((html) => {
       const parsed = extractTemplateSetting(html);
-      templateCache.set(template, parsed);
-      return parsed;
+      const sanitized = {
+        cleaned: sanitizeTemplateMarkup(parsed.cleaned),
+        ts: parsed.ts,
+      };
+      templateCache.set(template, sanitized);
+      return sanitized;
     })
     .catch((error) => {
       templateCache.delete(template);

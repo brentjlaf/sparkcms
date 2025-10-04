@@ -1,5 +1,6 @@
 // File: dragDrop.js
 import { ensureBlockState, createBlockElementFromSchema, serializeBlock } from './state.js';
+import { sanitizeTemplateMarkup, normalizeTemplateName } from './sanitizer.js';
 import { getBlockPath, getPathLocation } from './undoRedo.js';
 import { executeScripts } from './executeScripts.js';
 
@@ -77,10 +78,24 @@ export function createDragDropController(options = {}) {
     dragSource: null,
     dragSourcePath: null,
     fromPalette: false,
+    allowedTemplates: new Set(),
     placeholder: createPlaceholder(),
     insertionIndicator: createInsertionIndicator(),
     recordOperation: null,
   };
+
+  function refreshAllowedTemplates() {
+    state.allowedTemplates.clear();
+    if (!state.palette) return;
+    const items = state.palette.querySelectorAll('.block-item[data-file]');
+    items.forEach((item) => {
+      const normalized = normalizeTemplateName(item.dataset.file || '');
+      if (normalized) {
+        state.allowedTemplates.add(normalized);
+        item.dataset.file = normalized;
+      }
+    });
+  }
 
   function setOptions(opts = {}) {
     if ('palette' in opts) state.palette = opts.palette;
@@ -92,6 +107,7 @@ export function createDragDropController(options = {}) {
       state.applyStoredSettings = opts.applyStoredSettings;
     if ('recordOperation' in opts)
       state.recordOperation = typeof opts.recordOperation === 'function' ? opts.recordOperation : null;
+    if ('palette' in opts) refreshAllowedTemplates();
   }
 
   setOptions(options);
@@ -99,10 +115,14 @@ export function createDragDropController(options = {}) {
   function paletteDragStart(e) {
     const item = e.target.closest('.block-item');
     if (item) {
+      const normalized = normalizeTemplateName(item.dataset.file || '');
+      if (!normalized || !state.allowedTemplates.has(normalized)) {
+        return;
+      }
       state.dragSource = item;
       state.fromPalette = true;
       state.dragSourcePath = null;
-      e.dataTransfer.setData('text/plain', item.dataset.file || '');
+      e.dataTransfer.setData('text/plain', normalized);
       e.dataTransfer.effectAllowed = 'copy';
       item.classList.add('dragging');
 
@@ -167,13 +187,13 @@ export function createDragDropController(options = {}) {
     if (!block.dataset.original) {
       let html = block.innerHTML;
       const { ts, cleaned } = extractTemplateSetting(html);
-      block.dataset.original = cleaned;
+      block.dataset.original = sanitizeTemplateMarkup(cleaned);
       if (ts) {
         block.dataset.ts = btoa(ts);
       }
     } else {
       const { ts, cleaned } = extractTemplateSetting(block.dataset.original);
-      block.dataset.original = cleaned;
+      block.dataset.original = sanitizeTemplateMarkup(cleaned);
       if (ts && !block.dataset.ts) {
         block.dataset.ts = btoa(ts);
       }
@@ -229,8 +249,8 @@ export function createDragDropController(options = {}) {
     e.preventDefault();
     const after = getDragAfterElement(area, e.clientY);
     if (state.fromPalette && state.dragSource) {
-      const file = state.dragSource.dataset.file;
-      if (file) {
+      const file = normalizeTemplateName(state.dragSource.dataset.file || '');
+      if (file && state.allowedTemplates.has(file)) {
         const schema = { template: file, settings: {}, areas: [] };
         createBlockElementFromSchema(schema, {
           basePath: state.basePath,
@@ -349,6 +369,7 @@ export function createDragDropController(options = {}) {
 
   function init(initOptions = {}) {
     setOptions(initOptions);
+    refreshAllowedTemplates();
     if (state.palette) state.palette.addEventListener('dragstart', paletteDragStart);
     if (state.canvas) {
       ['dragstart', 'dragenter', 'dragleave', 'dragover', 'drop', 'dragend'].forEach(
