@@ -127,18 +127,13 @@ final class DashboardAggregator
 
     public function aggregate(): DashboardSnapshot
     {
-        $slugCounts = $this->countSlugs($this->pages);
-
         $analysis = $this->analysePages($this->pages, $this->settings, $this->menus, $this->scriptBase, $this->templateDir);
-        $seoSummary = $analysis['seo'];
         $accessibilitySummary = $analysis['accessibility'];
         $largestPage = $analysis['largest'];
         $speedSummary = $analysis['speed'];
 
         $pagesPublished = $analysis['pagesPublished'];
         $pagesDraft = $analysis['pagesDraft'];
-
-        $seoSummary = $this->applySlugDuplicates($seoSummary, $slugCounts);
 
         $analyticsData = $this->analyticsService->getDashboardData();
         $analyticsSummary = $this->buildAnalyticsSummary($analyticsData, $this->pages);
@@ -183,8 +178,7 @@ final class DashboardAggregator
             $eventsSummary,
             $eventsOverview,
             $calendarSummary,
-            $accessibilitySummary,
-            $seoSummary
+            $accessibilitySummary
         );
 
         $statusSortedModules = $this->sortModuleSummaries($moduleSummaries);
@@ -246,12 +240,6 @@ final class DashboardAggregator
             'speedHeaviestPage' => $largestPage['title'],
             'speedHeaviestPageLength' => $largestPage['length'],
             'eventsCurrency' => $eventsSummary['currency'],
-            'seoOptimised' => $seoSummary['optimised'],
-            'seoMissingTitle' => $seoSummary['missing_title'],
-            'seoMissingDescription' => $seoSummary['missing_description'],
-            'seoDescriptionLengthIssues' => $seoSummary['description_length'],
-            'seoDuplicateSlugs' => $seoSummary['duplicate_slugs'],
-            'seoIssues' => $seoSummary['issues'],
             'moduleSummaries' => $statusSortedModules,
             'generatedAt' => gmdate(DATE_ATOM),
         ];
@@ -357,28 +345,9 @@ final class DashboardAggregator
 
     /**
      * @param array<int, array<string, mixed>> $pages
-     * @return array<string, int>
-     */
-    private function countSlugs(array $pages): array
-    {
-        $counts = [];
-        foreach ($pages as $page) {
-            $slug = strtolower(trim((string) ($page['slug'] ?? '')));
-            if ($slug === '') {
-                continue;
-            }
-            $counts[$slug] = ($counts[$slug] ?? 0) + 1;
-        }
-
-        return $counts;
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $pages
      * @param array<string, mixed> $settings
      * @param array<int, array<string, mixed>> $menus
      * @return array{
-     *     seo: array<string, int>,
      *     accessibility: array<string, int>,
      *     largest: array{title: ?string, length: int},
      *     speed: array{fast: int, monitor: int, slow: int},
@@ -390,16 +359,6 @@ final class DashboardAggregator
     private function analysePages(array $pages, array $settings, array $menus, string $scriptBase, ?string $templateDir): array
     {
         $libxmlPrevious = libxml_use_internal_errors(true);
-
-        $seoSummary = [
-            'optimised' => 0,
-            'missing_title' => 0,
-            'missing_description' => 0,
-            'long_title' => 0,
-            'description_length' => 0,
-            'duplicate_slugs' => 0,
-            'issues' => 0,
-        ];
 
         $accessibilitySummary = [
             'accessible' => 0,
@@ -428,7 +387,6 @@ final class DashboardAggregator
             $genericLinks = 0;
             $landmarks = 0;
             $h1Count = 0;
-            $seoIssues = 0;
 
             if ($loaded) {
                 $images = $doc->getElementsByTagName('img');
@@ -476,35 +434,6 @@ final class DashboardAggregator
             }
             $accessibilitySummary['issues'] += count($issues);
 
-            $metaTitle = trim((string) ($page['meta_title'] ?? ''));
-            if ($metaTitle === '') {
-                $seoSummary['missing_title']++;
-                $seoIssues++;
-            } else {
-                $titleLength = $this->stringLength($metaTitle);
-                if ($titleLength > 60) {
-                    $seoSummary['long_title']++;
-                    $seoIssues++;
-                }
-            }
-
-            $metaDescription = trim((string) ($page['meta_description'] ?? ''));
-            if ($metaDescription === '') {
-                $seoSummary['missing_description']++;
-                $seoIssues++;
-            } else {
-                $descriptionLength = $this->stringLength($metaDescription);
-                if ($descriptionLength < 50 || $descriptionLength > 160) {
-                    $seoSummary['description_length']++;
-                    $seoIssues++;
-                }
-            }
-
-            if ($seoIssues === 0) {
-                $seoSummary['optimised']++;
-            }
-            $seoSummary['issues'] += $seoIssues;
-
             $content = strip_tags((string) ($page['content'] ?? ''));
             $length = strlen($content);
             if ($length > $largestPage['length']) {
@@ -530,7 +459,6 @@ final class DashboardAggregator
         $accessibilityScore = $totalPages > 0 ? (int) round(($accessibilitySummary['accessible'] / $totalPages) * 100) : 0;
 
         return [
-            'seo' => $seoSummary,
             'accessibility' => $accessibilitySummary,
             'largest' => $largestPage,
             'speed' => $speedSummary,
@@ -553,23 +481,6 @@ final class DashboardAggregator
             'more',
             'this page',
         ];
-    }
-
-    /**
-     * @param array<string, int> $slugCounts
-     * @param array<string, int> $seoSummary
-     * @return array<string, int>
-     */
-    private function applySlugDuplicates(array $seoSummary, array $slugCounts): array
-    {
-        foreach ($slugCounts as $slug => $count) {
-            if ($count > 1) {
-                $seoSummary['duplicate_slugs'] += $count - 1;
-                $seoSummary['issues'] += $count - 1;
-            }
-        }
-
-        return $seoSummary;
     }
 
     /**
@@ -990,7 +901,6 @@ final class DashboardAggregator
      * @param array<string, mixed> $eventsOverview
      * @param array<string, mixed> $calendarSummary
      * @param array<string, int> $accessibilitySummary
-     * @param array<string, int> $seoSummary
      * @return array<int, array<string, mixed>>
      */
     private function buildModuleSummaries(
@@ -1017,8 +927,7 @@ final class DashboardAggregator
         array $eventsSummary,
         array $eventsOverview,
         array $calendarSummary,
-        array $accessibilitySummary,
-        array $seoSummary
+        array $accessibilitySummary
     ): array {
         $pagesStatus = $pagesDraft > 0 ? 'warning' : 'ok';
         $pagesTrend = $pagesDraft > 0
@@ -1161,22 +1070,6 @@ final class DashboardAggregator
         }
         $speedTrend = 'Slow pages: ' . $this->formatNumber((int) $speedSummary['slow']);
         $speedCta = $speedSummary['slow'] > 0 ? 'Optimise slow pages' : 'Review performance';
-
-        $seoStatus = 'ok';
-        if ($seoSummary['missing_title'] > 0 || $seoSummary['missing_description'] > 0 || $seoSummary['duplicate_slugs'] > 0) {
-            $seoStatus = 'urgent';
-        } elseif ($seoSummary['long_title'] > 0 || $seoSummary['description_length'] > 0) {
-            $seoStatus = 'warning';
-        }
-        $seoTrend = 'Meta descriptions within best practice range';
-        if ($seoSummary['duplicate_slugs'] > 0) {
-            $seoTrend = 'Duplicate slugs detected: ' . $this->formatNumber((int) $seoSummary['duplicate_slugs']);
-        } elseif ($seoSummary['missing_description'] > 0 || $seoSummary['missing_title'] > 0) {
-            $seoTrend = $this->formatNumber((int) ($seoSummary['missing_title'] + $seoSummary['missing_description'])) . ' meta fields missing';
-        } elseif ($seoSummary['long_title'] > 0 || $seoSummary['description_length'] > 0) {
-            $seoTrend = 'Metadata length alerts: ' . $this->formatNumber((int) ($seoSummary['long_title'] + $seoSummary['description_length']));
-        }
-        $seoCta = $seoStatus === 'urgent' ? 'Fix SEO issues' : 'Review SEO settings';
 
         $accessibilityStatus = $accessibilitySummary['needs_review'] > 0 ? 'warning' : 'ok';
         if ($accessibilitySummary['missing_alt'] > 0 && $accessibilitySummary['needs_review'] >= $accessibilitySummary['accessible']) {
@@ -1327,16 +1220,6 @@ final class DashboardAggregator
                 'cta' => $calendarCta,
             ],
             [
-                'id' => 'seo',
-                'module' => 'SEO',
-                'primary' => $this->formatNumber($seoSummary['optimised']) . ' pages optimised',
-                'secondary' => $seoTrend,
-                'status' => $seoStatus,
-                'statusLabel' => $this->statusLabel($seoStatus),
-                'trend' => $seoTrend,
-                'cta' => $seoCta,
-            ],
-            [
                 'id' => 'accessibility',
                 'module' => 'Accessibility',
                 'primary' => $this->formatNumber($accessibilitySummary['accessible']) . ' pages compliant',
@@ -1347,11 +1230,6 @@ final class DashboardAggregator
                 'cta' => $accessibilityCta,
             ],
         ];
-    }
-
-    private function stringLength(string $value): int
-    {
-        return function_exists('mb_strlen') ? (int) mb_strlen($value) : strlen($value);
     }
 
     private function formatBytes(int $bytes): string

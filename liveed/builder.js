@@ -186,18 +186,6 @@ function checkLinks(html) {
   return Promise.all(checks).then(() => warnings);
 }
 
-function checkSeo(html) {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const issues = [];
-  if (!doc.querySelector('h1')) {
-    issues.push('Missing H1 heading');
-  }
-  const wordCount = doc.body.textContent.trim().split(/\s+/).length;
-  if (wordCount < 300) {
-    issues.push('Low word count');
-  }
-  return issues;
-}
 function savePage() {
   if (!canvas) return;
   const statusEl = document.getElementById('saveStatus');
