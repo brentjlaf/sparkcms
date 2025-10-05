@@ -18,6 +18,26 @@ $(document).ready(function(){
     const $statusFilterButtons = $('[data-blog-filter]');
     let activeStatusFilter = 'all';
 
+    $postsTableBody.on('click', '.view-btn', function(){
+        const id = parseInt($(this).data('id'), 10);
+        viewPost(id);
+    });
+
+    $postsTableBody.on('click', '.edit-post-btn', function(){
+        const id = parseInt($(this).data('id'), 10);
+        editPost(id);
+    });
+
+    $postsTableBody.on('click', '.publish-btn', function(){
+        const id = parseInt($(this).data('id'), 10);
+        publishPost(id);
+    });
+
+    $postsTableBody.on('click', '.delete-btn', function(){
+        const id = parseInt($(this).data('id'), 10);
+        deletePost(id);
+    });
+
     function renderTableMessage(message, options={}){
         const opts = Object.assign({ isError: false, countLabel: null }, options);
         const className = opts.isError ? 'text-danger' : 'text-muted';
@@ -746,22 +766,6 @@ $(document).ready(function(){
             tbody.append(row);
         });
         updateLastUpdated();
-        $('.view-btn').click(function(){
-            const id = parseInt($(this).data('id'));
-            viewPost(id);
-        });
-        $('.edit-post-btn').click(function(){
-            const id = parseInt($(this).data('id'));
-            editPost(id);
-        });
-        $('.publish-btn').click(function(){
-            const id = parseInt($(this).data('id'));
-            publishPost(id);
-        });
-        $('.delete-btn').click(function(){
-            const id = parseInt($(this).data('id'));
-            deletePost(id);
-        });
     }
 
     function openPostModal(id=null){
