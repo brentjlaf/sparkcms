@@ -1,5 +1,11 @@
 // File: dragDrop.js
-import { ensureBlockState, createBlockElementFromSchema, serializeBlock } from './state.js';
+import {
+  ensureBlockState,
+  createBlockElementFromSchema,
+  serializeBlock,
+  getTemplateCacheMetadata,
+  invalidateTemplateCache as clearTemplateCacheEntry,
+} from './state.js';
 import { sanitizeTemplateMarkup, normalizeTemplateName } from './sanitizer.js';
 import { getBlockPath, getPathLocation } from './undoRedo.js';
 import { executeScripts } from './executeScripts.js';
@@ -116,7 +122,53 @@ export function createDragDropController(options = {}) {
     placeholder: createPlaceholder(),
     insertionIndicator: createInsertionIndicator(),
     recordOperation: null,
+    templateMetadata: new Map(),
+    onTemplateError: null,
+    lastTemplateRequest: null,
   };
+
+  function registerTemplateMetadata(block) {
+    if (!block) return;
+    const template = block.dataset ? block.dataset.template || '' : '';
+    if (!template) return;
+    const revision = block.dataset.templateRevision || '';
+    const expiresRaw = block.dataset.templateExpires || '';
+    const expiresAt = Number(expiresRaw) || 0;
+    if (revision || expiresAt) {
+      state.templateMetadata.set(template, {
+        revision,
+        expiresAt,
+      });
+      return;
+    }
+    const cached = getTemplateCacheMetadata(template);
+    if (cached) {
+      state.templateMetadata.set(template, cached);
+    }
+  }
+
+  function updateTemplateMetadata(template) {
+    if (!template) return;
+    const metadata = getTemplateCacheMetadata(template);
+    if (metadata) {
+      state.templateMetadata.set(template, metadata);
+    }
+  }
+
+  function invalidateTemplateCache(template = null) {
+    if (typeof template === 'string' && template) {
+      state.templateMetadata.delete(template);
+      clearTemplateCacheEntry(template);
+      return;
+    }
+    state.templateMetadata.clear();
+    clearTemplateCacheEntry(null);
+  }
+
+  function getTemplateCacheInfo(template) {
+    if (!template) return null;
+    return state.templateMetadata.get(template) || null;
+  }
 
   function refreshAllowedTemplates() {
     state.allowedTemplates.clear();
@@ -141,6 +193,9 @@ export function createDragDropController(options = {}) {
       state.applyStoredSettings = opts.applyStoredSettings;
     if ('recordOperation' in opts)
       state.recordOperation = typeof opts.recordOperation === 'function' ? opts.recordOperation : null;
+    if ('onTemplateError' in opts)
+      state.onTemplateError =
+        typeof opts.onTemplateError === 'function' ? opts.onTemplateError : null;
     if ('palette' in opts) refreshAllowedTemplates();
   }
 
@@ -239,6 +294,8 @@ export function createDragDropController(options = {}) {
     if (areas.length === 0) {
       setupDropArea(block);
     }
+
+    registerTemplateMetadata(block);
   }
 
   function handleDragEnter(e) {
@@ -290,17 +347,24 @@ export function createDragDropController(options = {}) {
         if (meta) {
           schema.meta = Object.assign({}, meta, { template: file });
         }
-        createBlockElementFromSchema(schema, {
+        const request = createBlockElementFromSchema(schema, {
           basePath: state.basePath,
           applyStoredSettings: state.applyStoredSettings,
           addBlockControls,
-        })
+        });
+
+        state.lastTemplateRequest = request;
+
+        request
           .then((wrapper) => {
             if (!wrapper) return;
             if (after == null) area.appendChild(wrapper);
             else area.insertBefore(wrapper, after);
 
             executeScripts(wrapper);
+
+            updateTemplateMetadata(file);
+            registerTemplateMetadata(wrapper);
 
             if (typeof state.recordOperation === 'function') {
               const path = getBlockPath(wrapper, state.canvas);
@@ -319,7 +383,20 @@ export function createDragDropController(options = {}) {
             if (state.openSettings) state.openSettings(wrapper);
             document.dispatchEvent(new Event('canvasUpdated'));
           })
-          .catch(() => {});
+          .catch((error) => {
+            if (typeof state.onTemplateError === 'function') {
+              try {
+                state.onTemplateError(error, { template: file, meta });
+              } catch (callbackError) {
+                console.error('Template error handler failed', callbackError);
+              }
+            }
+          })
+          .finally(() => {
+            if (state.lastTemplateRequest === request) {
+              state.lastTemplateRequest = null;
+            }
+          });
       }
     } else if (state.dragSource) {
       state.dragSource.classList.remove('dragging');
@@ -417,6 +494,9 @@ export function createDragDropController(options = {}) {
     setupDropArea(state.canvas);
     if (state.canvas) {
       state.canvas.querySelectorAll('.drop-area').forEach(setupDropArea);
+      state.canvas
+        .querySelectorAll('.block-wrapper')
+        .forEach((block) => registerTemplateMetadata(block));
     }
   }
 
@@ -425,5 +505,7 @@ export function createDragDropController(options = {}) {
     setOptions,
     addBlockControls,
     setupDropArea,
+    invalidateTemplateCache,
+    getTemplateCacheInfo,
   };
 }
