@@ -2,6 +2,61 @@
 const EDITABLE_SELECTOR = '[data-editable]';
 let tiptapLoader = null;
 
+function applyEditableAttributes(el) {
+  if (!el || typeof el.setAttribute !== 'function') return;
+  if (el.getAttribute('contenteditable') !== 'true') {
+    el.setAttribute('contenteditable', 'true');
+  }
+  if (!el.hasAttribute('tabindex')) {
+    el.setAttribute('tabindex', '0');
+  }
+}
+
+function forEachEditableTarget(target, callback) {
+  if (!target || typeof callback !== 'function') return;
+  const processed = new Set();
+  const handle = (el) => {
+    if (!el || processed.has(el)) return;
+    processed.add(el);
+    callback(el);
+  };
+  const visit = (node) => {
+    if (!node) return;
+    const nodeType = node.nodeType;
+    if (nodeType !== 1 && nodeType !== 11) {
+      return;
+    }
+    if (typeof node.matches === 'function' && node.matches(EDITABLE_SELECTOR)) {
+      handle(node);
+    }
+    if (typeof node.querySelectorAll === 'function') {
+      node.querySelectorAll(EDITABLE_SELECTOR).forEach(handle);
+    }
+  };
+  const visitCollection = (collection) => {
+    for (let i = 0; i < collection.length; i++) {
+      visit(collection[i]);
+    }
+  };
+  if (Array.isArray(target)) {
+    target.forEach(visit);
+    return;
+  }
+  if (typeof NodeList !== 'undefined' && target instanceof NodeList) {
+    visitCollection(target);
+    return;
+  }
+  if (typeof HTMLCollection !== 'undefined' && target instanceof HTMLCollection) {
+    visitCollection(target);
+    return;
+  }
+  visit(target);
+}
+
+export function enhanceElement(target) {
+  forEachEditableTarget(target, applyEditableAttributes);
+}
+
 function loadTiptap() {
   if (!tiptapLoader) {
     tiptapLoader = Promise.all([
@@ -159,12 +214,6 @@ export function initWysiwyg(canvas, loggedIn) {
     }
   }
 
-  function ensureEditableAttributes(el) {
-    if (!el.hasAttribute('tabindex')) {
-      el.setAttribute('tabindex', '0');
-    }
-  }
-
   function createEditor(el) {
     if (!el || pendingEditorMap.has(el) || editorMap.has(el)) {
       return pendingEditorMap.get(el) || Promise.resolve(editorMap.get(el));
@@ -231,7 +280,7 @@ export function initWysiwyg(canvas, loggedIn) {
           });
         } catch (error) {
           console.error('Failed to initialize WYSIWYG editor', error);
-          el.setAttribute('contenteditable', 'true');
+          applyEditableAttributes(el);
           return null;
         }
         editorMap.set(el, editor);
@@ -241,7 +290,7 @@ export function initWysiwyg(canvas, loggedIn) {
       .catch((error) => {
         console.error('Failed to load WYSIWYG editor', error);
         pendingEditorMap.delete(el);
-        el.setAttribute('contenteditable', 'true');
+        applyEditableAttributes(el);
         return null;
       });
     pendingEditorMap.set(el, promise);
@@ -249,14 +298,15 @@ export function initWysiwyg(canvas, loggedIn) {
   }
 
   function prepareEditableElement(el) {
-    if (!el || editorMap.has(el) || pendingEditorMap.has(el)) return;
-    ensureEditableAttributes(el);
+    if (!el) return;
+    applyEditableAttributes(el);
+    if (editorMap.has(el) || pendingEditorMap.has(el)) return;
     createEditor(el);
   }
 
   function rescanEditors(root = canvas) {
     if (!root) return;
-    root.querySelectorAll(EDITABLE_SELECTOR).forEach((el) => {
+    forEachEditableTarget(root, (el) => {
       prepareEditableElement(el);
     });
   }
@@ -266,22 +316,14 @@ export function initWysiwyg(canvas, loggedIn) {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
-        if (!(node instanceof HTMLElement)) return;
-        if (node.matches && node.matches(EDITABLE_SELECTOR)) {
-          prepareEditableElement(node);
-        }
-        node.querySelectorAll &&
-          node.querySelectorAll(EDITABLE_SELECTOR).forEach((el) => {
-            prepareEditableElement(el);
-          });
+        forEachEditableTarget(node, (el) => {
+          prepareEditableElement(el);
+        });
       });
       mutation.removedNodes.forEach((node) => {
-        if (!(node instanceof HTMLElement)) return;
-        if (node.matches && node.matches(EDITABLE_SELECTOR)) {
-          destroyEditor(node);
-        }
-        node.querySelectorAll &&
-          node.querySelectorAll(EDITABLE_SELECTOR).forEach((el) => destroyEditor(el));
+        forEachEditableTarget(node, (el) => {
+          destroyEditor(el);
+        });
       });
     });
   });
@@ -295,8 +337,8 @@ export function initWysiwyg(canvas, loggedIn) {
   document.addEventListener('blockSettingsApplied', (event) => {
     const block = event && event.detail ? event.detail.block : null;
     if (!block) return;
-    block.querySelectorAll(EDITABLE_SELECTOR).forEach((el) => {
-      ensureEditableAttributes(el);
+    forEachEditableTarget(block, (el) => {
+      applyEditableAttributes(el);
       const editor = editorMap.get(el);
       if (editor) {
         const html = el.innerHTML;

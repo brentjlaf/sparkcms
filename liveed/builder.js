@@ -9,7 +9,7 @@ import {
   decodeDraftContent,
 } from './modules/state.js';
 import { initUndoRedo, getBlockPath, getPathLocation } from './modules/undoRedo.js';
-import { initWysiwyg } from './modules/wysiwyg.js';
+import { initWysiwyg, enhanceElement } from './modules/wysiwyg.js';
 import { createMediaPicker } from './modules/mediaPicker.js';
 import { executeScripts } from './modules/executeScripts.js';
 
@@ -658,7 +658,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     onTemplateError: displayTemplateLoadError,
   });
   dragDropController.init();
-  const { addBlockControls } = dragDropController;
+  const { addBlockControls: baseAddBlockControls } = dragDropController;
+
+  const addBlockControls = (block) => {
+    if (!block) return;
+    baseAddBlockControls(block);
+    enhanceElement(block);
+  };
 
   const rendererOptions = {
     basePath: window.builderBase,
@@ -955,16 +961,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (e.target.closest('.block-controls .duplicate')) {
       const schema = serializeBlock(block);
       if (!schema) return;
-      createBlockElementFromSchema(schema, rendererOptions)
-        .then((clone) => {
-          if (!clone) return;
-          clone.classList.remove('selected');
-          block.after(clone);
-          executeScripts(clone);
-          if (history && history.recordOperation) {
-            const path = getBlockPath(clone, canvas);
-            if (path && path.length) {
-              const location = getPathLocation(path);
+          createBlockElementFromSchema(schema, rendererOptions)
+            .then((clone) => {
+              if (!clone) return;
+              clone.classList.remove('selected');
+              block.after(clone);
+              enhanceElement(clone);
+              executeScripts(clone);
+              if (history && history.recordOperation) {
+                const path = getBlockPath(clone, canvas);
+                if (path && path.length) {
+                  const location = getPathLocation(path);
               history.recordOperation({
                 type: 'insert',
                 parentPath: location.parentPath,
