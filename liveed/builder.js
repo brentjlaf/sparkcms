@@ -841,6 +841,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (viewing) {
         if (settingsPanel) settingsPanel.classList.remove('open');
       }
+      document.dispatchEvent(
+        new CustomEvent('builderViewModeChange', {
+          detail: { viewing },
+        })
+      );
     });
   }
 
