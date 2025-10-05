@@ -73,14 +73,51 @@ $(document).ready(function(){
         return post;
     }
 
-    function refreshCategoriesFromPosts(){
-        const unique = new Set(categories);
+    function normalizeCategoryValue(value){
+        if(typeof value !== 'string'){
+            return '';
+        }
+        return value.trim();
+    }
+
+    function mergeCategoriesFromSources(initialCategories){
+        const unique = new Set();
+        const baseCategories = Array.isArray(initialCategories) ? initialCategories : [];
+        baseCategories.forEach(cat => {
+            const normalized = normalizeCategoryValue(cat);
+            if(normalized){
+                unique.add(normalized);
+            }
+        });
         posts.forEach(post => {
-            if(post.category){
-                unique.add(post.category);
+            const normalized = normalizeCategoryValue(post.category || '');
+            if(normalized){
+                unique.add(normalized);
             }
         });
         categories = Array.from(unique).sort((a,b)=>a.localeCompare(b));
+    }
+
+    function refreshCategoriesFromPosts(){
+        mergeCategoriesFromSources(categories);
+    }
+
+    function loadCategoriesFromServer(){
+        $.getJSON('modules/blogs/list_categories.php')
+            .done(function(data){
+                if(Array.isArray(data)){
+                    mergeCategoriesFromSources(data);
+                }else{
+                    mergeCategoriesFromSources([]);
+                }
+                renderCategories();
+                populateFilters();
+            })
+            .fail(function(){
+                mergeCategoriesFromSources(categories);
+                renderCategories();
+                populateFilters();
+            });
     }
 
     function loadPostsFromServer(){
@@ -342,6 +379,7 @@ $(document).ready(function(){
     setActiveStatusFilter('all');
     setSort('date', 'desc', { silent: true });
     loadAuthors();
+    loadCategoriesFromServer();
     loadPostsFromServer();
 
     $('#newPostBtn').click(function(){
