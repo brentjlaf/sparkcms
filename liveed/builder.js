@@ -26,10 +26,6 @@ let historyEntries = [];
 let conflictActive = false;
 let conflictPromptShown = false;
 let historyApi = null;
-let linkCheckWorker = null;
-let linkWarningPanel = null;
-let latestLinkCheckJobId = 0;
-let linkCheckJobSeq = 0;
 let currentSearchTerm = '';
 // Delay before auto-saving after a change. A longer delay prevents rapid
 // successive saves while the user is still actively editing.
@@ -306,108 +302,6 @@ function filterManifest(term = '') {
       .toLowerCase();
     return haystack.includes(normalized);
   });
-}
-
-function initLinkCheckWorker() {
-  if (linkCheckWorker || typeof window === 'undefined' || typeof Worker === 'undefined') {
-    return;
-  }
-  try {
-    linkCheckWorker = new Worker(new URL('./modules/link-check-worker.js', import.meta.url), {
-      type: 'module',
-    });
-    linkCheckWorker.addEventListener('message', handleLinkCheckMessage);
-    linkCheckWorker.addEventListener('error', (event) => {
-      console.error('Link check worker error', event);
-    });
-  } catch (error) {
-    console.warn('Link check worker unavailable', error);
-    linkCheckWorker = null;
-  }
-}
-
-function queueLinkCheck(html) {
-  if (!linkCheckWorker) return 0;
-  const jobId = ++linkCheckJobSeq;
-  latestLinkCheckJobId = jobId;
-  try {
-    linkCheckWorker.postMessage({
-      type: 'checkLinks',
-      html,
-      baseUrl: typeof window !== 'undefined' ? window.location.href : '',
-      jobId,
-    });
-  } catch (error) {
-    console.error('Unable to start link check', error);
-    return 0;
-  }
-  return jobId;
-}
-
-function displayLinkWarnings(warnings = []) {
-  if (!linkWarningPanel) return;
-  linkWarningPanel.innerHTML = '';
-  if (!warnings.length) {
-    linkWarningPanel.classList.add('hidden');
-    return;
-  }
-  const title = document.createElement('div');
-  title.className = 'link-warning-title';
-  title.textContent = 'Link warnings';
-  const list = document.createElement('ul');
-  list.className = 'link-warning-list';
-  warnings.forEach((warning) => {
-    const item = document.createElement('li');
-    item.textContent = warning;
-    list.appendChild(item);
-  });
-  linkWarningPanel.appendChild(title);
-  linkWarningPanel.appendChild(list);
-  linkWarningPanel.classList.remove('hidden');
-}
-
-function handleLinkCheckMessage(event) {
-  const data = event.data || {};
-  if (data.type !== 'linkCheckResult') return;
-  const { warnings = [], jobId, error } = data;
-  if (jobId && jobId !== latestLinkCheckJobId) {
-    return;
-  }
-  const statusEl = document.getElementById('saveStatus');
-  if (!statusEl) return;
-
-  if (error) {
-    statusEl.textContent = 'Link check failed';
-    statusEl.classList.add('error');
-    statusEl.classList.remove('saving');
-    displayLinkWarnings([]);
-    setTimeout(() => {
-      if (statusEl.textContent === 'Link check failed') {
-        statusEl.textContent = '';
-        statusEl.classList.remove('error');
-      }
-    }, 4000);
-    return;
-  }
-
-  if (!warnings.length) {
-    if (statusEl.textContent === '' || statusEl.textContent === 'Saved') {
-      statusEl.textContent = 'Links look good';
-      setTimeout(() => {
-        if (statusEl.textContent === 'Links look good') statusEl.textContent = '';
-      }, 2500);
-    }
-    displayLinkWarnings([]);
-    return;
-  }
-
-  statusEl.textContent = 'Link issues found';
-  statusEl.classList.add('error');
-  statusEl.classList.remove('saving');
-  if (warnings.length) {
-    console.warn('Link issues found:', warnings.join('\n'));
-  }
-  displayLinkWarnings(warnings);
 }
 
 function handleConflict(source = 'content', message = '') {
@@ -697,12 +591,8 @@ function savePage() {
   const statusEl = document.getElementById('saveStatus');
   const html = canvas.innerHTML;
 
-  const linkJobId = queueLinkCheck(html);
-  displayLinkWarnings([]);
-
   if (statusEl) {
-    statusEl.dataset.linkJobId = linkJobId ? String(linkJobId) : '';
-    statusEl.textContent = linkJobId ? 'Saving... (link check running)' : 'Saving...';
+    statusEl.textContent = 'Saving...';
     statusEl.classList.add('saving');
     statusEl.classList.remove('error');
   }
@@ -770,20 +660,12 @@ function scheduleSave() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  initLinkCheckWorker();
   canvas = document.getElementById('canvas');
   const palette = (paletteEl = document.querySelector('.block-palette'));
   const settingsPanel = document.getElementById('settingsPanel');
   const builderEl = document.querySelector('.builder');
   const viewToggle = document.getElementById('viewModeToggle');
   const statusEl = document.getElementById('saveStatus');
-
-  if (statusEl && !linkWarningPanel) {
-    linkWarningPanel = document.createElement('div');
-    linkWarningPanel.id = 'linkWarningPanel';
-    linkWarningPanel.className = 'link-warning-panel hidden';
-    statusEl.insertAdjacentElement('afterend', linkWarningPanel);
-  }
 
   document
     .querySelectorAll('.history-toolbar button')
