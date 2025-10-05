@@ -740,7 +740,6 @@ export function createDragDropController(options = {}) {
   }
 
   const throttledDragOver = throttleRAF(handleDragOver);
-  const throttledDrop = throttleRAF(handleDrop);
 
   function delegateDragEvents(e) {
     switch (e.type) {
@@ -757,7 +756,9 @@ export function createDragDropController(options = {}) {
         throttledDragOver(e);
         break;
       case 'drop':
-        throttledDrop(e);
+        // Drop events cannot be throttled because the drag state may reset
+        // before the handler runs, which would prevent blocks from being added.
+        handleDrop(e);
         break;
       case 'dragend':
         handleDragEnd(e);
