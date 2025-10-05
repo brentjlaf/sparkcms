@@ -117,7 +117,7 @@ Each module usually exposes a `view.php` entry point with supporting services, J
 
 - **Builder UI (`/liveed`).** Provides block palette management, responsive preview toggles, media picker, undo/redo, manual save, and page history integration. Builder assets live under `liveed/css`, `liveed/modules`, and `liveed/builder.js`.
 - **Theme templates.** Located in `theme/templates` with folders for pages (`templates/pages`), blocks (`templates/blocks`), and partials. Templates expect arrays of pages, menus, blog posts, and site settings injected by `CMS/index.php`.
-- **Asset bundling.** Run `php bundle.php` to concatenate the primary theme stylesheets (`theme/css/root.css`, `skin.css`, `override.css`) into `combined.css`. JavaScript is served directly from `theme/js/global.js` and `theme/js/script.js` so the canonical sources stay in sync across environments.
+- **Asset bundling.** Run `php bundle.php` to concatenate the primary theme stylesheets (`theme/css/root.css`, `skin.css`, `override.css`) into `combined.css`. JavaScript sources in `theme/js` are bundled with Rollup—install dependencies once (`cd theme/js && npm install`) and generate the production bundles with `npm run build` so deploys ship the compiled files in `theme/js/dist`.
 - **Customization.** Override CSS variables in `theme/css/override.css`, add scripts in `theme/js`, or introduce new block templates for the builder. To adjust the homepage hero, update the `--hero-gradient-1` and `--hero-gradient-2` tokens (ideally via overrides in `theme/css/override.css`) to point at new gradient colors while reusing the shared layout. The theme can be versioned independently of content by committing changes to the repository.
 
 ## Public Forms & Integrations
