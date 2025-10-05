@@ -18,26 +18,6 @@ $(document).ready(function(){
     const $statusFilterButtons = $('[data-blog-filter]');
     let activeStatusFilter = 'all';
 
-    $postsTableBody.on('click', '.view-btn', function(){
-        const id = parseInt($(this).data('id'), 10);
-        viewPost(id);
-    });
-
-    $postsTableBody.on('click', '.edit-post-btn', function(){
-        const id = parseInt($(this).data('id'), 10);
-        editPost(id);
-    });
-
-    $postsTableBody.on('click', '.publish-btn', function(){
-        const id = parseInt($(this).data('id'), 10);
-        publishPost(id);
-    });
-
-    $postsTableBody.on('click', '.delete-btn', function(){
-        const id = parseInt($(this).data('id'), 10);
-        deletePost(id);
-    });
-
     function renderTableMessage(message, options={}){
         const opts = Object.assign({ isError: false, countLabel: null }, options);
         const className = opts.isError ? 'text-danger' : 'text-muted';
@@ -73,51 +53,14 @@ $(document).ready(function(){
         return post;
     }
 
-    function normalizeCategoryValue(value){
-        if(typeof value !== 'string'){
-            return '';
-        }
-        return value.trim();
-    }
-
-    function mergeCategoriesFromSources(initialCategories){
-        const unique = new Set();
-        const baseCategories = Array.isArray(initialCategories) ? initialCategories : [];
-        baseCategories.forEach(cat => {
-            const normalized = normalizeCategoryValue(cat);
-            if(normalized){
-                unique.add(normalized);
-            }
-        });
+    function refreshCategoriesFromPosts(){
+        const unique = new Set(categories);
         posts.forEach(post => {
-            const normalized = normalizeCategoryValue(post.category || '');
-            if(normalized){
-                unique.add(normalized);
+            if(post.category){
+                unique.add(post.category);
             }
         });
         categories = Array.from(unique).sort((a,b)=>a.localeCompare(b));
-    }
-
-    function refreshCategoriesFromPosts(){
-        mergeCategoriesFromSources(categories);
-    }
-
-    function loadCategoriesFromServer(){
-        $.getJSON('modules/blogs/list_categories.php')
-            .done(function(data){
-                if(Array.isArray(data)){
-                    mergeCategoriesFromSources(data);
-                }else{
-                    mergeCategoriesFromSources([]);
-                }
-                renderCategories();
-                populateFilters();
-            })
-            .fail(function(){
-                mergeCategoriesFromSources(categories);
-                renderCategories();
-                populateFilters();
-            });
     }
 
     function loadPostsFromServer(){
@@ -379,7 +322,6 @@ $(document).ready(function(){
     setActiveStatusFilter('all');
     setSort('date', 'desc', { silent: true });
     loadAuthors();
-    loadCategoriesFromServer();
     loadPostsFromServer();
 
     $('#newPostBtn').click(function(){
@@ -544,7 +486,6 @@ $(document).ready(function(){
     }
 
     function populateFilters(){
-        sortCategories();
         const categoryOptions = categories.map(c=>`<option value="${c}">${c}</option>`).join('');
         const currentFilterCategory = $('#categoryFilter').val() || '';
         const currentPostCategory = $('#postCategory').val() || '';
@@ -805,6 +746,22 @@ $(document).ready(function(){
             tbody.append(row);
         });
         updateLastUpdated();
+        $('.view-btn').click(function(){
+            const id = parseInt($(this).data('id'));
+            viewPost(id);
+        });
+        $('.edit-post-btn').click(function(){
+            const id = parseInt($(this).data('id'));
+            editPost(id);
+        });
+        $('.publish-btn').click(function(){
+            const id = parseInt($(this).data('id'));
+            publishPost(id);
+        });
+        $('.delete-btn').click(function(){
+            const id = parseInt($(this).data('id'));
+            deletePost(id);
+        });
     }
 
     function openPostModal(id=null){
@@ -875,32 +832,14 @@ $(document).ready(function(){
 
     function deletePost(id){
         confirmModal('Are you sure you want to delete this post?').then(ok => {
-            if(!ok){
-                return;
+            if(ok){
+                posts = posts.filter(p=>p.id!==id);
+                refreshCategoriesFromPosts();
+                populateFilters();
+                renderPosts();
+                updateStats();
+                renderCategories();
             }
-
-            $.ajax({
-                url: 'modules/blogs/delete_post.php',
-                method: 'POST',
-                data: { id },
-                dataType: 'json'
-            })
-            .done(function(response){
-                if(response && response.success){
-                    posts = posts.filter(p=>p.id!==id);
-                    refreshCategoriesFromPosts();
-                    populateFilters();
-                    renderPosts();
-                    updateStats();
-                    renderCategories();
-                }else{
-                    const message = response && response.message ? response.message : 'Unable to delete the post. Please try again later.';
-                    alertModal(message);
-                }
-            })
-            .fail(function(){
-                alertModal('Unable to delete the post. Please try again later.');
-            });
         });
     }
 
@@ -967,12 +906,7 @@ $(document).ready(function(){
         openModal('categoriesModal');
     }
 
-    function sortCategories(){
-        categories = categories.slice().sort((a, b) => a.localeCompare(b));
-    }
-
     function renderCategories(){
-        sortCategories();
         const list = $('#categoriesList');
         list.empty();
         if (!categories.length) {
@@ -1003,7 +937,6 @@ $(document).ready(function(){
         const name = $('#newCategoryName').val().trim();
         if(name && !categories.includes(name)){
             categories.push(name);
-            sortCategories();
             $('#newCategoryName').val('');
             renderCategories();
             populateFilters();
@@ -1014,7 +947,6 @@ $(document).ready(function(){
         confirmModal(`Are you sure you want to delete the category "${name}"?`).then(ok => {
             if(ok){
                 categories = categories.filter(c=>c!==name);
-                sortCategories();
                 posts.forEach(p=>{ if(p.category===name) p.category='Uncategorized'; });
                 renderCategories();
                 populateFilters();
