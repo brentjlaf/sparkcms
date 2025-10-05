@@ -1098,6 +1098,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('canvasUpdated', updateCanvasPlaceholder);
   document.addEventListener('canvasUpdated', scheduleSave);
 
+  document.addEventListener('blockAdded', (event) => {
+    const detail = event && event.detail ? event.detail : {};
+    if (detail.source !== 'palette') return;
+    const block = detail.block;
+    if (!block || !canvas.contains(block)) return;
+    if (settingsPanel && settingsPanel.classList.contains('open') && settingsPanel.block === block) {
+      return;
+    }
+    openSettings(block);
+  });
+
   document.addEventListener('blockSettingsApplied', (event) => {
     if (!history || !history.recordOperation) return;
     const detail = event && event.detail ? event.detail : {};
