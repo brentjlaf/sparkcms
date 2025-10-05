@@ -1,6 +1,7 @@
 // File: settings.js
 import { ensureBlockState, getSetting, setSetting, getSettings } from './state.js';
 import { executeScripts } from './executeScripts.js';
+import { decodeUnicodeBase64 } from './base64.js';
 
 let canvas;
 let settingsPanel;
@@ -72,7 +73,7 @@ function safeDecodeTemplateSetting(value, context = {}) {
     return { success: true, value: '' };
   }
   try {
-    return { success: true, value: atob(value) };
+    return { success: true, value: decodeUnicodeBase64(value) };
   } catch (error) {
     reportTemplateSettingsIssue('decode', context, error);
     return { success: false, value: '' };

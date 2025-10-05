@@ -9,6 +9,7 @@ import {
 import { sanitizeTemplateMarkup, normalizeTemplateName } from './sanitizer.js';
 import { getBlockPath, getPathLocation } from './undoRedo.js';
 import { executeScripts } from './executeScripts.js';
+import { encodeUnicodeBase64 } from './base64.js';
 
 // caching block control markup avoids rebuilding the DOM for each block
 const controlsTemplate = `
@@ -132,7 +133,7 @@ function safeEncodeTemplateSetting(block, value, reason) {
     return { success: true, value: '' };
   }
   try {
-    return { success: true, value: btoa(value) };
+    return { success: true, value: encodeUnicodeBase64(value) };
   } catch (error) {
     reportTemplateSettingsIssue('encode', { block, reason }, error);
     return { success: false, value: '' };
