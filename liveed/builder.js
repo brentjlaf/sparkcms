@@ -19,6 +19,7 @@ let builderDraftKey = '';
 let lastSavedTimestamp = 0;
 let canvas;
 let paletteEl;
+let paletteVirtualList = null;
 let pageRevision = window.builderRevision || '';
 let draftRevision = '';
 let historyEntries = [];
@@ -97,6 +98,111 @@ function formatGroupLabel(group = '') {
     .trim();
   if (!normalized) return 'General';
   return normalized.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+class VirtualPaletteList {
+  constructor(container) {
+    this.container = container;
+    this.detailsList = [];
+    this.visible = new Set();
+    this.observer = null;
+    this._initObserver();
+  }
+
+  _initObserver() {
+    if (typeof IntersectionObserver === 'undefined') {
+      this.observer = null;
+      return;
+    }
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const target = entry.target;
+          if (!target || !this.detailsList.includes(target)) return;
+          if (entry.isIntersecting) {
+            this.visible.add(target);
+            if (target.open && !target._rendered) {
+              renderGroupItems(target, { virtualRenderer: this, force: true });
+            }
+          } else {
+            this.visible.delete(target);
+            if (target._rendered) {
+              const items = target.querySelector('.group-items');
+              if (items) items.innerHTML = '';
+              target._rendered = false;
+            }
+          }
+        });
+      },
+      {
+        root: this.container,
+        rootMargin: '160px 0px',
+      }
+    );
+  }
+
+  destroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+    this.detailsList = [];
+    this.visible.clear();
+  }
+
+  isVisible(details) {
+    if (!details) return false;
+    if (!this.observer) return true;
+    return this.visible.has(details);
+  }
+
+  setGroups(groups = []) {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+    this.visible.clear();
+    this.detailsList = [];
+    this.container.innerHTML = '';
+    groups.forEach((group) => {
+      const details = this._createGroupDetails(group);
+      this.detailsList.push(details);
+      this.container.appendChild(details);
+      if (this.observer) {
+        this.observer.observe(details);
+      }
+    });
+    if (!this.observer) {
+      this.detailsList.forEach((details) => {
+        if (details.open) {
+          renderGroupItems(details, { virtualRenderer: this, force: true });
+        }
+      });
+    }
+  }
+
+  refreshVisible() {
+    if (!this.detailsList.length) return;
+    this.detailsList.forEach((details) => {
+      if (!details.open) return;
+      if (!this.observer || this.visible.has(details)) {
+        renderGroupItems(details, { virtualRenderer: this, force: true });
+      }
+    });
+  }
+
+  _createGroupDetails(group) {
+    const details = document.createElement('details');
+    details.className = 'palette-group';
+    details.dataset.groupKey = group.key;
+    details._items = Array.isArray(group.items) ? group.items.slice() : [];
+    const summary = document.createElement('summary');
+    summary.textContent = group.label || formatGroupLabel(group.key);
+    details.appendChild(summary);
+    const wrap = document.createElement('div');
+    wrap.className = 'group-items';
+    details.appendChild(wrap);
+    animateAccordion(details, this);
+    return details;
+  }
 }
 
 function normalizeManifestEntry(entry = {}) {
@@ -388,9 +494,15 @@ function storeDraft() {
     });
 }
 
-function renderGroupItems(details) {
+function renderGroupItems(details, options = {}) {
+  const { virtualRenderer = null, force = false } = options;
   const items = details.querySelector('.group-items');
-  if (!items || details._rendered) return;
+  if (!items) return;
+  if (!force && details._rendered) return;
+  if (virtualRenderer && !virtualRenderer.isVisible(details)) {
+    return;
+  }
+  items.innerHTML = '';
   const list = Array.isArray(details._items) ? details._items : [];
   const favs = favorites;
   const isFavoritesGroup = details.dataset.groupKey === 'favorites';
@@ -451,14 +563,15 @@ function renderGroupItems(details) {
   details._rendered = true;
 }
 
-function animateAccordion(details) {
+function animateAccordion(details, virtualRenderer = null) {
   const summary = details.querySelector('summary');
   const items = details.querySelector('.group-items');
   if (!summary || !items) return;
+  const renderItems = () => renderGroupItems(details, { virtualRenderer, force: true });
   if (!details.open) {
     items.style.display = 'none';
   } else {
-    renderGroupItems(details);
+    renderItems();
   }
   summary.addEventListener('click', (e) => {
     e.preventDefault();
@@ -481,7 +594,7 @@ function animateAccordion(details) {
         }
       });
       details.open = true;
-      renderGroupItems(details);
+      renderItems();
       items.style.display = 'grid';
     }
   });
@@ -489,17 +602,28 @@ function animateAccordion(details) {
 
 
 function renderPalette(palette, manifestEntries = []) {
+  if (!palette || typeof palette.querySelector !== 'function') return;
   const container = palette.querySelector('.palette-items');
   if (!container) return;
-  container.innerHTML = '';
-
   const entries = Array.isArray(manifestEntries) ? manifestEntries : [];
   if (!entries.length) {
+    if (paletteVirtualList) {
+      paletteVirtualList.destroy();
+      paletteVirtualList = null;
+    }
+    container.innerHTML = '';
     const empty = document.createElement('p');
     empty.className = 'palette-empty';
     empty.textContent = 'No blocks available.';
     container.appendChild(empty);
     return;
+  }
+
+  if (!paletteVirtualList || paletteVirtualList.container !== container) {
+    if (paletteVirtualList) {
+      paletteVirtualList.destroy();
+    }
+    paletteVirtualList = new VirtualPaletteList(container);
   }
 
   const favs = favorites;
@@ -527,24 +651,8 @@ function renderPalette(palette, manifestEntries = []) {
     if (b.key === 'favorites') return 1;
     return (a.label || '').localeCompare(b.label || '');
   });
-
-  groups.forEach((group) => {
-    const details = document.createElement('details');
-    details.className = 'palette-group';
-    details.dataset.groupKey = group.key;
-
-    const summary = document.createElement('summary');
-    summary.textContent = group.label || formatGroupLabel(group.key);
-    details.appendChild(summary);
-
-    const wrap = document.createElement('div');
-    wrap.className = 'group-items';
-
-    details._items = group.items.slice();
-    details.appendChild(wrap);
-    container.appendChild(details);
-    animateAccordion(details);
-  });
+  paletteVirtualList.setGroups(groups);
+  paletteVirtualList.refreshVisible();
 }
 
 function toggleFavorite(blockId) {
@@ -1094,6 +1202,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   registerBuilderCleanup(() => {
     cancelScheduledSave();
+  });
+
+  registerBuilderCleanup(() => {
+    if (paletteVirtualList) {
+      paletteVirtualList.destroy();
+      paletteVirtualList = null;
+    }
   });
 
 });
