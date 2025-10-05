@@ -5,6 +5,82 @@ let nextId = 1;
 const RESERVED_KEYS = new Set(['blockId', 'template', 'original', 'active', 'ts']);
 
 const templateCache = new Map();
+const TEMPLATE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function computeRevisionHash(content = '', ts = '') {
+  const payload = String(content || '') + '|' + String(ts || '');
+  try {
+    const cryptoObj = typeof globalThis !== 'undefined' ? globalThis.crypto : null;
+    if (cryptoObj && cryptoObj.subtle && typeof globalThis.TextEncoder === 'function') {
+      const encoder = new globalThis.TextEncoder();
+      const data = encoder.encode(payload);
+      const hashBuffer = await cryptoObj.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (error) {
+    // fall back to non-cryptographic hash below
+  }
+
+  let hash = 0;
+  for (let i = 0; i < payload.length; i++) {
+    hash = (hash << 5) - hash + payload.charCodeAt(i);
+    hash |= 0; // convert to 32-bit integer
+  }
+  return (hash >>> 0).toString(16);
+}
+
+function normalizeCacheEntry(entry) {
+  if (!entry) return null;
+  if (entry.promise) return entry;
+  const revision = typeof entry.revision === 'string' ? entry.revision : '';
+  const expiresAt = Number(entry.expiresAt) || 0;
+  return {
+    cleaned: entry.cleaned || '',
+    ts: entry.ts || '',
+    revision,
+    expiresAt,
+  };
+}
+
+function isCacheEntryValid(entry) {
+  if (!entry || entry.promise) return false;
+  const expiresAt = Number(entry.expiresAt) || 0;
+  if (!expiresAt) return true;
+  return expiresAt > Date.now();
+}
+
+function setResolvedCacheEntry(template, entry) {
+  if (!template) return entry;
+  const normalized = normalizeCacheEntry(entry);
+  if (!normalized) return entry;
+  templateCache.set(template, normalized);
+  return normalized;
+}
+
+async function fetchTemplate(basePath = '', template) {
+  const response = await fetch(
+    basePath + '/liveed/load-block.php?file=' + encodeURIComponent(template)
+  );
+  if (!response.ok) {
+    const error = new Error('Failed to load block template.');
+    error.status = response.status;
+    throw error;
+  }
+  const html = await response.text();
+  const parsed = extractTemplateSetting(html);
+  const sanitized = {
+    cleaned: sanitizeTemplateMarkup(parsed.cleaned),
+    ts: parsed.ts,
+  };
+  const revision = await computeRevisionHash(sanitized.cleaned, sanitized.ts);
+  return {
+    cleaned: sanitized.cleaned,
+    ts: sanitized.ts,
+    revision,
+    expiresAt: Date.now() + TEMPLATE_CACHE_TTL,
+  };
+}
 
 function cloneSettings(settings = {}) {
   return Object.fromEntries(Object.entries(settings).map(([k, v]) => [k, v]));
@@ -175,30 +251,45 @@ function readBlockMetadata(block, template = '') {
 }
 
 async function loadTemplate(basePath = '', template) {
-  if (!template) return { cleaned: '', ts: '' };
+  if (!template) return { cleaned: '', ts: '', revision: '', expiresAt: 0 };
   const cached = templateCache.get(template);
   if (cached) {
-    return cached;
+    if (cached.promise) {
+      return cached.promise;
+    }
+    if (isCacheEntryValid(cached)) {
+      return cached;
+    }
+    templateCache.delete(template);
   }
-  const request = fetch(
-    basePath + '/liveed/load-block.php?file=' + encodeURIComponent(template)
-  )
-    .then((r) => r.text())
-    .then((html) => {
-      const parsed = extractTemplateSetting(html);
-      const sanitized = {
-        cleaned: sanitizeTemplateMarkup(parsed.cleaned),
-        ts: parsed.ts,
-      };
-      templateCache.set(template, sanitized);
-      return sanitized;
-    })
+
+  const requestPromise = fetchTemplate(basePath, template)
+    .then((entry) => setResolvedCacheEntry(template, entry))
     .catch((error) => {
       templateCache.delete(template);
       throw error;
     });
-  templateCache.set(template, request);
-  return request;
+
+  templateCache.set(template, { promise: requestPromise });
+  return requestPromise;
+}
+
+export function getTemplateCacheMetadata(template) {
+  if (!template) return null;
+  const entry = normalizeCacheEntry(templateCache.get(template));
+  if (!entry) return null;
+  return {
+    revision: entry.revision || '',
+    expiresAt: Number(entry.expiresAt) || 0,
+  };
+}
+
+export function invalidateTemplateCache(template = null) {
+  if (typeof template === 'string' && template) {
+    templateCache.delete(template);
+    return;
+  }
+  templateCache.clear();
 }
 
 function getDropAreas(block) {
@@ -263,7 +354,10 @@ export async function createBlockElementFromSchema(schema, options = {}) {
   const block = document.createElement('div');
   block.className = 'block-wrapper';
   block.dataset.template = schema.template || '';
-  const { cleaned, ts } = await loadTemplate(basePath, schema.template);
+  const { cleaned, ts, revision, expiresAt } = await loadTemplate(
+    basePath,
+    schema.template
+  );
   block.innerHTML = cleaned || '';
   block.dataset.original = cleaned || '';
   if (ts) {
@@ -272,6 +366,12 @@ export async function createBlockElementFromSchema(schema, options = {}) {
     } catch (e) {
       block.dataset.ts = '';
     }
+  }
+  if (revision) {
+    block.dataset.templateRevision = revision;
+  }
+  if (expiresAt) {
+    block.dataset.templateExpires = String(expiresAt);
   }
   applyBlockMetadata(block, schema.meta || null, schema.template || '');
   const initialSettings = schema.settings || {};

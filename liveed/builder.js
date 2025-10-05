@@ -306,6 +306,24 @@ function handleConflict(source = 'content', message = '') {
   }
 }
 
+function displayTemplateLoadError(error, context = {}) {
+  const statusEl = document.getElementById('saveStatus');
+  if (!statusEl) return;
+  const meta = context && typeof context === 'object' ? context.meta || {} : {};
+  const rawLabel =
+    (meta && typeof meta.label === 'string' && meta.label.trim() ? meta.label.trim() : '') ||
+    (context && typeof context.template === 'string' && context.template.trim()
+      ? context.template.trim().replace(/\.php$/i, '').split('.').pop().replace(/[-_]/g, ' ')
+      : 'block');
+  const label = rawLabel.replace(/\b\w/g, (c) => c.toUpperCase());
+  statusEl.textContent = 'Unable to load ' + label + ' block.';
+  statusEl.classList.add('error');
+  statusEl.classList.remove('saving');
+  if (error) {
+    console.error('Unable to load block template', context && context.template, error);
+  }
+}
+
 function storeDraft() {
   if (!canvas) return;
   const data = {
@@ -637,6 +655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loggedIn: true,
     openSettings,
     applyStoredSettings,
+    onTemplateError: displayTemplateLoadError,
   });
   dragDropController.init();
   const { addBlockControls } = dragDropController;
