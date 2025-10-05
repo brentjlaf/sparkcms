@@ -993,20 +993,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
 
+  const hoverScaleClass = 'builder-hover-scale';
+  const getDraggableBlock = (target) => {
+    const handle = target.closest('.control.drag');
+    if (!handle) return null;
+    return handle.closest('.block-wrapper');
+  };
+
+  const applyHoverScale = (target) => {
+    const block = getDraggableBlock(target);
+    if (block) block.classList.add(hoverScaleClass);
+  };
+
+  const clearHoverScale = (target) => {
+    const block = getDraggableBlock(target);
+    if (block) block.classList.remove(hoverScaleClass);
+  };
+
   document.addEventListener('mouseover', (e) => {
-    const handle = e.target.closest('.control.drag');
-    if (handle) {
-      const block = handle.closest('.block-wrapper');
-      if (block) block.style.transform = 'scale(1.02)';
-    }
+    applyHoverScale(e.target);
   });
 
   document.addEventListener('mouseout', (e) => {
-    const handle = e.target.closest('.control.drag');
-    if (handle) {
-      const block = handle.closest('.block-wrapper');
-      if (block) block.style.transform = '';
-    }
+    clearHoverScale(e.target);
+  });
+
+  document.addEventListener('touchstart', (e) => {
+    applyHoverScale(e.target);
+  });
+
+  document.addEventListener('touchcancel', (e) => {
+    clearHoverScale(e.target);
+  });
+
+  document.addEventListener('touchend', (e) => {
+    clearHoverScale(e.target);
   });
 
   window.addEventListener('beforeunload', () => {
