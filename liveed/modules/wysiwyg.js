@@ -122,8 +122,45 @@ export function initWysiwyg(canvas, loggedIn) {
   document.body.appendChild(rteToolbar);
 
   const buttons = Array.from(rteToolbar.querySelectorAll('button[data-cmd]'));
+  const builderEl = document.querySelector('.builder');
+
+  const isViewModeActive = () =>
+    Boolean(builderEl && builderEl.classList.contains('view-mode'));
+
+  const setToolbarDisabled = (disabled) => {
+    buttons.forEach((btn) => {
+      btn.disabled = Boolean(disabled);
+      btn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    });
+    if (disabled) {
+      rteToolbar.style.display = 'none';
+    }
+  };
+
+  const handleViewModeChange = (event) => {
+    const viewing =
+      event && event.detail && typeof event.detail.viewing === 'boolean'
+        ? event.detail.viewing
+        : isViewModeActive();
+    setToolbarDisabled(viewing);
+    if (viewing) {
+      if (activeEditor && activeEditor.commands && typeof activeEditor.commands.blur === 'function') {
+        activeEditor.commands.blur();
+      }
+      activeElement = null;
+      activeEditor = null;
+      rteToolbar.style.display = 'none';
+    }
+  };
+
+  document.addEventListener('builderViewModeChange', handleViewModeChange);
+  handleViewModeChange();
 
   const throttledPosition = throttleRAF(() => {
+    if (isViewModeActive()) {
+      rteToolbar.style.display = 'none';
+      return;
+    }
     if (!activeElement || !activeEditor) return;
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount) {
@@ -152,7 +189,7 @@ export function initWysiwyg(canvas, loggedIn) {
   });
 
   function updateToolbarState(editor) {
-    if (!editor) return;
+    if (!editor || isViewModeActive()) return;
     buttons.forEach((btn) => {
       const { cmd, value } = btn.dataset;
       let isActive = false;
@@ -257,12 +294,16 @@ export function initWysiwyg(canvas, loggedIn) {
               el.dispatchEvent(event);
             },
             onSelectionUpdate: () => {
-              if (activeEditor === editor) {
+              if (activeEditor === editor && !isViewModeActive()) {
                 updateToolbarState(editor);
                 throttledPosition();
               }
             },
             onFocus: () => {
+              if (isViewModeActive()) {
+                editor.commands.blur();
+                return;
+              }
               activeElement = el;
               activeEditor = editor;
               updateToolbarState(editor);
@@ -368,7 +409,7 @@ export function initWysiwyg(canvas, loggedIn) {
 
   rteToolbar.addEventListener('click', (event) => {
     const btn = event.target.closest('button[data-cmd]');
-    if (!btn || !activeEditor) return;
+    if (!btn || !activeEditor || isViewModeActive()) return;
     const { cmd, value } = btn.dataset;
     const editor = activeEditor;
     let handled = true;
