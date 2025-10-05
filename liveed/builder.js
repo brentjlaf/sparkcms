@@ -791,11 +791,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       palette.style.left = e.clientX - offsetX + 'px';
       palette.style.top = e.clientY - offsetY + 'px';
     };
-    const onUp = () => {
+    const onUp = (e) => {
       if (!dragging) return;
       dragging = false;
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      if (typeof paletteHeader.releasePointerCapture === 'function') {
+        try {
+          paletteHeader.releasePointerCapture(e.pointerId);
+        } catch (error) {}
+      }
       const rect = palette.getBoundingClientRect();
       if (rect.left < SNAP_THRESHOLD) {
         palette.style.left = '0px';
@@ -806,13 +809,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         JSON.stringify({ left: palette.style.left, top: palette.style.top })
       );
     };
-    paletteHeader.addEventListener('mousedown', (e) => {
+    const onDown = (e) => {
       dragging = true;
       const rect = palette.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+      if (typeof paletteHeader.setPointerCapture === 'function') {
+        try {
+          paletteHeader.setPointerCapture(e.pointerId);
+        } catch (error) {}
+      }
+    };
+    paletteHeader.addEventListener('pointerdown', onDown);
+    paletteHeader.addEventListener('pointermove', onMove);
+    paletteHeader.addEventListener('pointerup', onUp);
+    paletteHeader.addEventListener('pointercancel', onUp);
+    registerBuilderCleanup(() => {
+      paletteHeader.removeEventListener('pointerdown', onDown);
+      paletteHeader.removeEventListener('pointermove', onMove);
+      paletteHeader.removeEventListener('pointerup', onUp);
+      paletteHeader.removeEventListener('pointercancel', onUp);
     });
   }
 
