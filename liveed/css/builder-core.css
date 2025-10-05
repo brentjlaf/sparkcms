@@ -215,6 +215,11 @@
 .block-wrapper {
   position: relative;
   margin-bottom: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.block-wrapper.builder-hover-scale {
+  transform: scale(1.02);
 }
 .block-controls {
   position: absolute;
