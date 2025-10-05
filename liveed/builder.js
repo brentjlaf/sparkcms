@@ -13,7 +13,7 @@ import { initWysiwyg } from './modules/wysiwyg.js';
 import { createMediaPicker } from './modules/mediaPicker.js';
 import { executeScripts } from './modules/executeScripts.js';
 
-let allBlockFiles = [];
+let blockManifest = [];
 let favorites = [];
 let builderDraftKey = '';
 let lastSavedTimestamp = 0;
@@ -29,6 +29,7 @@ let linkCheckWorker = null;
 let linkWarningPanel = null;
 let latestLinkCheckJobId = 0;
 let linkCheckJobSeq = 0;
+let currentSearchTerm = '';
 // Delay before auto-saving after a change. A longer delay prevents rapid
 // successive saves while the user is still actively editing.
 const SAVE_DEBOUNCE_DELAY = 1000;
@@ -57,6 +58,128 @@ function setHistoryEntriesCache(entries = []) {
 setPageRevision(pageRevision);
 setDraftRevision(draftRevision);
 setHistoryEntriesCache(historyEntries);
+
+function humanizeLabel(value = '') {
+  return value
+    .replace(/\.php$/gi, '')
+    .replace(/[._-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatGroupLabel(group = '') {
+  const normalized = (group || '')
+    .toString()
+    .replace(/[._-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!normalized) return 'General';
+  return normalized.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function normalizeManifestEntry(entry = {}) {
+  if (!entry || typeof entry !== 'object') return null;
+  const template = typeof entry.template === 'string' && entry.template.trim()
+    ? entry.template.trim()
+    : typeof entry.file === 'string'
+    ? entry.file.trim()
+    : '';
+  if (!template) return null;
+  const id = typeof entry.id === 'string' && entry.id.trim()
+    ? entry.id.trim()
+    : template.replace(/\.php$/i, '');
+  const group = typeof entry.group === 'string' && entry.group.trim()
+    ? entry.group.trim().toLowerCase()
+    : (id.split('.')[0] || 'general').toLowerCase();
+  const label = typeof entry.label === 'string' && entry.label.trim()
+    ? entry.label.trim()
+    : humanizeLabel(id);
+  const caps = Array.isArray(entry.capabilities)
+    ? entry.capabilities
+        .map((cap) => (typeof cap === 'string' ? cap.trim().toLowerCase() : ''))
+        .filter(Boolean)
+    : [];
+  const uniqueCaps = Array.from(new Set(caps)).sort();
+  return {
+    id,
+    template,
+    file: template,
+    label,
+    group,
+    groupLabel: formatGroupLabel(group),
+    capabilities: uniqueCaps,
+  };
+}
+
+function sanitizeFavoritesList(list = []) {
+  if (!Array.isArray(list)) return [];
+  const sanitized = [];
+  const seen = new Set();
+  list.forEach((value) => {
+    if (typeof value !== 'string') return;
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) return;
+    seen.add(trimmed);
+    sanitized.push(trimmed);
+  });
+  return sanitized;
+}
+
+function normalizeFavoritesWithManifest(manifest = []) {
+  if (!Array.isArray(manifest) || !manifest.length) {
+    favorites = sanitizeFavoritesList(favorites);
+    return;
+  }
+  const idSet = new Set();
+  const templateToId = new Map();
+  manifest.forEach((entry) => {
+    if (!entry || typeof entry !== 'object') return;
+    idSet.add(entry.id);
+    templateToId.set(entry.template, entry.id);
+  });
+
+  const converted = favorites.map((value) => {
+    if (idSet.has(value)) return value;
+    if (templateToId.has(value)) return templateToId.get(value);
+    return value;
+  });
+
+  const sanitized = [];
+  const seen = new Set();
+  converted.forEach((value) => {
+    if (!idSet.has(value) || seen.has(value)) return;
+    seen.add(value);
+    sanitized.push(value);
+  });
+  if (sanitized.length !== favorites.length || sanitized.some((val, idx) => val !== favorites[idx])) {
+    favorites = sanitized;
+    localStorage.setItem('favoriteBlocks', JSON.stringify(favorites));
+  } else {
+    favorites = sanitized;
+  }
+}
+
+function filterManifest(term = '') {
+  const normalized = term.trim().toLowerCase();
+  if (!normalized) {
+    return blockManifest.slice();
+  }
+  return blockManifest.filter((entry) => {
+    if (!entry) return false;
+    const haystack = [
+      entry.label || '',
+      entry.group || '',
+      entry.groupLabel || '',
+      entry.id || '',
+      entry.template || '',
+      Array.isArray(entry.capabilities) ? entry.capabilities.join(' ') : '',
+    ]
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(normalized);
+  });
+}
 
 function initLinkCheckWorker() {
   if (linkCheckWorker || typeof window === 'undefined' || typeof Worker === 'undefined') {
@@ -229,27 +352,58 @@ function storeDraft() {
 function renderGroupItems(details) {
   const items = details.querySelector('.group-items');
   if (!items || details._rendered) return;
+  const list = Array.isArray(details._items) ? details._items : [];
   const favs = favorites;
-  const list = details._items || [];
+  const isFavoritesGroup = details.dataset.groupKey === 'favorites';
+  const favoriteOrder = new Map();
+  favs.forEach((id, index) => favoriteOrder.set(id, index));
+  const sorted = list.slice().sort((a, b) => {
+    if (isFavoritesGroup) {
+      const orderA = favoriteOrder.has(a.id) ? favoriteOrder.get(a.id) : Number.MAX_SAFE_INTEGER;
+      const orderB = favoriteOrder.has(b.id) ? favoriteOrder.get(b.id) : Number.MAX_SAFE_INTEGER;
+      if (orderA !== orderB) return orderA - orderB;
+    }
+    return (a.label || '').localeCompare(b.label || '');
+  });
   const frag = document.createDocumentFragment();
-  list.forEach((it, idx) => {
+  sorted.forEach((entry, idx) => {
+    if (!entry || typeof entry !== 'object') return;
     const item = document.createElement('div');
     item.className = 'block-item';
     item.setAttribute('draggable', 'true');
-    item.dataset.file = it.file;
+    item.dataset.file = entry.template;
+    item.dataset.blockId = entry.id;
+    item.dataset.group = entry.group;
+    if (Array.isArray(entry.capabilities) && entry.capabilities.length) {
+      item.dataset.capabilities = entry.capabilities.join(',');
+    } else {
+      delete item.dataset.capabilities;
+    }
+    const meta = {
+      id: entry.id,
+      label: entry.label,
+      group: entry.group,
+      capabilities: entry.capabilities || [],
+      template: entry.template,
+    };
+    try {
+      item.dataset.meta = JSON.stringify(meta);
+    } catch (error) {
+      item.dataset.meta = JSON.stringify({ id: entry.id, template: entry.template });
+    }
     item.style.setProperty('--block-animation-delay', `${(idx + 1) * 0.05}s`);
-    const label = it.label
-      .replace(/[-_]/g, ' ')
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-    item.textContent = label;
+    const itemLabel = entry.label || humanizeLabel(entry.id || entry.template || '');
+    item.textContent = itemLabel;
+    item.title = itemLabel;
     const favBtn = document.createElement('span');
     favBtn.className = 'fav-toggle';
-    if (favs.includes(it.file)) favBtn.classList.add('active');
+    const isFavorite = favs.includes(entry.id);
+    if (isFavorite) favBtn.classList.add('active');
     favBtn.textContent = '★';
-    favBtn.title = favs.includes(it.file) ? 'Unfavorite' : 'Favorite';
+    favBtn.title = isFavorite ? 'Unfavorite' : 'Favorite';
     favBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      toggleFavorite(it.file);
+      toggleFavorite(entry.id);
     });
     item.appendChild(favBtn);
     frag.appendChild(item);
@@ -295,59 +449,79 @@ function animateAccordion(details) {
 }
 
 
-function renderPalette(palette, files = []) {
+function renderPalette(palette, manifestEntries = []) {
   const container = palette.querySelector('.palette-items');
   if (!container) return;
   container.innerHTML = '';
 
+  const entries = Array.isArray(manifestEntries) ? manifestEntries : [];
+  if (!entries.length) {
+    const empty = document.createElement('p');
+    empty.className = 'palette-empty';
+    empty.textContent = 'No blocks available.';
+    container.appendChild(empty);
+    return;
+  }
+
   const favs = favorites;
-  const groups = {};
-  if (favs.length) groups.Favorites = [];
-  files.forEach((f) => {
-    if (!f.endsWith('.php')) return;
-    const base = f.replace(/\.php$/, '');
-    const parts = base.split('.');
-    const group = parts.shift();
-    const label = parts.join(' ') || group;
-    if (!groups[group]) groups[group] = [];
-    const info = { file: f, label };
-    groups[group].push(info);
-    if (favs.includes(f)) {
-      groups.Favorites.push(info);
+  const groupMap = new Map();
+  const ensureGroup = (key, label) => {
+    if (!groupMap.has(key)) {
+      groupMap.set(key, { key, label, items: [] });
+    }
+    return groupMap.get(key);
+  };
+
+  entries.forEach((entry) => {
+    if (!entry || typeof entry !== 'object') return;
+    const groupKey = entry.group || 'general';
+    const groupLabel = entry.groupLabel || formatGroupLabel(groupKey);
+    ensureGroup(groupKey, groupLabel).items.push(entry);
+    if (favs.includes(entry.id)) {
+      ensureGroup('favorites', 'Favorites').items.push(entry);
     }
   });
 
-  Object.keys(groups)
-    .sort((a, b) => (a === 'Favorites' ? -1 : b === 'Favorites' ? 1 : a.localeCompare(b)))
-    .forEach((g) => {
-      const details = document.createElement('details');
-      details.className = 'palette-group';
+  const groups = Array.from(groupMap.values()).filter((group) => group.items.length);
+  groups.sort((a, b) => {
+    if (a.key === 'favorites') return -1;
+    if (b.key === 'favorites') return 1;
+    return (a.label || '').localeCompare(b.label || '');
+  });
 
-      const summary = document.createElement('summary');
-      summary.textContent = g.charAt(0).toUpperCase() + g.slice(1);
-      details.appendChild(summary);
+  groups.forEach((group) => {
+    const details = document.createElement('details');
+    details.className = 'palette-group';
+    details.dataset.groupKey = group.key;
 
-      const wrap = document.createElement('div');
-      wrap.className = 'group-items';
+    const summary = document.createElement('summary');
+    summary.textContent = group.label || formatGroupLabel(group.key);
+    details.appendChild(summary);
 
-      details._items = groups[g]
-        .slice()
-        .sort((a, b) => a.label.localeCompare(b.label));
-      details.appendChild(wrap);
-      container.appendChild(details);
-      animateAccordion(details);
-    });
+    const wrap = document.createElement('div');
+    wrap.className = 'group-items';
+
+    details._items = group.items.slice();
+    details.appendChild(wrap);
+    container.appendChild(details);
+    animateAccordion(details);
+  });
 }
 
-function toggleFavorite(file) {
-  const idx = favorites.indexOf(file);
+function toggleFavorite(blockId) {
+  if (typeof blockId !== 'string' || !blockId.trim()) return;
+  const id = blockId.trim();
+  const idx = favorites.indexOf(id);
   if (idx >= 0) {
     favorites.splice(idx, 1);
   } else {
-    favorites.push(file);
+    favorites.push(id);
   }
+  favorites = sanitizeFavoritesList(favorites);
   localStorage.setItem('favoriteBlocks', JSON.stringify(favorites));
-  if (paletteEl) renderPalette(paletteEl, allBlockFiles);
+  if (paletteEl) {
+    renderPalette(paletteEl, filterManifest(currentSearchTerm));
+  }
 }
 
 let saveTimer;
@@ -600,7 +774,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  favorites = JSON.parse(localStorage.getItem('favoriteBlocks') || '[]');
+  try {
+    favorites = sanitizeFavoritesList(JSON.parse(localStorage.getItem('favoriteBlocks') || '[]'));
+  } catch (error) {
+    favorites = [];
+  }
 
   initSettings({ canvas, settingsPanel, savePage: scheduleSave, addBlockControls });
 
@@ -609,14 +787,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   fetch(window.builderBase + '/liveed/list-blocks.php')
     .then((r) => r.json())
     .then((data) => {
-      allBlockFiles = data.blocks || [];
-      renderPalette(palette, allBlockFiles);
+      const entries = Array.isArray(data.blocks) ? data.blocks : [];
+      blockManifest = entries
+        .map((entry) => normalizeManifestEntry(entry))
+        .filter(Boolean);
+      normalizeFavoritesWithManifest(blockManifest);
+      renderPalette(palette, filterManifest(currentSearchTerm));
+    })
+    .catch(() => {
+      blockManifest = [];
+      renderPalette(palette, []);
     });
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
-      const term = searchInput.value.toLowerCase();
-      const filtered = allBlockFiles.filter((f) => f.toLowerCase().includes(term));
+      currentSearchTerm = searchInput.value || '';
+      const filtered = filterManifest(currentSearchTerm);
       renderPalette(palette, filtered);
     });
   }

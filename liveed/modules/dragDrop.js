@@ -37,6 +37,40 @@ function createInsertionIndicator() {
   return el;
 }
 
+function parsePaletteMeta(node) {
+  if (!node || !node.dataset) return null;
+  const raw = node.dataset.meta;
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const meta = {};
+    if (typeof parsed.id === 'string' && parsed.id.trim()) {
+      meta.id = parsed.id.trim();
+    }
+    if (typeof parsed.label === 'string' && parsed.label.trim()) {
+      meta.label = parsed.label.trim();
+    }
+    if (typeof parsed.group === 'string' && parsed.group.trim()) {
+      meta.group = parsed.group.trim();
+    }
+    if (typeof parsed.template === 'string' && parsed.template.trim()) {
+      meta.template = parsed.template.trim();
+    }
+    if (Array.isArray(parsed.capabilities)) {
+      const caps = parsed.capabilities
+        .map((cap) => (typeof cap === 'string' ? cap.trim().toLowerCase() : ''))
+        .filter(Boolean);
+      if (caps.length) {
+        meta.capabilities = Array.from(new Set(caps)).sort();
+      }
+    }
+    return Object.keys(meta).length ? meta : null;
+  } catch (error) {
+    return null;
+  }
+}
+
 export function createDragGhost(node) {
   if (!node) return null;
   const dragImage = node.cloneNode(true);
@@ -251,7 +285,11 @@ export function createDragDropController(options = {}) {
     if (state.fromPalette && state.dragSource) {
       const file = normalizeTemplateName(state.dragSource.dataset.file || '');
       if (file && state.allowedTemplates.has(file)) {
+        const meta = parsePaletteMeta(state.dragSource);
         const schema = { template: file, settings: {}, areas: [] };
+        if (meta) {
+          schema.meta = Object.assign({}, meta, { template: file });
+        }
         createBlockElementFromSchema(schema, {
           basePath: state.basePath,
           applyStoredSettings: state.applyStoredSettings,
