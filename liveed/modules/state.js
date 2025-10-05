@@ -1,5 +1,6 @@
 // File: state.js
 import { sanitizeTemplateMarkup } from './sanitizer.js';
+import { encodeUnicodeBase64 } from './base64.js';
 const stateMap = new Map();
 let nextId = 1;
 const RESERVED_KEYS = new Set(['blockId', 'template', 'original', 'active', 'ts']);
@@ -362,7 +363,7 @@ export async function createBlockElementFromSchema(schema, options = {}) {
   block.dataset.original = cleaned || '';
   if (ts) {
     try {
-      block.dataset.ts = btoa(ts);
+      block.dataset.ts = encodeUnicodeBase64(ts);
     } catch (e) {
       block.dataset.ts = '';
     }
