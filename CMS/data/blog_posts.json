@@ -51,10 +51,6 @@
     "excerpt": "Practical tips for building inclusive websites that everyone can use with ease.",
     "content": "<p>Accessibility should be considered at every stage of a project. Start by ensuring semantic HTML, providing sufficient color contrast, and testing with assistive technologies...</p>",
     "category": "Accessibility",
-    "categories": [
-      "Accessibility",
-      "Design"
-    ],
     "author": "Alice",
     "status": "published",
     "publishDate": "2024-02-05T11:15:00",
@@ -100,10 +96,6 @@
     "excerpt": "Step-by-step techniques for building responsive layouts with CSS Grid.",
     "content": "<p>CSS Grid empowers designers to craft responsive, two-dimensional layouts with ease. Learn how to define grid containers, place items precisely, and create adaptive designs that scale across devices...</p>",
     "category": "Design",
-    "categories": [
-      "Design",
-      "Frontend"
-    ],
     "author": "Alice",
     "status": "published",
     "publishDate": "2024-02-14T09:00:00",

@@ -1,84 +1,72 @@
 [
-  {
-    "id": 1,
-    "name": "Primary Navigation",
-    "items": [
-      {
-        "label": "Home",
-        "type": "page",
-        "page": 1,
-        "link": "/home",
-        "new_tab": false
-      },
-      {
-        "label": "About",
-        "type": "page",
-        "page": 2,
-        "link": "/about",
-        "new_tab": false
-      },
-      {
-        "label": "Events",
-        "type": "page",
-        "page": 3,
-        "link": "/events",
-        "new_tab": false
-      },
-      {
-        "label": "Membership",
-        "type": "page",
-        "page": 4,
-        "link": "/membership",
-        "new_tab": false
-      },
-      {
-        "label": "Build Guides",
-        "type": "page",
-        "page": 5,
-        "link": "/build-guides",
-        "new_tab": false
-      },
-      {
-        "label": "Contact",
-        "type": "page",
-        "page": 6,
-        "link": "/contact",
-        "new_tab": false
-      }
-    ]
-  },
-  {
-    "id": 2,
-    "name": "Footer Links",
-    "items": [
-      {
-        "label": "Join the Club",
-        "type": "page",
-        "page": 4,
-        "link": "/membership",
-        "new_tab": false
-      },
-      {
-        "label": "Upcoming Events",
-        "type": "page",
-        "page": 3,
-        "link": "/events",
-        "new_tab": false
-      },
-      {
-        "label": "Build Resources",
-        "type": "page",
-        "page": 5,
-        "link": "/build-guides",
-        "new_tab": false
-      },
-      {
-        "label": "Contact Us",
-        "type": "page",
-        "page": 6,
-        "link": "/contact",
-        "new_tab": false
-      }
-    ]
-  }
+    {
+        "id": 1,
+        "name": "Main Menu",
+        "items": [
+            {
+                "label": "Home",
+                "link": "/home"
+            },
+            {
+                "label": "About Us",
+                "link": "/about-us",
+                "children": [
+                    {
+                        "label": "Our Team",
+                        "link": "/about-us#team"
+                    },
+                    {
+                        "label": "Our History",
+                        "link": "/about-us#history"
+                    }
+                ]
+            },
+            {
+                "label": "Services",
+                "link": "/services"
+            },
+            {
+                "label": "Blogs",
+                "link": "/blogs"
+            },
+            {
+                "label": "Contact Us",
+                "link": "/contact-us"
+            },
+            {
+                "label": "Testimonials",
+                "link": "/testimonials"
+            },
+            {
+                "label": "Careers",
+                "link": "/careers"
+            },
+            {
+                "label": "FAQ",
+                "link": "/faq"
+            },
+            {
+                "label": "Portfolio",
+                "link": "/portfolio"
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "name": "Footer Menu",
+        "items": [
+            {
+                "label": "Home",
+                "link": "/home"
+            },
+            {
+                "label": "About Us",
+                "link": "/about-us"
+            },
+            {
+                "label": "Contact",
+                "link": "/contact-us"
+            }
+        ]
+    }
 ]
