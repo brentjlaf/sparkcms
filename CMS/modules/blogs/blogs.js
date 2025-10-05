@@ -837,14 +837,32 @@ $(document).ready(function(){
 
     function deletePost(id){
         confirmModal('Are you sure you want to delete this post?').then(ok => {
-            if(ok){
-                posts = posts.filter(p=>p.id!==id);
-                refreshCategoriesFromPosts();
-                populateFilters();
-                renderPosts();
-                updateStats();
-                renderCategories();
+            if(!ok){
+                return;
             }
+
+            $.ajax({
+                url: 'modules/blogs/delete_post.php',
+                method: 'POST',
+                data: { id },
+                dataType: 'json'
+            })
+            .done(function(response){
+                if(response && response.success){
+                    posts = posts.filter(p=>p.id!==id);
+                    refreshCategoriesFromPosts();
+                    populateFilters();
+                    renderPosts();
+                    updateStats();
+                    renderCategories();
+                }else{
+                    const message = response && response.message ? response.message : 'Unable to delete the post. Please try again later.';
+                    alertModal(message);
+                }
+            })
+            .fail(function(){
+                alertModal('Unable to delete the post. Please try again later.');
+            });
         });
     }
 
