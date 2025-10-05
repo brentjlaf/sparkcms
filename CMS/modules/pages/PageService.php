@@ -80,6 +80,31 @@ class PageService
         }
 
         $pages = $this->loadPages();
+
+        foreach ($pages as $page) {
+            if (!is_array($page)) {
+                continue;
+            }
+
+            $existingSlug = isset($page['slug']) ? (string)$page['slug'] : '';
+            if ($existingSlug === '') {
+                continue;
+            }
+
+            if ($existingSlug !== $slug) {
+                continue;
+            }
+
+            $existingId = isset($page['id']) ? (int)$page['id'] : 0;
+            if ($id === null || $existingId !== $id) {
+                return [
+                    'success' => false,
+                    'status' => 409,
+                    'message' => 'A page with the slug "' . $slug . '" already exists.',
+                ];
+            }
+        }
+
         $timestamp = $this->currentTime();
 
         if ($id !== null) {
