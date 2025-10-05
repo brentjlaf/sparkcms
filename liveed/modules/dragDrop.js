@@ -43,6 +43,62 @@ function createInsertionIndicator() {
   return el;
 }
 
+function reportTemplateSettingsIssue(phase, context = {}, error = null) {
+  const block = context.block || null;
+  const template =
+    context.template || (block && block.dataset ? block.dataset.template || '' : '');
+  const blockIdValue =
+    context.blockId ||
+    (block && block.id) ||
+    (block && block.dataset ? block.dataset.id || '' : '');
+  const blockId = blockIdValue ? String(blockIdValue) : '';
+  const reason = context.reason || '';
+  const messageParts = [`Failed to ${phase} template settings.`];
+  if (template) messageParts.push(`Template: ${template}`);
+  if (blockId) messageParts.push(`Block: ${blockId}`);
+  if (reason) messageParts.push(`Reason: ${reason}`);
+  const message = messageParts.join(' ');
+  if (error) {
+    console.warn(message, error);
+  } else {
+    console.warn(message);
+  }
+  if (
+    typeof document !== 'undefined' &&
+    typeof document.dispatchEvent === 'function' &&
+    typeof CustomEvent === 'function'
+  ) {
+    try {
+      document.dispatchEvent(
+        new CustomEvent('liveBuilder:templateSettingsFailure', {
+          detail: {
+            phase,
+            template,
+            blockId,
+            reason,
+            message,
+            error: error ? error.message || String(error) : '',
+          },
+        })
+      );
+    } catch (dispatchError) {
+      // Ignore telemetry dispatch failures to avoid noisy logs.
+    }
+  }
+}
+
+function safeEncodeTemplateSetting(block, value, reason) {
+  if (!value) {
+    return { success: true, value: '' };
+  }
+  try {
+    return { success: true, value: btoa(value) };
+  } catch (error) {
+    reportTemplateSettingsIssue('encode', { block, reason }, error);
+    return { success: false, value: '' };
+  }
+}
+
 function parsePaletteMeta(node) {
   if (!node || !node.dataset) return null;
   const raw = node.dataset.meta;
@@ -278,13 +334,31 @@ export function createDragDropController(options = {}) {
       const { ts, cleaned } = extractTemplateSetting(html);
       block.dataset.original = sanitizeTemplateMarkup(cleaned);
       if (ts) {
-        block.dataset.ts = btoa(ts);
+        const { success, value } = safeEncodeTemplateSetting(
+          block,
+          ts,
+          'initialize block controls'
+        );
+        if (success && value) {
+          block.dataset.ts = value;
+        } else {
+          delete block.dataset.ts;
+        }
       }
     } else {
       const { ts, cleaned } = extractTemplateSetting(block.dataset.original);
       block.dataset.original = sanitizeTemplateMarkup(cleaned);
       if (ts && !block.dataset.ts) {
-        block.dataset.ts = btoa(ts);
+        const { success, value } = safeEncodeTemplateSetting(
+          block,
+          ts,
+          'restore block controls'
+        );
+        if (success && value) {
+          block.dataset.ts = value;
+        } else {
+          delete block.dataset.ts;
+        }
       }
     }
     const tsEl = block.querySelector('templateSetting');

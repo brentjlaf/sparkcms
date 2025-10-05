@@ -23,6 +23,62 @@ const REMOTE_OPTION_LOADERS = {
   eventCategories: loadEventCategoryOptions,
 };
 
+function reportTemplateSettingsIssue(phase, context = {}, error = null) {
+  const block = context.block || null;
+  const template =
+    context.template || (block && block.dataset ? block.dataset.template || '' : '');
+  const blockIdValue =
+    context.blockId ||
+    (block && block.id) ||
+    (block && block.dataset ? block.dataset.id || '' : '');
+  const blockId = blockIdValue ? String(blockIdValue) : '';
+  const reason = context.reason || '';
+  const messageParts = [`Failed to ${phase} template settings.`];
+  if (template) messageParts.push(`Template: ${template}`);
+  if (blockId) messageParts.push(`Block: ${blockId}`);
+  if (reason) messageParts.push(`Reason: ${reason}`);
+  const message = messageParts.join(' ');
+  if (error) {
+    console.warn(message, error);
+  } else {
+    console.warn(message);
+  }
+  if (
+    typeof document !== 'undefined' &&
+    typeof document.dispatchEvent === 'function' &&
+    typeof CustomEvent === 'function'
+  ) {
+    try {
+      document.dispatchEvent(
+        new CustomEvent('liveBuilder:templateSettingsFailure', {
+          detail: {
+            phase,
+            template,
+            blockId,
+            reason,
+            message,
+            error: error ? error.message || String(error) : '',
+          },
+        })
+      );
+    } catch (dispatchError) {
+      // Ignore telemetry dispatch failures to avoid noisy logs.
+    }
+  }
+}
+
+function safeDecodeTemplateSetting(value, context = {}) {
+  if (!value) {
+    return { success: true, value: '' };
+  }
+  try {
+    return { success: true, value: atob(value) };
+  } catch (error) {
+    reportTemplateSettingsIssue('decode', context, error);
+    return { success: false, value: '' };
+  }
+}
+
 function getFormsEndpoint() {
   const base = (window.builderBase || window.cmsBase || '').replace(/\/$/, '');
   return (base || '') + '/CMS/modules/forms/list_forms.php';
@@ -1076,10 +1132,14 @@ function getTemplateSettingElement(block) {
       const settings = getSettings(block) || {};
       const encoded = block.dataset.ts || settings.ts;
       if (encoded) {
-        try {
-          wrap.innerHTML = atob(encoded);
-        } catch (e) {
-          wrap.innerHTML = '';
+        const { success, value } = safeDecodeTemplateSetting(encoded, {
+          block,
+          reason: 'read template setting markup',
+        });
+        if (success) {
+          wrap.innerHTML = value;
+        } else {
+          wrap.innerHTML = block.dataset.original || block.innerHTML || '';
         }
       } else {
         wrap.innerHTML = block.dataset.original || block.innerHTML;
