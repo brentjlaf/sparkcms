@@ -181,7 +181,90 @@ export function createDragDropController(options = {}) {
     templateMetadata: new Map(),
     onTemplateError: null,
     lastTemplateRequest: null,
+    dropMetrics: null,
+    dropMetricsObserver: null,
   };
+
+  function clearDropMetrics() {
+    if (state.dropMetrics && state.dropMetrics.containers) {
+      state.dropMetrics.containers.clear();
+    }
+    state.dropMetrics = null;
+  }
+
+  function invalidateDropMetrics() {
+    clearDropMetrics();
+  }
+
+  function containsBlockWrapper(node) {
+    if (!node || node.nodeType !== 1) return false;
+    if (node.classList && node.classList.contains('block-wrapper')) return true;
+    if (typeof node.querySelector === 'function') {
+      return !!node.querySelector('.block-wrapper');
+    }
+    return false;
+  }
+
+  function handleCanvasMutations(mutations) {
+    for (const mutation of mutations) {
+      if (mutation.type !== 'childList') continue;
+      const added = Array.from(mutation.addedNodes || []);
+      const removed = Array.from(mutation.removedNodes || []);
+      if (added.some(containsBlockWrapper) || removed.some(containsBlockWrapper)) {
+        invalidateDropMetrics();
+        return;
+      }
+    }
+  }
+
+  function setupDropMetricsObserver(canvas) {
+    if (state.dropMetricsObserver) {
+      state.dropMetricsObserver.disconnect();
+      state.dropMetricsObserver = null;
+    }
+    if (!canvas || typeof MutationObserver !== 'function') return;
+    state.dropMetricsObserver = new MutationObserver(handleCanvasMutations);
+    state.dropMetricsObserver.observe(canvas, { childList: true, subtree: true });
+  }
+
+  function collectDropMetricsForArea(area) {
+    if (!area) return [];
+    const metrics = [];
+    const els = area.querySelectorAll('.block-wrapper:not(.dragging)');
+    for (let i = 0; i < els.length; i++) {
+      const rect = els[i].getBoundingClientRect();
+      metrics.push({ element: els[i], top: rect.top, height: rect.height });
+    }
+    return metrics;
+  }
+
+  function prepareDropMetricsCache() {
+    clearDropMetrics();
+    if (typeof document === 'undefined') {
+      state.dropMetrics = { containers: new Map() };
+      return;
+    }
+    const containers = new Map();
+    const areas = document.querySelectorAll('[data-drop-area]');
+    areas.forEach((area) => {
+      containers.set(area, collectDropMetricsForArea(area));
+    });
+    state.dropMetrics = { containers };
+  }
+
+  function getCachedDropMetrics(container) {
+    if (!container) return [];
+    if (!state.dropMetrics) {
+      prepareDropMetricsCache();
+    }
+    if (!state.dropMetrics) return [];
+    let metrics = state.dropMetrics.containers.get(container);
+    if (!metrics) {
+      metrics = collectDropMetricsForArea(container);
+      state.dropMetrics.containers.set(container, metrics);
+    }
+    return metrics;
+  }
 
   function registerTemplateMetadata(block) {
     if (!block) return;
@@ -241,7 +324,13 @@ export function createDragDropController(options = {}) {
 
   function setOptions(opts = {}) {
     if ('palette' in opts) state.palette = opts.palette;
-    if ('canvas' in opts) state.canvas = opts.canvas;
+    if ('canvas' in opts) {
+      if (state.canvas !== opts.canvas) {
+        invalidateDropMetrics();
+      }
+      state.canvas = opts.canvas;
+      setupDropMetricsObserver(state.canvas);
+    }
     if ('basePath' in opts) state.basePath = opts.basePath || '';
     if ('loggedIn' in opts) state.loggedIn = !!opts.loggedIn;
     if ('openSettings' in opts) state.openSettings = opts.openSettings;
@@ -271,6 +360,8 @@ export function createDragDropController(options = {}) {
       e.dataTransfer.effectAllowed = 'copy';
       item.classList.add('dragging');
 
+      prepareDropMetricsCache();
+
       const dragImage = createDragGhost(item);
       if (dragImage) {
         e.dataTransfer.setDragImage(
@@ -290,6 +381,7 @@ export function createDragDropController(options = {}) {
       if (!state.dragSource) return;
       state.dragSource.classList.add('dragging');
       state.dragSourcePath = getBlockPath(state.dragSource, state.canvas);
+      prepareDropMetricsCache();
       e.dataTransfer.setData('text/plain', 'reorder');
       e.dataTransfer.effectAllowed = 'move';
 
@@ -505,6 +597,7 @@ export function createDragDropController(options = {}) {
     state.dragSource = null;
     state.dragSourcePath = null;
     state.fromPalette = false;
+    clearDropMetrics();
   }
 
   function handleDragEnd() {
@@ -513,18 +606,25 @@ export function createDragDropController(options = {}) {
     if (state.dragSource) state.dragSource.classList.remove('dragging');
     state.dragSource = null;
     state.dragSourcePath = null;
+    clearDropMetrics();
   }
 
   function getDragAfterElement(container, y) {
-    const els = container.querySelectorAll('.block-wrapper:not(.dragging)');
+    let metrics = getCachedDropMetrics(container);
     let closest = null;
     let closestOffset = Number.NEGATIVE_INFINITY;
-    for (let i = 0; i < els.length; i++) {
-      const box = els[i].getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
+    if (!metrics || !metrics.length) {
+      metrics = collectDropMetricsForArea(container);
+      if (state.dropMetrics) {
+        state.dropMetrics.containers.set(container, metrics);
+      }
+    }
+    for (let i = 0; i < metrics.length; i++) {
+      const { element, top, height } = metrics[i];
+      const offset = y - top - height / 2;
       if (offset < 0 && offset > closestOffset) {
         closestOffset = offset;
-        closest = els[i];
+        closest = element;
       }
     }
     return closest;
