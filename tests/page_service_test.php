@@ -142,6 +142,52 @@ if (($errorResult['sitemap']['message'] ?? '') !== 'Intentional sitemap failure.
     throw new RuntimeException('Sitemap error response should expose the underlying message.');
 }
 
+$duplicateService = new PageService(
+    $pagesFile,
+    $historyFile,
+    $sitemapFile,
+    create_time_provider([1700000300]),
+    function (array $pages): array {
+        return [
+            'success' => true,
+            'message' => 'Sitemap regenerated successfully.',
+            'entryCount' => count($pages),
+        ];
+    }
+);
+
+$firstDuplicateResult = $duplicateService->save([
+    'title' => 'Duplicate Slug Page',
+    'slug' => 'duplicate-slug',
+    'content' => '<p>Duplicate</p>',
+], [
+    'user' => ['username' => 'editor'],
+]);
+
+if ($firstDuplicateResult['success'] !== true) {
+    throw new RuntimeException('Initial save for duplicate slug test should succeed.');
+}
+
+$secondDuplicateResult = $duplicateService->save([
+    'title' => 'Duplicate Slug Page Again',
+    'slug' => 'duplicate-slug',
+    'content' => '<p>Duplicate Attempt</p>',
+], [
+    'user' => ['username' => 'editor'],
+]);
+
+if ($secondDuplicateResult['success'] !== false) {
+    throw new RuntimeException('Duplicate slug save should fail.');
+}
+
+if (($secondDuplicateResult['status'] ?? 0) !== 409) {
+    throw new RuntimeException('Duplicate slug save should return a 409 status code.');
+}
+
+if (($secondDuplicateResult['message'] ?? '') !== 'A page with the slug "duplicate-slug" already exists.') {
+    throw new RuntimeException('Duplicate slug error message should mention the conflicting slug.');
+}
+
 unlink($pagesFile);
 unlink($historyFile);
 unlink($sitemapFile);
