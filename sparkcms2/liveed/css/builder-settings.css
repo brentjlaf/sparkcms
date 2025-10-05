@@ -1,0 +1,69 @@
+/* Settings form styles */
+.settings-panel .settings-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-panel .settings-content dl {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid rgba(51, 65, 85, 0.2);
+  border-radius: 6px;
+  background: rgba(30, 41, 59, 0.6);
+}
+
+.settings-panel .settings-content dt {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #94a3b8;
+}
+
+.settings-panel .settings-content dd {
+  margin: 0 0 12px 0;
+}
+
+.settings-panel .settings-content input[type="text"],
+.settings-panel .settings-content input[type="number"],
+.settings-panel .settings-content textarea,
+.settings-panel .settings-content select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid rgba(51, 65, 85, 0.4);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+}
+
+.settings-panel .settings-content textarea {
+  min-height: 80px;
+  resize: vertical;
+  background: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+}
+.wysiwyg-toolbar {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+.wysiwyg-toolbar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 0 2px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+.wysiwyg-toolbar button:hover {
+  background: #edf2f7;
+}
+
