@@ -34,6 +34,27 @@ let currentSearchTerm = '';
 // successive saves while the user is still actively editing.
 const SAVE_DEBOUNCE_DELAY = 1000;
 
+function registerBuilderCleanup(handler) {
+  if (typeof window === 'undefined' || typeof handler !== 'function') {
+    return;
+  }
+  const previous = typeof window.builderCleanup === 'function' ? window.builderCleanup : null;
+  window.builderCleanup = function builderCleanupWrapper() {
+    if (previous) {
+      try {
+        previous();
+      } catch (error) {
+        console.error('Error running existing builder cleanup handler', error);
+      }
+    }
+    try {
+      handler();
+    } catch (error) {
+      console.error('Error running builder cleanup handler', error);
+    }
+  };
+}
+
 function setPageRevision(value = '') {
   pageRevision = value || '';
   if (typeof window !== 'undefined') {
@@ -542,9 +563,17 @@ function toggleFavorite(blockId) {
   }
 }
 
-let saveTimer;
+let saveTimer = null;
+
+function cancelScheduledSave() {
+  if (saveTimer !== null) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
+}
 
 function savePage() {
+  cancelScheduledSave();
   if (!canvas) return;
   if (conflictActive) {
     handleConflict('content');
@@ -619,7 +648,7 @@ function savePage() {
 }
 
 function scheduleSave() {
-  clearTimeout(saveTimer);
+  cancelScheduledSave();
   storeDraft();
   if (conflictActive) return;
   saveTimer = setTimeout(savePage, SAVE_DEBOUNCE_DELAY);
@@ -853,7 +882,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (redoBtn) redoBtn.addEventListener('click', () => history.redo());
   if (saveBtn)
     saveBtn.addEventListener('click', () => {
-      clearTimeout(saveTimer);
+      cancelScheduledSave();
       savePage();
     });
   if (historyBtn && historyPanel) {
@@ -1038,7 +1067,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   window.addEventListener('beforeunload', () => {
+    cancelScheduledSave();
     storeDraft();
+  });
+
+  registerBuilderCleanup(() => {
+    cancelScheduledSave();
   });
 
 });
