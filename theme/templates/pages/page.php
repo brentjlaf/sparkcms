@@ -192,11 +192,23 @@ require_once __DIR__ . '/../partials/menu.php';
 
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Custom JavaScript -->
+    <?php
+        $bundleDirectory = dirname(__DIR__, 2) . '/js/dist';
+        $bundleFiles = [
+            'global' => 'global.bundle.js',
+            'script' => 'script.bundle.js',
+        ];
+        $bundleVersions = [];
+        foreach ($bundleFiles as $key => $fileName) {
+            $filePath = $bundleDirectory . '/' . $fileName;
+            $bundleVersions[$key] = is_file($filePath) ? (string) filemtime($filePath) : '1';
+        }
+    ?>
     <script>window.cmsBase = <?php echo json_encode($scriptBase); ?>;</script>
-    <script src="<?php echo $themeBase; ?>/js/global.js?v=mw3.2"></script>
-    <script src="<?php echo $themeBase; ?>/js/script.js?v=mw3.2"></script>
+    <script src="<?php echo $themeBase; ?>/js/dist/<?php echo $bundleFiles['global']; ?>?v=<?php echo $bundleVersions['global']; ?>"></script>
+    <script src="<?php echo $themeBase; ?>/js/dist/<?php echo $bundleFiles['script']; ?>?v=<?php echo $bundleVersions['script']; ?>"></script>
 
 </body>
 </html>

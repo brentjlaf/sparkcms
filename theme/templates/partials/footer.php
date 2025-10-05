@@ -42,8 +42,20 @@
 <!-- Vendor Javascript -->
 
 <!-- Javascript -->
-<script src="<?php echo $themeBase; ?>/js/global.js?v=mw3.2"></script>
-<script src="<?php echo $themeBase; ?>/js/script.js?v=mw3.2"></script>
+<?php
+    $bundleDirectory = dirname(__DIR__, 2) . '/js/dist';
+    $bundleFiles = [
+        'global' => 'global.bundle.js',
+        'script' => 'script.bundle.js',
+    ];
+    $bundleVersions = [];
+    foreach ($bundleFiles as $key => $fileName) {
+        $filePath = $bundleDirectory . '/' . $fileName;
+        $bundleVersions[$key] = is_file($filePath) ? (string) filemtime($filePath) : '1';
+    }
+?>
+<script src="<?php echo $themeBase; ?>/js/dist/<?php echo $bundleFiles['global']; ?>?v=<?php echo $bundleVersions['global']; ?>"></script>
+<script src="<?php echo $themeBase; ?>/js/dist/<?php echo $bundleFiles['script']; ?>?v=<?php echo $bundleVersions['script']; ?>"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     </body>
