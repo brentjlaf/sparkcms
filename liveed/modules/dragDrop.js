@@ -21,6 +21,46 @@ const controlsFragment = document.createElement('div');
 controlsFragment.className = 'block-controls';
 controlsFragment.innerHTML = controlsTemplate;
 
+const liveRegionId = 'live-builder-dragdrop-region';
+
+function getLiveRegion() {
+  if (typeof document === 'undefined') return null;
+  let region = document.getElementById(liveRegionId);
+  if (!region) {
+    region = document.createElement('div');
+    region.id = liveRegionId;
+    region.className = 'visually-hidden dragdrop-live-region';
+    region.setAttribute('role', 'status');
+    region.setAttribute('aria-live', 'polite');
+    region.setAttribute('aria-atomic', 'true');
+    Object.assign(region.style, {
+      position: 'absolute',
+      width: '1px',
+      height: '1px',
+      margin: '-1px',
+      border: '0',
+      padding: '0',
+      clip: 'rect(0 0 0 0)',
+      overflow: 'hidden',
+    });
+    document.body.appendChild(region);
+  }
+  return region;
+}
+
+function announce(message) {
+  const region = getLiveRegion();
+  if (!region) return;
+  region.textContent = '';
+  const schedule =
+    typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function'
+      ? window.requestAnimationFrame.bind(window)
+      : (cb) => setTimeout(cb, 0);
+  schedule(() => {
+    region.textContent = message;
+  });
+}
+
 function extractTemplateSetting(html) {
   const match = html.match(/<templateSetting[^>]*>[\s\S]*?<\/templateSetting>/i);
   const ts = match ? match[0] : '';
@@ -185,6 +225,31 @@ export function createDragDropController(options = {}) {
     dropMetricsObserver: null,
   };
 
+  function setAriaGrabbed(element, grabbed) {
+    if (!element) return;
+    element.setAttribute('aria-grabbed', grabbed ? 'true' : 'false');
+  }
+
+  function getDropAreas() {
+    if (!state.canvas) return [];
+    const areas = new Set();
+    if (state.canvas.dataset && state.canvas.dataset.dropArea === 'true') {
+      areas.add(state.canvas);
+    }
+    state.canvas.querySelectorAll('[data-drop-area]').forEach((area) => areas.add(area));
+    return Array.from(areas);
+  }
+
+  function updateDropAreasDropEffect(effect) {
+    getDropAreas().forEach((area) => {
+      area.setAttribute('aria-dropeffect', effect);
+    });
+  }
+
+  function resetDropAreasDropEffect() {
+    updateDropAreasDropEffect('none');
+  }
+
   function clearDropMetrics() {
     if (state.dropMetrics && state.dropMetrics.containers) {
       state.dropMetrics.containers.clear();
@@ -319,6 +384,7 @@ export function createDragDropController(options = {}) {
         state.allowedTemplates.add(normalized);
         item.dataset.file = normalized;
       }
+      item.setAttribute('aria-grabbed', 'false');
     });
   }
 
@@ -356,6 +422,8 @@ export function createDragDropController(options = {}) {
       state.dragSource = item;
       state.fromPalette = true;
       state.dragSourcePath = null;
+      setAriaGrabbed(item, true);
+      updateDropAreasDropEffect('copy');
       e.dataTransfer.setData('text/plain', normalized);
       e.dataTransfer.effectAllowed = 'copy';
       item.classList.add('dragging');
@@ -380,6 +448,9 @@ export function createDragDropController(options = {}) {
       state.fromPalette = false;
       if (!state.dragSource) return;
       state.dragSource.classList.add('dragging');
+      setAriaGrabbed(state.dragSource, true);
+      setAriaGrabbed(handle, true);
+      updateDropAreasDropEffect('move');
       state.dragSourcePath = getBlockPath(state.dragSource, state.canvas);
       prepareDropMetricsCache();
       e.dataTransfer.setData('text/plain', 'reorder');
@@ -401,12 +472,14 @@ export function createDragDropController(options = {}) {
   function setupDropArea(area) {
     if (!area) return;
     area.dataset.dropArea = 'true';
+    area.setAttribute('aria-dropeffect', 'none');
   }
 
   function addBlockControls(block) {
     if (!block) return;
     ensureBlockState(block);
     if (state.applyStoredSettings) state.applyStoredSettings(block);
+    block.setAttribute('aria-grabbed', block.getAttribute('aria-grabbed') || 'false');
     if (!state.loggedIn) {
       const existing = block.querySelector('.block-controls');
       if (existing) existing.remove();
@@ -420,7 +493,10 @@ export function createDragDropController(options = {}) {
     }
     block.removeAttribute('draggable');
     const dragHandle = block.querySelector('.block-controls .drag');
-    if (dragHandle) dragHandle.setAttribute('draggable', 'true');
+    if (dragHandle) {
+      dragHandle.setAttribute('draggable', 'true');
+      dragHandle.setAttribute('aria-grabbed', dragHandle.getAttribute('aria-grabbed') || 'false');
+    }
     if (!block.dataset.original) {
       let html = block.innerHTML;
       const { ts, cleaned } = extractTemplateSetting(html);
@@ -464,6 +540,23 @@ export function createDragDropController(options = {}) {
     registerTemplateMetadata(block);
   }
 
+  function resetDragState(source = state.dragSource) {
+    state.placeholder.remove();
+    state.insertionIndicator.remove();
+    if (source) {
+      source.classList.remove('dragging');
+      setAriaGrabbed(source, false);
+      const sourceHandle = source.querySelector('.block-controls .drag');
+      if (sourceHandle) setAriaGrabbed(sourceHandle, false);
+    }
+    getDropAreas().forEach((area) => area.classList.remove('drag-over'));
+    resetDropAreasDropEffect();
+    state.dragSource = null;
+    state.dragSourcePath = null;
+    state.fromPalette = false;
+    clearDropMetrics();
+  }
+
   function handleDragEnter(e) {
     const area = e.target.closest('[data-drop-area]');
     if (area) {
@@ -502,13 +595,19 @@ export function createDragDropController(options = {}) {
 
   function handleDrop(e) {
     const area = e.target.closest('[data-drop-area]');
-    if (!area) return;
+    if (!area) {
+      announce('Drop canceled. No valid drop target.');
+      resetDragState();
+      return;
+    }
     e.preventDefault();
     const after = getDragAfterElement(area, e.clientY);
-    if (state.fromPalette && state.dragSource) {
-      const file = normalizeTemplateName(state.dragSource.dataset.file || '');
+    const source = state.dragSource;
+
+    if (state.fromPalette && source) {
+      const file = normalizeTemplateName(source.dataset.file || '');
       if (file && state.allowedTemplates.has(file)) {
-        const meta = parsePaletteMeta(state.dragSource);
+        const meta = parsePaletteMeta(source);
         const schema = { template: file, settings: {}, areas: [] };
         if (meta) {
           schema.meta = Object.assign({}, meta, { template: file });
@@ -523,7 +622,10 @@ export function createDragDropController(options = {}) {
 
         request
           .then((wrapper) => {
-            if (!wrapper) return;
+            if (!wrapper) {
+              announce('Failed to add block.');
+              return;
+            }
             if (after == null) area.appendChild(wrapper);
             else area.insertBefore(wrapper, after);
 
@@ -548,8 +650,10 @@ export function createDragDropController(options = {}) {
 
             if (state.openSettings) state.openSettings(wrapper);
             document.dispatchEvent(new Event('canvasUpdated'));
+            announce('Block added to canvas.');
           })
           .catch((error) => {
+            announce('Failed to add block.');
             if (typeof state.onTemplateError === 'function') {
               try {
                 state.onTemplateError(error, { template: file, meta });
@@ -562,19 +666,27 @@ export function createDragDropController(options = {}) {
             if (state.lastTemplateRequest === request) {
               state.lastTemplateRequest = null;
             }
+            area.classList.remove('drag-over');
+            resetDragState(source);
           });
+        return;
       }
-    } else if (state.dragSource) {
-      state.dragSource.classList.remove('dragging');
-      if (after == null) area.appendChild(state.dragSource);
-      else area.insertBefore(state.dragSource, after);
+      announce('Block cannot be dropped here.');
+      area.classList.remove('drag-over');
+      resetDragState(source);
+      return;
+    }
+
+    if (source) {
+      if (after == null) area.appendChild(source);
+      else area.insertBefore(source, after);
 
       if (
         typeof state.recordOperation === 'function' &&
         Array.isArray(state.dragSourcePath) &&
         state.dragSourcePath.length
       ) {
-        const newPath = getBlockPath(state.dragSource, state.canvas);
+        const newPath = getBlockPath(source, state.canvas);
         const oldPath = state.dragSourcePath.slice();
         const samePath =
           Array.isArray(newPath) &&
@@ -590,23 +702,19 @@ export function createDragDropController(options = {}) {
       }
 
       document.dispatchEvent(new Event('canvasUpdated'));
+      announce('Block moved.');
+      area.classList.remove('drag-over');
+      resetDragState(source);
+      return;
     }
-    state.placeholder.remove();
-    state.insertionIndicator.remove();
+
+    announce('Drop canceled. Nothing to drop.');
     area.classList.remove('drag-over');
-    state.dragSource = null;
-    state.dragSourcePath = null;
-    state.fromPalette = false;
-    clearDropMetrics();
+    resetDragState();
   }
 
   function handleDragEnd() {
-    state.placeholder.remove();
-    state.insertionIndicator.remove();
-    if (state.dragSource) state.dragSource.classList.remove('dragging');
-    state.dragSource = null;
-    state.dragSourcePath = null;
-    clearDropMetrics();
+    resetDragState();
   }
 
   function getDragAfterElement(container, y) {
