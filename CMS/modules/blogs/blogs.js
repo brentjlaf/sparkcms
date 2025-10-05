@@ -486,6 +486,7 @@ $(document).ready(function(){
     }
 
     function populateFilters(){
+        sortCategories();
         const categoryOptions = categories.map(c=>`<option value="${c}">${c}</option>`).join('');
         const currentFilterCategory = $('#categoryFilter').val() || '';
         const currentPostCategory = $('#postCategory').val() || '';
@@ -906,7 +907,12 @@ $(document).ready(function(){
         openModal('categoriesModal');
     }
 
+    function sortCategories(){
+        categories = categories.slice().sort((a, b) => a.localeCompare(b));
+    }
+
     function renderCategories(){
+        sortCategories();
         const list = $('#categoriesList');
         list.empty();
         if (!categories.length) {
@@ -937,6 +943,7 @@ $(document).ready(function(){
         const name = $('#newCategoryName').val().trim();
         if(name && !categories.includes(name)){
             categories.push(name);
+            sortCategories();
             $('#newCategoryName').val('');
             renderCategories();
             populateFilters();
@@ -947,6 +954,7 @@ $(document).ready(function(){
         confirmModal(`Are you sure you want to delete the category "${name}"?`).then(ok => {
             if(ok){
                 categories = categories.filter(c=>c!==name);
+                sortCategories();
                 posts.forEach(p=>{ if(p.category===name) p.category='Uncategorized'; });
                 renderCategories();
                 populateFilters();
