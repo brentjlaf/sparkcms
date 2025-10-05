@@ -204,15 +204,126 @@ class PageRepository
             return [];
         }
 
-        $blocks = array_map('basename', $paths);
-        $blocks = array_values(array_filter(
-            $blocks,
-            static function (string $block): bool {
-                return !in_array($block, self::DISABLED_BLOCKS, true);
+        $manifest = [];
+        foreach ($paths as $path) {
+            $filename = basename($path);
+            if (in_array($filename, self::DISABLED_BLOCKS, true)) {
+                continue;
             }
-        ));
-        sort($blocks, SORT_STRING);
-        return $blocks;
+
+            $metadata = $this->buildBlockManifestEntry($path, $filename);
+            if (!empty($metadata)) {
+                $manifest[] = $metadata;
+            }
+        }
+
+        usort(
+            $manifest,
+            static function (array $a, array $b): int {
+                $groupComparison = strcasecmp((string)($a['group'] ?? ''), (string)($b['group'] ?? ''));
+                if ($groupComparison !== 0) {
+                    return $groupComparison;
+                }
+                return strcasecmp((string)($a['label'] ?? ''), (string)($b['label'] ?? ''));
+            }
+        );
+
+        return array_values($manifest);
+    }
+
+    private function buildBlockManifestEntry(string $path, string $filename): array
+    {
+        $contents = @file_get_contents($path);
+        if ($contents === false) {
+            $contents = '';
+        }
+
+        $id = $this->extractBlockId($contents, $filename);
+        $template = $filename;
+        $group = $this->extractBlockGroup($id);
+        $label = $this->extractBlockLabel($contents, $id);
+        $capabilities = $this->detectBlockCapabilities($contents);
+
+        return [
+            'id' => $id,
+            'template' => $template,
+            'file' => $template,
+            'group' => $group,
+            'label' => $label,
+            'capabilities' => $capabilities,
+        ];
+    }
+
+    private function extractBlockId(string $contents, string $filename): string
+    {
+        if (preg_match('/Template:\s*([A-Za-z0-9._-]+)/i', $contents, $matches)) {
+            $candidate = trim((string)$matches[1]);
+            if ($candidate !== '') {
+                return $candidate;
+            }
+        }
+
+        return preg_replace('/\.php$/i', '', $filename) ?? $filename;
+    }
+
+    private function extractBlockGroup(string $id): string
+    {
+        $id = trim($id);
+        if ($id === '') {
+            return 'general';
+        }
+        $parts = explode('.', $id);
+        $group = $parts[0] ?? '';
+        $group = trim((string)$group);
+        return $group !== '' ? strtolower($group) : 'general';
+    }
+
+    private function extractBlockLabel(string $contents, string $id): string
+    {
+        if (preg_match('/data-tpl-tooltip\s*=\s*"([^"]+)"/i', $contents, $matches)) {
+            $label = trim((string)$matches[1]);
+            if ($label !== '') {
+                $decoded = html_entity_decode($label, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $label = trim($decoded);
+            }
+            if ($label !== '') {
+                return $label;
+            }
+        }
+
+        $source = $id !== '' ? $id : 'block';
+        $source = preg_replace('/[._-]+/', ' ', $source);
+        $source = trim((string)$source);
+        $source = $source !== '' ? $source : 'Block';
+
+        return ucwords(strtolower($source));
+    }
+
+    private function detectBlockCapabilities(string $contents): array
+    {
+        $capabilities = [];
+
+        $patterns = [
+            'blog' => '/data-blog(?:-[\w-]+)?\s*=/i',
+            'events' => '/data-events(?:-[\w-]+)?\s*=/i',
+            'calendar' => '/data-calendar(?:-[\w-]+)?\s*=/i',
+            'forms' => '/data-forms?(?:-[\w-]+)?\s*=/i',
+            'gallery' => '/\bimage-gallery\b/i',
+        ];
+
+        foreach ($patterns as $name => $pattern) {
+            if (preg_match($pattern, $contents)) {
+                $capabilities[] = $name;
+            }
+        }
+
+        if (!$capabilities) {
+            return [];
+        }
+
+        $unique = array_values(array_unique(array_map('strtolower', $capabilities)));
+        sort($unique, SORT_STRING);
+        return $unique;
     }
 
     public function loadBlock(string $filename): string

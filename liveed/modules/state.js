@@ -81,6 +81,99 @@ function computeTooltip(template) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function normalizeBlockMetadata(meta, template = '') {
+  const source = meta && typeof meta === 'object' ? meta : {};
+  const normalized = {};
+  const providedTemplate =
+    typeof source.template === 'string' && source.template.trim() ? source.template.trim() : '';
+  const fallbackTemplate = typeof template === 'string' && template.trim() ? template.trim() : '';
+  const templateName = fallbackTemplate || providedTemplate;
+  if (templateName) {
+    normalized.template = templateName.endsWith('.php') ? templateName : templateName + '.php';
+  }
+
+  const providedId = typeof source.id === 'string' && source.id.trim() ? source.id.trim() : '';
+  const derivedId = providedId || (normalized.template ? normalized.template.replace(/\.php$/i, '') : '');
+  if (derivedId) {
+    normalized.id = derivedId;
+  }
+
+  const providedGroup = typeof source.group === 'string' && source.group.trim() ? source.group.trim() : '';
+  const derivedGroup = providedGroup || (derivedId ? derivedId.split('.')[0] : '');
+  if (derivedGroup) {
+    normalized.group = derivedGroup.toLowerCase();
+  }
+
+  const tooltipSource = normalized.template || (derivedId ? derivedId + '.php' : '');
+  const providedLabel = typeof source.label === 'string' && source.label.trim() ? source.label.trim() : '';
+  const derivedLabel = providedLabel || computeTooltip(tooltipSource);
+  if (derivedLabel) {
+    normalized.label = derivedLabel;
+  }
+
+  if (Array.isArray(source.capabilities)) {
+    const caps = source.capabilities
+      .map((cap) => (typeof cap === 'string' ? cap.trim().toLowerCase() : ''))
+      .filter(Boolean);
+    if (caps.length) {
+      normalized.capabilities = Array.from(new Set(caps)).sort();
+    }
+  }
+
+  return normalized;
+}
+
+function applyBlockMetadata(block, meta, template = '') {
+  if (!block) return {};
+  const normalized = normalizeBlockMetadata(meta, template);
+  if (normalized.template) {
+    block.dataset.template = normalized.template;
+  }
+  if (normalized.label) {
+    block.setAttribute('data-tpl-tooltip', normalized.label);
+  } else if (block.dataset.template) {
+    const fallbackTooltip = computeTooltip(block.dataset.template);
+    if (fallbackTooltip) {
+      block.setAttribute('data-tpl-tooltip', fallbackTooltip);
+    }
+  }
+  if (normalized.id && normalized.id.endsWith('.php')) {
+    normalized.id = normalized.id.replace(/\.php$/i, '');
+  }
+  if (normalized.template && !normalized.template.endsWith('.php')) {
+    normalized.template += '.php';
+  }
+  try {
+    block.dataset.blockMeta = JSON.stringify(normalized);
+  } catch (error) {
+    block.dataset.blockMeta = JSON.stringify({
+      id: normalized.id || '',
+      template: normalized.template || template || '',
+    });
+  }
+  return normalized;
+}
+
+function readBlockMetadata(block, template = '') {
+  if (!block) return null;
+  let parsed = null;
+  if (block.dataset.blockMeta) {
+    try {
+      parsed = JSON.parse(block.dataset.blockMeta);
+    } catch (error) {
+      parsed = null;
+    }
+  }
+  const normalized = normalizeBlockMetadata(parsed || {}, template || block.dataset.template || '');
+  if (normalized.label && normalized.template && normalized.id) {
+    return normalized;
+  }
+  if (block.dataset.template) {
+    return normalizeBlockMetadata({}, block.dataset.template);
+  }
+  return normalized;
+}
+
 async function loadTemplate(basePath = '', template) {
   if (!template) return { cleaned: '', ts: '' };
   const cached = templateCache.get(template);
@@ -125,11 +218,17 @@ export function serializeBlock(block) {
       .map((child) => serializeBlock(child))
       .filter(Boolean)
   );
-  return {
-    template: block.dataset.template || '',
+  const template = block.dataset.template || '';
+  const metadata = readBlockMetadata(block, template);
+  const serialized = {
+    template,
     settings,
     areas,
   };
+  if (metadata && Object.keys(metadata).length) {
+    serialized.meta = metadata;
+  }
+  return serialized;
 }
 
 export function serializeCanvas(canvas) {
@@ -174,10 +273,7 @@ export async function createBlockElementFromSchema(schema, options = {}) {
       block.dataset.ts = '';
     }
   }
-  const tooltip = computeTooltip(schema.template);
-  if (tooltip) {
-    block.setAttribute('data-tpl-tooltip', tooltip);
-  }
+  applyBlockMetadata(block, schema.meta || null, schema.template || '');
   const initialSettings = schema.settings || {};
   ensureBlockState(block, initialSettings);
   for (const [key, value] of Object.entries(initialSettings)) {
