@@ -423,6 +423,13 @@ function handleConflict(source = 'content', message = '') {
     statusEl.classList.remove('saving');
   }
   if (conflictPromptShown) return;
+  // Avoid interrupting the editor with a confirmation prompt when only the
+  // background draft save failed with an outdated revision. The status message
+  // still informs the user about the conflict, but the disruptive modal
+  // previously shown as "Draft is outdated" is skipped.
+  if (source === 'draft') {
+    return;
+  }
   conflictPromptShown = true;
   const promptMessage =
     (message ? message + '\n\n' : '') +
