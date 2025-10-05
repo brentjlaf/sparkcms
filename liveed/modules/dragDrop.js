@@ -651,6 +651,22 @@ export function createDragDropController(options = {}) {
 
             if (state.openSettings) state.openSettings(wrapper);
             document.dispatchEvent(new Event('canvasUpdated'));
+            if (typeof document !== 'undefined' && typeof CustomEvent === 'function') {
+              try {
+                document.dispatchEvent(
+                  new CustomEvent('blockAdded', {
+                    detail: {
+                      block: wrapper,
+                      template: file,
+                      source: 'palette',
+                      metadata: meta || null,
+                    },
+                  })
+                );
+              } catch (error) {
+                // Ignore event dispatch errors to avoid interrupting the drop flow.
+              }
+            }
             announce('Block added to canvas.');
           })
           .catch((error) => {
