@@ -18,6 +18,34 @@ $(document).ready(function(){
     const $statusFilterButtons = $('[data-blog-filter]');
     let activeStatusFilter = 'all';
 
+    function slugify(value){
+        return String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    }
+
+    function ensureUniqueSlug(baseSlug, excludeId){
+        const safeBase = baseSlug || 'post';
+        let candidate = safeBase;
+        let suffix = 2;
+        const normalizedExcludeId = typeof excludeId === 'number' && !Number.isNaN(excludeId) ? excludeId : null;
+        const slugIsTaken = slug => posts.some(post => {
+            if(!post || !post.slug){
+                return false;
+            }
+            if(normalizedExcludeId !== null && post.id === normalizedExcludeId){
+                return false;
+            }
+            return post.slug.toLowerCase() === slug.toLowerCase();
+        });
+        while(slugIsTaken(candidate)){
+            candidate = `${safeBase}-${suffix++}`;
+        }
+        return candidate;
+    }
+
     function renderTableMessage(message, options={}){
         const opts = Object.assign({ isError: false, countLabel: null }, options);
         const className = opts.isError ? 'text-danger' : 'text-muted';
@@ -394,9 +422,7 @@ $(document).ready(function(){
     $('#postTitle').on('input', function(){
         const value = $(this).val();
         if(!$('#postId').val()){
-            const slug = value.toLowerCase()
-                .replace(/[^a-z0-9]+/g,'-')
-                .replace(/^-+|-+$/g,'');
+            const slug = slugify(value);
             $('#postSlug').val(slug);
         }
         const imageUrl = $('#postImage').val().trim();
@@ -847,25 +873,44 @@ $(document).ready(function(){
         const formData = new FormData($('#postForm')[0]);
         const imageUrl = normalizeImageValue(formData.get('image'));
         const imageAlt = (formData.get('imageAlt') || '').trim();
+        const title = (formData.get('title') || '').trim();
+        const excerpt = (formData.get('excerpt') || '').trim();
+        const category = (formData.get('category') || '').trim();
+        const author = (formData.get('author') || '').trim();
+        const status = (formData.get('status') || '').trim();
+        const tags = (formData.get('tags') || '').toString();
+        const publishDate = (formData.get('publishDate') || '').trim();
+        const rawSlug = slugify(formData.get('slug'));
+        const idRaw = $('#postId').val();
+        const parsedId = idRaw ? parseInt(idRaw, 10) : null;
+        const excludeId = Number.isNaN(parsedId) ? null : parsedId;
+        let slug = rawSlug;
+        if(!slug){
+            slug = slugify(title);
+        }
+        if(!slug){
+            slug = `post-${Date.now()}`;
+        }
+        const uniqueSlug = ensureUniqueSlug(slug, excludeId);
+        $('#postSlug').val(uniqueSlug);
         const data = {
-            title: formData.get('title'),
-            slug: formData.get('slug'),
-            excerpt: formData.get('excerpt'),
+            title,
+            slug: uniqueSlug,
+            excerpt,
             content: $('#postContent').html(),
-            category: formData.get('category'),
-            author: formData.get('author'),
-            status: formData.get('status'),
-            tags: formData.get('tags'),
-            publishDate: formData.get('publishDate'),
+            category,
+            author,
+            status,
+            tags,
+            publishDate,
             image: imageUrl,
             imageAlt
         };
         if(data.status === 'published' && !data.publishDate){
             data.publishDate = new Date().toISOString();
         }
-        const id = $('#postId').val();
-        if(id){
-            const idx = posts.findIndex(p=>p.id===parseInt(id));
+        if(idRaw){
+            const idx = posts.findIndex(p=>p.id===parseInt(idRaw));
             posts[idx] = {...posts[idx], ...data};
         } else {
             data.id = nextPostId++;
